@@ -1,0 +1,142 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <link rel="icon" type="image/svg+xml" href="/favicon-custom.svg" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+
+    <!-- Resource Hints for Performance -->
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link rel="dns-prefetch" href="https://ksoyrdpdfwptfeerjumj.supabase.co" />
+
+    <!-- Primary Meta Tags -->
+    <title>Austin & Jordyn - Wedding Website</title>
+    <meta name="title" content="Austin & Jordyn - Wedding Website" />
+    <meta
+      name="description"
+      content="Join us in celebrating our wedding. View our story, photos, and share your memories."
+    />
+    <meta name="keywords" content="wedding, austin, jordyn, marriage, celebration" />
+    <meta name="author" content="Austin & Jordyn" />
+
+    <!-- Open Graph / Facebook -->
+    <meta property="og:type" content="website" />
+    <meta property="og:url" content="https://austinandjordyn.com/" />
+    <meta property="og:title" content="Austin & Jordyn - Wedding Website" />
+    <meta
+      property="og:description"
+      content="Join us in celebrating our wedding. View our story, photos, and share your memories."
+    />
+    <meta property="og:image" content="/images/og-image.webp" />
+
+    <!-- Twitter -->
+    <meta property="twitter:card" content="summary_large_image" />
+    <meta property="twitter:url" content="https://austinandjordyn.com/" />
+    <meta property="twitter:title" content="Austin & Jordyn - Wedding Website" />
+    <meta
+      property="twitter:description"
+      content="Join us in celebrating our wedding. View our story, photos, and share your memories."
+    />
+    <meta property="twitter:image" content="/images/og-image.webp" />
+
+    <!-- Additional Meta Tags -->
+    <meta name="robots" content="index, follow" />
+    <meta name="language" content="English" />
+    <meta name="theme-color" content="#d4af37" />
+
+    <!-- PWA Meta Tags -->
+    <meta name="mobile-web-app-capable" content="yes" />
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+    <meta name="apple-mobile-web-app-title" content="A&J Wedding" />
+    <meta name="application-name" content="A&J Wedding" />
+    <meta name="msapplication-TileColor" content="#d4af37" />
+    <meta name="msapplication-config" content="/browserconfig.xml" />
+
+    <!-- Font Imports -->
+    <!-- Fonts managed via @fontsource/ packages in index.css -->
+
+    <!-- Favicon -->
+    <link rel="apple-touch-icon" sizes="180x180" href="/apple-touch-icon.png" />
+    <link rel="icon" type="image/png" sizes="32x32" href="/favicon-32x32.png" />
+    <link rel="icon" type="image/png" sizes="16x16" href="/favicon-16x16.png" />
+
+    <!-- Critical CSS (optional) -->
+    <style>
+      /* Prevent flash of unstyled content */
+      body {
+        margin: 0;
+        padding: 0;
+        background-color: #000;
+        color: #fff;
+        font-family: 'Inter', sans-serif;
+        overflow-x: hidden;
+      }
+
+      #root {
+        min-height: 100vh;
+      }
+
+      /* Loading state */
+      .loading {
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        height: 100vh;
+      }
+    </style>
+    <style>
+      .hero-container {
+        position: relative;
+        width: 100vw;
+        height: 100vh;
+        overflow: hidden;
+      }
+      .hero-video {
+        position: absolute;
+        top: 50%;
+        left: 50%;
+        width: 100vw;
+        height: 100vh;
+        object-fit: cover;
+        transform: translate(-50%, -50%);
+        z-index: 10;
+      }
+      .hero-overlay {
+        position: absolute;
+        inset: 0;
+        background: linear-gradient(
+          to bottom,
+          rgba(8, 8, 10, 0) 0,
+          rgba(8, 8, 10, 0.4) 50%,
+          rgba(8, 8, 10, 0.8) 100%
+        );
+        z-index: 20;
+      }
+      .loading-skeleton {
+        background: linear-gradient(
+          90deg,
+          rgba(255, 255, 255, 0.05) 25%,
+          rgba(255, 255, 255, 0.1) 50%,
+          rgba(255, 255, 255, 0.05) 75%
+        );
+        background-size: 200% 100%;
+        animation: shimmer 1.5s infinite;
+      }
+    </style>
+  </head>
+  <body>
+    <div id="root"></div>
+
+    <script type="module" src="/src/main.jsx"></script>
+
+    <!-- Loading animation -->
+    <style>
+      @keyframes spin {
+        to {
+          transform: rotate(360deg);
+        }
+      }
+    </style>
+  </body>
+</html>

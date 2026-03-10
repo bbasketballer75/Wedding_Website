@@ -1,0 +1,182 @@
+/* global process */
+import tailwindcss from '@tailwindcss/vite'
+import react from '@vitejs/plugin-react'
+import path from 'path'
+import { visualizer } from 'rollup-plugin-visualizer'
+import { fileURLToPath } from 'url'
+import { defineConfig } from 'vite'
+import { VitePWA } from 'vite-plugin-pwa'
+
+const __filename = fileURLToPath(import.meta.url)
+const __dirname = path.dirname(__filename)
+const pwaIcons = [
+  {
+    src: '/icons/icon-72x72.png',
+    sizes: '72x72',
+    type: 'image/png',
+    purpose: 'maskable any',
+  },
+  {
+    src: '/icons/icon-96x96.png',
+    sizes: '96x96',
+    type: 'image/png',
+    purpose: 'maskable any',
+  },
+  {
+    src: '/icons/icon-128x128.png',
+    sizes: '128x128',
+    type: 'image/png',
+    purpose: 'maskable any',
+  },
+  {
+    src: '/icons/icon-144x144.png',
+    sizes: '144x144',
+    type: 'image/png',
+    purpose: 'maskable any',
+  },
+  {
+    src: '/icons/icon-152x152.png',
+    sizes: '152x152',
+    type: 'image/png',
+    purpose: 'maskable any',
+  },
+  {
+    src: '/icons/icon-192x192.png',
+    sizes: '192x192',
+    type: 'image/png',
+    purpose: 'maskable any',
+  },
+  {
+    src: '/icons/icon-384x384.png',
+    sizes: '384x384',
+    type: 'image/png',
+    purpose: 'maskable any',
+  },
+  {
+    src: '/icons/icon-512x512.png',
+    sizes: '512x512',
+    type: 'image/png',
+    purpose: 'maskable any',
+  },
+]
+
+const pwaManifest = {
+  name: "Austin & Jordyn's Wedding",
+  short_name: 'A&J Wedding',
+  description: 'Join us in celebrating our wedding. View our story, photos, and share your memories.',
+  start_url: '/',
+  scope: '/',
+  display: 'standalone',
+  orientation: 'portrait-primary',
+  background_color: '#08080a',
+  theme_color: '#d4af37',
+  lang: 'en',
+  categories: ['lifestyle', 'events'],
+  icons: pwaIcons,
+  shortcuts: [
+    {
+      name: 'View Gallery',
+      short_name: 'Gallery',
+      description: 'Browse our wedding photos',
+      url: '/gallery',
+      icons: [{ src: '/icons/icon-96x96.png', sizes: '96x96', type: 'image/png' }],
+    },
+    {
+      name: 'Guest Book',
+      short_name: 'Guest Book',
+      description: 'Leave a message for us',
+      url: '/guestbook',
+      icons: [{ src: '/icons/icon-96x96.png', sizes: '96x96', type: 'image/png' }],
+    },
+  ],
+  prefer_related_applications: false,
+  related_applications: [],
+}
+
+// https://vite.dev/config/
+export default defineConfig({
+  base: '/',
+  plugins: [
+    react({
+      // Enable fast refresh for TypeScript
+      fastRefresh: true,
+    }),
+    tailwindcss(),
+    VitePWA({
+      registerType: 'autoUpdate',
+      devOptions: {
+        enabled: false,
+      },
+      manifestFilename: 'manifest.webmanifest',
+      includeAssets: [
+        'favicon-custom.svg',
+        'favicon-16x16.png',
+        'favicon-32x32.png',
+        'apple-touch-icon.png',
+        'browserconfig.xml',
+        'robots.txt',
+        'offline.html',
+      ],
+      manifest: pwaManifest,
+    }),
+    process.env.ANALYZE &&
+      visualizer({
+        filename: 'dist/stats.html',
+        open: true,
+        gzipSize: true,
+        brotliSize: true,
+      }),
+  ].filter(Boolean),
+  resolve: {
+    alias: {
+      '@': path.resolve(__dirname, './src'),
+    },
+  },
+  build: {
+    rollupOptions: {
+      output: {
+        manualChunks: {
+          'vendor-core': ['react', 'react-dom'],
+          'vendor-router': ['react-router-dom'],
+          'vendor-ui': ['framer-motion', '@heroicons/react', 'lucide-react'],
+          'vendor-supabase': ['@supabase/supabase-js'],
+          'vendor-map': ['leaflet', 'react-leaflet'],
+        },
+        chunkFileNames: chunkInfo => {
+          const size = chunkInfo.moduleIds?.length || 0
+          if (size > 500) {
+            console.warn(`⚠️ Large chunk detected: ${chunkInfo.name} (${size} modules)`)
+          }
+          return 'assets/[name]-[hash].js'
+        },
+      },
+      onwarn: (warning, warn) => {
+        // Suppress warnings about dynamic imports
+        if (warning.code === 'DYNAMIC_IMPORT') return
+        // Warn about large chunks
+        if (warning.code === 'MODULE_LEVEL_DIRECTIVE') return
+        warn(warning)
+      },
+    },
+    chunkSizeWarningLimit: 500, // Lowered from 1000 for stricter limits
+    // Performance budgets
+    assetsInlineLimit: 4096, // 4kb
+    // Enforce size limits in CI
+    reportCompressedSize: true,
+    minify: 'terser',
+    terserOptions: {
+      compress: {
+        drop_console: false,
+        drop_debugger: true,
+      },
+    },
+  },
+  server: {
+    port: 5173,
+    strictPort: true,
+  },
+  define: {
+    // Performance tracking
+    __DEV__: process.env.NODE_ENV === 'development',
+  },
+})

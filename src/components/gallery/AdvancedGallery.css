@@ -1,0 +1,17 @@
+/* Carousel styles */
+.carousel-container {
+  width: max-content;
+}
+
+/* Masonry layout fixes */
+.masonry-container {
+  display: flex;
+  gap: 0.5rem;
+}
+
+.masonry-column {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}

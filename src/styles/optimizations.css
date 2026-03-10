@@ -1,0 +1,318 @@
+/**
+ * CSS Performance Optimizations
+ * Critical rendering path optimizations
+ */
+
+/* ========================================
+   CSS Containment
+   ======================================== */
+
+/* Photo gallery items with layout containment */
+.photo-item {
+  contain: layout style paint;
+  content-visibility: auto;
+}
+
+/* Gallery grid with strict containment */
+.gallery-grid {
+  contain: strict;
+}
+
+/* Individual cards with layout containment */
+.card {
+  contain: layout style;
+}
+
+/* Modal with paint containment */
+.modal {
+  contain: paint;
+}
+
+/* List items with content-visibility */
+.list-item {
+  content-visibility: auto;
+  contain-intrinsic-size: 0 100px;
+}
+
+/* ========================================
+   Will-Change Optimization
+   ======================================== */
+
+/* Animated elements */
+.animated {
+  will-change: transform, opacity;
+}
+
+/* Remove will-change after animation */
+.animated.animation-complete {
+  will-change: auto;
+}
+
+/* Scroll containers */
+.scroll-container {
+  will-change: scroll-position;
+}
+
+/* Transforming elements during interaction */
+.transforming {
+  will-change: transform;
+}
+
+/* Fading elements */
+.fading {
+  will-change: opacity;
+}
+
+/* Remove will-change when not needed */
+@media (prefers-reduced-motion: reduce) {
+  * {
+    will-change: auto !important;
+  }
+}
+
+/* ========================================
+   GPU Acceleration
+   ======================================== */
+
+/* Force GPU acceleration for transforms */
+.gpu-accelerated {
+  transform: translateZ(0);
+  backface-visibility: hidden;
+  perspective: 1000px;
+}
+
+/* Smooth scrolling with GPU */
+.smooth-scroll {
+  -webkit-overflow-scrolling: touch;
+  transform: translateZ(0);
+}
+
+/* ========================================
+   Paint Optimization
+   ======================================== */
+
+/* Reduce paint areas */
+.complex-component {
+  isolation: isolate;
+}
+
+/* Optimize shadow rendering */
+.with-shadow {
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+  /* Use transform instead of box-shadow for animations */
+}
+
+/* Optimize gradients */
+.gradient {
+  background-image: linear-gradient(to bottom, #fff, #f0f0f0);
+  /* Avoid animating gradients */
+}
+
+/* ========================================
+   Font Loading Optimization
+   ======================================== */
+
+/* Font display strategy */
+@font-face {
+  font-family: 'Optimized';
+  src: url('/fonts/optimized.woff2') format('woff2');
+  font-display: swap;
+  font-weight: 400;
+  font-style: normal;
+}
+
+/* Prevent invisible text during font load */
+body {
+  font-display: swap;
+}
+
+/* ========================================
+   Layout Stability
+   ======================================== */
+
+/* Prevent layout shifts with aspect ratio */
+.aspect-ratio-16-9 {
+  aspect-ratio: 16 / 9;
+}
+
+.aspect-ratio-4-3 {
+  aspect-ratio: 4 / 3;
+}
+
+.aspect-ratio-1-1 {
+  aspect-ratio: 1 / 1;
+}
+
+/* Reserve space for images */
+.image-container {
+  position: relative;
+  width: 100%;
+}
+
+.image-container::before {
+  content: '';
+  display: block;
+  padding-bottom: 56.25%; /* 16:9 aspect ratio */
+}
+
+.image-container img {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+/* ========================================
+   Critical CSS Patterns
+   ======================================== */
+
+/* Above-the-fold content */
+.above-fold {
+  contain: layout style paint;
+}
+
+/* Lazy-loaded sections */
+.lazy-section {
+  content-visibility: auto;
+  contain-intrinsic-size: 0 500px;
+}
+
+/* ========================================
+   Responsive Images
+   ======================================== */
+
+/* Optimize image rendering */
+img {
+  image-rendering: auto;
+  max-width: 100%;
+  height: auto;
+}
+
+/* High-quality image rendering for photos */
+.photo img {
+  image-rendering: -webkit-optimize-contrast;
+}
+
+/* Crisp rendering for icons */
+.icon {
+  image-rendering: crisp-edges;
+}
+
+/* ========================================
+   Animation Performance
+   ======================================== */
+
+/* Use transform instead of position */
+.slide-in {
+  transform: translateX(0);
+  transition: transform 0.3s ease-out;
+}
+
+.slide-in.hidden {
+  transform: translateX(-100%);
+}
+
+/* Opacity transitions */
+.fade {
+  opacity: 1;
+  transition: opacity 0.3s ease-out;
+}
+
+.fade.hidden {
+  opacity: 0;
+}
+
+/* Combine transforms for better performance */
+.combined-animation {
+  transform: translate3d(0, 0, 0) scale(1);
+  transition: transform 0.3s ease-out;
+}
+
+/* ========================================
+   Scroll Performance
+   ======================================== */
+
+/* Optimize scroll containers */
+.scroll-optimized {
+  overflow: auto;
+  -webkit-overflow-scrolling: touch;
+  overscroll-behavior: contain;
+  scroll-behavior: smooth;
+}
+
+/* Passive scroll listeners (set in JS) */
+.scroll-listener {
+  /* Use passive: true in addEventListener */
+  touch-action: pan-y;
+}
+
+/* ========================================
+   Print Optimization
+   ======================================== */
+
+@media print {
+  /* Remove unnecessary elements */
+  .no-print {
+    display: none !important;
+  }
+
+  /* Optimize for printing */
+  * {
+    background: transparent !important;
+    color: #000 !important;
+    box-shadow: none !important;
+    text-shadow: none !important;
+  }
+
+  /* Page breaks */
+  .page-break {
+    page-break-after: always;
+  }
+
+  /* Prevent orphans */
+  p,
+  h2,
+  h3 {
+    orphans: 3;
+    widows: 3;
+  }
+
+  h2,
+  h3 {
+    page-break-after: avoid;
+  }
+}
+
+/* ========================================
+   Reduced Motion
+   ======================================== */
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
+}
+
+/* ========================================
+   Dark Mode Optimization
+   ======================================== */
+
+@media (prefers-color-scheme: dark) {
+  /* Optimize for dark mode rendering */
+  :root {
+    color-scheme: dark;
+  }
+
+  /* Reduce contrast for better readability */
+  body {
+    background-color: #1a1a1a;
+    color: #e0e0e0;
+  }
+}

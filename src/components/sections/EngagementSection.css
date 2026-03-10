@@ -1,0 +1,196 @@
+/* Engagement Section Specific Styles/* Engagement Section Specific Styles - Bypassing Tailwind for Reliability */
+
+/* Root container matching global section spacing */
+.engagement-section-container {
+  width: 100%;
+  min-height: 100vh;
+  background-color: #000000;
+  color: #fafafa;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding-bottom: 8rem;
+  overflow-x: hidden;
+  position: relative;
+}
+
+.engagement-content-wrapper {
+  width: 100%;
+  max-width: 1400px;
+  margin: 0 auto;
+  padding: 0 1.5rem;
+  padding-top: 15vh;
+  position: relative;
+  z-index: 10;
+}
+
+@media (min-width: 768px) {
+  .engagement-content-wrapper {
+    padding: 0 3rem;
+  }
+}
+
+@media (min-width: 1024px) {
+  .engagement-content-wrapper {
+    padding: 0 4rem;
+  }
+}
+
+/* HEADER TYPOGRAPHY */
+.engagement-header {
+  text-align: center;
+  margin-bottom: 8rem; /* Separation from card */
+}
+
+/* Chapter Label - Matching ChapterTitle.jsx */
+.engagement-chapter {
+  font-family: 'Cormorant Garamond', serif;
+  color: #d4af37;
+  font-size: 1.1rem;
+  text-transform: uppercase;
+  letter-spacing: 0.3em;
+  font-weight: 500;
+  display: block;
+  margin-bottom: 1.5rem;
+  opacity: 0.9;
+}
+
+/* Main Title - Elegant & Balanced - REDUCED V3 */
+.engagement-title-main {
+  font-family: 'Cormorant Garamond', serif;
+  /* Reduced Clamp: min 3.5rem, max 7.5rem */
+  font-size: clamp(3.5rem, 9vw, 7.5rem);
+  line-height: 0.95;
+  color: #f0f0f0;
+  font-weight: 400;
+  text-shadow: 0 4px 20px rgba(0, 0, 0, 0.5);
+  margin: 0;
+}
+
+/* Date Row */
+.engagement-date-row {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 1.5rem;
+  margin-top: 2rem;
+}
+
+.engagement-date-text {
+  font-family: 'Cormorant Garamond', serif;
+  font-size: clamp(1.8rem, 2.5vw, 2.5rem);
+  color: rgba(212, 175, 55, 0.9);
+  font-style: italic;
+  font-weight: 300;
+  letter-spacing: 0.05em;
+}
+
+.pumpkin-icon {
+  font-size: clamp(1.8rem, 2.5vw, 2.5rem);
+  filter: drop-shadow(0 2px 4px rgba(0, 0, 0, 0.5));
+  opacity: 0.8;
+}
+
+/* CARD LAYOUT */
+.engagement-card {
+  background: rgba(26, 26, 26, 0.85); /* Slightly more transparent */
+  backdrop-filter: blur(24px); /* Heavy premium blur */
+  -webkit-backdrop-filter: blur(24px);
+  border: 1px solid rgba(255, 255, 255, 0.08); /* Quieter border */
+  border-radius: 2rem;
+  padding: 4rem 3rem; /* Balanced internal padding */
+  box-shadow: 0 24px 80px rgba(0, 0, 0, 0.5); /* Deep elevator shadow */
+  width: 100%;
+  position: relative;
+}
+
+@media (min-width: 768px) {
+  .engagement-card {
+    padding: 5rem 4rem; /* Slightly reduced padding */
+  }
+}
+
+.card-flex-row {
+  display: flex;
+  flex-direction: column;
+  gap: 4rem;
+  align-items: center;
+}
+
+@media (min-width: 1024px) {
+  .card-flex-row {
+    flex-direction: row;
+    align-items: flex-start; /* Align text top with photos top */
+    gap: 6rem; /* Tighter gap */
+  }
+}
+
+/* TEXT COLUMN */
+.text-column {
+  flex: 1.5; /* 60/40 Split approx */
+  width: 100%;
+}
+
+.text-paragraph {
+  font-family: 'Cormorant Garamond', serif;
+  font-size: clamp(1.4rem, 1.8vw, 1.8rem); /* More readable body text size */
+  line-height: 1.6;
+  color: #f5f5f5;
+  font-weight: 350; /* Light/Regular feel */
+  margin-bottom: 2rem;
+  text-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+  max-width: 65ch; /* Optimal reading width */
+}
+
+/* Finale signature */
+.finale-row {
+  display: flex;
+  align-items: center;
+  gap: 1.5rem;
+  margin-top: 3rem;
+}
+
+.gold-line {
+  height: 1px;
+  width: 60px;
+  background-color: #d4af37;
+  opacity: 0.8;
+}
+
+.finale-text {
+  font-family: 'Cormorant Garamond', serif;
+  font-size: clamp(1.8rem, 2.5vw, 2.2rem);
+  font-style: italic;
+  color: #d4af37;
+  margin: 0;
+}
+
+/* PHOTO COLUMN */
+.photo-column {
+  flex: 1; /* Takes up remaining space */
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 4rem;
+  padding-top: 1rem;
+}
+
+/* GALLERY SECTION */
+.gallery-section-wrapper {
+  margin-top: 10rem; /* Reduced separation */
+  position: relative;
+  z-index: 20;
+}
+
+.gallery-title {
+  font-family: 'Cormorant Garamond', serif;
+  font-size: clamp(3rem, 6vw, 5rem); /* Significantly smaller */
+  line-height: 1;
+  color: #f0f0f0;
+  text-align: center;
+  margin: 0;
+  text-shadow: 0 4px 10px rgba(0, 0, 0, 0.5);
+  font-weight: 400;
+}

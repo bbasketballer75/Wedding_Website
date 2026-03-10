@@ -1,0 +1,6 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 128 128">
+  <rect width="128" height="128" rx="20" fill="#1a1a1a"/>
+  <text x="64" y="85" font-family="Georgia, serif" font-size="72" font-weight="bold" fill="#d4af37" text-anchor="middle" dominant-baseline="middle" style="font-style: italic;">A&amp;J</text>
+  <circle cx="64" cy="25" r="3" fill="#d4af37" opacity="0.6"/>
+  <circle cx="64" cy="103" r="3" fill="#d4af37" opacity="0.6"/>
+</svg>
