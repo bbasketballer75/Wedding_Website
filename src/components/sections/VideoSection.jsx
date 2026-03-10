@@ -2,6 +2,7 @@ import React, { useRef, useState, useEffect } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
 import CustomVideoPlayer from '@/components/ui/CustomVideoPlayer'
 import storage from '@/utils/storage'
+import { getMediaPath } from '@/utils/media'
 import { TIMING, VIDEO_CONFIG } from '@/config/constants'
 
 // Chapters from VTT file
@@ -19,10 +20,10 @@ const chapters = [
 ]
 
 const parentVideos = [
-  { id: 'mom', label: "Mom's Film", src: '/video/mom.mp4' },
-  { id: 'christine', label: "Christine's Film", src: '/video/christine.mp4' },
-  { id: 'jerame', label: "Jerame's Film", src: '/video/jerame.mp4' },
-  { id: 'melony', label: "Melony's Film", src: '/video/melony.mp4' },
+  { id: 'mom', label: "Mom's Film", src: getMediaPath('/video/mom.mp4') },
+  { id: 'christine', label: "Christine's Film", src: getMediaPath('/video/christine.mp4') },
+  { id: 'jerame', label: "Jerame's Film", src: getMediaPath('/video/jerame.mp4') },
+  { id: 'melony', label: "Melony's Film", src: getMediaPath('/video/melony.mp4') },
 ]
 
 const formatChapterTime = timeInSeconds => {
@@ -95,7 +96,7 @@ const VideoSection = () => {
           viewport={{ once: true }}
           className='relative rounded-xl overflow-hidden shadow-2xl mb-12 border border-gold-500/10'
         >
-          <CustomVideoPlayer ref={videoRef} chapters={chapters} />
+          <CustomVideoPlayer ref={videoRef} src={getMediaPath('/video/main.mp4')} chapters={chapters} />
         </motion.div>
 
         {/* Film-Strip Chapter Navigation */}

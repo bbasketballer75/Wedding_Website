@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
+import { getMediaPath } from '@/utils/media'
 
 const Hero = React.memo(() => {
   const [showJourneyButton, setShowJourneyButton] = useState(false)
@@ -37,7 +38,7 @@ const Hero = React.memo(() => {
               playsInline
               className='w-full h-full object-cover brightness-[0.85]'
             >
-              <source src='/video/optimized_background.mp4' type='video/mp4' />
+              <source src={getMediaPath('/video/optimized_background.mp4')} type='video/mp4' />
             </video>
           </motion.div>
         </AnimatePresence>
