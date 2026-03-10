@@ -4,6 +4,41 @@ function trimTrailingSlash(value: string): string {
   return value.replace(/\/+$/, '')
 }
 
+function hashString(value: string): string {
+  let hash = 2166136261
+
+  for (let index = 0; index < value.length; index += 1) {
+    hash ^= value.charCodeAt(index)
+    hash = Math.imul(hash, 16777619)
+  }
+
+  return (hash >>> 0).toString(36)
+}
+
+function sanitizePathSegment(segment: string): string {
+  const lastDotIndex = segment.lastIndexOf('.')
+  const hasExtension = lastDotIndex > 0
+  const baseName = hasExtension ? segment.slice(0, lastDotIndex) : segment
+  const extension = hasExtension ? segment.slice(lastDotIndex) : ''
+  const safeBaseName = baseName.replace(/[^A-Za-z0-9._-]/g, '_')
+
+  if (safeBaseName === baseName) {
+    return `${safeBaseName}${extension}`
+  }
+
+  return `${safeBaseName}__${hashString(segment)}${extension}`
+}
+
+export function toRemoteMediaPath(path: string): string {
+  const normalizedPath = path.startsWith('/') ? path.slice(1) : path
+
+  return normalizedPath
+    .split('/')
+    .filter(Boolean)
+    .map(sanitizePathSegment)
+    .join('/')
+}
+
 export function getMediaPath(path: string): string {
   if (!path.startsWith('/')) {
     return path
@@ -16,7 +51,7 @@ export function getMediaPath(path: string): string {
     return path
   }
 
-  return `${mediaBaseUrl}${path}`
+  return `${mediaBaseUrl}/${toRemoteMediaPath(path)}`
 }
 
 export function getAbsoluteUrl(path: string): string {

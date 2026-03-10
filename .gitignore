@@ -59,3 +59,6 @@ supabase/.temp/
 
 # Misc
 *.tsbuildinfo
+
+# Local Netlify folder
+.netlify
