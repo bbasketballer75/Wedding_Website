@@ -11,9 +11,6 @@
   to = "/index.html"
   status = 200
 
-[context.production]
-  environment = { NODE_ENV = "production" }
-
 [context.deploy-preview]
   command = "npm run verify:env && npm run build"
 
