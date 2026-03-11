@@ -15,7 +15,7 @@ jobs:
       contents: read
       issues: write
     env:
-      SITE_URL: https://austin-jordyn-wedding.netlify.app
+      SITE_URL: https://wedding.theporadas.com
       EXPECTED_TEXT: Austin & Jordyn
     steps:
       - name: Check site availability

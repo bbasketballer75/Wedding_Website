@@ -10,7 +10,7 @@ import packageJson from './package.json' with { type: 'json' }
 
 const __filename = fileURLToPath(import.meta.url)
 const __dirname = path.dirname(__filename)
-const DEFAULT_SITE_URL = 'https://austin-jordyn-wedding.netlify.app'
+const DEFAULT_SITE_URL = 'https://wedding.theporadas.com'
 
 function getNodeModulePackage(id) {
   const normalized = id.replace(/\\/g, '/')
