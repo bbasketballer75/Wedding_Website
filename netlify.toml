@@ -3,7 +3,8 @@
   command = "npm run verify:env && npm run build"
 
 [build.environment]
-  NODE_VERSION = "20"
+  NODE_VERSION = "20.19.0"
+  NPM_VERSION = "11.11.0"
 
 [[redirects]]
   from = "/*"
