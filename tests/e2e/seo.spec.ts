@@ -5,7 +5,7 @@ const seoExpectations = [
   { route: '/film', title: 'Wedding Film', canonicalSuffix: '/film', robots: 'index, follow' },
   { route: '/gallery', title: 'Photo Gallery', canonicalSuffix: '/gallery', robots: 'index, follow' },
   { route: '/guestbook', title: 'Guestbook', canonicalSuffix: '/guestbook', robots: 'index, follow' },
-  { route: '/upload', title: 'Share Photos', canonicalSuffix: '/upload', robots: 'index, follow' },
+  { route: '/upload', title: 'Share Memories', canonicalSuffix: '/upload', robots: 'index, follow' },
 ] as const
 
 test.describe('SEO Metadata', () => {

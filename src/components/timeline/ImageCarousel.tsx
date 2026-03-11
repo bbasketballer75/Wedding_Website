@@ -1,6 +1,6 @@
 import { useState, useEffect, useCallback, useRef } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
-import { ChevronLeft, ChevronRight, X, ZoomIn } from 'lucide-react'
+import { ChevronLeft, ChevronRight, X } from 'lucide-react'
 import { createPortal } from 'react-dom'
 import { cn } from '@/lib/utils'
 
@@ -280,17 +280,6 @@ export function ImageCarousel({
               />
             </div>
           )}
-          
-          {/* Click to expand hint */}
-          <motion.div 
-            className="absolute bottom-3 right-3 px-3 py-1.5 bg-black/60 backdrop-blur-sm rounded-full flex items-center gap-2"
-            initial={{ opacity: 0 }}
-            animate={{ opacity: isHovered ? 1 : 0 }}
-            transition={{ duration: 0.2 }}
-          >
-            <ZoomIn className="w-3.5 h-3.5 text-white" />
-            <span className="text-xs text-white font-medium">Click to expand</span>
-          </motion.div>
         </div>
 
         {/* Navigation Arrows */}

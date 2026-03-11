@@ -114,6 +114,14 @@ export async function waitForPageReady(page: Page) {
 }
 
 export async function pauseMedia(page: Page) {
+  await page.evaluate(() => {
+    for (const key of Object.keys(window.localStorage)) {
+      if (key.startsWith('video-progress-')) {
+        window.localStorage.removeItem(key)
+      }
+    }
+  }).catch(() => {})
+
   const videos = page.locator('video')
   const count = await videos.count()
 
@@ -123,8 +131,11 @@ export async function pauseMedia(page: Page) {
       const element = node as HTMLVideoElement
       element.pause()
       element.currentTime = 0
+      element.dispatchEvent(new Event('timeupdate'))
     }).catch(() => {})
   }
+
+  await page.waitForTimeout(100)
 }
 
 export async function expectNoCriticalViolations(page: Page) {

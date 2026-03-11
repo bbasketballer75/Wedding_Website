@@ -3,6 +3,16 @@ export interface FilmChapter {
   time: number
 }
 
+export interface FamilyFilm {
+  id: string
+  label: string
+  description: string
+  duration: string
+  thumbnail: string
+  videoSrc: string
+  previewFrameTimestamps: number[]
+}
+
 export const MAIN_FILM_RUNTIME_LABEL = '45:53'
 
 export const MAIN_FILM_CHAPTERS_FALLBACK: FilmChapter[] = [
@@ -18,32 +28,44 @@ export const MAIN_FILM_CHAPTERS_FALLBACK: FilmChapter[] = [
   { label: 'The Party', time: 2375.12 },
 ]
 
-export const familyFilms = [
+export const familyFilms: FamilyFilm[] = [
   {
     id: 'mom',
-    label: 'A Message from Mom',
+    label: 'Austin & Heather',
+    description: 'The mother-son dance from Austin and Heather, full of the warmth and nerves that made the room go quiet for a second.',
     duration: '5:09',
     thumbnail: '/images/parents/heather.webp',
+    videoSrc: '/video/mom.mp4',
+    previewFrameTimestamps: [8, 26, 44, 63],
   },
   {
     id: 'christine',
-    label: "Christine's Toast",
+    label: 'Jordyn & Chrintine',
+    description: 'Jordyn and Chrintine getting their turn in the spotlight, with the kind of smiles that tell the whole story without a speech.',
     duration: '4:36',
     thumbnail: '/images/parents/christine.webp',
+    videoSrc: '/video/christine.mp4',
+    previewFrameTimestamps: [7, 22, 39, 55],
   },
   {
     id: 'jerame',
-    label: "Jerame's Words",
+    label: 'Jordyn & Jerame',
+    description: 'A father-daughter dance that feels exactly like the heart of the day: proud, emotional, and impossible not to watch all the way through.',
     duration: '4:11',
     thumbnail: '/images/parents/jerame.webp',
+    videoSrc: '/video/jerame.mp4',
+    previewFrameTimestamps: [6, 19, 34, 48],
   },
   {
     id: 'melony',
-    label: "Melony's Message",
+    label: 'Austin & Melony',
+    description: 'Austin and Melony sharing one of the most personal pauses of the reception before the dance floor opened all the way up again.',
     duration: '4:00',
     thumbnail: '/images/parents/melony.webp',
+    videoSrc: '/video/melony.mp4',
+    previewFrameTimestamps: [6, 18, 31, 44],
   },
-] as const
+]
 
 function parseTimecode(value: string) {
   const segments = value.trim().split(':').map((segment) => Number.parseFloat(segment))

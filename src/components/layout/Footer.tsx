@@ -39,7 +39,7 @@ export function Footer() {
         <div className="cinematic-panel px-6 py-8 sm:px-8 lg:px-10 lg:py-10">
           <div className="grid gap-10 lg:grid-cols-[minmax(0,1fr)_minmax(0,1.15fr)] lg:items-start">
             <div className="max-w-xl">
-              <p className="text-[10px] uppercase tracking-[0.35em] text-gold-300/80">
+              <p className="text-[10px] uppercase tracking-[0.35em] text-[#f7e6c6]">
                 Austin and Jordyn
               </p>
               <h2 className="mt-4 font-display text-4xl text-cinematic-primary sm:text-5xl">
@@ -51,7 +51,7 @@ export function Footer() {
                 read, or add your side of the story.
               </p>
 
-              <div className="mt-8 flex flex-wrap items-center gap-3 text-[11px] uppercase tracking-[0.28em] text-gold-300/75">
+              <div className="mt-8 flex flex-wrap items-center gap-3 text-[11px] uppercase tracking-[0.28em] text-[#f2dfba]">
                 <span>May 10, 2025</span>
                 <span className="h-1 w-1 rounded-full bg-gold-400/60" />
                 <span>The Lodge at Indian Lake</span>
@@ -82,24 +82,26 @@ export function Footer() {
             </div>
           </div>
 
-          <div className="mt-10 flex flex-col gap-4 border-t border-gold-200/12 pt-6 text-xs text-cinematic-muted sm:flex-row sm:items-center sm:justify-between">
+          <div className="mt-10 flex flex-col gap-4 border-t border-gold-200/18 pt-6 text-sm text-cinematic-secondary sm:flex-row sm:items-center sm:justify-between">
             <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:gap-6">
-              <div className="flex flex-wrap gap-2 text-[10px] uppercase tracking-[0.24em] text-cinematic-muted">
+              <div className="flex flex-wrap gap-2 text-[11px] uppercase tracking-[0.22em] text-[#fff3de]">
                 {publicNavLinks.map((link) => (
                   <Link
                     key={link.path}
                     to={link.path}
-                    className="rounded-full border border-gold-200/12 bg-[rgba(255,247,235,0.08)] px-3 py-1.5 transition-colors hover:border-gold-300/35 hover:text-gold-300"
+                    className="rounded-full border border-gold-200/20 bg-[rgba(255,247,235,0.14)] px-3 py-1.5 transition-colors hover:border-gold-300/45 hover:text-gold-300"
                   >
                     {link.label}
                   </Link>
                 ))}
               </div>
-              <p className="flex items-center gap-1.5">
-                Made with <Heart className="h-3.5 w-3.5 fill-rose-400 text-rose-400" /> for the people who shared it with us
+              <p className="flex items-center gap-2 font-medium text-[#fff4e4]">
+                <span>Made with</span>
+                <Heart className="h-3.5 w-3.5 shrink-0 fill-rose-400 text-rose-400" />
+                <span>for the people who shared it with us</span>
               </p>
             </div>
-            <p>© {currentYear} Austin & Jordyn</p>
+            <p className="font-medium text-[#fff4e4]">© {currentYear} Austin & Jordyn</p>
           </div>
         </div>
       </div>

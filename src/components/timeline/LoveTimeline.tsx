@@ -30,7 +30,7 @@ const timelineEvents: TimelineEvent[] = [
     id: '1',
     date: 'Summer 2017',
     title: 'The Meeting',
-    description: 'We met at work. Who knew a summer job would lead to forever? Sparks flew immediately.',
+    description: 'We met during a summer at work and somehow the ordinary days started feeling a lot less ordinary. It did not take long for us to realize something bigger was beginning.',
     side: 'left',
     media: {
       type: 'icon',
@@ -41,7 +41,7 @@ const timelineEvents: TimelineEvent[] = [
     id: '2',
     date: 'Summer 2018',
     title: 'First Date',
-    description: "Our official start. The day we stopped just 'talking' and decided to be 'us'.",
+    description: "This was the point where talking turned into choosing each other on purpose. It felt easy, exciting, and like the start of the version of life we actually wanted.",
     side: 'right',
     media: {
       type: 'icon',
@@ -52,7 +52,7 @@ const timelineEvents: TimelineEvent[] = [
     id: '3',
     date: 'Summer 2019',
     title: 'Moved to Ligonier',
-    description: 'A new chapter in a beautiful town. We packed up and started building our life together.',
+    description: 'We packed up, landed in Ligonier, and started building a life that finally felt like ours. New town, new routines, same certainty that we were doing it together.',
     location: 'Ligonier, PA',
     side: 'left',
     media: {
@@ -64,7 +64,7 @@ const timelineEvents: TimelineEvent[] = [
     id: '4',
     date: 'Fall 2020',
     title: 'Bought Our First Home',
-    description: 'Keys in hand! We bought a place to call our own and put down some real roots.',
+    description: 'Keys in hand, we stepped into the first place that was truly ours. It was the beginning of quiet nights, shared projects, and all the little rituals that make a house feel like home.',
     side: 'right',
     media: {
       type: 'map',
@@ -75,7 +75,7 @@ const timelineEvents: TimelineEvent[] = [
     id: '5',
     date: 'Nov 2020',
     title: 'The Kitties Arrive',
-    description: 'Our family grew by two! We adopted our furry best friends, Moira & Stella.',
+    description: 'Moira and Stella made the house feel instantly fuller, louder, and more us. Our little family grew by two and never looked back.',
     side: 'left',
     media: {
       type: 'carousel',
@@ -90,7 +90,7 @@ const timelineEvents: TimelineEvent[] = [
     id: '6',
     date: 'October 31, 2022',
     title: 'The Proposal 💍🎃',
-    description: 'On Halloween night, dressed as Frankenstein & Bride, Austin popped the question! She said YES!',
+    description: 'On Halloween night, in full costume and fully committed to the bit, Austin asked the question that changed everything. It was weird, perfect, emotional, and completely us.',
     location: 'Spookiest Night of the Year',
     side: 'right',
     media: {
@@ -106,7 +106,7 @@ const timelineEvents: TimelineEvent[] = [
     id: '7',
     date: 'Aug 2024',
     title: 'Bachelor & Bachelorette',
-    description: 'Taking on Pittsburgh! A wild, unforgettable weekend celebrating with our favorite people.',
+    description: 'A full weekend in Pittsburgh with the people who know us best: loud laughs, late nights, and the kind of memories that only happen when everyone shows up big.',
     location: 'Pittsburgh, PA',
     side: 'left',
     media: {
@@ -122,7 +122,7 @@ const timelineEvents: TimelineEvent[] = [
     id: '8',
     date: 'Feb 2025',
     title: "Jordyn's Bridal Shower",
-    description: 'Love, laughter, and celebration. Showering the bride-to-be before the big day.',
+    description: 'One of those gentler celebrations we will always remember. It was full of love, stories, and the feeling that the wedding was finally close enough to touch.',
     location: 'The Boulevard Grill',
     side: 'right',
     media: {
@@ -134,7 +134,7 @@ const timelineEvents: TimelineEvent[] = [
     id: '9',
     date: 'May 10, 2025',
     title: 'We Got Married!',
-    description: 'The best day of our lives. Surrounded by love, we said "I do". Forever starts now.',
+    description: 'The day all of these chapters finally met in one room. Surrounded by our people, we said yes again, this time out loud and for good.',
     location: 'The Lodge at Indian Lake',
     side: 'left',
     media: {
@@ -223,10 +223,10 @@ function HalloweenCard({ event, index }: { event: TimelineEvent; index: number }
       <motion.div
         whileHover={{ 
           y: -8,
-          boxShadow: "0 30px 60px -15px rgba(139, 0, 0, 0.5), 0 0 40px rgba(220, 38, 38, 0.2)"
+          boxShadow: "0 34px 72px -18px rgba(85, 11, 24, 0.58), 0 0 60px rgba(244, 114, 182, 0.16)"
         }}
         transition={{ duration: 0.3 }}
-        className="relative rounded-2xl p-6 md:p-8 overflow-hidden cursor-pointer group bg-black border-2 border-red-900/60 shadow-2xl"
+        className="relative overflow-hidden rounded-[2rem] border-2 border-red-950/65 bg-[linear-gradient(145deg,rgba(19,8,15,0.98),rgba(47,14,26,0.96)_42%,rgba(89,22,40,0.92)_100%)] p-6 shadow-2xl cursor-pointer group md:p-8"
       >
         {/* Animated Fog Layers */}
         <div className="absolute inset-0 pointer-events-none">
@@ -236,7 +236,7 @@ function HalloweenCard({ event, index }: { event: TimelineEvent; index: number }
               x: [-10, 10, -10]
             }}
             transition={{ duration: 8, repeat: Infinity }}
-            className="absolute inset-0 bg-gradient-to-br from-red-950/30 via-black to-red-950/20"
+            className="absolute inset-0 bg-gradient-to-br from-rose-950/35 via-black to-red-950/25"
           />
           <div className="absolute inset-0 bg-gradient-to-t from-black via-transparent to-red-950/10" />
         </div>
@@ -313,35 +313,34 @@ function HalloweenCard({ event, index }: { event: TimelineEvent; index: number }
           </div>
 
           {/* Title */}
-          <h3 className="font-display text-2xl md:text-3xl mb-3 text-white">
-            <span className="text-red-600 drop-shadow-[0_0_8px_rgba(220,38,38,0.8)]">The</span>
-            <span className="text-gray-100"> Proposal</span>
-            <span className="inline-block ml-2 text-red-700 drop-shadow-lg">💍</span>
+          <h3 className="mb-3 font-display text-2xl text-white md:text-3xl">
+            <span className="text-rose-400 drop-shadow-[0_0_12px_rgba(244,114,182,0.55)]">The</span>
+            <span className="text-[#fff7eb]"> Proposal</span>
+            <span className="ml-2 inline-block text-red-700 drop-shadow-lg">💍</span>
           </h3>
 
           {/* Description */}
-          <p className="text-sm md:text-base leading-relaxed mb-4 text-gray-300">
-            On All Hallows' Eve, beneath a 
-            <span className="text-red-500 font-medium">blood moon's</span> glow, 
-            two monsters found love. Dressed as Frankenstein's creation and his Bride, 
-            Austin asked the question that would bind them for eternity.
+          <p className="mb-4 text-sm leading-relaxed text-[#f6e7ea] md:text-base">
+            On All Hallows&apos; Eve, with the costumes committed and the whole night already feeling cinematic,
+            Frankenstein finally asked his Bride the question that had been building toward forever.
+            It was eerie, funny, romantic, and somehow even sweeter because it happened in the most us way possible.
           </p>
           
           <motion.p 
             animate={{ opacity: [1, 0.6, 1] }}
             transition={{ duration: 2, repeat: Infinity }}
-            className="text-lg font-display text-red-500 mb-4 drop-shadow-[0_0_10px_rgba(220,38,38,0.5)]"
+            className="mb-4 font-display text-xl text-rose-400 drop-shadow-[0_0_14px_rgba(244,114,182,0.45)]"
           >
-            She said YES.
+            She said yes, and the whole season changed.
           </motion.p>
 
           {/* Location */}
           <motion.div 
-            className="flex items-center gap-2 text-xs font-semibold text-red-800/90 uppercase tracking-widest"
-            whileHover={{ x: 5, color: '#DC2626' }}
+            className="flex items-center gap-2 text-xs font-semibold uppercase tracking-widest text-rose-200/88"
+            whileHover={{ x: 5, color: '#f9a8d4' }}
           >
             <MapPin className="w-3 h-3" />
-            <span>The Witching Hour • October 31st</span>
+            <span>Halloween Night • Forever got spooky</span>
           </motion.div>
         </div>
 

@@ -92,7 +92,7 @@ export const typography = {
   // Font families
   fontFamily: {
     heading: "'Newsreader', Georgia, serif",
-    body: "'Manrope', 'Outfit', system-ui, sans-serif",
+    body: "'Instrument Sans', 'Outfit', system-ui, sans-serif",
     script: "'Allura', cursive",
     mono: "'Fira Code', monospace",
   },

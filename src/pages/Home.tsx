@@ -1,23 +1,52 @@
-import { type ElementType, useState, useEffect, useRef } from 'react'
+import { type ElementType, useState, useEffect, useMemo, useRef } from 'react'
 import { motion, useScroll, useTransform, useMotionValueEvent } from 'framer-motion'
 import { Link } from 'react-router-dom'
-import { Heart, ChevronDown, Sparkles } from 'lucide-react'
+import { Heart, ChevronDown, Sparkles, Clock3, Rows3, Images, BookHeart } from 'lucide-react'
 import { LoveTimeline } from '@/components/timeline/LoveTimeline'
 import { publicNavLinks } from '@/components/layout/publicNav'
 import { HomeSEO } from '@/components/seo/SEOHead'
-
+import { MAIN_FILM_CHAPTERS_FALLBACK, MAIN_FILM_RUNTIME_LABEL, loadMainFilmChapters } from '@/data/film'
+import { CURATED_GALLERY_PHOTO_COUNT } from '@/data/gallery'
+import { supabase } from '@/lib/supabase'
 import { cn } from '@/lib/utils'
 import { getMediaPath } from '@/utils/media'
 
 const HERO_POSTER = '/images/home/intro-video-poster.png'
 const HERO_VIDEO = getMediaPath('/video/optimized_background.mp4')
 
-const HOME_STATS = [
-  { number: '42', label: 'Minute film', detail: 'Ceremony to final dance' },
-  { number: '247', label: 'Photos', detail: 'Portraits, candids, and details' },
-  { number: '100+', label: 'Guest messages', detail: 'Notes worth keeping forever' },
-  { number: '∞', label: 'Memories', detail: 'Still growing with your uploads' },
-] as const
+interface HomeStat {
+  icon: ElementType
+  number: string
+  label: string
+  detail: string
+}
+
+const DEFAULT_HOME_STATS: HomeStat[] = [
+  {
+    icon: Clock3,
+    number: MAIN_FILM_RUNTIME_LABEL,
+    label: 'Feature film',
+    detail: 'The full ceremony-to-dance-floor cut, all in one watch.',
+  },
+  {
+    icon: Rows3,
+    number: MAIN_FILM_CHAPTERS_FALLBACK.length.toString(),
+    label: 'Chapter jumps',
+    detail: 'Mapped to the real edit so every moment starts exactly where it should.',
+  },
+  {
+    icon: Images,
+    number: '0',
+    label: 'Gallery photos',
+    detail: 'Approved portraits, candids, and guest favorites gathered in one archive.',
+  },
+  {
+    icon: BookHeart,
+    number: '0',
+    label: 'Guestbook notes',
+    detail: 'Messages from the people who were there and still want to tell it back to us.',
+  },
+]
 
 // Nav item component
 function NavItem({ 
@@ -57,6 +86,7 @@ export default function Home() {
   const [scrolled, setScrolled] = useState(false)
   const [videoReady, setVideoReady] = useState(false)
   const [videoErrored, setVideoErrored] = useState(false)
+  const [homeStats, setHomeStats] = useState<HomeStat[]>(DEFAULT_HOME_STATS)
   const heroRef = useRef<HTMLDivElement>(null)
   const containerRef = useRef<HTMLDivElement>(null)
   const videoRef = useRef<HTMLVideoElement>(null)
@@ -74,6 +104,70 @@ export default function Home() {
     const timer = setTimeout(() => setShowUI(true), 1200)
     return () => clearTimeout(timer)
   }, [])
+
+  useEffect(() => {
+    let isMounted = true
+
+    const loadHomeStats = async () => {
+      const [chaptersResult, photoCountResult, guestbookCountResult] = await Promise.allSettled([
+        loadMainFilmChapters(),
+        supabase.from('photos').select('id', { count: 'exact', head: true }),
+        supabase.from('guestbook_messages').select('id', { count: 'exact', head: true }),
+      ])
+
+      if (!isMounted) {
+        return
+      }
+
+      const chapterCount =
+        chaptersResult.status === 'fulfilled'
+          ? chaptersResult.value.length
+          : MAIN_FILM_CHAPTERS_FALLBACK.length
+
+      const livePhotoCount =
+        photoCountResult.status === 'fulfilled'
+          ? photoCountResult.value.count ?? 0
+          : 0
+      const photoCount = CURATED_GALLERY_PHOTO_COUNT + livePhotoCount
+
+      const guestbookCount =
+        guestbookCountResult.status === 'fulfilled'
+          ? guestbookCountResult.value.count ?? 0
+          : 0
+
+      setHomeStats([
+        DEFAULT_HOME_STATS[0],
+        {
+          ...DEFAULT_HOME_STATS[1],
+          number: chapterCount.toString(),
+        },
+        {
+          ...DEFAULT_HOME_STATS[2],
+          number: photoCount.toString(),
+          detail:
+            photoCount > 0
+              ? 'Curated portraits, approved guest favorites, and the in-between shots all gathered in one archive.'
+              : 'The archive is ready for the first approved moments to land.',
+        },
+        {
+          ...DEFAULT_HOME_STATS[3],
+          number: guestbookCount.toString(),
+          detail:
+            guestbookCount > 0
+              ? 'Messages from the people who were there and still want to tell it back to us.'
+              : 'A clean slate for the first note, memory, or blessing from our guests.',
+        },
+      ])
+    }
+
+    void loadHomeStats()
+
+    return () => {
+      isMounted = false
+    }
+  }, [])
+
+  const homeStatsColumn = useMemo(() => homeStats, [homeStats])
 
   useEffect(() => {
     const video = videoRef.current
@@ -320,27 +414,37 @@ export default function Home() {
                 </motion.p>
               </div>
 
-              <div className="grid gap-3 sm:grid-cols-2">
-                {HOME_STATS.map((item, index) => (
+              <div className="grid gap-3 sm:grid-cols-2 xl:grid-cols-1">
+                {homeStatsColumn.map((item, index) => {
+                  const Icon = item.icon
+
+                  return (
                   <motion.div
                     key={item.label}
                     initial={{ opacity: 0, y: 24 }}
                     whileInView={{ opacity: 1, y: 0 }}
                     viewport={{ once: true }}
                     transition={{ duration: 0.45, delay: 0.24 + index * 0.07 }}
-                    className="rounded-[1.5rem] border border-white/75 bg-white/78 p-5 shadow-sm backdrop-blur-sm"
+                    className="rounded-[1.5rem] border border-white/75 bg-white/82 p-5 shadow-sm backdrop-blur-sm"
                   >
-                    <p className="font-display text-4xl leading-none text-gold-600 sm:text-[2.75rem]">
-                      {item.number}
-                    </p>
-                    <p className="mt-3 text-xs uppercase tracking-[0.28em] text-charcoal-600">
-                      {item.label}
-                    </p>
-                    <p className="mt-3 text-[0.95rem] leading-7 text-charcoal-700">
-                      {item.detail}
-                    </p>
+                    <div className="flex items-start gap-4">
+                      <div className="mt-0.5 flex h-11 w-11 shrink-0 items-center justify-center rounded-2xl border border-gold-200/70 bg-gold-50 text-gold-600">
+                        <Icon className="h-5 w-5" />
+                      </div>
+                      <div className="min-w-0">
+                        <p className="font-display text-4xl leading-none text-gold-600 sm:text-[2.75rem]">
+                          {item.number}
+                        </p>
+                        <p className="mt-3 text-xs uppercase tracking-[0.28em] text-charcoal-600">
+                          {item.label}
+                        </p>
+                        <p className="mt-3 text-[0.95rem] leading-7 text-charcoal-700">
+                          {item.detail}
+                        </p>
+                      </div>
+                    </div>
                   </motion.div>
-                ))}
+                )})}
               </div>
 
             </div>

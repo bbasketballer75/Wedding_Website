@@ -15,10 +15,8 @@ import { supabase, type GuestbookMessage as SupabaseMessage } from '@/lib/supaba
 import { cn } from '@/lib/utils'
 import { formatTimeRemaining, rateLimiter } from '@/utils/rateLimiter'
 import {
-  ArrowUpRight,
   BookHeart,
   CheckCircle,
-  Heart,
   Loader2,
   Mail,
   MessageCircle,
@@ -61,60 +59,6 @@ interface Message {
 
 const EMPTY_CAPTIONS_TRACK = 'data:text/vtt,WEBVTT'
 const INITIAL_VISIBLE_MESSAGES = 8
-
-const sampleMessages: Message[] = [
-  {
-    id: 'sample-1',
-    name: 'Sarah Mitchell',
-    content:
-      "Your vows are still lodged in my chest in the best way. It felt like the room disappeared for a second and it was just the two of you.",
-    type: 'text',
-    reactions: [
-      { type: 'heart', count: 12, isActive: false },
-      { type: 'cry', count: 5, isActive: true },
-    ],
-    comments: [
-      {
-        id: 'sample-comment-1',
-        author: 'Jordyn',
-        content: 'This one made us tear up all over again. Thank you.',
-        timestamp: 'May 12',
-      },
-    ],
-    timestamp: 'May 12',
-  },
-  {
-    id: 'sample-2',
-    name: 'Mike Chen',
-    content:
-      'The dance floor was chaos in the most beautiful way. I do not think any of us sat down after sunset.',
-    type: 'text',
-    reactions: [
-      { type: 'fire', count: 8, isActive: false },
-      { type: 'clap', count: 4, isActive: true },
-    ],
-    comments: [],
-    timestamp: 'May 13',
-  },
-  {
-    id: 'sample-3',
-    name: 'Emma & David',
-    content: 'Left a voice note because there was no way we could keep this one short in writing.',
-    type: 'voice',
-    reactions: [{ type: 'heart', count: 6, isActive: false }],
-    comments: [],
-    timestamp: 'May 14',
-  },
-  {
-    id: 'sample-4',
-    name: 'Aunt Patricia',
-    content: 'We clipped a quick hello from our table right after the toasts.',
-    type: 'video',
-    reactions: [{ type: 'heart', count: 15, isActive: true }],
-    comments: [],
-    timestamp: 'May 15',
-  },
-]
 
 const composerModes = [
   { type: 'text', label: 'Text', description: 'Write a note, memory, or blessing.', icon: PenSquare },
@@ -194,7 +138,7 @@ function AudioPlayer({ url }: { url?: string }) {
           </div>
           <div>
             <p className="text-sm font-semibold text-charcoal-900">Voice note shared</p>
-            <p className="text-sm text-charcoal-500">Playback preview is unavailable in sample mode.</p>
+            <p className="text-sm text-charcoal-500">Playback preview is unavailable right now, but the voice note is still part of the guestbook.</p>
           </div>
         </div>
       </div>
@@ -321,7 +265,7 @@ function MessageCard({
                 </div>
                 <div>
                   <p className="text-sm font-semibold text-charcoal-900">Video note shared</p>
-                  <p className="text-sm text-charcoal-500">Sample fallback keeps the note styling without a live preview.</p>
+                  <p className="text-sm text-charcoal-500">Playback preview is unavailable right now, but the note is still part of the guestbook.</p>
                 </div>
               </div>
             </div>
@@ -337,7 +281,7 @@ function MessageCard({
       </div>
 
       {message.comments.length > 0 && (
-        <div className="mt-5 rounded-[1.35rem] border border-white/75 bg-white/74 px-4 py-4">
+        <div className="mt-5 rounded-[1.35rem] border border-white/75 bg-cream-50/88 px-4 py-4">
           <div className="flex items-center justify-between gap-3">
             <p className="text-[10px] uppercase tracking-[0.28em] text-charcoal-500">Replies</p>
             <span className="text-xs text-charcoal-400">{message.comments.length} total</span>
@@ -357,17 +301,19 @@ function MessageCard({
         </div>
       )}
 
-      <div className="mt-5 flex flex-col gap-4 border-t border-charcoal-900/8 pt-4 sm:flex-row sm:items-center sm:justify-between">
-        <ReactionPicker reactions={message.reactions} onReact={(type) => onReact(message.id, type)} />
+      <div className="mt-5 flex flex-col gap-3 border-t border-charcoal-900/8 pt-4 sm:flex-row sm:items-center sm:justify-between">
+        <div className="rounded-full bg-cream-50/90 px-2 py-1">
+          <ReactionPicker reactions={message.reactions} onReact={(type) => onReact(message.id, type)} />
+        </div>
 
         <button
           type="button"
           onClick={() => setShowReplyForm((current) => !current)}
           className={cn(
-            'inline-flex items-center gap-2 rounded-full border px-4 py-2 text-sm transition-colors',
+            'inline-flex items-center gap-2 rounded-full border px-3.5 py-2 text-sm transition-colors',
             showReplyForm
               ? 'border-gold-300 bg-gold-50 text-gold-700'
-              : 'border-white/70 bg-white/74 text-charcoal-500 hover:text-charcoal-700'
+              : 'border-white/70 bg-cream-50/88 text-charcoal-500 hover:text-charcoal-700'
           )}
           aria-expanded={showReplyForm}
         >
@@ -448,8 +394,8 @@ export default function Guestbook() {
         ])
 
         if (error) {
-          setLoadError('Could not load live messages right now. Showing the saved sample guestbook instead.')
-          setMessages(sampleMessages)
+          setLoadError('Could not load live messages right now. New notes can still be added below.')
+          setMessages([])
           return
         }
 
@@ -474,8 +420,8 @@ export default function Guestbook() {
           )
         )
       } catch {
-        setLoadError('Could not connect to the guestbook database. Showing the saved sample guestbook instead.')
-        setMessages(sampleMessages)
+        setLoadError('Could not connect to the guestbook database. New notes can still be added below.')
+        setMessages([])
       } finally {
         setIsLoading(false)
       }
@@ -530,8 +476,6 @@ export default function Guestbook() {
       })
     )
 
-    if (messageId.startsWith('sample-')) return
-
     try {
       const existing = currentMessage.reactions.find((reaction) => reaction.type === reactionType)
       const updated: Record<string, number> = {}
@@ -560,8 +504,6 @@ export default function Guestbook() {
         message.id === messageId ? { ...message, comments: [...message.comments, newComment] } : message
       )
     )
-
-    if (messageId.startsWith('sample-')) return
 
     try {
       await supabase
@@ -689,13 +631,13 @@ export default function Guestbook() {
           <motion.div initial={{ opacity: 0, y: 24 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.7, ease: [0.16, 1, 0.3, 1] }} className="editorial-panel overflow-hidden px-6 py-8 sm:px-8 sm:py-10 lg:px-10">
             <div className="absolute -right-16 top-10 h-44 w-44 rounded-full bg-gold-200/30 blur-3xl" />
             <div className="absolute -left-10 bottom-0 h-32 w-32 rounded-full bg-blush-200/35 blur-3xl" />
-            <div className="relative grid gap-10 2xl:grid-cols-[minmax(0,1.08fr)_minmax(0,0.92fr)]">
+            <div className="relative grid gap-8 xl:grid-cols-[minmax(0,1.15fr)_minmax(16rem,0.85fr)] xl:items-start">
               <div>
                 <span className="eyebrow-chip"><BookHeart className="h-3.5 w-3.5" />The guestbook</span>
-                <h1 className="mt-6 max-w-3xl text-5xl text-charcoal-900 sm:text-6xl">Notes, recordings, and the parts of the day only you can tell back to us.</h1>
-                <p className="mt-5 max-w-2xl text-base text-charcoal-600 sm:text-lg">This is where the afterglow lives: a written note from your table, a quick voice memo on the drive home, or a video hello that still sounds like the room felt.</p>
+                <h1 className="mt-6 max-w-3xl text-5xl text-charcoal-900 sm:text-6xl">Leave the part of the day only you can tell back to us.</h1>
+                <p className="mt-5 max-w-2xl text-base text-charcoal-600 sm:text-lg">This is the softer side of the archive: a written note from your table, a voice memo on the ride home, or a quick video hello that still sounds like the room felt.</p>
                 <div className="mt-8 flex flex-wrap items-center gap-3 text-sm text-charcoal-500">
-                  <span className="rounded-full border border-white/80 bg-white/76 px-4 py-2">{messages.length} messages collected</span>
+                  <span className="rounded-full border border-white/80 bg-white/76 px-4 py-2">{messages.length} notes collected</span>
                   <span className="rounded-full border border-white/80 bg-white/76 px-4 py-2">{totalReplies} replies tucked in</span>
                   <span className="rounded-full border border-white/80 bg-white/76 px-4 py-2">{totalReactions} reactions shared</span>
                 </div>
@@ -705,21 +647,21 @@ export default function Guestbook() {
                 </div>
               </div>
 
-              <div className="grid gap-3 md:grid-cols-3 2xl:grid-cols-1">
+              <div className="grid gap-3 sm:grid-cols-3 xl:grid-cols-1">
                 <div className="editorial-card px-5 py-5">
-                  <div className="flex h-11 w-11 items-center justify-center rounded-2xl border border-gold-200/70 bg-gold-50 text-gold-600"><Sparkles className="h-5 w-5" /></div>
-                  <p className="mt-5 text-xl font-semibold text-charcoal-900">What this is for</p>
-                  <p className="mt-3 text-sm leading-6 text-charcoal-500">A place for the emotional, funny, and in-between memories that do not fit anywhere else on the site.</p>
+                  <p className="text-[10px] uppercase tracking-[0.3em] text-gold-700">What belongs here</p>
+                  <p className="mt-3 text-lg font-semibold text-charcoal-900">The emotional, funny, and in-between parts.</p>
+                  <p className="mt-2 text-sm leading-6 text-charcoal-500">The guestbook works best when it sounds like you, not like a polished speech.</p>
                 </div>
                 <div className="editorial-card px-5 py-5">
-                  <div className="flex h-11 w-11 items-center justify-center rounded-2xl border border-rose-200/80 bg-rose-50 text-rose-500"><Heart className="h-5 w-5" /></div>
-                  <p className="mt-5 text-xl font-semibold text-charcoal-900">What to share</p>
-                  <p className="mt-3 text-sm leading-6 text-charcoal-500">Blessings, favorite moments, video hellos, and the little details we might not have seen in real time.</p>
+                  <p className="text-[10px] uppercase tracking-[0.3em] text-gold-700">Best formats</p>
+                  <p className="mt-3 text-lg font-semibold text-charcoal-900">Text for a full thought, voice or video for tone.</p>
+                  <p className="mt-2 text-sm leading-6 text-charcoal-500">Choose the format that feels easiest and send it through in one step.</p>
                 </div>
                 <div className="editorial-card px-5 py-5">
-                  <div className="flex h-11 w-11 items-center justify-center rounded-2xl border border-sage-200/80 bg-sage-100 text-charcoal-700"><ArrowUpRight className="h-5 w-5" /></div>
-                  <p className="mt-5 text-xl font-semibold text-charcoal-900">How to join in</p>
-                  <p className="mt-3 text-sm leading-6 text-charcoal-500">Pick a format, add your name, and send it through. We keep the experience simple so the memories stay front and center.</p>
+                  <p className="text-[10px] uppercase tracking-[0.3em] text-gold-700">Good to know</p>
+                  <p className="mt-3 text-lg font-semibold text-charcoal-900">You can still post even if the feed is loading slowly.</p>
+                  <p className="mt-2 text-sm leading-6 text-charcoal-500">Your note goes straight into the archive, and the page refreshes around it.</p>
                 </div>
               </div>
             </div>
@@ -728,22 +670,22 @@ export default function Guestbook() {
       </section>
 
       <section className="px-4">
-        <div className="mx-auto grid max-w-6xl gap-6 2xl:grid-cols-[minmax(0,22rem)_minmax(0,1fr)] 2xl:items-start">
-          <div className="grid gap-6 2xl:sticky 2xl:top-28">
+        <div className="mx-auto grid max-w-6xl gap-6 xl:grid-cols-[minmax(0,18rem)_minmax(0,1fr)] xl:items-start">
+          <div className="grid gap-4 xl:sticky xl:top-28">
             <motion.div initial={{ opacity: 0, y: 18 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.08 }} className="editorial-card px-5 py-5">
               <p className="text-[10px] uppercase tracking-[0.3em] text-gold-700">Contribute</p>
-              <h2 className="mt-4 text-3xl text-charcoal-900">Add your side of the day.</h2>
-              <p className="mt-3 text-sm leading-6 text-charcoal-500">Choose the format that feels easiest. You can write, record, or send a quick video without leaving this page.</p>
+              <h2 className="mt-4 text-2xl text-charcoal-900">Add your side of the day.</h2>
+              <p className="mt-3 text-sm leading-6 text-charcoal-500">Pick the format that feels easiest and open the composer only when you are ready.</p>
               <div className="mt-5 grid gap-2">
-                  {composerModes.map((mode) => {
+                {composerModes.map((mode) => {
                   const Icon = mode.icon
                   const isActive = formType === mode.type
                   return (
-                    <button key={mode.type} type="button" onClick={() => { setFormType(mode.type); setMediaBlob(null); openComposer(mode.type) }} className={cn('flex items-start gap-3 rounded-[1.25rem] border px-4 py-4 text-left transition-all', isActive ? 'border-gold-300 bg-gold-50/90' : 'border-white/80 bg-white/74 hover:border-gold-200 hover:bg-white')}>
+                    <button key={mode.type} type="button" onClick={() => { setFormType(mode.type); setMediaBlob(null); openComposer(mode.type) }} className={cn('flex items-start gap-3 rounded-[1.25rem] border px-4 py-3 text-left transition-all', isActive ? 'border-gold-300 bg-gold-50/90' : 'border-white/80 bg-white/74 hover:border-gold-200 hover:bg-white')}>
                       <div className="mt-0.5 flex h-10 w-10 items-center justify-center rounded-2xl border border-white/75 bg-white text-gold-600 shadow-sm"><Icon className="h-4 w-4" /></div>
                       <div>
                         <p className="text-sm font-semibold text-charcoal-900">{mode.label}</p>
-                        <p className="mt-1 text-sm leading-6 text-charcoal-500">{mode.description}</p>
+                        <p className="mt-1 text-xs leading-5 text-charcoal-500">{mode.description}</p>
                       </div>
                     </button>
                   )
@@ -754,13 +696,12 @@ export default function Guestbook() {
               </Button>
             </motion.div>
 
-            <motion.div initial={{ opacity: 0, y: 18 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.14 }} data-testid="guestbook-filters" className="editorial-panel px-5 py-5">
-              <p className="text-[10px] uppercase tracking-[0.3em] text-gold-700">Browse the notes</p>
-              <h2 className="mt-4 text-3xl text-charcoal-900">Find a mood, then settle in.</h2>
-              <p className="mt-3 text-sm leading-6 text-charcoal-500">Switch between written notes, voice memos, and video messages without losing your place in the feed.</p>
+            <motion.div initial={{ opacity: 0, y: 18 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.14 }} data-testid="guestbook-filters" className="editorial-card px-5 py-5">
+              <p className="text-[10px] uppercase tracking-[0.3em] text-gold-700">Browse softly</p>
+              <p className="mt-3 text-sm leading-6 text-charcoal-500">Use the filters when you want a specific format, or leave everything on and read straight through.</p>
               <div className="mt-5 flex flex-wrap gap-2">
                 {[{ key: 'all', label: 'Everything' }, { key: 'text', label: 'Text' }, { key: 'voice', label: 'Voice' }, { key: 'video', label: 'Video' }].map((option) => (
-                  <button key={option.key} type="button" onClick={() => setFilter(option.key as typeof filter)} className={cn('inline-flex items-center gap-2 rounded-full px-4 py-2 text-sm transition-all', filter === option.key ? 'cinematic-toggle-active' : 'bg-white/78 text-charcoal-600 hover:bg-gold-50/80 hover:text-charcoal-800')} aria-pressed={filter === option.key}>
+                  <button key={option.key} type="button" onClick={() => setFilter(option.key as typeof filter)} className={cn('inline-flex items-center gap-2 rounded-full px-4 py-2 text-sm transition-all', filter === option.key ? 'cinematic-toggle-active' : 'bg-cream-50 text-charcoal-600 hover:bg-gold-50/80 hover:text-charcoal-800')} aria-pressed={filter === option.key}>
                     <span>{option.label}</span>
                     <span className={cn('text-xs', filter === option.key ? 'text-charcoal-700/80' : 'text-charcoal-400')}>{counts[option.key as keyof typeof counts]}</span>
                   </button>
@@ -785,8 +726,8 @@ export default function Guestbook() {
                       <div className="flex items-start justify-between gap-4">
                         <div>
                           <span className="eyebrow-chip"><Send className="h-3.5 w-3.5" />Compose a message</span>
-                          <h2 className="mt-5 text-4xl text-charcoal-900 sm:text-5xl">Share a note in the format that fits.</h2>
-                          <p className="mt-4 max-w-2xl text-base text-charcoal-600 sm:text-lg">Written notes are perfect for a full thought. Voice and video are ideal when tone matters more than polish.</p>
+                          <h2 className="mt-5 text-3xl text-charcoal-900 sm:text-4xl">Share a note in the format that fits.</h2>
+                          <p className="mt-3 max-w-2xl text-sm leading-6 text-charcoal-600 sm:text-base">Written notes are perfect for a full thought. Voice and video work best when tone matters more than polish.</p>
                         </div>
                         <button type="button" onClick={() => setShowForm(false)} className="rounded-full border border-gold-200/70 bg-cream-50/88 p-2 text-charcoal-500 shadow-sm transition-colors hover:border-gold-300/70 hover:text-charcoal-800" aria-label="Close composer"><X className="h-5 w-5" /></button>
                       </div>
@@ -852,8 +793,8 @@ export default function Guestbook() {
 
                       <div className="mt-6 flex flex-col gap-4 border-t border-charcoal-900/8 pt-5 xl:flex-row xl:items-center xl:justify-between">
                         <div className="space-y-2 text-sm text-charcoal-500">
-                          <p className="flex items-center gap-2"><Mail className="h-4 w-4 text-gold-600" />Keep it simple. We only need your name, email, and the message itself.</p>
-                          <p className="flex items-center gap-2"><Sparkles className="h-4 w-4 text-gold-600" />Voice and video entries stay focused on presentation only. No backend changes in this pass.</p>
+                          <p className="flex items-center gap-2"><Mail className="h-4 w-4 text-gold-600" />We only need your name, email, and the message itself.</p>
+                          <p className="flex items-center gap-2"><Sparkles className="h-4 w-4 text-gold-600" />Voice and video entries upload exactly the same way they already do today.</p>
                         </div>
                         <Button type="submit" size="lg" disabled={isSubmitting || !name || !email || (formType === 'text' && !content.trim()) || (formType !== 'text' && !mediaBlob)}>
                           {isSubmitting ? <><Loader2 className="h-4 w-4 animate-spin" />Sending...</> : <><Send className="h-4 w-4" />Post to the guestbook</>}
@@ -867,12 +808,12 @@ export default function Guestbook() {
 
             {loadError && <motion.div initial={{ opacity: 0, y: -10 }} animate={{ opacity: 1, y: 0 }} className="rounded-[1.5rem] border border-amber-200/80 bg-amber-50/90 px-5 py-4 text-sm text-amber-700">{loadError}</motion.div>}
 
-            <motion.div initial={{ opacity: 0, y: 18 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.18 }} data-testid="guestbook-feed" className="editorial-panel px-5 py-5">
+            <motion.div initial={{ opacity: 0, y: 18 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.18 }} data-testid="guestbook-feed" className="editorial-card px-5 py-5">
               <div className="flex flex-col gap-4 xl:flex-row xl:items-end xl:justify-between">
                 <div>
                   <p className="text-[10px] uppercase tracking-[0.3em] text-gold-700">Now showing</p>
                   <h2 className="mt-3 text-3xl text-charcoal-900 sm:text-4xl">{filter === 'all' ? 'Every guestbook entry' : filter === 'text' ? 'Written notes' : filter === 'voice' ? 'Voice messages' : 'Video messages'}</h2>
-                  <p className="mt-3 max-w-2xl text-sm leading-6 text-charcoal-500 sm:text-base">Browse the latest additions, react to a favorite note, or reply to keep a thread going.</p>
+                  <p className="mt-3 max-w-2xl text-sm leading-6 text-charcoal-500 sm:text-base">Read straight through, react to a favorite note, or reply when a memory sparks another one.</p>
                 </div>
                 <div className="flex flex-wrap gap-2">
                   <div className="inline-flex items-center gap-2 rounded-full border border-gold-200/70 bg-white/80 px-4 py-2 text-sm text-charcoal-500"><BookHeart className="h-4 w-4 text-gold-500" />{filteredMessages.length} matching entries</div>
@@ -897,8 +838,8 @@ export default function Guestbook() {
             ) : (
               <div className="editorial-panel px-6 py-12 text-center">
                 <div className="mx-auto flex h-16 w-16 items-center justify-center rounded-full bg-gold-100 text-gold-600"><BookHeart className="h-7 w-7" /></div>
-                <p className="mt-6 font-display text-2xl text-charcoal-900">The guestbook is waiting for its first note.</p>
-                <p className="mx-auto mt-2 max-w-md text-charcoal-500">Start with a quick written message or leave a recording so the page feels lived in from the very beginning.</p>
+                <p className="mt-6 font-display text-2xl text-charcoal-900">The guestbook is ready for its first real note.</p>
+                <p className="mx-auto mt-2 max-w-md text-charcoal-500">There are no demo messages here now. Start the page off with a written note, a voice memo, or a quick video hello.</p>
                 <Button className="mt-6" size="lg" onClick={() => openComposer('text')}>Leave the first message</Button>
               </div>
             )}

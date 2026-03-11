@@ -1,5 +1,5 @@
-import { useEffect, useState } from 'react'
-import { motion } from 'framer-motion'
+import { useEffect, useRef, useState } from 'react'
+import { AnimatePresence, motion } from 'framer-motion'
 import { FilmSEO } from '@/components/seo/SEOHead'
 import { VideoPlayer } from '@/components/video/VideoPlayer'
 import { Button } from '@/components/ui/Button'
@@ -8,6 +8,7 @@ import {
   MAIN_FILM_CHAPTERS_FALLBACK,
   MAIN_FILM_RUNTIME_LABEL,
   familyFilms,
+  type FamilyFilm,
   loadMainFilmChapters,
   type FilmChapter,
 } from '@/data/film'
@@ -20,9 +21,11 @@ import {
   Sparkles,
   Camera,
   HeartHandshake,
+  X,
 } from 'lucide-react'
 
 const MAIN_FILM_POSTER = '/images/film/main-film-poster.png'
+const EMPTY_CAPTIONS_TRACK = 'data:text/vtt,WEBVTT'
 
 function formatChapterTime(totalSeconds: number) {
   const wholeSeconds = Math.floor(totalSeconds)
@@ -31,8 +34,259 @@ function formatChapterTime(totalSeconds: number) {
   return `${minutes}:${seconds.toString().padStart(2, '0')}`
 }
 
+function ParentDanceCard({
+  film,
+  onOpen,
+}: {
+  film: FamilyFilm
+  onOpen: (film: FamilyFilm) => void
+}) {
+  const [previewFrames, setPreviewFrames] = useState<string[]>([film.thumbnail])
+  const [activeFrame, setActiveFrame] = useState(0)
+  const [isHovering, setIsHovering] = useState(false)
+  const videoSrc = getMediaPath(film.videoSrc)
+
+  useEffect(() => {
+    let isCancelled = false
+
+    const extractFrames = async () => {
+      const video = document.createElement('video')
+      video.src = videoSrc
+      video.muted = true
+      video.playsInline = true
+      video.preload = 'auto'
+      video.crossOrigin = 'anonymous'
+
+      const canvas = document.createElement('canvas')
+      const context = canvas.getContext('2d')
+
+      if (!context) {
+        return
+      }
+
+      await new Promise<void>((resolve, reject) => {
+        video.addEventListener('loadedmetadata', () => resolve(), { once: true })
+        video.addEventListener('error', () => reject(new Error('Unable to load preview video')), { once: true })
+      }).catch(() => {})
+
+      if (!video.videoWidth || !video.videoHeight || isCancelled) {
+        return
+      }
+
+      canvas.width = video.videoWidth
+      canvas.height = video.videoHeight
+
+      const frames: string[] = []
+
+      for (const timestamp of film.previewFrameTimestamps) {
+        if (isCancelled) {
+          break
+        }
+
+        const safeTime = Math.min(timestamp, Math.max(video.duration - 0.1, 0))
+
+        await new Promise<void>((resolve) => {
+          const handleSeeked = () => {
+            context.drawImage(video, 0, 0, canvas.width, canvas.height)
+            frames.push(canvas.toDataURL('image/jpeg', 0.82))
+            resolve()
+          }
+
+          video.addEventListener('seeked', handleSeeked, { once: true })
+          video.currentTime = safeTime
+        })
+      }
+
+      if (!isCancelled && frames.length > 0) {
+        setPreviewFrames(frames)
+      }
+    }
+
+    void extractFrames()
+
+    return () => {
+      isCancelled = true
+    }
+  }, [film.previewFrameTimestamps, videoSrc])
+
+  useEffect(() => {
+    if (!isHovering || previewFrames.length < 2) {
+      return
+    }
+
+    const interval = window.setInterval(() => {
+      setActiveFrame((current) => (current + 1) % previewFrames.length)
+    }, 1100)
+
+    return () => window.clearInterval(interval)
+  }, [isHovering, previewFrames])
+
+  return (
+    <button
+      type="button"
+      onClick={() => onOpen(film)}
+      onMouseEnter={() => {
+        setActiveFrame(0)
+        setIsHovering(true)
+      }}
+      onMouseLeave={() => {
+        setActiveFrame(0)
+        setIsHovering(false)
+      }}
+      onFocus={() => {
+        setActiveFrame(0)
+        setIsHovering(true)
+      }}
+      onBlur={() => {
+        setActiveFrame(0)
+        setIsHovering(false)
+      }}
+      className="group cinematic-card relative min-h-[24rem] snap-start overflow-hidden text-left transition-transform duration-300 hover:-translate-y-1"
+    >
+      <div
+        className="absolute inset-0 bg-cover bg-center transition-transform duration-500 group-hover:scale-[1.04]"
+        style={{
+          backgroundImage: `linear-gradient(to top, rgba(24,17,14,0.9), rgba(24,17,14,0.28) 55%, rgba(255,247,235,0.08)), url(${(isHovering ? previewFrames[activeFrame] : previewFrames[0]) || film.thumbnail})`,
+        }}
+      />
+      <div className="absolute inset-0 bg-[radial-gradient(circle_at_top,rgba(255,247,235,0.16),transparent_36%)]" />
+
+      <div className="absolute left-4 top-4 inline-flex items-center gap-2 rounded-full border border-[#f5e2bf]/30 bg-[rgba(64,44,34,0.68)] px-3 py-1.5 text-[10px] uppercase tracking-[0.26em] text-[#fff7eb] backdrop-blur-sm">
+        Parent dance
+      </div>
+
+      <div className="absolute right-4 top-4 rounded-full border border-[#f5e2bf]/30 bg-[rgba(64,44,34,0.72)] px-3 py-1.5 text-xs font-mono text-[#fff7eb] backdrop-blur-sm">
+        {film.duration}
+      </div>
+
+      <div className="absolute inset-x-0 bottom-0 p-5 sm:p-6">
+        <div className="mb-4 inline-flex h-12 w-12 items-center justify-center rounded-full bg-white/90 text-charcoal-900 shadow-lg transition-transform duration-300 group-hover:scale-105">
+          <Play className="ml-0.5 h-5 w-5" fill="currentColor" />
+        </div>
+        <h3 className="font-display text-[1.95rem] leading-none text-white">
+          {film.label}
+        </h3>
+        <p className="mt-3 max-w-sm text-sm leading-6 text-[#f8efe3]">
+          {film.description}
+        </p>
+      </div>
+    </button>
+  )
+}
+
+function ParentDanceModal({
+  film,
+  onClose,
+}: {
+  film: FamilyFilm | null
+  onClose: () => void
+}) {
+  const videoRef = useRef<HTMLVideoElement | null>(null)
+
+  useEffect(() => {
+    if (!film) {
+      return
+    }
+
+    const handleKeyDown = (event: KeyboardEvent) => {
+      if (event.key === 'Escape') {
+        onClose()
+      }
+    }
+
+    window.addEventListener('keydown', handleKeyDown)
+    document.body.style.overflow = 'hidden'
+
+    return () => {
+      window.removeEventListener('keydown', handleKeyDown)
+      document.body.style.overflow = ''
+    }
+  }, [film, onClose])
+
+  useEffect(() => {
+    if (!film || !videoRef.current) {
+      return
+    }
+
+    const playAttempt = videoRef.current.play()
+    if (playAttempt && typeof playAttempt.catch === 'function') {
+      playAttempt.catch(() => {})
+    }
+  }, [film])
+
+  return (
+    <AnimatePresence>
+      {film ? (
+        <motion.div
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          exit={{ opacity: 0 }}
+          className="fixed inset-0 z-[90] flex items-center justify-center bg-[rgba(18,12,10,0.82)] p-4 backdrop-blur-md"
+          onClick={onClose}
+        >
+          <motion.div
+            initial={{ opacity: 0, y: 24, scale: 0.98 }}
+            animate={{ opacity: 1, y: 0, scale: 1 }}
+            exit={{ opacity: 0, y: 24, scale: 0.98 }}
+            transition={{ duration: 0.28, ease: [0.16, 1, 0.3, 1] }}
+            className="cinematic-panel w-full max-w-5xl overflow-hidden"
+            onClick={(event) => event.stopPropagation()}
+          >
+            <div className="flex items-center justify-between border-b border-gold-200/14 px-5 py-4 sm:px-6">
+              <div>
+                <p className="text-[10px] uppercase tracking-[0.32em] text-gold-300/82">Parent dance</p>
+                <h3 className="mt-2 font-display text-3xl text-cinematic-primary">{film.label}</h3>
+              </div>
+              <button
+                type="button"
+                onClick={onClose}
+                className="flex h-11 w-11 items-center justify-center rounded-full border border-gold-200/18 bg-[rgba(255,247,235,0.08)] text-cinematic-primary transition-colors hover:border-gold-300/35 hover:text-gold-300"
+                aria-label="Close parent dance video"
+              >
+                <X className="h-5 w-5" />
+              </button>
+            </div>
+
+            <div className="grid gap-6 p-5 sm:p-6 lg:grid-cols-[minmax(0,1.15fr)_minmax(18rem,0.85fr)]">
+              <div className="overflow-hidden rounded-[1.75rem] border border-gold-200/16 bg-black/20">
+                <video
+                  ref={videoRef}
+                  src={getMediaPath(film.videoSrc)}
+                  controls
+                  poster={film.thumbnail}
+                  className="aspect-video w-full object-cover"
+                >
+                  <track kind="captions" src={EMPTY_CAPTIONS_TRACK} srcLang="en" label="No captions available" />
+                </video>
+              </div>
+
+              <div className="cinematic-card px-5 py-5">
+                <p className="text-[10px] uppercase tracking-[0.3em] text-gold-300/82">Why it matters</p>
+                <p className="mt-4 text-base leading-7 text-cinematic-secondary">
+                  {film.description}
+                </p>
+                <div className="mt-6 space-y-3 text-sm text-cinematic-secondary">
+                  <div className="rounded-2xl border border-gold-200/14 bg-[rgba(255,247,235,0.06)] px-4 py-3">
+                    <span className="text-[10px] uppercase tracking-[0.28em] text-gold-300/78">Duration</span>
+                    <p className="mt-2 font-display text-2xl text-cinematic-primary">{film.duration}</p>
+                  </div>
+                  <div className="rounded-2xl border border-gold-200/14 bg-[rgba(255,247,235,0.06)] px-4 py-3">
+                    <span className="text-[10px] uppercase tracking-[0.28em] text-gold-300/78">Best for</span>
+                    <p className="mt-2 text-cinematic-secondary">Rewatching the quieter part of the reception that still hits hardest.</p>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </motion.div>
+        </motion.div>
+      ) : null}
+    </AnimatePresence>
+  )
+}
+
 export default function Film() {
   const [chapters, setChapters] = useState<FilmChapter[]>(MAIN_FILM_CHAPTERS_FALLBACK)
+  const [activeFamilyFilm, setActiveFamilyFilm] = useState<FamilyFilm | null>(null)
 
   useEffect(() => {
     let isActive = true
@@ -84,8 +338,8 @@ export default function Film() {
     },
     {
       icon: HeartHandshake,
-      title: 'Family side stories',
-      description: 'Messages and memories from the people who carried the day with us.',
+      title: 'Parent dances',
+      description: 'A second spotlight for the dances that slowed the room down in the best way.',
     },
   ] as const
 
@@ -177,9 +431,9 @@ export default function Film() {
             whileInView={{ opacity: 1, y: 0 }}
             viewport={{ once: true, amount: 0.3 }}
             transition={{ duration: 0.6 }}
-            className="grid gap-4 xl:grid-cols-[minmax(0,1fr)_18rem]"
+            className="editorial-panel px-6 py-6 sm:px-8"
           >
-            <div className="editorial-panel px-6 py-6 sm:px-8">
+            <div>
               <span className="eyebrow-chip">Meet the family and friends</span>
               <h2 className="mt-5 text-4xl text-charcoal-900 sm:text-5xl">
                 The people who held the day together.
@@ -188,29 +442,6 @@ export default function Film() {
                 Before you hit play, take a moment to meet the family and friends woven into every
                 chapter of the film. It makes the speeches, reactions, and little glances land even harder.
               </p>
-            </div>
-
-            <div className="editorial-card flex flex-col justify-between px-5 py-6">
-              <div>
-                <p className="text-[10px] uppercase tracking-[0.32em] text-gold-700">
-                  Ready when you are
-                </p>
-                <p className="mt-3 text-lg font-semibold text-charcoal-900">
-                  Jump straight into the feature film.
-                </p>
-                <p className="mt-3 text-sm leading-6 text-charcoal-500">
-                  The player remembers progress, supports chapters, and is framed to feel like part of the story.
-                </p>
-              </div>
-
-              <button
-                type="button"
-                onClick={scrollToVideo}
-                className="mt-6 inline-flex items-center gap-2 text-sm font-medium text-gold-700 transition-colors hover:text-gold-600"
-              >
-                Scroll to the player
-                <ArrowDown className="h-4 w-4" />
-              </button>
             </div>
           </motion.div>
 
@@ -335,17 +566,18 @@ export default function Film() {
             transition={{ duration: 0.6 }}
             className="mb-8 max-w-3xl"
           >
-            <span className="eyebrow-chip">Family side stories</span>
+            <span className="eyebrow-chip">Parent dances</span>
             <h2 className="mt-5 text-4xl text-charcoal-900 sm:text-5xl">
-              Messages that deserve their own spotlight.
+              Four quieter moments that deserve their own replay.
             </h2>
             <p className="mt-4 text-base text-charcoal-600 sm:text-lg">
-              Alongside the main film, these shorter pieces hold the quieter perspectives:
-              the wisdom, love, and little stories that sit just off camera in the full cut.
+              These dances are some of the most personal pauses in the whole reception. Hover to let the cards
+              breathe a little, then open any one of them for the full moment.
             </p>
           </motion.div>
 
-          <div className="grid gap-6 sm:grid-cols-2 xl:grid-cols-4">
+          <div className="overflow-x-auto pb-2 hide-scrollbar">
+            <div className="grid grid-flow-col auto-cols-[minmax(17rem,1fr)] gap-4 lg:grid-flow-row lg:auto-cols-auto lg:grid-cols-4">
             {familyFilms.map((film, index) => (
               <motion.div
                 key={film.id}
@@ -353,34 +585,12 @@ export default function Film() {
                 whileInView={{ opacity: 1, y: 0 }}
                 viewport={{ once: true }}
                 transition={{ duration: 0.5, delay: index * 0.08 }}
-                className="group editorial-card cursor-pointer"
+                className="min-w-0"
               >
-                <div
-                  className="relative aspect-[4/5] overflow-hidden"
-                  style={{
-                    backgroundImage: `linear-gradient(to top, rgba(21,20,19,0.82), rgba(21,20,19,0.15)), url(${film.thumbnail})`,
-                    backgroundSize: 'cover',
-                    backgroundPosition: 'center',
-                  }}
-                >
-                  <div className="absolute inset-0 bg-[radial-gradient(circle_at_top,rgba(255,255,255,0.16),transparent_34%)]" />
-                  <div className="absolute left-4 top-4 inline-flex items-center gap-2 rounded-full border border-[#f5e2bf]/35 bg-[rgba(72,51,38,0.52)] px-3 py-1.5 text-[10px] uppercase tracking-[0.24em] text-[#fff7eb] backdrop-blur-sm">
-                    Side story
-                  </div>
-                  <div className="absolute bottom-4 right-4 rounded-full border border-[#f5e2bf]/35 bg-[rgba(58,42,33,0.76)] px-3 py-1.5 text-xs font-mono text-[#fff7eb] backdrop-blur-sm">
-                    {film.duration}
-                  </div>
-                  <div className="absolute inset-x-4 bottom-4 right-20">
-                    <div className="mb-3 flex h-12 w-12 items-center justify-center rounded-full bg-white/90 text-charcoal-900 shadow-lg transition-transform duration-300 group-hover:scale-105">
-                      <Play className="ml-0.5 h-5 w-5" fill="currentColor" />
-                    </div>
-                    <h3 className="font-display text-2xl leading-none text-white">
-                      {film.label}
-                    </h3>
-                  </div>
-                </div>
+                <ParentDanceCard film={film} onOpen={setActiveFamilyFilm} />
               </motion.div>
             ))}
+            </div>
           </div>
         </div>
       </section>
@@ -419,6 +629,8 @@ export default function Film() {
           </motion.div>
         </div>
       </section>
+
+      <ParentDanceModal film={activeFamilyFilm} onClose={() => setActiveFamilyFilm(null)} />
     </div>
   )
 }

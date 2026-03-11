@@ -1,4 +1,4 @@
-@import url('https://fonts.googleapis.com/css2?family=Newsreader:opsz,wght@6..72,400;6..72,500;6..72,600;6..72,700&family=Manrope:wght@400;500;600;700;800&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Instrument+Sans:wght@400;500;600;700;800&family=Newsreader:opsz,wght@6..72,400;6..72,500;6..72,600;6..72,700&display=swap');
 @import '@fontsource/allura';
 @import 'tailwindcss';
 
@@ -75,7 +75,7 @@
      Typography
      ---------------------------------------- */
   --font-display: 'Newsreader', Georgia, serif;
-  --font-body: 'Manrope', 'Outfit', system-ui, sans-serif;
+  --font-body: 'Instrument Sans', 'Outfit', system-ui, sans-serif;
   --font-script: 'Allura', cursive;
   --font-mono: 'SF Mono', Monaco, monospace;
 
@@ -116,7 +116,7 @@
   body {
     @apply bg-cream-50 text-charcoal-700 font-body antialiased;
     font-feature-settings: 'kern' 1, 'liga' 1;
-    letter-spacing: 0.01em;
+    letter-spacing: 0.005em;
     text-rendering: optimizeLegibility;
   }
 
@@ -290,11 +290,11 @@
   }
 
   .text-cinematic-secondary {
-    color: rgba(247, 239, 227, 0.8);
+    color: rgba(250, 243, 232, 0.9);
   }
 
   .text-cinematic-muted {
-    color: rgba(240, 229, 211, 0.66);
+    color: rgba(245, 236, 221, 0.8);
   }
 
   /* Text Gradient */

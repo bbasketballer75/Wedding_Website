@@ -53,7 +53,7 @@ export const colors = {
 export const typography = {
   fontFamily: {
     display: "'Newsreader', Georgia, serif",
-    body: "'Manrope', 'Outfit', system-ui, sans-serif",
+    body: "'Instrument Sans', 'Outfit', system-ui, sans-serif",
     script: "'Allura', cursive",
   },
   weights: {

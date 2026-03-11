@@ -19,18 +19,10 @@ interface FaceRecognitionProps {
   detectedFaces?: DetectedFace[]
 }
 
-const sampleFaces: DetectedFace[] = [
-  { id: '1', name: 'Austin', photoCount: 87, confidence: 98 },
-  { id: '2', name: 'Jordyn', photoCount: 92, confidence: 99 },
-  { id: '3', name: 'Christine', photoCount: 34, confidence: 95 },
-  { id: '4', name: 'Jerame', photoCount: 28, confidence: 94 },
-  { id: '5', name: 'Melony', photoCount: 31, confidence: 93 },
-]
-
 export function FaceRecognition({
   onFaceSelect,
   onPhotoFilter,
-  detectedFaces = sampleFaces,
+  detectedFaces = [],
 }: FaceRecognitionProps) {
   const [isOpen, setIsOpen] = useState(false)
   const [selectedFace, setSelectedFace] = useState<string | null>(null)
@@ -81,7 +73,11 @@ export function FaceRecognition({
     setIsAnalyzing(true)
     setTimeout(() => {
       setIsAnalyzing(false)
-      setAnalysisResult(detectedFaces[Math.floor(Math.random() * detectedFaces.length)])
+      setAnalysisResult(
+        detectedFaces.length > 0
+          ? detectedFaces[Math.floor(Math.random() * detectedFaces.length)]
+          : null
+      )
     }, 2000)
   }
 

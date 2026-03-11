@@ -59,7 +59,7 @@ function AppContent() {
       '/': 'Home',
       '/film': 'Wedding Film',
       '/gallery': 'Photo Gallery',
-      '/upload': 'Upload Photos',
+      '/upload': 'Share Memories',
       '/guestbook': 'Guestbook',
       '/admin/login': 'Admin Login',
       '/admin': 'Admin Dashboard',
@@ -127,7 +127,7 @@ function AppContent() {
             <Route 
               path="/upload" 
               element={
-                <LazyPage title="Upload Photos">
+                <LazyPage title="Share Memories">
                   <Upload />
                 </LazyPage>
               } 

@@ -256,15 +256,15 @@ export function GuestbookSEO() {
 export function UploadSEO() {
   return (
     <SEOHead
-      title="Share Photos"
-      description="Upload your wedding photos and videos so Austin and Jordyn can add them to the shared archive."
+      title="Share Memories"
+      description="Share the wedding site, upload your photos and videos, and help Austin and Jordyn keep the day alive from every angle."
       canonical="/upload"
       image={DEFAULT_SOCIAL_IMAGE}
       structuredData={{
         '@context': 'https://schema.org',
         '@type': 'WebPage',
-        name: 'Upload Wedding Photos',
-        description: 'A guest upload page for sharing photos and videos from Austin and Jordyn’s wedding.',
+        name: 'Share Wedding Memories',
+        description: 'A guest sharing page for sending photos, videos, and the wedding site itself to loved ones.',
       }}
     />
   )

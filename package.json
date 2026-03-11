@@ -19,7 +19,7 @@
   "scripts": {
     "dev": "node scripts/dev.js",
     "build": "vite build",
-    "build:analyze": "ANALYZE=true vite build",
+    "build:analyze": "node scripts/build-analyze.js",
     "postbuild": "node scripts/prune-local-media.js && node scripts/copy-public-images.js && node scripts/generate-sitemap.js",
     "lint": "eslint .",
     "lint:fix": "eslint . --fix",
@@ -52,6 +52,7 @@
   "dependencies": {
     "@fontsource/allura": "^5.2.8",
     "@fontsource/cormorant-garamond": "^5.2.11",
+    "@fontsource/instrument-sans": "5.2.8",
     "@fontsource/inter": "^5.2.8",
     "@fontsource/outfit": "^5.2.8",
     "@fontsource/pinyon-script": "^5.2.8",

@@ -10,6 +10,13 @@ import {
   X,
   Image as ImageIcon,
   Video,
+  Share2,
+  MessageCircle,
+  Link2,
+  Copy,
+  Check,
+  Facebook,
+  Twitter,
   CheckCircle,
   AlertCircle,
   Loader2,
@@ -80,6 +87,13 @@ export default function UploadPage() {
   const [isSubmitted, setIsSubmitted] = useState(false)
   const [isSubmitting, setIsSubmitting] = useState(false)
   const [submitError, setSubmitError] = useState<string | null>(null)
+  const [shareCopied, setShareCopied] = useState(false)
+
+  const siteShareUrl = typeof window !== 'undefined'
+    ? import.meta.env.VITE_SITE_URL || window.location.origin
+    : import.meta.env.VITE_SITE_URL || ''
+  const siteShareTitle = "Austin & Jordyn's Wedding"
+  const siteShareDescription = 'Watch the film, browse the gallery, read the guestbook, and share your side of the day.'
 
   const handleDragOver = useCallback((e: React.DragEvent) => {
     e.preventDefault()
@@ -257,6 +271,16 @@ export default function UploadPage() {
     }
   }
 
+  const handleCopyShareLink = async () => {
+    await navigator.clipboard.writeText(siteShareUrl)
+    setShareCopied(true)
+    window.setTimeout(() => setShareCopied(false), 1800)
+  }
+
+  const openShareWindow = (url: string) => {
+    window.open(url, '_blank', 'width=640,height=520')
+  }
+
   const completedFiles = files.filter(f => f.status === 'complete').length
   const hasErrors = files.some(f => f.status === 'error')
   const completedPhotoCount = files.filter(f => f.status === 'complete' && !f.file.type.startsWith('video/')).length
@@ -368,6 +392,93 @@ export default function UploadPage() {
                 <span className="rounded-full border border-white/80 bg-white/76 px-4 py-2">
                   Reviewed before posting
                 </span>
+              </div>
+
+              <div className="mt-8 rounded-[1.5rem] border border-white/80 bg-white/76 p-5 shadow-sm">
+                <div className="flex flex-col gap-3 lg:flex-row lg:items-start lg:justify-between">
+                  <div className="max-w-xl">
+                    <p className="text-[10px] uppercase tracking-[0.3em] text-gold-700">
+                      Share the site too
+                    </p>
+                    <p className="mt-3 text-lg font-semibold text-charcoal-900">
+                      Send the wedding film, gallery, and guestbook to family who want the whole story.
+                    </p>
+                    <p className="mt-2 text-sm leading-6 text-charcoal-500">
+                      Copy the link, text it, email it, or use your phone&apos;s native share sheet. Uploads still go
+                      through review, but the site itself is ready to pass around.
+                    </p>
+                  </div>
+
+                  <div className="flex flex-wrap gap-2 lg:max-w-[21rem] lg:justify-end">
+                    <button
+                      type="button"
+                      onClick={handleCopyShareLink}
+                      className="inline-flex items-center gap-2 rounded-full border border-gold-200/70 bg-gold-50 px-4 py-2 text-sm font-medium text-gold-700 transition-colors hover:border-gold-300 hover:bg-gold-100"
+                    >
+                      {shareCopied ? <Check className="h-4 w-4" /> : <Copy className="h-4 w-4" />}
+                      {shareCopied ? 'Copied' : 'Copy Link'}
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => {
+                        const body = encodeURIComponent(`${siteShareTitle} — ${siteShareDescription} ${siteShareUrl}`)
+                        window.location.href = `sms:?&body=${body}`
+                      }}
+                      className="inline-flex items-center gap-2 rounded-full border border-white/90 bg-white px-4 py-2 text-sm font-medium text-charcoal-700 transition-colors hover:border-gold-200 hover:text-gold-700"
+                    >
+                      <MessageCircle className="h-4 w-4" />
+                      Text It
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => openShareWindow(`https://www.facebook.com/sharer/sharer.php?u=${encodeURIComponent(siteShareUrl)}`)}
+                      className="inline-flex items-center gap-2 rounded-full border border-white/90 bg-white px-4 py-2 text-sm font-medium text-charcoal-700 transition-colors hover:border-gold-200 hover:text-gold-700"
+                    >
+                      <Facebook className="h-4 w-4" />
+                      Facebook
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => openShareWindow(`https://twitter.com/intent/tweet?text=${encodeURIComponent(`${siteShareTitle} — ${siteShareDescription}`)}&url=${encodeURIComponent(siteShareUrl)}`)}
+                      className="inline-flex items-center gap-2 rounded-full border border-white/90 bg-white px-4 py-2 text-sm font-medium text-charcoal-700 transition-colors hover:border-gold-200 hover:text-gold-700"
+                    >
+                      <Twitter className="h-4 w-4" />
+                      X
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => {
+                        const subject = encodeURIComponent(siteShareTitle)
+                        const body = encodeURIComponent(`${siteShareDescription}\n\n${siteShareUrl}`)
+                        window.location.href = `mailto:?subject=${subject}&body=${body}`
+                      }}
+                      className="inline-flex items-center gap-2 rounded-full border border-white/90 bg-white px-4 py-2 text-sm font-medium text-charcoal-700 transition-colors hover:border-gold-200 hover:text-gold-700"
+                    >
+                      <Mail className="h-4 w-4" />
+                      Email
+                    </button>
+                    {typeof navigator !== 'undefined' && navigator.share && (
+                      <button
+                        type="button"
+                        onClick={() => {
+                          navigator.share({
+                            title: siteShareTitle,
+                            text: siteShareDescription,
+                            url: siteShareUrl,
+                          }).catch(() => {})
+                        }}
+                        className="inline-flex items-center gap-2 rounded-full border border-white/90 bg-white px-4 py-2 text-sm font-medium text-charcoal-700 transition-colors hover:border-gold-200 hover:text-gold-700"
+                      >
+                        <Share2 className="h-4 w-4" />
+                        More
+                      </button>
+                    )}
+                    <div className="inline-flex min-h-[2.75rem] items-center gap-2 rounded-full border border-white/90 bg-white px-4 py-2 text-sm text-charcoal-500">
+                      <Link2 className="h-4 w-4 text-gold-600" />
+                      <span className="max-w-[13rem] truncate">{siteShareUrl}</span>
+                    </div>
+                  </div>
+                </div>
               </div>
             </div>
 
