@@ -10,7 +10,7 @@ import { useCallback, useEffect, useMemo, useRef } from 'react'
  * Deep comparison for useMemo/useCallback dependencies
  */
 export function useDeepMemo<T>(factory: () => T, deps: React.DependencyList): T {
-  const ref = useRef<{ deps: React.DependencyList; value: T }>(undefined)
+  const ref = useRef<{ deps: React.DependencyList; value: T } | null>(null)
 
   if (!ref.current || !deepEqual(ref.current.deps, deps)) {
     ref.current = {
@@ -19,7 +19,8 @@ export function useDeepMemo<T>(factory: () => T, deps: React.DependencyList): T 
     }
   }
 
-  return ref.current!.value
+  const current = ref.current
+  return current ? current.value : factory()
 }
 
 /**
@@ -70,7 +71,7 @@ export function useMemoCompare<T>(
   deps: React.DependencyList,
   compare: (a: React.DependencyList, b: React.DependencyList) => boolean
 ): T {
-  const ref = useRef<{ deps: React.DependencyList; value: T }>(undefined)
+  const ref = useRef<{ deps: React.DependencyList; value: T } | null>(null)
 
   if (!ref.current || !compare(ref.current.deps, deps)) {
     ref.current = {
@@ -79,7 +80,8 @@ export function useMemoCompare<T>(
     }
   }
 
-  return ref.current!.value
+  const current = ref.current
+  return current ? current.value : factory()
 }
 
 /**
@@ -90,7 +92,7 @@ export function useMemoTimeout<T>(
   deps: React.DependencyList,
   timeout: number = 5000
 ): T {
-  const ref = useRef<{ deps: React.DependencyList; value: T; timestamp: number }>(undefined)
+  const ref = useRef<{ deps: React.DependencyList; value: T; timestamp: number } | null>(null)
   const now = Date.now()
 
   const needsUpdate =
@@ -104,7 +106,8 @@ export function useMemoTimeout<T>(
     }
   }
 
-  return ref.current!.value
+  const current = ref.current
+  return current ? current.value : factory()
 }
 
 /**
@@ -149,8 +152,10 @@ export function memoize<TArgs extends unknown[], TResult>(
     const key = getCacheKey ? getCacheKey(...args) : JSON.stringify(args)
 
     if (cache.has(key)) {
-      // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
-      return cache.get(key)!
+      const cached = cache.get(key)
+      if (cached !== undefined || cache.has(key)) {
+        return cached as TResult
+      }
     }
 
     const result = fn(...args)
@@ -175,8 +180,10 @@ export class LRUCache<K, V> {
     if (!this.cache.has(key)) return undefined
 
     // Move to end (most recently used)
-    // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
-    const value = this.cache.get(key)!
+    const value = this.cache.get(key)
+    if (value === undefined) {
+      return undefined
+    }
     this.cache.delete(key)
     this.cache.set(key, value)
     return value

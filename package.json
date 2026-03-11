@@ -117,7 +117,7 @@
     "serve": "14.2.6",
     "sharp": "^0.34.5",
     "sitemap": "9.0.1",
-    "supabase": "2.77.1",
+    "supabase": "2.78.1",
     "terser": "5.46.0",
     "tus-js-client": "^4.3.1",
     "typescript": "^5.9.3",
@@ -125,5 +125,9 @@
     "vite-plugin-pwa": "^1.2.0",
     "vitest": "^4.0.18",
     "wait-on": "9.0.4"
+  },
+  "overrides": {
+    "@rollup/plugin-terser": "1.0.0",
+    "serialize-javascript": "7.0.4"
   }
 }

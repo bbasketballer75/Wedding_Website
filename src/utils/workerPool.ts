@@ -3,7 +3,7 @@
  * Efficiently manages multiple worker instances
  */
 
-interface WorkerTask<T = any, R = any> {
+interface WorkerTask<T = unknown, R = unknown> {
   id: string
   type: string
   data: T
@@ -11,11 +11,13 @@ interface WorkerTask<T = any, R = any> {
   reject: (error: Error) => void
 }
 
+type QueuedWorkerTask = WorkerTask<unknown, unknown>
+
 export class WorkerPool {
   private workers: Worker[] = []
   private availableWorkers: Set<number> = new Set()
-  private taskQueue: WorkerTask[] = []
-  private activeTasks: Map<string, WorkerTask> = new Map()
+  private taskQueue: QueuedWorkerTask[] = []
+  private activeTasks: Map<string, QueuedWorkerTask> = new Map()
 
   constructor(
     private workerFactory: () => Worker,
@@ -47,13 +49,13 @@ export class WorkerPool {
   /**
    * Execute a task in the worker pool
    */
-  async execute<T = any, R = any>(type: string, data: T): Promise<R> {
+  async execute<T = unknown, R = unknown>(type: string, data: T): Promise<R> {
     return new Promise((resolve, reject) => {
-      const task: WorkerTask<T, R> = {
+      const task: QueuedWorkerTask = {
         id: `task-${Date.now()}-${Math.random()}`,
         type,
-        data,
-        resolve,
+        data: data as unknown,
+        resolve: (result) => resolve(result as R),
         reject,
       }
 
@@ -70,17 +72,25 @@ export class WorkerPool {
       return
     }
 
-    const task = this.taskQueue.shift()!
+    const task = this.taskQueue.shift()
+    if (!task) {
+      return
+    }
     const workerIndex = Array.from(this.availableWorkers)[0]
 
     this.availableWorkers.delete(workerIndex)
     this.activeTasks.set(task.id, task)
 
     const worker = this.workers[workerIndex]
+    const payload =
+      typeof task.data === 'object' && task.data !== null
+        ? (task.data as Record<string, unknown>)
+        : { data: task.data }
+
     worker.postMessage({
       id: task.id,
       type: task.type,
-      ...task.data,
+      ...payload,
     })
   }
 

@@ -5,7 +5,7 @@
 /**
  * Check if component should update (for class components or custom logic)
  */
-export function shouldComponentUpdate<T extends Record<string, any>>(
+export function shouldComponentUpdate<T extends Record<string, unknown>>(
   prevProps: T,
   nextProps: T,
   shallowCompare: boolean = true
@@ -99,10 +99,10 @@ export function calculateVisibleRange(
 /**
  * Debounce renders
  */
-export function debounceRender<T extends (...args: any[]) => any>(fn: T, delay: number = 16): T {
+export function debounceRender<T extends (...args: unknown[]) => void>(fn: T, delay: number = 16): T {
   let timeoutId: number | undefined
 
-  return ((...args: any[]) => {
+  return ((...args: unknown[]) => {
     if (timeoutId !== undefined) {
       clearTimeout(timeoutId)
     }
@@ -116,11 +116,11 @@ export function debounceRender<T extends (...args: any[]) => any>(fn: T, delay: 
 /**
  * Throttle renders
  */
-export function throttleRender<T extends (...args: any[]) => any>(fn: T, delay: number = 16): T {
+export function throttleRender<T extends (...args: unknown[]) => void>(fn: T, delay: number = 16): T {
   let lastRun = 0
   let timeoutId: number | undefined
 
-  return ((...args: any[]) => {
+  return ((...args: unknown[]) => {
     const now = Date.now()
 
     if (now - lastRun >= delay) {

@@ -21,7 +21,11 @@ class MockCanvas {
   convertToBlob = vi.fn()
 }
 
-global.OffscreenCanvas = MockCanvas as any
+type AnalyzeImageData = {
+  dominantColors: string[]
+}
+
+global.OffscreenCanvas = MockCanvas as unknown as typeof OffscreenCanvas
 global.createImageBitmap = vi.fn(async () => ({ width: 100, height: 100 } as ImageBitmap))
 global.fetch = vi.fn()
 
@@ -35,7 +39,7 @@ describe('Hive Mind: Edge Case Coverage', () => {
       // We mocked data to have Red and Green.
       // logic: r/32, g/32, b/32
       // 255,0,0 -> 8,0,0.  0,255,0 -> 0,8,0
-      expect((result.data as any).dominantColors).toHaveLength(2)
+      expect((result.data as AnalyzeImageData).dominantColors).toHaveLength(2)
     })
 
     it('should handle context failure gracefully', async () => {

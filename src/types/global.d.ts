@@ -35,7 +35,7 @@ interface BeforeInstallPromptEvent extends Event {
 }
 
 // API Response Types
-export interface ApiResponse<T = any> {
+export interface ApiResponse<T = unknown> {
   data: T
   message?: string
   error?: string

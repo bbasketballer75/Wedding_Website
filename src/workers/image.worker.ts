@@ -34,27 +34,28 @@ self.addEventListener('message', async (event: MessageEvent<ImageProcessingMessa
 
   try {
     let result: ImageProcessingResult
+    const source = imageData ?? imageUrl
 
     switch (type) {
       case 'resize':
-        if (!imageData && !imageUrl) throw new Error('Missing input data')
-        result = await resizeImage(imageData || imageUrl!, options)
+        if (!source) throw new Error('Missing input data')
+        result = await resizeImage(source, options)
         break
       case 'compress':
-        if (!imageData && !imageUrl) throw new Error('Missing input data')
-        result = await compressImage(imageData || imageUrl!, options)
+        if (!source) throw new Error('Missing input data')
+        result = await compressImage(source, options)
         break
       case 'convert':
-        if (!imageData && !imageUrl) throw new Error('Missing input data')
-        result = await convertImage(imageData || imageUrl!, options)
+        if (!source) throw new Error('Missing input data')
+        result = await convertImage(source, options)
         break
       case 'thumbnail':
         if (!imageUrl) throw new Error('Missing image URL')
         result = await createThumbnail(imageUrl, options)
         break
       case 'analyze':
-        if (!imageData && !imageUrl) throw new Error('Missing input data')
-        result = await analyzeImage(imageData || imageUrl!)
+        if (!source) throw new Error('Missing input data')
+        result = await analyzeImage(source)
         break
       default:
         result = {

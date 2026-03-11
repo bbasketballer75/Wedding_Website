@@ -190,13 +190,24 @@ export const createSafeHTML = (html: string): { __html: string } => {
  * @param entry - The guest book entry object
  * @returns The sanitized entry object
  */
-export const sanitizeGuestBookEntry = (entry: any): any => {
+type SanitizableGuestBookEntry = {
+  name?: unknown
+  message?: unknown
+  [key: string]: unknown
+}
+
+export const sanitizeGuestBookEntry = <T extends SanitizableGuestBookEntry>(
+  entry: T
+): T & { name: string; message: string; messageWithBreaks: string } => {
+  const name = typeof entry.name === 'string' ? entry.name : ''
+  const message = typeof entry.message === 'string' ? entry.message : ''
+
   return {
     ...entry,
-    name: sanitizeText(entry.name || ''),
-    message: sanitizeHTML(entry.message || ''),
+    name: sanitizeText(name),
+    message: sanitizeHTML(message),
     // Allow line breaks in messages
-    messageWithBreaks: textToHTML(entry.message || ''),
+    messageWithBreaks: textToHTML(message),
   }
 }
 

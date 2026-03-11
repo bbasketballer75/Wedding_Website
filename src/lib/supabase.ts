@@ -32,6 +32,13 @@ export const supabase = createClient(supabaseUrl, supabaseKey, {
 })
 
 // Types for our database tables
+export interface PhotoFace {
+  id: string
+  name: string
+  x: number
+  y: number
+}
+
 export interface Photo {
   id: string
   url: string
@@ -44,7 +51,7 @@ export interface Photo {
   photographer?: string
   is_professional: boolean
   tags: string[]
-  faces: any[]
+  faces: PhotoFace[]
   created_at: string
 }
 
