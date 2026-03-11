@@ -114,26 +114,26 @@ function MasonryGrid({ photos, onPhotoClick }: PhotoGridProps) {
                 <div className="pointer-events-none absolute inset-0 bg-[linear-gradient(180deg,rgba(31,24,17,0.05),rgba(31,24,17,0.14)_38%,rgba(22,17,12,0.78))]" />
 
                 <div className="absolute inset-x-0 top-0 flex items-start justify-between p-3">
-                  <div className="inline-flex items-center gap-2 rounded-full border border-white/20 bg-white/12 px-3 py-1.5 text-[10px] uppercase tracking-[0.3em] text-white/82 backdrop-blur-sm">
+                  <div className="cinematic-overlay-pill inline-flex items-center gap-2 px-3 py-1.5 text-[10px] uppercase tracking-[0.3em]">
                     {photo.photographer || 'Gallery moment'}
                   </div>
 
-                  <span className="inline-flex h-9 w-9 items-center justify-center rounded-full border border-white/18 bg-white/12 text-white/82 opacity-0 backdrop-blur-sm transition-opacity duration-300 group-hover:opacity-100">
+                  <span className="cinematic-overlay-button inline-flex h-9 w-9 items-center justify-center opacity-0 transition-opacity duration-300 group-hover:opacity-100">
                     <ArrowUpRight className="h-4 w-4" />
                   </span>
                 </div>
 
                 <div className="absolute inset-x-0 bottom-0 p-4">
-                  <div className="rounded-[1.25rem] border border-white/12 bg-black/18 p-3 backdrop-blur-md">
-                    <p className="text-[10px] uppercase tracking-[0.32em] text-gold-200/90">
+                  <div className="rounded-[1.25rem] border border-gold-200/12 bg-[linear-gradient(145deg,rgba(44,32,25,0.78),rgba(58,42,33,0.9)_52%,rgba(77,58,44,0.86))] p-3 shadow-[0_20px_45px_-28px_rgba(21,20,19,0.8)] backdrop-blur-md">
+                    <p className="text-[10px] uppercase tracking-[0.32em] text-gold-200/92">
                       Editorial pick
                     </p>
-                    <p className="mt-2 line-clamp-2 text-sm leading-6 text-white">
+                    <p className="text-cinematic-primary mt-2 line-clamp-2 text-sm leading-6">
                       {photo.caption || 'A quiet frame from the celebration.'}
                     </p>
                     <div className="mt-3 flex items-center justify-between gap-3">
                       <PhotoStats photo={photo} invert />
-                      <span className="text-xs uppercase tracking-[0.24em] text-white/62">
+                      <span className="text-xs uppercase tracking-[0.24em] text-cinematic-muted">
                         Open
                       </span>
                     </div>
@@ -262,12 +262,12 @@ export function Lightbox({
         initial={{ opacity: 0 }}
         animate={{ opacity: 1 }}
         exit={{ opacity: 0 }}
-        className="fixed inset-0 z-50 flex items-center justify-center bg-[radial-gradient(circle_at_top,rgba(34,29,23,0.42),rgba(6,6,6,0.96)_58%)] p-4"
+        className="fixed inset-0 z-50 flex items-center justify-center bg-[radial-gradient(circle_at_top,rgba(97,71,49,0.34),rgba(21,16,13,0.94)_58%)] p-4"
         onClick={onClose}
       >
         <button
           onClick={onClose}
-          className="absolute right-5 top-5 z-10 flex h-12 w-12 items-center justify-center rounded-full border border-white/10 bg-white/10 text-white/80 backdrop-blur-md transition-colors hover:bg-white/16 hover:text-white"
+          className="cinematic-overlay-button absolute right-5 top-5 z-10 flex h-12 w-12 items-center justify-center"
         >
           <svg className="h-6 w-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M6 18L18 6M6 6l12 12" />
@@ -279,7 +279,7 @@ export function Lightbox({
             event.stopPropagation()
             onPrev()
           }}
-          className="absolute left-4 top-1/2 flex h-12 w-12 -translate-y-1/2 items-center justify-center rounded-full border border-white/10 bg-white/10 text-white/80 backdrop-blur-md transition-colors hover:bg-white/16 hover:text-white md:left-6"
+          className="cinematic-overlay-button absolute left-4 top-1/2 flex h-12 w-12 -translate-y-1/2 items-center justify-center md:left-6"
         >
           <svg className="h-6 w-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M15 19l-7-7 7-7" />
@@ -291,7 +291,7 @@ export function Lightbox({
             event.stopPropagation()
             onNext()
           }}
-          className="absolute right-4 top-1/2 flex h-12 w-12 -translate-y-1/2 items-center justify-center rounded-full border border-white/10 bg-white/10 text-white/80 backdrop-blur-md transition-colors hover:bg-white/16 hover:text-white md:right-6"
+          className="cinematic-overlay-button absolute right-4 top-1/2 flex h-12 w-12 -translate-y-1/2 items-center justify-center md:right-6"
         >
           <svg className="h-6 w-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M9 5l7 7-7 7" />
@@ -306,7 +306,7 @@ export function Lightbox({
           className="relative w-full max-w-6xl"
           onClick={(event) => event.stopPropagation()}
         >
-          <div className="overflow-hidden rounded-[1.75rem] border border-white/10 bg-black/40 shadow-[0_34px_90px_-50px_rgba(0,0,0,0.85)]">
+          <div className="overflow-hidden rounded-[1.75rem] border border-gold-200/16 bg-[linear-gradient(145deg,rgba(36,27,22,0.92),rgba(52,39,31,0.94)_52%,rgba(72,55,43,0.9))] shadow-[0_38px_100px_-54px_rgba(21,20,19,0.88)]">
             <motion.img
               src={currentPhoto.url}
               alt={currentPhoto.caption || 'Wedding photo'}
@@ -314,16 +314,16 @@ export function Lightbox({
             />
           </div>
 
-          <div className="mt-4 rounded-[1.6rem] border border-white/10 bg-white/10 p-5 backdrop-blur-md">
+          <div className="cinematic-card mt-4 p-5">
             <div className="flex flex-col gap-4 md:flex-row md:items-end md:justify-between">
               <div>
-                <p className="text-[10px] uppercase tracking-[0.32em] text-gold-200/90">
+                <p className="text-[10px] uppercase tracking-[0.32em] text-gold-200/92">
                   Gallery moment
                 </p>
                 {currentPhoto.caption && (
-                  <p className="mt-2 text-lg text-white md:text-xl">{currentPhoto.caption}</p>
+                  <p className="text-cinematic-primary mt-2 text-lg md:text-xl">{currentPhoto.caption}</p>
                 )}
-                <p className="mt-2 text-sm text-white/62">
+                <p className="text-cinematic-secondary mt-2 text-sm">
                   {currentIndex + 1} / {photos.length}
                   {currentPhoto.photographer && ` · Photo by ${currentPhoto.photographer}`}
                 </p>
@@ -339,7 +339,7 @@ export function Lightbox({
                     'flex h-11 w-11 items-center justify-center rounded-full border backdrop-blur-sm transition-all',
                     isLiked
                       ? 'border-rose-300/60 bg-rose-500 text-white'
-                      : 'border-white/10 bg-white/10 text-white hover:bg-white/16'
+                      : 'border-gold-200/16 bg-[rgba(255,247,235,0.1)] text-cinematic-primary hover:border-gold-200/28 hover:bg-[rgba(255,247,235,0.16)]'
                   )}
                 >
                   <Heart className={cn('h-5 w-5', isLiked && 'fill-current')} />
@@ -347,14 +347,14 @@ export function Lightbox({
 
                 <button
                   onClick={(event) => event.stopPropagation()}
-                  className="flex h-11 w-11 items-center justify-center rounded-full border border-white/10 bg-white/10 text-white backdrop-blur-sm transition-colors hover:bg-white/16"
+                  className="flex h-11 w-11 items-center justify-center rounded-full border border-gold-200/16 bg-[rgba(255,247,235,0.1)] text-cinematic-primary backdrop-blur-sm transition-colors hover:border-gold-200/28 hover:bg-[rgba(255,247,235,0.16)]"
                 >
                   <Download className="h-5 w-5" />
                 </button>
 
                 <button
                   onClick={(event) => event.stopPropagation()}
-                  className="flex h-11 w-11 items-center justify-center rounded-full border border-white/10 bg-white/10 text-white backdrop-blur-sm transition-colors hover:bg-white/16"
+                  className="flex h-11 w-11 items-center justify-center rounded-full border border-gold-200/16 bg-[rgba(255,247,235,0.1)] text-cinematic-primary backdrop-blur-sm transition-colors hover:border-gold-200/28 hover:bg-[rgba(255,247,235,0.16)]"
                 >
                   <Share2 className="h-5 w-5" />
                 </button>

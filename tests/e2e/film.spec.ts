@@ -11,7 +11,7 @@ test.describe('Film Page', () => {
   test('chapter quick links jump the film player and upload CTA navigates correctly', async ({ page }) => {
     await gotoPublicPage(page, '/film')
 
-    await page.getByRole('button', { name: /:00 The Ceremony/i }).click()
+    await page.getByRole('button', { name: /25:37 The Ceremony/i }).click()
     await page.waitForTimeout(600)
 
     const currentTime = await page.locator('#wedding-film-player video').evaluate((node) => {
@@ -19,7 +19,7 @@ test.describe('Film Page', () => {
       return video.currentTime
     })
 
-    expect(currentTime).toBeGreaterThanOrEqual(899)
+    expect(currentTime).toBeGreaterThanOrEqual(1536)
 
     await page.getByRole('link', { name: 'Share Your Angle' }).click()
     await expect(page).toHaveURL(/\/upload$/)

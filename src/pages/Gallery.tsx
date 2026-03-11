@@ -457,7 +457,7 @@ export default function Gallery() {
             transition={{ duration: 0.7 }}
             className="overflow-hidden rounded-[2rem] border border-white/70 bg-[linear-gradient(135deg,rgba(255,255,255,0.94),rgba(250,248,244,0.98)_58%,rgba(246,239,226,0.92))] p-6 shadow-[0_35px_90px_-48px_rgba(46,33,13,0.42)] backdrop-blur-xl sm:p-8 lg:p-10"
           >
-            <div className="grid gap-8 xl:grid-cols-[minmax(0,1.1fr)_minmax(20rem,0.9fr)] xl:items-start">
+            <div className="grid gap-8 2xl:grid-cols-[minmax(0,1.1fr)_minmax(20rem,0.9fr)] 2xl:items-start">
               <div>
                 <div className="mb-5 inline-flex items-center gap-2 rounded-full border border-gold-300/60 bg-white/75 px-4 py-2 text-[10px] uppercase tracking-[0.35em] text-gold-700 shadow-sm">
                   <Sparkles className="h-3.5 w-3.5" />
@@ -528,9 +528,9 @@ export default function Gallery() {
                 </motion.div>
               )}
 
-              <div className="grid gap-4 xl:grid-cols-[minmax(0,1fr)_auto] xl:items-start">
+              <div className="grid gap-4 2xl:grid-cols-[minmax(0,1fr)_auto] 2xl:items-start">
                 <div data-testid="gallery-control-bar" className="rounded-[1.5rem] border border-white/80 bg-white/72 p-4 shadow-sm">
-                  <div className="flex flex-col gap-4 lg:flex-row lg:items-center">
+                  <div className="flex flex-col gap-4 xl:flex-row xl:items-center">
                     <div className="relative flex-1">
                       <Search className="pointer-events-none absolute left-4 top-1/2 h-4 w-4 -translate-y-1/2 text-charcoal-400" />
                       <Input
@@ -555,7 +555,7 @@ export default function Gallery() {
                     <div className="flex flex-wrap items-center gap-2">
                       <SortDropdown value={sortBy} onChange={setSortBy} />
                       <FaceRecognition onPhotoFilter={handleFaceFilter} />
-                      <Button variant="glass" size="sm" onClick={() => setShareModalOpen(true)}>
+                      <Button variant="glass" size="sm" className="sm:w-auto" onClick={() => setShareModalOpen(true)}>
                         <Share2 className="mr-2 h-4 w-4" />
                         Share
                       </Button>
@@ -596,7 +596,7 @@ export default function Gallery() {
                       <button
                         type="button"
                         onClick={clearAllFilters}
-                        className="ml-auto text-sm text-gold-700 transition-colors hover:text-gold-800"
+                        className="text-sm text-gold-700 transition-colors hover:text-gold-800 sm:ml-auto"
                       >
                         Clear all
                       </button>
@@ -604,12 +604,12 @@ export default function Gallery() {
                   )}
                 </div>
 
-                <div className="grid gap-3 sm:grid-cols-2 xl:grid-cols-1">
+                <div className="grid gap-3 lg:grid-cols-2 2xl:grid-cols-1">
                   <div className="rounded-[1.5rem] border border-white/80 bg-white/72 p-4 shadow-sm">
                     <p className="text-[10px] uppercase tracking-[0.32em] text-charcoal-500">
                       Browse mode
                     </p>
-                    <div className="mt-3 grid grid-cols-2 gap-2">
+                    <div className="mt-3 grid grid-cols-1 gap-2 sm:grid-cols-2">
                       {viewOptions.map((option) => {
                         const Icon = option.icon
                         const isActive = viewMode === option.key
@@ -623,7 +623,7 @@ export default function Gallery() {
                             className={cn(
                               'flex items-center gap-2 rounded-2xl px-3 py-3 text-left text-sm transition-all',
                               isActive
-                                ? 'bg-charcoal-900 text-white shadow-[0_18px_35px_-24px_rgba(21,20,19,0.9)]'
+                                ? 'cinematic-toggle-active'
                                 : 'bg-cream-50 text-charcoal-500 hover:bg-gold-50/70 hover:text-charcoal-700'
                             )}
                           >
@@ -647,7 +647,7 @@ export default function Gallery() {
                         className={cn(
                           'inline-flex items-center gap-2 rounded-full px-4 py-2 text-sm transition-all',
                           showFavorites
-                            ? 'bg-rose-100 text-rose-700'
+                            ? 'bg-[linear-gradient(145deg,rgba(248,227,233,0.95),rgba(255,247,235,0.92))] text-rose-700 shadow-[0_18px_38px_-26px_rgba(92,54,63,0.28)]'
                             : 'bg-cream-50 text-charcoal-600 hover:bg-gold-50/70'
                         )}
                       >
@@ -681,12 +681,12 @@ export default function Gallery() {
                         className={cn(
                           'inline-flex items-center gap-2 rounded-full px-4 py-2 text-sm transition-all',
                           selectedCategory === category
-                            ? 'bg-gold-500 text-white'
+                            ? 'cinematic-toggle-active'
                             : 'bg-cream-50 text-charcoal-600 hover:bg-gold-50/70 hover:text-charcoal-700'
                         )}
                       >
                         <span>{category}</span>
-                        <span className={cn('text-xs', selectedCategory === category ? 'text-white/80' : 'text-charcoal-400')}>
+                        <span className={cn('text-xs', selectedCategory === category ? 'text-charcoal-700/80' : 'text-charcoal-400')}>
                           {categoryCounts[category] ?? 0}
                         </span>
                       </button>
@@ -701,7 +701,7 @@ export default function Gallery() {
 
       <section className="px-4 pb-8">
         <div className="mx-auto max-w-7xl">
-          <div className="mb-6 flex flex-col gap-3 lg:flex-row lg:items-end lg:justify-between">
+          <div className="mb-6 flex flex-col gap-3 xl:flex-row xl:items-end xl:justify-between">
             <div>
               <p className="text-[10px] uppercase tracking-[0.35em] text-gold-700">
                 Now viewing
@@ -821,7 +821,7 @@ export default function Gallery() {
             transition={{ duration: 0.6 }}
             className="overflow-hidden rounded-[2rem] border border-charcoal-900/8 bg-[linear-gradient(135deg,rgba(247,241,232,0.92),rgba(252,250,246,0.98)_58%,rgba(244,232,213,0.86))] p-8 shadow-[0_28px_80px_-52px_rgba(46,33,13,0.45)] sm:p-10"
           >
-            <div className="grid gap-6 lg:grid-cols-[minmax(0,1fr)_auto] lg:items-end">
+            <div className="grid gap-6 xl:grid-cols-[minmax(0,1fr)_auto] xl:items-end">
               <div>
                 <p className="text-[10px] uppercase tracking-[0.35em] text-gold-700">
                   Add your angle
@@ -835,7 +835,7 @@ export default function Gallery() {
                 </p>
               </div>
 
-              <div className="flex flex-col gap-3 sm:flex-row lg:flex-col">
+              <div className="flex flex-col gap-3 sm:flex-row xl:flex-col">
                 <Button size="lg" to="/upload">
                   Share Your Photos
                 </Button>

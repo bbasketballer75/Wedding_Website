@@ -52,7 +52,7 @@ export const colors = {
 
 export const typography = {
   fontFamily: {
-    display: "'Bodoni Moda', 'Cormorant Garamond', Georgia, serif",
+    display: "'Newsreader', Georgia, serif",
     body: "'Manrope', 'Outfit', system-ui, sans-serif",
     script: "'Allura', cursive",
   },

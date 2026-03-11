@@ -20,7 +20,7 @@
     "dev": "node scripts/dev.js",
     "build": "vite build",
     "build:analyze": "ANALYZE=true vite build",
-    "postbuild": "node scripts/prune-local-media.js && node scripts/generate-sitemap.js",
+    "postbuild": "node scripts/prune-local-media.js && node scripts/copy-public-images.js && node scripts/generate-sitemap.js",
     "lint": "eslint .",
     "lint:fix": "eslint . --fix",
     "format": "prettier --write .",

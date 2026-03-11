@@ -72,6 +72,14 @@ function AppContent() {
     trackPageView(path, getPageTitle(location.pathname))
   }, [location.hash, location.pathname, location.search])
 
+  useEffect(() => {
+    if (location.hash) {
+      return
+    }
+
+    window.scrollTo({ top: 0, left: 0, behavior: 'auto' })
+  }, [location.pathname, location.search, location.hash])
+
   return (
     <div className="min-h-screen bg-cream-50">
       {/* Skip Link for keyboard navigation */}

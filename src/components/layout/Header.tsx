@@ -25,7 +25,7 @@ function HeaderLink({
       className={cn(
         'flex shrink-0 items-center gap-1 rounded-full px-2 py-2 text-[9px] font-medium leading-none uppercase tracking-[0.16em] transition-all duration-300 max-[360px]:gap-0 max-[360px]:px-1.5 max-[360px]:text-[8px] max-[360px]:tracking-[0.12em] min-[430px]:px-2.5 sm:gap-2 sm:px-4 sm:py-2.5 sm:text-xs sm:tracking-[0.24em]',
         isActive
-          ? 'bg-charcoal-900 text-white shadow-[0_16px_32px_-24px_rgba(21,20,19,0.9)]'
+          ? 'bg-[linear-gradient(145deg,rgba(58,42,33,0.98),rgba(77,58,44,0.96))] text-cinematic-primary shadow-[0_16px_32px_-24px_rgba(21,20,19,0.72)]'
           : isPrimary
             ? 'text-gold-700 hover:bg-white/80 hover:text-gold-800'
             : 'text-charcoal-700 hover:bg-white/80 hover:text-charcoal-900'
@@ -34,11 +34,11 @@ function HeaderLink({
       <Icon
         className={cn(
           'h-3.5 w-3.5 max-[360px]:h-3 max-[360px]:w-3 sm:h-4 sm:w-4',
-          isActive ? 'text-gold-300' : isPrimary ? 'text-gold-500' : 'text-gold-600'
+          isActive ? 'text-gold-200' : isPrimary ? 'text-gold-500' : 'text-gold-600'
         )}
       />
-      <span className="whitespace-nowrap max-[360px]:hidden sm:hidden">{mobileName}</span>
-      <span className="hidden whitespace-nowrap sm:inline">{name}</span>
+      <span className="max-[360px]:hidden sm:hidden">{mobileName}</span>
+      <span className="hidden sm:inline">{name}</span>
     </Link>
   )
 }
@@ -83,9 +83,9 @@ function HeaderContent() {
           exit={{ opacity: 0, y: -16 }}
           transition={{ duration: 0.45, ease: [0.16, 1, 0.3, 1] }}
           data-testid="public-header"
-          className="fixed left-1/2 top-3 z-50 w-[calc(100vw-1rem)] max-w-[28rem] -translate-x-1/2 px-0 sm:top-6 sm:w-auto sm:max-w-max"
+          className="fixed left-1/2 top-3 z-50 w-[calc(100vw-1rem)] max-w-[42rem] -translate-x-1/2 px-0 sm:top-6"
         >
-          <div className="flex w-full items-center justify-between rounded-full border border-gold-300/45 bg-gradient-to-r from-cream-100/92 via-gold-50/92 to-cream-100/92 px-2 py-1.5 shadow-[0_18px_40px_-28px_rgba(46,33,13,0.42)] backdrop-blur-xl max-[360px]:px-1.5 sm:w-auto sm:px-2 sm:py-2">
+          <div className="flex w-full items-center gap-1 overflow-x-auto rounded-full border border-gold-300/45 bg-gradient-to-r from-cream-100/92 via-gold-50/92 to-cream-100/92 px-2 py-1.5 shadow-[0_18px_40px_-28px_rgba(46,33,13,0.42)] backdrop-blur-xl hide-scrollbar max-[360px]:px-1.5 sm:justify-between sm:gap-0 sm:px-2 sm:py-2">
             <Link
               to="/"
               className="shrink-0 px-3 py-2 font-display text-lg text-charcoal-900 transition-colors hover:text-gold-600 max-[360px]:px-2.5 max-[360px]:text-base sm:px-4 sm:text-xl"

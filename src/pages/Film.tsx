@@ -1,8 +1,16 @@
+import { useEffect, useState } from 'react'
 import { motion } from 'framer-motion'
 import { FilmSEO } from '@/components/seo/SEOHead'
 import { VideoPlayer } from '@/components/video/VideoPlayer'
 import { Button } from '@/components/ui/Button'
 import { FamilyTree } from '@/components/family-tree/FamilyTree'
+import {
+  MAIN_FILM_CHAPTERS_FALLBACK,
+  MAIN_FILM_RUNTIME_LABEL,
+  familyFilms,
+  loadMainFilmChapters,
+  type FilmChapter,
+} from '@/data/film'
 import { getMediaPath } from '@/utils/media'
 import {
   Play,
@@ -14,51 +22,34 @@ import {
   HeartHandshake,
 } from 'lucide-react'
 
-const chapters = [
-  { label: 'Getting Ready', time: 0 },
-  { label: 'First Look', time: 300 },
-  { label: 'The Ceremony', time: 900 },
-  { label: 'Cocktail Hour', time: 1800 },
-  { label: 'Reception', time: 2400 },
-  { label: 'First Dance', time: 3000 },
-  { label: 'Dancing', time: 3600 },
-  { label: 'Send Off', time: 4200 },
-] as const
-
-const familyFilms = [
-  { id: 'mom', label: 'A Message from Mom', duration: '5:32', thumbnail: '/images/parents/heather.webp' },
-  { id: 'christine', label: "Christine's Toast", duration: '8:15', thumbnail: '/images/parents/christine.webp' },
-  { id: 'jerame', label: "Jerame's Words", duration: '6:45', thumbnail: '/images/parents/jerame.webp' },
-  { id: 'melony', label: "Melony's Message", duration: '7:20', thumbnail: '/images/parents/melony.webp' },
-] as const
-
 const MAIN_FILM_POSTER = '/images/film/main-film-poster.png'
 
-const filmHighlights = [
-  {
-    icon: Clock3,
-    title: '42-minute feature',
-    description: 'From quiet morning details to the last dance under the lights.',
-  },
-  {
-    icon: Camera,
-    title: 'Full-story chapters',
-    description: 'Easy jumps between getting ready, ceremony, reception, and send-off.',
-  },
-  {
-    icon: HeartHandshake,
-    title: 'Family side stories',
-    description: 'Messages and memories from the people who carried the day with us.',
-  },
-] as const
-
 function formatChapterTime(totalSeconds: number) {
-  const minutes = Math.floor(totalSeconds / 60)
-  const seconds = totalSeconds % 60
+  const wholeSeconds = Math.floor(totalSeconds)
+  const minutes = Math.floor(wholeSeconds / 60)
+  const seconds = wholeSeconds % 60
   return `${minutes}:${seconds.toString().padStart(2, '0')}`
 }
 
 export default function Film() {
+  const [chapters, setChapters] = useState<FilmChapter[]>(MAIN_FILM_CHAPTERS_FALLBACK)
+
+  useEffect(() => {
+    let isActive = true
+
+    loadMainFilmChapters()
+      .then((loadedChapters) => {
+        if (isActive) {
+          setChapters(loadedChapters)
+        }
+      })
+      .catch(() => {})
+
+    return () => {
+      isActive = false
+    }
+  }, [])
+
   const scrollToVideo = () => {
     document.getElementById('wedding-film-player')?.scrollIntoView({ behavior: 'smooth', block: 'start' })
   }
@@ -80,6 +71,24 @@ export default function Film() {
     }, 420)
   }
 
+  const filmHighlights = [
+    {
+      icon: Clock3,
+      title: `${MAIN_FILM_RUNTIME_LABEL} feature`,
+      description: 'From the opening chapter to the final stretch of the party.',
+    },
+    {
+      icon: Camera,
+      title: 'Track-synced chapters',
+      description: 'Pulled from the real chapter file so every jump matches the actual edit.',
+    },
+    {
+      icon: HeartHandshake,
+      title: 'Family side stories',
+      description: 'Messages and memories from the people who carried the day with us.',
+    },
+  ] as const
+
   return (
     <div className="min-h-screen bg-cream-50">
       <FilmSEO />
@@ -96,8 +105,8 @@ export default function Film() {
             <div className="absolute -right-16 top-8 h-44 w-44 rounded-full bg-gold-200/30 blur-3xl" />
             <div className="absolute -left-10 bottom-0 h-32 w-32 rounded-full bg-blush-200/35 blur-3xl" />
 
-            <div className="relative grid gap-10 lg:grid-cols-[minmax(0,1.1fr)_minmax(0,0.9fr)] lg:items-start">
-              <div>
+            <div className="relative">
+              <div className="max-w-3xl">
                 <span className="eyebrow-chip">
                   <Sparkles className="h-3.5 w-3.5" />
                   Our wedding film
@@ -120,7 +129,7 @@ export default function Film() {
                     The Lodge at Indian Lake
                   </span>
                   <span className="rounded-full border border-white/80 bg-white/78 px-4 py-2">
-                    42-minute feature film
+                    {MAIN_FILM_RUNTIME_LABEL} feature film
                   </span>
                 </div>
 
@@ -135,19 +144,19 @@ export default function Film() {
                 </div>
               </div>
 
-              <div className="grid gap-3 sm:grid-cols-3 lg:grid-cols-1">
+              <div className="mt-8 grid gap-3 md:grid-cols-3">
                 {filmHighlights.map(({ icon: Icon, title, description }, index) => (
                   <motion.div
                     key={title}
                     initial={{ opacity: 0, y: 20 }}
                     animate={{ opacity: 1, y: 0 }}
                     transition={{ duration: 0.45, delay: 0.12 + index * 0.08 }}
-                    className="editorial-card px-5 py-5"
+                    className="editorial-card px-4 py-4 sm:px-5 sm:py-5"
                   >
-                    <div className="flex h-11 w-11 items-center justify-center rounded-2xl border border-gold-200/70 bg-gold-50 text-gold-600">
-                      <Icon className="h-5 w-5" />
+                    <div className="flex h-10 w-10 items-center justify-center rounded-2xl border border-gold-200/70 bg-gold-50 text-gold-600">
+                      <Icon className="h-4.5 w-4.5" />
                     </div>
-                    <p className="mt-5 text-xl font-semibold text-charcoal-900">
+                    <p className="mt-4 text-lg font-semibold text-charcoal-900 sm:text-xl">
                       {title}
                     </p>
                     <p className="mt-3 text-sm leading-6 text-charcoal-500">
@@ -168,10 +177,10 @@ export default function Film() {
             whileInView={{ opacity: 1, y: 0 }}
             viewport={{ once: true, amount: 0.3 }}
             transition={{ duration: 0.6 }}
-            className="grid gap-4 lg:grid-cols-[minmax(0,1fr)_18rem]"
+            className="grid gap-4 xl:grid-cols-[minmax(0,1fr)_18rem]"
           >
             <div className="editorial-panel px-6 py-6 sm:px-8">
-              <span className="eyebrow-chip">Meet the wedding party</span>
+              <span className="eyebrow-chip">Meet the family and friends</span>
               <h2 className="mt-5 text-4xl text-charcoal-900 sm:text-5xl">
                 The people who held the day together.
               </h2>
@@ -215,46 +224,45 @@ export default function Film() {
         <div className="mx-auto max-w-6xl">
           <div
             data-testid="film-player-section"
-            className="overflow-hidden rounded-[2rem] border border-white/10 bg-[linear-gradient(135deg,rgba(21,20,19,0.98),rgba(27,25,24,0.98)_58%,rgba(53,43,33,0.96))] px-6 py-8 shadow-[0_35px_90px_-55px_rgba(21,20,19,0.82)] sm:px-8 sm:py-10"
+            className="cinematic-panel px-5 py-6 sm:px-7 sm:py-8 lg:px-8 lg:py-9"
           >
-            <div className="grid gap-8 lg:grid-cols-[minmax(0,1fr)_18rem] lg:items-start">
+            <div className="grid gap-6">
               <motion.div
                 initial={{ opacity: 0, y: 20 }}
                 whileInView={{ opacity: 1, y: 0 }}
                 viewport={{ once: true }}
                 transition={{ duration: 0.6 }}
               >
-                <span className="inline-flex items-center gap-2 rounded-full border border-white/10 bg-white/5 px-4 py-2 text-[10px] uppercase tracking-[0.32em] text-gold-300/85 backdrop-blur-sm">
+                <span className="cinematic-chip">
                   <Play className="h-3.5 w-3.5" />
                   Feature presentation
                 </span>
-                <h2 className="mt-5 text-4xl text-cream-50 sm:text-5xl">
+                <h2 className="mt-5 max-w-3xl text-4xl leading-[0.95] text-cinematic-primary sm:text-5xl">
                   Press play on the whole day.
                 </h2>
-                <p className="mt-4 max-w-2xl text-base text-cream-100/72 sm:text-lg">
+                <p className="mt-4 max-w-2xl text-base leading-7 text-cinematic-secondary sm:text-lg">
                   Watch it straight through or use the chapter jumps below to revisit a single moment
                   without losing the cinematic feel of the full cut.
                 </p>
-              </motion.div>
 
-              <div className="grid gap-3 sm:grid-cols-3 lg:grid-cols-1">
-                <div className="rounded-[1.4rem] border border-white/10 bg-white/6 px-5 py-5 text-cream-50 backdrop-blur-sm">
-                  <p className="text-[10px] uppercase tracking-[0.28em] text-gold-300/75">Runtime</p>
-                  <p className="mt-3 font-display text-3xl">42</p>
-                  <p className="mt-2 text-sm text-cream-100/68">Minutes of ceremony, toasts, and celebration.</p>
+                <div className="mt-5 grid gap-2.5 md:grid-cols-3">
+                  <div className="cinematic-card px-3.5 py-3.5">
+                    <p className="text-[10px] uppercase tracking-[0.28em] text-gold-300/80">Runtime</p>
+                    <p className="mt-2 font-display text-[1.35rem] leading-none text-cinematic-primary sm:text-[1.5rem]">{MAIN_FILM_RUNTIME_LABEL}</p>
+                    <p className="mt-2 text-sm leading-5 text-cinematic-secondary">The full film cut.</p>
+                  </div>
+                  <div className="cinematic-card px-3.5 py-3.5">
+                    <p className="text-[10px] uppercase tracking-[0.28em] text-gold-300/80">Chapters</p>
+                    <p className="mt-2 font-display text-[1.35rem] leading-none text-cinematic-primary sm:text-[1.5rem]">{chapters.length}</p>
+                    <p className="mt-2 text-sm leading-5 text-cinematic-secondary">Mapped from the real VTT track.</p>
+                  </div>
+                  <div className="cinematic-card px-3.5 py-3.5">
+                    <p className="text-[10px] uppercase tracking-[0.28em] text-gold-300/80">Best viewed</p>
+                    <p className="mt-2 font-display text-[1.35rem] leading-none text-cinematic-primary sm:text-[1.5rem]">With sound</p>
+                    <p className="mt-2 text-sm leading-5 text-cinematic-secondary">For the vows and speeches.</p>
+                  </div>
                 </div>
-                <div className="rounded-[1.4rem] border border-white/10 bg-white/6 px-5 py-5 text-cream-50 backdrop-blur-sm">
-                  <p className="text-[10px] uppercase tracking-[0.28em] text-gold-300/75">Chapters</p>
-                  <p className="mt-3 font-display text-3xl">{chapters.length}</p>
-                  <p className="mt-2 text-sm text-cream-100/68">Jump points mapped from getting ready to send off.</p>
-                </div>
-                <div className="rounded-[1.4rem] border border-white/10 bg-white/6 px-5 py-5 text-cream-50 backdrop-blur-sm">
-                  <p className="text-[10px] uppercase tracking-[0.28em] text-gold-300/75">Best viewed</p>
-                  <p className="mt-3 font-display text-3xl">With sound</p>
-                  <p className="mt-2 text-sm text-cream-100/68">For the vows, speeches, and every laugh in between.</p>
-                </div>
-              </div>
-            </div>
+              </motion.div>
 
             <motion.div
               id="wedding-film-player"
@@ -267,7 +275,7 @@ export default function Film() {
               <VideoPlayer
                 src={getMediaPath('/video/main.mp4')}
                 title="Austin & Jordyn's Wedding"
-                chapters={[...chapters]}
+                chapters={chapters}
                 poster={MAIN_FILM_POSTER}
                 className="aspect-video ring-1 ring-white/10"
               />
@@ -278,39 +286,42 @@ export default function Film() {
               whileInView={{ opacity: 1, y: 0 }}
               viewport={{ once: true }}
               transition={{ duration: 0.55, delay: 0.15 }}
-              className="mt-8"
+              className="mt-7"
             >
-              <div className="mb-4 flex items-center justify-between gap-4">
-                <h3 className="text-sm uppercase tracking-[0.28em] text-gold-300/78">
+              <div className="mb-4 flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between sm:gap-4">
+                <h3 className="text-sm uppercase tracking-[0.28em] text-gold-300/82">
                   Jump to a moment
                 </h3>
-                <p className="text-sm text-cream-100/58">
+                <p className="text-sm text-cinematic-muted">
                   Click a chapter and the player will jump there.
                 </p>
               </div>
-              <div className="grid gap-3 sm:grid-cols-2 xl:grid-cols-4">
+              <div className="overflow-x-auto pb-2 hide-scrollbar">
+                <div className="grid grid-flow-col grid-rows-2 gap-2.5 auto-cols-[minmax(8.1rem,1fr)] sm:auto-cols-[minmax(9rem,1fr)] lg:auto-cols-[minmax(10.5rem,1fr)]">
                 {chapters.map((chapter) => (
                   <button
                     key={chapter.label}
                     type="button"
                     onClick={() => jumpToChapter(chapter.time)}
-                    className="group rounded-[1.35rem] border border-white/10 bg-white/6 px-5 py-4 text-left backdrop-blur-sm transition-all duration-300 hover:-translate-y-0.5 hover:border-gold-300/40 hover:bg-white/8"
+                    className="group cinematic-card min-h-[4.8rem] px-3 py-2.5 text-left transition-colors duration-200 hover:border-gold-300/35 hover:bg-white/8 sm:min-h-[5.1rem] sm:px-3.5 sm:py-3"
                   >
-                    <div className="flex items-start justify-between gap-4">
+                    <div className="flex items-start justify-between gap-3">
                       <div>
                         <p className="text-[10px] uppercase tracking-[0.28em] text-gold-300/72">
                           {formatChapterTime(chapter.time)}
                         </p>
-                        <p className="mt-3 text-lg font-semibold text-cream-50">
+                        <p className="mt-1.5 text-[0.9rem] font-semibold leading-5 text-cinematic-primary sm:text-[0.96rem]">
                           {chapter.label}
                         </p>
                       </div>
-                      <ArrowRight className="mt-1 h-4 w-4 text-gold-300/72 transition-transform duration-300 group-hover:translate-x-0.5" />
+                      <ArrowRight className="mt-0.5 h-4 w-4 shrink-0 text-gold-300/72 transition-transform duration-200 group-hover:translate-x-0.5" />
                     </div>
                   </button>
                 ))}
+                </div>
               </div>
             </motion.div>
+            </div>
           </div>
         </div>
       </section>
@@ -353,10 +364,10 @@ export default function Film() {
                   }}
                 >
                   <div className="absolute inset-0 bg-[radial-gradient(circle_at_top,rgba(255,255,255,0.16),transparent_34%)]" />
-                  <div className="absolute left-4 top-4 inline-flex items-center gap-2 rounded-full border border-white/20 bg-black/22 px-3 py-1.5 text-[10px] uppercase tracking-[0.24em] text-cream-50 backdrop-blur-sm">
+                  <div className="absolute left-4 top-4 inline-flex items-center gap-2 rounded-full border border-[#f5e2bf]/35 bg-[rgba(72,51,38,0.52)] px-3 py-1.5 text-[10px] uppercase tracking-[0.24em] text-[#fff7eb] backdrop-blur-sm">
                     Side story
                   </div>
-                  <div className="absolute bottom-4 right-4 rounded-full border border-white/20 bg-black/40 px-3 py-1.5 text-xs font-mono text-white backdrop-blur-sm">
+                  <div className="absolute bottom-4 right-4 rounded-full border border-[#f5e2bf]/35 bg-[rgba(58,42,33,0.76)] px-3 py-1.5 text-xs font-mono text-[#fff7eb] backdrop-blur-sm">
                     {film.duration}
                   </div>
                   <div className="absolute inset-x-4 bottom-4 right-20">

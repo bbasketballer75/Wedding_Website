@@ -91,7 +91,7 @@ export const colors = {
 export const typography = {
   // Font families
   fontFamily: {
-    heading: "'Bodoni Moda', 'Cormorant Garamond', Georgia, serif",
+    heading: "'Newsreader', Georgia, serif",
     body: "'Manrope', 'Outfit', system-ui, sans-serif",
     script: "'Allura', cursive",
     mono: "'Fira Code', monospace",

@@ -6,11 +6,15 @@ interface AvatarProps extends React.HTMLAttributes<HTMLDivElement> {
   alt?: string
   fallback?: string
   size?: 'sm' | 'md' | 'lg' | 'xl'
+  imgClassName?: string
+  imgStyle?: React.CSSProperties
 }
 
 const Avatar = React.forwardRef<HTMLDivElement, AvatarProps>(
-  ({ className, src, alt, fallback, size = 'md', ...props }, ref) => {
+  ({ className, imgClassName, imgStyle, src, alt, fallback, size = 'md', ...props }, ref) => {
     const [error, setError] = React.useState(false)
+    const [retryToken, setRetryToken] = React.useState(0)
+    const hasRetriedRef = React.useRef(false)
 
     const sizeClasses = {
       sm: 'h-8 w-8 text-xs',
@@ -28,6 +32,21 @@ const Avatar = React.forwardRef<HTMLDivElement, AvatarProps>(
         .slice(0, 2)
     }
 
+    React.useEffect(() => {
+      setError(false)
+      setRetryToken(0)
+      hasRetriedRef.current = false
+    }, [src])
+
+    const resolvedSrc = React.useMemo(() => {
+      if (!src || retryToken === 0) {
+        return src
+      }
+
+      const separator = src.includes('?') ? '&' : '?'
+      return `${src}${separator}retry=${retryToken}`
+    }, [src, retryToken])
+
     return (
       <div
         ref={ref}
@@ -39,12 +58,22 @@ const Avatar = React.forwardRef<HTMLDivElement, AvatarProps>(
         )}
         {...props}
       >
-        {src && !error ? (
+        {resolvedSrc && !error ? (
           <img
-            src={src}
+            src={resolvedSrc}
             alt={alt}
-            className="h-full w-full object-cover"
-            onError={() => setError(true)}
+            className={cn('h-full w-full object-cover object-center', imgClassName)}
+            style={imgStyle}
+            onLoad={() => setError(false)}
+            onError={() => {
+              if (src && !hasRetriedRef.current) {
+                hasRetriedRef.current = true
+                setRetryToken(Date.now())
+                return
+              }
+
+              setError(true)
+            }}
           />
         ) : (
           <span>{fallback ? getInitials(fallback) : '?'}</span>

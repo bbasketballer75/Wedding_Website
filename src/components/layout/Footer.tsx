@@ -36,16 +36,16 @@ export function Footer() {
       <div className="absolute bottom-0 right-0 h-56 w-56 rounded-full bg-blush-200/30 blur-3xl" />
 
       <div className="relative mx-auto max-w-7xl">
-        <div className="overflow-hidden rounded-[2rem] border border-white/80 bg-[linear-gradient(135deg,rgba(26,24,22,0.98),rgba(32,29,27,0.98)_58%,rgba(56,44,32,0.96))] px-6 py-8 text-cream-100 shadow-[0_35px_90px_-55px_rgba(21,20,19,0.85)] sm:px-8 lg:px-10 lg:py-10">
+        <div className="cinematic-panel px-6 py-8 sm:px-8 lg:px-10 lg:py-10">
           <div className="grid gap-10 lg:grid-cols-[minmax(0,1fr)_minmax(0,1.15fr)] lg:items-start">
             <div className="max-w-xl">
               <p className="text-[10px] uppercase tracking-[0.35em] text-gold-300/80">
                 Austin and Jordyn
               </p>
-              <h2 className="mt-4 font-display text-4xl text-cream-50 sm:text-5xl">
+              <h2 className="mt-4 font-display text-4xl text-cinematic-primary sm:text-5xl">
                 Thanks for helping us keep the day alive.
               </h2>
-              <p className="mt-4 max-w-lg text-sm leading-7 text-cream-100/72 sm:text-base">
+              <p className="mt-4 max-w-lg text-sm leading-7 text-cinematic-secondary sm:text-base">
                 This site is our favorite way to revisit the celebration, and it only feels
                 complete because you were part of it. Come back anytime to watch, browse,
                 read, or add your side of the story.
@@ -63,18 +63,18 @@ export function Footer() {
                 <Link
                   key={to}
                   to={to}
-                  className="group rounded-[1.5rem] border border-white/10 bg-white/6 p-5 backdrop-blur-sm transition-all duration-300 hover:-translate-y-1 hover:border-gold-300/45 hover:bg-white/9"
+                  className="group cinematic-card p-5 transition-all duration-300 hover:-translate-y-1 hover:border-gold-300/45 hover:bg-white/9"
                 >
                   <div className="flex items-start justify-between gap-3">
-                    <div className="flex h-11 w-11 items-center justify-center rounded-2xl border border-white/10 bg-white/8 text-gold-300">
+                    <div className="flex h-11 w-11 items-center justify-center rounded-2xl border border-gold-200/14 bg-[rgba(255,247,235,0.08)] text-gold-300">
                       <Icon className="h-5 w-5" />
                     </div>
                     <ArrowUpRight className="h-4 w-4 text-gold-300/70 transition-transform duration-300 group-hover:translate-x-0.5 group-hover:-translate-y-0.5" />
                   </div>
-                  <p className="mt-6 font-display text-2xl leading-none text-cream-50">
+                  <p className="mt-6 font-display text-2xl leading-none text-cinematic-primary">
                     {title}
                   </p>
-                  <p className="mt-3 text-sm leading-6 text-cream-100/68">
+                  <p className="mt-3 text-sm leading-6 text-cinematic-secondary">
                     {description}
                   </p>
                 </Link>
@@ -82,14 +82,14 @@ export function Footer() {
             </div>
           </div>
 
-          <div className="mt-10 flex flex-col gap-4 border-t border-white/10 pt-6 text-xs text-cream-100/48 sm:flex-row sm:items-center sm:justify-between">
+          <div className="mt-10 flex flex-col gap-4 border-t border-gold-200/12 pt-6 text-xs text-cinematic-muted sm:flex-row sm:items-center sm:justify-between">
             <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:gap-6">
-              <div className="flex flex-wrap gap-2 text-[10px] uppercase tracking-[0.24em] text-cream-100/60">
+              <div className="flex flex-wrap gap-2 text-[10px] uppercase tracking-[0.24em] text-cinematic-muted">
                 {publicNavLinks.map((link) => (
                   <Link
                     key={link.path}
                     to={link.path}
-                    className="rounded-full border border-white/10 bg-white/5 px-3 py-1.5 transition-colors hover:border-gold-300/35 hover:text-gold-300"
+                    className="rounded-full border border-gold-200/12 bg-[rgba(255,247,235,0.08)] px-3 py-1.5 transition-colors hover:border-gold-300/35 hover:text-gold-300"
                   >
                     {link.label}
                   </Link>

@@ -10,9 +10,21 @@ const BackgroundMusic = () => {
   const [currentTrackIndex, setCurrentTrackIndex] = useState(0)
   const [activePlaylist, setActivePlaylist] = useState(mainPlaylist)
   const [showNudge, setShowNudge] = useState(false)
+  const [isCompactScreen, setIsCompactScreen] = useState(false)
   const hasNudgedRef = useRef(false)
 
   const [isMuted, setIsMuted] = useState(false)
+
+  useEffect(() => {
+    const syncScreenSize = () => {
+      setIsCompactScreen(window.innerWidth < 640)
+    }
+
+    syncScreenSize()
+    window.addEventListener('resize', syncScreenSize)
+
+    return () => window.removeEventListener('resize', syncScreenSize)
+  }, [])
 
   // Nudge Triggers (Scroll & Time)
   useEffect(() => {
@@ -169,13 +181,13 @@ const BackgroundMusic = () => {
   const currentTrack = activePlaylist[currentTrackIndex] || mainPlaylist[0]
 
   return (
-    <div className='fixed bottom-6 left-6 sm:bottom-8 z-100 p-safe-bottom'>
+    <div className='fixed bottom-4 left-1/2 z-100 w-[calc(100vw-1.5rem)] max-w-xs -translate-x-1/2 p-safe-bottom sm:bottom-8 sm:left-6 sm:w-auto sm:max-w-none sm:translate-x-0'>
       <motion.div
         onMouseEnter={() => setIsHovered(true)}
         onMouseLeave={() => setIsHovered(false)}
         initial={{ width: '56px', opacity: 0.8 }}
         animate={{
-          width: isHovered ? 'auto' : '56px',
+          width: isHovered && !isCompactScreen ? 'auto' : '56px',
           opacity: isHovered ? 1 : 0.8,
           scale: isHovered ? 1.05 : showNudge ? [1, 1.05, 1] : 1,
         }}
@@ -186,7 +198,7 @@ const BackgroundMusic = () => {
           width: { type: 'spring', stiffness: 300, damping: 25 },
           opacity: { duration: 0.3 },
         }}
-        className='h-14 rounded-full flex items-center overflow-hidden cursor-pointer backdrop-blur-2xl border glass-panel bg-white/80 dark:bg-dark-900/80 border-white/20 dark:border-white/5 shadow-glass'
+        className='flex h-14 w-full items-center overflow-hidden rounded-full border border-gold-200/60 bg-[linear-gradient(145deg,rgba(255,255,255,0.88),rgba(250,248,244,0.96)_55%,rgba(246,239,226,0.92))] shadow-[0_22px_48px_-30px_rgba(46,33,13,0.34)] backdrop-blur-2xl cursor-pointer sm:w-auto'
       >
         {/* Play/Pause Button Area */}
         <button
@@ -236,7 +248,7 @@ const BackgroundMusic = () => {
               animate={{ opacity: 1, y: 0, scale: 1 }}
               exit={{ opacity: 0, y: 10, scale: 0.9 }}
               data-testid='nudge-tooltip'
-              className='absolute bottom-[70px] left-0 bg-gold-500 text-white p-2.5 px-4 rounded-xl text-xs uppercase tracking-widest shadow-gold pointer-events-none z-10'
+              className='absolute bottom-[70px] left-0 rounded-xl border border-gold-300/60 bg-[linear-gradient(145deg,rgba(201,160,92,0.95),rgba(166,130,74,0.96))] p-2.5 px-4 text-xs uppercase tracking-widest text-white shadow-gold pointer-events-none z-10'
             >
               Play Music 🎵
               <div className='absolute -bottom-1.5 left-5 w-3 h-3 bg-gold-500 rotate-45' />
@@ -251,14 +263,14 @@ const BackgroundMusic = () => {
               initial={{ opacity: 0, width: 0, x: -10 }}
               animate={{ opacity: 1, width: 'auto', x: 0 }}
               exit={{ opacity: 0, width: 0, x: -10 }}
-              className='flex items-center pr-6 whitespace-nowrap gap-4'
+              className='hidden items-center gap-4 pr-6 sm:flex'
             >
               {/* Mute Toggle */}
               <button
                 onClick={toggleMute}
                 title={isMuted ? 'Unmute' : 'Mute'}
                 aria-label={isMuted ? 'Unmute' : 'Mute'}
-                className='bg-black/5 dark:bg-white/5 hover:bg-black/10 dark:hover:bg-white/10 rounded-full w-8 h-8 flex items-center justify-center transition-all group'
+                className='flex h-8 w-8 items-center justify-center rounded-full bg-gold-50/90 text-charcoal-600 transition-all hover:bg-gold-100 group'
               >
                 <span className='text-sm leading-none flex items-center justify-center translate-y-[1px] translate-x-[0.5px]'>
                   {isMuted ? '🔇' : '🔊'}
@@ -268,16 +280,16 @@ const BackgroundMusic = () => {
               <button
                 onClick={prevTrack}
                 title='Previous Track'
-                className='text-gold-600 dark:text-gold-400 hover:scale-110 transition-transform'
+                className='text-gold-600 hover:scale-110 transition-transform'
               >
                 ⏮
               </button>
 
-              <div className='flex flex-col min-w-[120px] justify-center'>
-                <span className='font-display text-sm font-medium tracking-tight text-dark-900 dark:text-cream-100 truncate max-w-[180px] leading-tight'>
+              <div className='flex min-w-0 flex-col justify-center sm:min-w-[120px]'>
+                <span className='font-display text-sm font-medium tracking-tight text-charcoal-900 truncate max-w-[180px] leading-tight'>
                   {currentTrack.title}
                 </span>
-                <span className='font-body text-[10px] uppercase tracking-[0.2em] font-light text-dark-500/80 dark:text-cream-400/60 truncate max-w-[180px] mt-0.5'>
+                <span className='mt-0.5 max-w-[180px] truncate font-body text-[10px] font-light uppercase tracking-[0.2em] text-charcoal-500/80'>
                   {currentTrack.artist}
                 </span>
               </div>
@@ -285,7 +297,7 @@ const BackgroundMusic = () => {
               <button
                 onClick={skipTrack}
                 title='Next Track'
-                className='text-gold-600 dark:text-gold-400 hover:scale-110 transition-transform'
+                className='text-gold-600 hover:scale-110 transition-transform'
               >
                 ⏭
               </button>

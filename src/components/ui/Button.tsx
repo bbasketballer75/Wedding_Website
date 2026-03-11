@@ -6,7 +6,7 @@ import { cn } from '@/lib/utils'
 
 const buttonVariants = cva(
   // Base styles
-  'inline-flex items-center justify-center gap-2 whitespace-nowrap text-sm font-medium transition-all duration-500 disabled:pointer-events-none disabled:opacity-50 active:scale-[0.98]',
+  'inline-flex max-w-full items-center justify-center gap-2 text-center text-sm font-medium transition-all duration-500 disabled:pointer-events-none disabled:opacity-50 active:scale-[0.98] whitespace-normal break-words',
   {
     variants: {
       variant: {
@@ -50,10 +50,10 @@ const buttonVariants = cva(
         ),
       },
       size: {
-        sm: 'h-9 px-4 text-xs uppercase tracking-[0.15em]',
-        md: 'h-11 px-6 text-xs uppercase tracking-[0.15em]',
-        lg: 'h-14 px-8 text-sm uppercase tracking-[0.15em]',
-        xl: 'h-16 px-10 text-base uppercase tracking-[0.1em]',
+        sm: 'min-h-9 px-4 py-2 text-[11px] uppercase tracking-[0.15em] sm:text-xs',
+        md: 'min-h-11 px-5 py-3 text-[11px] uppercase tracking-[0.15em] sm:px-6 sm:text-xs',
+        lg: 'min-h-12 px-6 py-3 text-xs uppercase tracking-[0.14em] sm:min-h-14 sm:px-8 sm:text-sm sm:tracking-[0.15em]',
+        xl: 'min-h-14 px-7 py-3 text-sm uppercase tracking-[0.1em] sm:min-h-16 sm:px-10 sm:text-base',
         icon: 'h-10 w-10',
       },
     },

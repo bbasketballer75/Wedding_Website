@@ -30,7 +30,7 @@ const EVENT_DETAILS = {
     address: 'The Lodge at Indian Lake',
   },
   couple: {
-    partner1: 'Austin Baskerville',
+    partner1: 'Austin Porada',
     partner2: 'Jordyn Porada',
   },
 } as const

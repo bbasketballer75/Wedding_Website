@@ -1,7 +1,7 @@
 import { type ElementType, useState, useEffect, useRef } from 'react'
 import { motion, useScroll, useTransform, useMotionValueEvent } from 'framer-motion'
 import { Link } from 'react-router-dom'
-import { Play, Images, Heart, BookHeart, ChevronDown, ArrowRight, Sparkles } from 'lucide-react'
+import { Heart, ChevronDown, Sparkles } from 'lucide-react'
 import { LoveTimeline } from '@/components/timeline/LoveTimeline'
 import { publicNavLinks } from '@/components/layout/publicNav'
 import { HomeSEO } from '@/components/seo/SEOHead'
@@ -11,57 +11,6 @@ import { getMediaPath } from '@/utils/media'
 
 const HERO_POSTER = '/images/home/intro-video-poster.png'
 const HERO_VIDEO = getMediaPath('/video/optimized_background.mp4')
-
-const HOME_ACTIONS = [
-  {
-    to: '/film',
-    icon: Play,
-    eyebrow: 'Start here',
-    title: 'Watch the film',
-    description: 'Settle in for the ceremony, speeches, and dance floor in one cinematic cut.',
-    surfaceClass: 'border-charcoal-900 bg-charcoal-900 text-white shadow-[0_24px_50px_-28px_rgba(21,20,19,0.85)]',
-    iconClass: 'border-white/10 bg-white/10 text-gold-300',
-    eyebrowClass: 'text-white/60',
-    bodyClass: 'text-white/72',
-    arrowClass: 'text-gold-300',
-  },
-  {
-    to: '/gallery',
-    icon: Images,
-    eyebrow: 'Best dressed',
-    title: 'Browse the gallery',
-    description: 'Professional portraits, candids, and all the small looks that made the day.',
-    surfaceClass: 'border-white/80 bg-white/82 text-charcoal-900 shadow-sm',
-    iconClass: 'border-gold-200 bg-gold-50 text-gold-600',
-    eyebrowClass: 'text-gold-700',
-    bodyClass: 'text-charcoal-500',
-    arrowClass: 'text-gold-500',
-  },
-  {
-    to: '/guestbook',
-    icon: BookHeart,
-    eyebrow: 'Sweetest notes',
-    title: 'Read the guestbook',
-    description: 'Messages from family and friends, all gathered in one place for easy revisiting.',
-    surfaceClass: 'border-blush-200/80 bg-blush-100/88 text-charcoal-900 shadow-sm',
-    iconClass: 'border-white/80 bg-white/80 text-rose-500',
-    eyebrowClass: 'text-rose-500',
-    bodyClass: 'text-charcoal-500',
-    arrowClass: 'text-rose-500',
-  },
-  {
-    to: '/upload',
-    icon: Heart,
-    eyebrow: 'Your point of view',
-    title: 'Share your photos',
-    description: 'Add your phone favorites so our archive keeps growing from every angle.',
-    surfaceClass: 'border-sage-200/90 bg-sage-100/88 text-charcoal-900 shadow-sm',
-    iconClass: 'border-white/80 bg-white/80 text-gold-700',
-    eyebrowClass: 'text-charcoal-500',
-    bodyClass: 'text-charcoal-500',
-    arrowClass: 'text-charcoal-500',
-  },
-] as const
 
 const HOME_STATS = [
   { number: '42', label: 'Minute film', detail: 'Ceremony to final dance' },
@@ -92,13 +41,13 @@ function NavItem({
       className={cn(
         "flex shrink-0 items-center gap-1 rounded-full px-2 py-2 text-[9px] font-medium leading-none uppercase tracking-[0.16em] transition-all duration-300 max-[360px]:gap-0 max-[360px]:px-1.5 max-[360px]:text-[8px] max-[360px]:tracking-[0.12em] min-[430px]:px-2.5 sm:gap-2 sm:px-4 sm:py-2.5 sm:text-xs sm:tracking-[0.24em]",
         isPrimary 
-          ? scrolled ? "text-gold-500 hover:text-gold-600 font-medium" : "text-gold-400 hover:text-gold-300 font-medium"
-          : scrolled ? "text-charcoal-700 hover:text-charcoal-900 hover:bg-charcoal-100" : "text-white/80 hover:text-white hover:bg-white/10"
+          ? scrolled ? "text-gold-500 hover:text-gold-600 font-medium" : "text-gold-300 hover:text-candle-100 font-medium"
+          : scrolled ? "text-charcoal-700 hover:text-charcoal-900 hover:bg-charcoal-100" : "text-[#f7efe3] hover:text-[#fff7eb] hover:bg-white/10"
       )}
     >
       <Icon className={cn("h-3.5 w-3.5 max-[360px]:h-3 max-[360px]:w-3 sm:h-4 sm:w-4", isPrimary && !scrolled && "fill-gold-400/20")} />
-      <span className="whitespace-nowrap max-[360px]:hidden sm:hidden">{mobileLabel ?? label}</span>
-      <span className="hidden whitespace-nowrap sm:inline">{label}</span>
+      <span className="max-[360px]:hidden sm:hidden">{mobileLabel ?? label}</span>
+      <span className="hidden sm:inline">{label}</span>
     </Link>
   )
 }
@@ -175,14 +124,14 @@ export default function Home() {
         animate={{ opacity: showUI ? 1 : 0, y: showUI ? 0 : -20 }}
         transition={{ duration: 0.6, delay: 0.3 }}
         data-testid="home-nav"
-        className="fixed top-3 left-1/2 z-50 w-[calc(100vw-1rem)] max-w-[28rem] -translate-x-1/2 sm:top-6 sm:w-auto sm:max-w-max"
+        className="fixed top-3 left-1/2 z-50 w-[calc(100vw-1rem)] max-w-[42rem] -translate-x-1/2 sm:top-6"
       >
         <motion.div 
           className={cn(
-            "flex w-full items-center justify-between rounded-full px-2 py-1.5 transition-all duration-500 max-[360px]:px-1.5 sm:w-auto sm:px-2 sm:py-2",
+            "flex w-full items-center gap-1 overflow-x-auto rounded-full px-2 py-1.5 transition-all duration-500 hide-scrollbar max-[360px]:px-1.5 sm:justify-between sm:gap-0 sm:px-2 sm:py-2",
             scrolled 
               ? "bg-gradient-to-r from-cream-100/95 via-gold-50/95 to-cream-100/95 backdrop-blur-md border border-gold-300/50 shadow-lg" 
-              : "bg-charcoal-950/90 backdrop-blur-md border border-white/20 shadow-2xl"
+              : "bg-[linear-gradient(135deg,rgba(41,29,23,0.9),rgba(58,42,33,0.9))] backdrop-blur-md border border-gold-200/18 shadow-2xl"
           )}
         >
           {/* Logo */}
@@ -190,18 +139,18 @@ export default function Home() {
             to="/" 
             className={cn(
               "shrink-0 px-3 py-2 font-display text-lg transition-colors max-[360px]:px-2.5 max-[360px]:text-base sm:px-4 sm:text-xl",
-              scrolled ? "text-charcoal-900 hover:text-gold-600" : "text-white hover:text-gold-400"
+              scrolled ? "text-charcoal-900 hover:text-gold-600" : "text-[#fff7eb] hover:text-gold-300"
             )}
           >
             <span className="text-gold-500">A</span>&<span className="text-gold-500">J</span>
           </Link>
           
-          <div className={cn("hidden h-5 w-px sm:block", scrolled ? "bg-charcoal-200" : "bg-white/20")} />
+          <div className={cn("hidden h-5 w-px sm:block", scrolled ? "bg-charcoal-200" : "bg-gold-200/18")} />
           
           {publicNavLinks.map((item, index) => (
             <div key={item.path} className="contents">
               {index > 0 && (
-                <div className={cn("hidden h-5 w-px sm:block", scrolled ? "bg-charcoal-200" : "bg-white/20")} />
+                <div className={cn("hidden h-5 w-px sm:block", scrolled ? "bg-charcoal-200" : "bg-gold-200/18")} />
               )}
               <NavItem
                 to={item.path}
@@ -271,7 +220,7 @@ export default function Home() {
             onClick={scrollToContent}
             whileHover={{ scale: 1.05, y: -5 }}
             whileTap={{ scale: 0.95 }}
-            className="flex items-center gap-2 px-5 py-2.5 rounded-full bg-charcoal-950/90 backdrop-blur-md border border-white/20 shadow-xl text-white/80 hover:text-gold-400 transition-colors"
+            className="flex items-center gap-2 rounded-full border border-gold-200/18 bg-[linear-gradient(135deg,rgba(41,29,23,0.92),rgba(58,42,33,0.92))] px-5 py-2.5 text-[#f7efe3] shadow-xl transition-colors hover:text-gold-300"
           >
             <span className="text-[10px] uppercase tracking-widest">Explore</span>
             <motion.div
@@ -335,8 +284,8 @@ export default function Home() {
             <div className="absolute -right-14 top-8 h-40 w-40 rounded-full bg-gold-200/35 blur-3xl" />
             <div className="absolute -left-10 bottom-0 h-32 w-32 rounded-full bg-blush-200/45 blur-3xl" />
 
-            <div className="relative grid gap-10 lg:grid-cols-[minmax(0,1.1fr)_minmax(0,0.9fr)] lg:items-start">
-              <div>
+            <div className="relative grid gap-8 xl:grid-cols-[minmax(0,1.08fr)_minmax(0,0.92fr)] xl:items-start">
+              <div className="max-w-2xl">
                 <motion.div
                   initial={{ opacity: 0, y: 16 }}
                   whileInView={{ opacity: 1, y: 0 }}
@@ -353,7 +302,7 @@ export default function Home() {
                   whileInView={{ opacity: 1, y: 0 }}
                   viewport={{ once: true }}
                   transition={{ duration: 0.55, delay: 0.1 }}
-                  className="max-w-2xl text-4xl text-charcoal-900 sm:text-5xl"
+                  className="max-w-xl text-[2.8rem] leading-[0.96] tracking-[-0.035em] text-charcoal-900 sm:text-[4.1rem]"
                 >
                   Every chapter, all in one place.
                 </motion.h2>
@@ -363,55 +312,15 @@ export default function Home() {
                   whileInView={{ opacity: 1, y: 0 }}
                   viewport={{ once: true }}
                   transition={{ duration: 0.55, delay: 0.18 }}
-                  className="mt-4 max-w-2xl text-base text-charcoal-600 sm:text-lg"
+                  className="mt-5 max-w-xl text-base leading-8 text-charcoal-700 sm:text-[1.15rem]"
                 >
                   Relive every part of the celebration from whichever doorway feels right:
                   the full film, the portrait gallery, the notes from everyone we love, and
                   the photos still coming in from your side of the day.
                 </motion.p>
-
-                <div className="mt-8 grid gap-3 sm:grid-cols-2">
-                  {HOME_ACTIONS.map((item, index) => {
-                    const Icon = item.icon
-
-                    return (
-                      <motion.div
-                        key={item.title}
-                        initial={{ opacity: 0, y: 24 }}
-                        whileInView={{ opacity: 1, y: 0 }}
-                        viewport={{ once: true }}
-                        transition={{ duration: 0.45, delay: 0.18 + index * 0.08 }}
-                      >
-                        <Link
-                          to={item.to}
-                          className={cn(
-                            'group flex h-full flex-col rounded-[1.5rem] border p-5 transition-all duration-300 hover:-translate-y-1 hover:shadow-[0_20px_45px_-28px_rgba(46,33,13,0.45)]',
-                            item.surfaceClass
-                          )}
-                        >
-                          <div className="flex items-start justify-between gap-4">
-                            <div className={cn('flex h-11 w-11 items-center justify-center rounded-2xl border', item.iconClass)}>
-                              <Icon className="h-5 w-5" />
-                            </div>
-                            <ArrowRight className={cn('h-4 w-4 transition-transform duration-300 group-hover:translate-x-1', item.arrowClass)} />
-                          </div>
-                          <p className={cn('mt-6 text-[10px] uppercase tracking-[0.3em]', item.eyebrowClass)}>
-                            {item.eyebrow}
-                          </p>
-                          <p className="mt-2 text-xl font-semibold">
-                            {item.title}
-                          </p>
-                          <p className={cn('mt-3 text-sm leading-6', item.bodyClass)}>
-                            {item.description}
-                          </p>
-                        </Link>
-                      </motion.div>
-                    )
-                  })}
-                </div>
               </div>
 
-              <div className="grid gap-3 sm:grid-cols-2 lg:pt-6">
+              <div className="grid gap-3 sm:grid-cols-2">
                 {HOME_STATS.map((item, index) => (
                   <motion.div
                     key={item.label}
@@ -419,20 +328,21 @@ export default function Home() {
                     whileInView={{ opacity: 1, y: 0 }}
                     viewport={{ once: true }}
                     transition={{ duration: 0.45, delay: 0.24 + index * 0.07 }}
-                    className="rounded-[1.5rem] border border-white/75 bg-white/72 p-5 shadow-sm backdrop-blur-sm"
+                    className="rounded-[1.5rem] border border-white/75 bg-white/78 p-5 shadow-sm backdrop-blur-sm"
                   >
-                    <p className="font-display text-4xl text-gold-600 sm:text-[2.75rem]">
+                    <p className="font-display text-4xl leading-none text-gold-600 sm:text-[2.75rem]">
                       {item.number}
                     </p>
-                    <p className="mt-2 text-xs uppercase tracking-[0.3em] text-charcoal-500">
+                    <p className="mt-3 text-xs uppercase tracking-[0.28em] text-charcoal-600">
                       {item.label}
                     </p>
-                    <p className="mt-4 text-sm leading-6 text-charcoal-500">
+                    <p className="mt-3 text-[0.95rem] leading-7 text-charcoal-700">
                       {item.detail}
                     </p>
                   </motion.div>
                 ))}
               </div>
+
             </div>
           </div>
         </motion.div>

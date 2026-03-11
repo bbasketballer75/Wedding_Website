@@ -45,7 +45,7 @@
 
 /* Chapter Label - Matching ChapterTitle.jsx */
 .engagement-chapter {
-  font-family: 'Cormorant Garamond', serif;
+  font-family: 'Newsreader', Georgia, serif;
   color: #d4af37;
   font-size: 1.1rem;
   text-transform: uppercase;
@@ -58,7 +58,7 @@
 
 /* Main Title - Elegant & Balanced - REDUCED V3 */
 .engagement-title-main {
-  font-family: 'Cormorant Garamond', serif;
+  font-family: 'Newsreader', Georgia, serif;
   /* Reduced Clamp: min 3.5rem, max 7.5rem */
   font-size: clamp(3.5rem, 9vw, 7.5rem);
   line-height: 0.95;
@@ -78,7 +78,7 @@
 }
 
 .engagement-date-text {
-  font-family: 'Cormorant Garamond', serif;
+  font-family: 'Newsreader', Georgia, serif;
   font-size: clamp(1.8rem, 2.5vw, 2.5rem);
   color: rgba(212, 175, 55, 0.9);
   font-style: italic;
@@ -133,7 +133,7 @@
 }
 
 .text-paragraph {
-  font-family: 'Cormorant Garamond', serif;
+  font-family: 'Newsreader', Georgia, serif;
   font-size: clamp(1.4rem, 1.8vw, 1.8rem); /* More readable body text size */
   line-height: 1.6;
   color: #f5f5f5;
@@ -159,7 +159,7 @@
 }
 
 .finale-text {
-  font-family: 'Cormorant Garamond', serif;
+  font-family: 'Newsreader', Georgia, serif;
   font-size: clamp(1.8rem, 2.5vw, 2.2rem);
   font-style: italic;
   color: #d4af37;
@@ -185,7 +185,7 @@
 }
 
 .gallery-title {
-  font-family: 'Cormorant Garamond', serif;
+  font-family: 'Newsreader', Georgia, serif;
   font-size: clamp(3rem, 6vw, 5rem); /* Significantly smaller */
   line-height: 1;
   color: #f0f0f0;

@@ -231,7 +231,7 @@ function AudioPlayer({ url }: { url?: string }) {
             void audioRef.current.play()
             setIsPlaying(true)
           }}
-          className="flex h-12 w-12 items-center justify-center rounded-full border border-white/70 bg-charcoal-900 text-white shadow-sm transition-colors hover:bg-charcoal-800"
+          className="flex h-12 w-12 items-center justify-center rounded-full border border-gold-300/30 bg-[linear-gradient(145deg,rgba(58,42,33,0.98),rgba(77,58,44,0.96))] text-cinematic-primary shadow-[0_18px_36px_-24px_rgba(21,20,19,0.62)] transition-all hover:border-gold-300/45 hover:brightness-110"
           aria-label={isPlaying ? 'Pause voice message playback' : 'Play voice message'}
         >
           {isPlaying ? <Pause className="h-4 w-4" /> : <Play className="ml-0.5 h-4 w-4" fill="currentColor" />}
@@ -303,7 +303,7 @@ function MessageCard({
       <div className="mt-5 space-y-4">
         {message.type === 'video' &&
           (message.mediaUrl ? (
-            <div className="overflow-hidden rounded-[1.5rem] border border-charcoal-900/10 bg-charcoal-900 shadow-[0_20px_50px_-32px_rgba(21,20,19,0.7)]">
+            <div className="overflow-hidden rounded-[1.5rem] border border-gold-200/14 bg-[linear-gradient(145deg,rgba(44,32,25,0.96),rgba(58,42,33,0.98)_52%,rgba(77,58,44,0.94))] shadow-[0_24px_56px_-32px_rgba(21,20,19,0.72)]">
               <video
                 src={message.mediaUrl}
                 controls
@@ -689,7 +689,7 @@ export default function Guestbook() {
           <motion.div initial={{ opacity: 0, y: 24 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.7, ease: [0.16, 1, 0.3, 1] }} className="editorial-panel overflow-hidden px-6 py-8 sm:px-8 sm:py-10 lg:px-10">
             <div className="absolute -right-16 top-10 h-44 w-44 rounded-full bg-gold-200/30 blur-3xl" />
             <div className="absolute -left-10 bottom-0 h-32 w-32 rounded-full bg-blush-200/35 blur-3xl" />
-            <div className="relative grid gap-10 lg:grid-cols-[minmax(0,1.08fr)_minmax(0,0.92fr)]">
+            <div className="relative grid gap-10 2xl:grid-cols-[minmax(0,1.08fr)_minmax(0,0.92fr)]">
               <div>
                 <span className="eyebrow-chip"><BookHeart className="h-3.5 w-3.5" />The guestbook</span>
                 <h1 className="mt-6 max-w-3xl text-5xl text-charcoal-900 sm:text-6xl">Notes, recordings, and the parts of the day only you can tell back to us.</h1>
@@ -705,7 +705,7 @@ export default function Guestbook() {
                 </div>
               </div>
 
-              <div className="grid gap-3 sm:grid-cols-3 lg:grid-cols-1">
+              <div className="grid gap-3 md:grid-cols-3 2xl:grid-cols-1">
                 <div className="editorial-card px-5 py-5">
                   <div className="flex h-11 w-11 items-center justify-center rounded-2xl border border-gold-200/70 bg-gold-50 text-gold-600"><Sparkles className="h-5 w-5" /></div>
                   <p className="mt-5 text-xl font-semibold text-charcoal-900">What this is for</p>
@@ -728,14 +728,14 @@ export default function Guestbook() {
       </section>
 
       <section className="px-4">
-        <div className="mx-auto grid max-w-6xl gap-6 xl:grid-cols-[minmax(0,22rem)_minmax(0,1fr)] xl:items-start">
-          <div className="grid gap-6 xl:sticky xl:top-28">
+        <div className="mx-auto grid max-w-6xl gap-6 2xl:grid-cols-[minmax(0,22rem)_minmax(0,1fr)] 2xl:items-start">
+          <div className="grid gap-6 2xl:sticky 2xl:top-28">
             <motion.div initial={{ opacity: 0, y: 18 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.08 }} className="editorial-card px-5 py-5">
               <p className="text-[10px] uppercase tracking-[0.3em] text-gold-700">Contribute</p>
               <h2 className="mt-4 text-3xl text-charcoal-900">Add your side of the day.</h2>
               <p className="mt-3 text-sm leading-6 text-charcoal-500">Choose the format that feels easiest. You can write, record, or send a quick video without leaving this page.</p>
               <div className="mt-5 grid gap-2">
-                {composerModes.map((mode) => {
+                  {composerModes.map((mode) => {
                   const Icon = mode.icon
                   const isActive = formType === mode.type
                   return (
@@ -760,9 +760,9 @@ export default function Guestbook() {
               <p className="mt-3 text-sm leading-6 text-charcoal-500">Switch between written notes, voice memos, and video messages without losing your place in the feed.</p>
               <div className="mt-5 flex flex-wrap gap-2">
                 {[{ key: 'all', label: 'Everything' }, { key: 'text', label: 'Text' }, { key: 'voice', label: 'Voice' }, { key: 'video', label: 'Video' }].map((option) => (
-                  <button key={option.key} type="button" onClick={() => setFilter(option.key as typeof filter)} className={cn('inline-flex items-center gap-2 rounded-full px-4 py-2 text-sm transition-all', filter === option.key ? 'bg-charcoal-900 text-white shadow-[0_18px_35px_-24px_rgba(21,20,19,0.9)]' : 'bg-white/78 text-charcoal-600 hover:bg-gold-50/80 hover:text-charcoal-800')} aria-pressed={filter === option.key}>
+                  <button key={option.key} type="button" onClick={() => setFilter(option.key as typeof filter)} className={cn('inline-flex items-center gap-2 rounded-full px-4 py-2 text-sm transition-all', filter === option.key ? 'cinematic-toggle-active' : 'bg-white/78 text-charcoal-600 hover:bg-gold-50/80 hover:text-charcoal-800')} aria-pressed={filter === option.key}>
                     <span>{option.label}</span>
-                    <span className={cn('text-xs', filter === option.key ? 'text-gold-300' : 'text-charcoal-400')}>{counts[option.key as keyof typeof counts]}</span>
+                    <span className={cn('text-xs', filter === option.key ? 'text-charcoal-700/80' : 'text-charcoal-400')}>{counts[option.key as keyof typeof counts]}</span>
                   </button>
                 ))}
               </div>
@@ -772,7 +772,7 @@ export default function Guestbook() {
           <div className="space-y-6">
             <AnimatePresence initial={false}>
               {showForm && (
-                <motion.div ref={composerRef} initial={{ opacity: 0, y: 18 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -12 }} data-testid="guestbook-composer" className="editorial-panel px-6 py-6 sm:px-8">
+                <motion.div ref={composerRef} initial={{ opacity: 0, y: 18 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -12 }} data-testid="guestbook-composer" className="editorial-panel px-5 py-5 sm:px-6 sm:py-6 lg:px-8">
                   {isSubmitted ? (
                     <div className="text-center">
                       <div className="mx-auto flex h-20 w-20 items-center justify-center rounded-full border border-green-200/80 bg-green-100/88 shadow-sm"><CheckCircle className="h-10 w-10 text-green-600" /></div>
@@ -788,10 +788,10 @@ export default function Guestbook() {
                           <h2 className="mt-5 text-4xl text-charcoal-900 sm:text-5xl">Share a note in the format that fits.</h2>
                           <p className="mt-4 max-w-2xl text-base text-charcoal-600 sm:text-lg">Written notes are perfect for a full thought. Voice and video are ideal when tone matters more than polish.</p>
                         </div>
-                        <button type="button" onClick={() => setShowForm(false)} className="rounded-full border border-white/80 bg-white/78 p-2 text-charcoal-500 transition-colors hover:text-charcoal-800" aria-label="Close composer"><X className="h-5 w-5" /></button>
+                        <button type="button" onClick={() => setShowForm(false)} className="rounded-full border border-gold-200/70 bg-cream-50/88 p-2 text-charcoal-500 shadow-sm transition-colors hover:border-gold-300/70 hover:text-charcoal-800" aria-label="Close composer"><X className="h-5 w-5" /></button>
                       </div>
 
-                      <div className="mt-6 grid gap-2 sm:grid-cols-3">
+                      <div className="mt-6 grid gap-2 md:grid-cols-3">
                         {composerModes.map((mode) => {
                           const Icon = mode.icon
                           const isActive = formType === mode.type
@@ -809,7 +809,7 @@ export default function Guestbook() {
                         })}
                       </div>
 
-                      <div className="mt-6 grid gap-5 sm:grid-cols-2">
+                      <div className="mt-6 grid gap-5 lg:grid-cols-2">
                         <div>
                           <Label htmlFor="guestbook-name">Your Name</Label>
                           <Input id="guestbook-name" value={name} onChange={(event) => setName(event.target.value)} placeholder="Your name" required />
@@ -850,7 +850,7 @@ export default function Guestbook() {
 
                       {submitError && <div className="mt-5 rounded-[1.35rem] border border-rose-200 bg-rose-50 px-4 py-3"><p className="text-sm text-rose-600">{submitError}</p></div>}
 
-                      <div className="mt-6 flex flex-col gap-4 border-t border-charcoal-900/8 pt-5 lg:flex-row lg:items-center lg:justify-between">
+                      <div className="mt-6 flex flex-col gap-4 border-t border-charcoal-900/8 pt-5 xl:flex-row xl:items-center xl:justify-between">
                         <div className="space-y-2 text-sm text-charcoal-500">
                           <p className="flex items-center gap-2"><Mail className="h-4 w-4 text-gold-600" />Keep it simple. We only need your name, email, and the message itself.</p>
                           <p className="flex items-center gap-2"><Sparkles className="h-4 w-4 text-gold-600" />Voice and video entries stay focused on presentation only. No backend changes in this pass.</p>
@@ -868,7 +868,7 @@ export default function Guestbook() {
             {loadError && <motion.div initial={{ opacity: 0, y: -10 }} animate={{ opacity: 1, y: 0 }} className="rounded-[1.5rem] border border-amber-200/80 bg-amber-50/90 px-5 py-4 text-sm text-amber-700">{loadError}</motion.div>}
 
             <motion.div initial={{ opacity: 0, y: 18 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.18 }} data-testid="guestbook-feed" className="editorial-panel px-5 py-5">
-              <div className="flex flex-col gap-4 lg:flex-row lg:items-end lg:justify-between">
+              <div className="flex flex-col gap-4 xl:flex-row xl:items-end xl:justify-between">
                 <div>
                   <p className="text-[10px] uppercase tracking-[0.3em] text-gold-700">Now showing</p>
                   <h2 className="mt-3 text-3xl text-charcoal-900 sm:text-4xl">{filter === 'all' ? 'Every guestbook entry' : filter === 'text' ? 'Written notes' : filter === 'voice' ? 'Voice messages' : 'Video messages'}</h2>
@@ -889,7 +889,7 @@ export default function Guestbook() {
               </div>
             ) : filteredMessages.length > 0 ? (
               <>
-                <div className="grid gap-5 lg:grid-cols-2">
+                <div className="grid gap-5 xl:grid-cols-2">
                   {visibleMessages.map((message) => <MessageCard key={message.id} message={message} onReact={handleReact} onReply={handleReply} />)}
                 </div>
                 {hasMoreMessages && <div className="flex justify-center pt-2"><Button variant="secondary" size="lg" onClick={() => setVisibleCount((current) => current + INITIAL_VISIBLE_MESSAGES)}>Load more messages</Button></div>}

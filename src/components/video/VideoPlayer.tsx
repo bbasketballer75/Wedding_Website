@@ -45,6 +45,7 @@ export function VideoPlayer({
   const [showChapterMenu, setShowChapterMenu] = useState(false)
   
   const controlsTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null)
+  const progressPercent = duration > 0 ? (currentTime / duration) * 100 : 0
 
   // Load saved progress
   useEffect(() => {
@@ -227,19 +228,21 @@ export function VideoPlayer({
     <div 
       ref={containerRef}
       className={cn(
-        'relative w-full bg-black rounded-2xl overflow-hidden group',
-        isFullscreen ? 'fixed inset-0 z-50 rounded-none' : '',
+        'group relative w-full overflow-hidden rounded-[1.8rem] border border-gold-200/20 bg-[linear-gradient(140deg,rgba(35,25,20,0.98),rgba(48,35,28,0.98)_55%,rgba(78,58,44,0.96))] shadow-[0_40px_90px_-50px_rgba(21,20,19,0.9)]',
+        isFullscreen ? 'fixed inset-0 z-50 rounded-none border-none' : '',
         className
       )}
       onMouseMove={handleMouseMove}
       onMouseLeave={() => isPlaying && setShowControls(false)}
     >
+      <div className="pointer-events-none absolute inset-x-0 top-0 z-[1] h-32 bg-[radial-gradient(circle_at_top,rgba(245,226,191,0.18),transparent_62%)]" />
+
       {/* Video Element */}
       <video
         ref={videoRef}
         src={src}
         poster={poster}
-        className="w-full h-full object-contain bg-black"
+        className="relative z-[2] h-full w-full bg-[#130e0b] object-contain"
         onTimeUpdate={handleTimeUpdate}
         onLoadedMetadata={handleLoadedMetadata}
         onEnded={onEnded}
@@ -263,9 +266,9 @@ export function VideoPlayer({
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
-            className="absolute inset-0 flex items-center justify-center bg-black/50"
+            className="absolute inset-0 z-[3] flex items-center justify-center bg-[linear-gradient(180deg,rgba(23,16,12,0.58),rgba(23,16,12,0.76))]"
           >
-            <div className="w-12 h-12 border-3 border-gold-500/30 border-t-gold-500 rounded-full animate-spin" />
+            <div className="h-12 w-12 animate-spin rounded-full border-3 border-gold-300/25 border-t-gold-400" />
           </motion.div>
         )}
       </AnimatePresence>
@@ -278,10 +281,12 @@ export function VideoPlayer({
             animate={{ opacity: 1, scale: 1 }}
             exit={{ opacity: 0, scale: 0.8 }}
             onClick={togglePlay}
-            className="absolute inset-0 flex items-center justify-center bg-black/30 hover:bg-black/40 transition-colors"
+            aria-label={title ? `Play ${title}` : 'Play wedding film'}
+            title={title ? `Play ${title}` : 'Play wedding film'}
+            className="absolute inset-0 z-[3] flex items-center justify-center bg-[radial-gradient(circle_at_center,rgba(255,247,235,0.04),rgba(24,18,14,0.42)_42%,rgba(24,18,14,0.62))] transition-colors hover:bg-[radial-gradient(circle_at_center,rgba(255,247,235,0.06),rgba(24,18,14,0.4)_36%,rgba(24,18,14,0.64))]"
           >
-            <div className="w-20 h-20 rounded-full bg-gold-500/90 flex items-center justify-center shadow-gold hover:scale-110 transition-transform">
-              <Play className="w-8 h-8 text-white ml-1" fill="white" />
+            <div className="flex h-24 w-24 items-center justify-center rounded-full border border-gold-100/30 bg-[linear-gradient(160deg,rgba(245,226,191,0.94),rgba(212,175,127,0.92))] text-charcoal-900 shadow-[0_22px_48px_-26px_rgba(219,184,128,0.9)] transition-transform hover:scale-105">
+              <Play className="ml-1 h-9 w-9" fill="currentColor" />
             </div>
           </motion.button>
         )}
@@ -295,25 +300,28 @@ export function VideoPlayer({
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
             transition={{ duration: 0.2 }}
-            className="absolute inset-0 bg-gradient-to-t from-black/80 via-transparent to-black/30 pointer-events-none"
+            className="pointer-events-none absolute inset-0 z-[4] bg-[linear-gradient(to_top,rgba(20,14,10,0.94)_0%,rgba(20,14,10,0.2)_34%,rgba(20,14,10,0.54)_100%)]"
           >
             {/* Top Bar - Title & Chapters */}
-            <div className="absolute top-0 left-0 right-0 p-6 flex items-start justify-between pointer-events-auto">
-              <div>
+            <div className="pointer-events-auto absolute inset-x-0 top-0 flex items-start justify-between p-4 sm:p-6">
+              <div className="max-w-[70%] rounded-[1.35rem] border border-gold-200/12 bg-[linear-gradient(135deg,rgba(255,247,235,0.12),rgba(255,255,255,0.06))] px-4 py-3 backdrop-blur-md">
                 {title && (
-                  <h3 className="text-white font-display text-xl md:text-2xl drop-shadow-lg">
+                  <h3 className="font-display text-xl text-cinematic-primary drop-shadow-lg md:text-2xl">
                     {title}
                   </h3>
                 )}
                 {chapters.length > 0 && (
                   <button
                     onClick={() => setShowChapterMenu(!showChapterMenu)}
-                    className="mt-2 text-gold-400 text-sm hover:text-gold-300 transition-colors flex items-center gap-1"
+                    className="mt-2 flex items-center gap-1 text-sm text-gold-300 transition-colors hover:text-candle-100"
                     aria-label={`${showChapterMenu ? 'Hide' : 'Show'} chapters`}
                     aria-expanded={showChapterMenu}
                     aria-controls="video-chapter-menu"
                   >
-                    Chapter {Math.max(activeChapter, 0) + 1}: {chapters[Math.max(activeChapter, 0)]?.label}
+                    <span className="text-cinematic-muted">Now playing</span>
+                    <span className="text-cinematic-primary">
+                      Chapter {Math.max(activeChapter, 0) + 1}: {chapters[Math.max(activeChapter, 0)]?.label}
+                    </span>
                     <ChevronRight className={cn('w-4 h-4 transition-transform', showChapterMenu && 'rotate-90')} />
                   </button>
                 )}
@@ -323,7 +331,7 @@ export function VideoPlayer({
               <div className="flex items-center gap-2">
                 <button 
                   onClick={toggleFullscreen}
-                  className="p-2 text-white/80 hover:text-white transition-colors rounded-full hover:bg-white/10"
+                  className="rounded-full border border-gold-200/12 bg-[linear-gradient(135deg,rgba(255,247,235,0.12),rgba(255,255,255,0.05))] p-2.5 text-cinematic-secondary transition-colors hover:text-cinematic-primary"
                   aria-label={isFullscreen ? 'Exit fullscreen' : 'Enter fullscreen'}
                 >
                   <Cast className="w-5 h-5" />
@@ -339,19 +347,19 @@ export function VideoPlayer({
                   animate={{ opacity: 1, x: 0 }}
                   exit={{ opacity: 0, x: -20 }}
                   id="video-chapter-menu"
-                  className="absolute top-20 left-4 bg-black/90 backdrop-blur-xl rounded-xl p-4 max-w-xs max-h-[60vh] overflow-y-auto"
+                  className="absolute left-4 top-22 max-h-[60vh] max-w-sm overflow-y-auto rounded-[1.35rem] border border-gold-200/12 bg-[linear-gradient(145deg,rgba(35,25,20,0.96),rgba(56,40,30,0.96))] p-4 backdrop-blur-xl"
                 >
-                  <h4 className="text-white font-medium mb-3 text-sm uppercase tracking-wider">Chapters</h4>
+                  <h4 className="mb-3 text-sm font-medium uppercase tracking-wider text-cinematic-primary">Chapters</h4>
                   <div className="space-y-1">
                     {chapters.map((chapter, i) => (
                       <button
                         key={i}
                         onClick={() => jumpToChapter(chapter, i)}
                         className={cn(
-                          'w-full text-left px-3 py-2 rounded-lg text-sm transition-colors',
+                          'w-full rounded-xl px-3 py-2 text-left text-sm transition-colors',
                           activeChapter === i
-                            ? 'bg-gold-500 text-white'
-                            : 'text-white/70 hover:bg-white/10 hover:text-white'
+                            ? 'bg-[linear-gradient(135deg,rgba(219,184,128,0.95),rgba(169,130,74,0.96))] text-charcoal-900'
+                            : 'text-cinematic-secondary hover:bg-white/8 hover:text-cinematic-primary'
                         )}
                       >
                         <div className="flex items-center justify-between">
@@ -366,9 +374,13 @@ export function VideoPlayer({
             </AnimatePresence>
 
             {/* Bottom Controls */}
-            <div className="absolute bottom-0 left-0 right-0 p-4 md:p-6 pointer-events-auto">
+            <div className="pointer-events-auto absolute bottom-0 left-0 right-0 p-4 md:p-6">
               {/* Progress Bar */}
-              <div className="relative mb-4 group/progress">
+              <div className="group/progress relative mb-4 rounded-[1.35rem] border border-gold-200/10 bg-[linear-gradient(135deg,rgba(255,247,235,0.08),rgba(255,255,255,0.03))] px-3 py-3 backdrop-blur-md sm:px-4">
+                <div className="mb-3 flex items-center justify-between gap-3 text-[10px] uppercase tracking-[0.28em] text-cinematic-muted">
+                  <span>{chapters.length} chapters</span>
+                  <span>{Math.round(progressPercent)}% watched</span>
+                </div>
                 <input
                   type="range"
                   min={0}
@@ -376,9 +388,9 @@ export function VideoPlayer({
                   value={currentTime}
                   onChange={handleSeek}
                   aria-label="Seek through the wedding film"
-                  className="w-full h-1.5 bg-white/30 rounded-full appearance-none cursor-pointer [&::-webkit-slider-thumb]:appearance-none [&::-webkit-slider-thumb]:w-4 [&::-webkit-slider-thumb]:h-4 [&::-webkit-slider-thumb]:rounded-full [&::-webkit-slider-thumb]:bg-gold-500 [&::-webkit-slider-thumb]:transition-transform [&::-webkit-slider-thumb]:hover:scale-125"
+                  className="h-1.5 w-full cursor-pointer appearance-none rounded-full bg-white/18 [&::-webkit-slider-thumb]:h-4 [&::-webkit-slider-thumb]:w-4 [&::-webkit-slider-thumb]:appearance-none [&::-webkit-slider-thumb]:rounded-full [&::-webkit-slider-thumb]:bg-gold-400 [&::-webkit-slider-thumb]:shadow-[0_0_0_4px_rgba(245,226,191,0.18)] [&::-webkit-slider-thumb]:transition-transform [&::-webkit-slider-thumb]:hover:scale-125"
                   style={{
-                    background: `linear-gradient(to right, #c9a05c 0%, #c9a05c ${duration > 0 ? (currentTime / duration) * 100 : 0}%, rgba(255,255,255,0.3) ${duration > 0 ? (currentTime / duration) * 100 : 0}%, rgba(255,255,255,0.3) 100%)`
+                    background: `linear-gradient(to right, #dbb880 0%, #dbb880 ${progressPercent}%, rgba(255,247,235,0.18) ${progressPercent}%, rgba(255,247,235,0.18) 100%)`
                   }}
                 />
                 
@@ -387,7 +399,7 @@ export function VideoPlayer({
                   <button
                     key={i}
                     onClick={() => jumpToChapter(chapter, i)}
-                    className="absolute top-1/2 -translate-y-1/2 w-0.5 h-3 bg-white/50 hover:bg-gold-500 transition-colors"
+                    className="absolute top-[calc(50%+0.85rem)] h-3 w-0.5 -translate-y-1/2 bg-white/45 transition-colors hover:bg-gold-300"
                     style={{ left: `${duration > 0 ? (chapter.time / duration) * 100 : 0}%` }}
                     title={chapter.label}
                   />
@@ -395,32 +407,32 @@ export function VideoPlayer({
               </div>
 
               {/* Control Buttons */}
-              <div className="flex items-center justify-between">
-                <div className="flex items-center gap-2 md:gap-4">
+              <div className="flex flex-col gap-3 rounded-[1.35rem] border border-gold-200/10 bg-[linear-gradient(135deg,rgba(255,247,235,0.12),rgba(255,255,255,0.04))] px-3 py-3 backdrop-blur-md sm:flex-row sm:items-center sm:justify-between sm:px-4">
+                <div className="flex flex-wrap items-center gap-1.5 sm:gap-3">
                   {/* Play/Pause */}
                   <button
                     onClick={togglePlay}
-                    className="p-2 text-white hover:text-gold-400 transition-colors"
+                    className="rounded-full bg-[linear-gradient(145deg,rgba(245,226,191,0.95),rgba(219,184,128,0.92))] p-2.5 text-charcoal-900 transition-transform hover:scale-[1.03]"
                     aria-label={isPlaying ? 'Pause film' : 'Play film'}
                   >
                     {isPlaying ? (
-                      <Pause className="w-6 h-6" fill="currentColor" />
+                      <Pause className="w-5 h-5" fill="currentColor" />
                     ) : (
-                      <Play className="w-6 h-6" fill="currentColor" />
+                      <Play className="w-5 h-5 ml-0.5" fill="currentColor" />
                     )}
                   </button>
 
                   {/* Skip Buttons */}
                   <button
                     onClick={() => skip(-10)}
-                    className="hidden md:block p-2 text-white/70 hover:text-white transition-colors"
+                    className="hidden rounded-full p-2 text-cinematic-secondary transition-colors hover:text-cinematic-primary md:block"
                     aria-label="Skip back 10 seconds"
                   >
                     <SkipBack className="w-5 h-5" />
                   </button>
                   <button
                     onClick={() => skip(10)}
-                    className="hidden md:block p-2 text-white/70 hover:text-white transition-colors"
+                    className="hidden rounded-full p-2 text-cinematic-secondary transition-colors hover:text-cinematic-primary md:block"
                     aria-label="Skip forward 10 seconds"
                   >
                     <SkipForward className="w-5 h-5" />
@@ -430,7 +442,7 @@ export function VideoPlayer({
                   <div className="flex items-center gap-2 group/volume">
                     <button
                       onClick={toggleMute}
-                      className="p-2 text-white/70 hover:text-white transition-colors"
+                      className="rounded-full p-2 text-cinematic-secondary transition-colors hover:text-cinematic-primary"
                       aria-label={isMuted || volume === 0 ? 'Unmute film' : 'Mute film'}
                     >
                       {isMuted || volume === 0 ? (
@@ -447,21 +459,24 @@ export function VideoPlayer({
                       value={isMuted ? 0 : volume}
                       onChange={handleVolumeChange}
                       aria-label="Adjust film volume"
-                      className="w-0 group-hover/volume:w-20 transition-all duration-300 h-1 bg-white/30 rounded-full appearance-none cursor-pointer [&::-webkit-slider-thumb]:appearance-none [&::-webkit-slider-thumb]:w-3 [&::-webkit-slider-thumb]:h-3 [&::-webkit-slider-thumb]:rounded-full [&::-webkit-slider-thumb]:bg-white"
+                      className="h-1 w-0 cursor-pointer appearance-none rounded-full bg-white/25 transition-all duration-300 group-hover/volume:w-20 [&::-webkit-slider-thumb]:h-3 [&::-webkit-slider-thumb]:w-3 [&::-webkit-slider-thumb]:appearance-none [&::-webkit-slider-thumb]:rounded-full [&::-webkit-slider-thumb]:bg-candle-100"
                     />
                   </div>
 
                   {/* Time Display */}
-                  <div className="text-white/80 text-sm font-mono hidden sm:block">
+                  <div className="hidden text-sm font-mono text-cinematic-secondary sm:block">
                     {formatTime(currentTime)} / {formatTime(duration)}
                   </div>
                 </div>
 
                 {/* Right Side Controls */}
                 <div className="flex items-center gap-2">
+                  <div className="rounded-full border border-gold-200/10 bg-white/6 px-3 py-1.5 text-[10px] uppercase tracking-[0.26em] text-cinematic-muted">
+                    {activeChapter >= 0 ? chapters[activeChapter]?.label : 'Opening'}
+                  </div>
                   <button
                     onClick={toggleFullscreen}
-                    className="p-2 text-white/70 hover:text-white transition-colors"
+                    className="rounded-full p-2 text-cinematic-secondary transition-colors hover:text-cinematic-primary"
                     aria-label={isFullscreen ? 'Exit fullscreen' : 'Enter fullscreen'}
                   >
                     {isFullscreen ? (

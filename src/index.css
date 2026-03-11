@@ -1,4 +1,4 @@
-@import url('https://fonts.googleapis.com/css2?family=Bodoni+Moda:opsz,wght@6..96,400;6..96,500;6..96,600;6..96,700&family=Manrope:wght@400;500;600;700;800&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Newsreader:opsz,wght@6..72,400;6..72,500;6..72,600;6..72,700&family=Manrope:wght@400;500;600;700;800&display=swap');
 @import '@fontsource/allura';
 @import 'tailwindcss';
 
@@ -41,6 +41,17 @@
   --color-charcoal-800: #1f1d1b;
   --color-charcoal-900: #151413;
 
+  /* Warm cinematic surfaces */
+  --color-mocha-100: #f5eee7;
+  --color-mocha-200: #e7d5c4;
+  --color-mocha-500: #8b6d57;
+  --color-mocha-700: #4f3d33;
+  --color-mocha-800: #352922;
+  --color-mocha-900: #241b16;
+  --color-candle-100: #fff7eb;
+  --color-candle-200: #f5e2bf;
+  --color-candle-300: #e9cfa4;
+
   /* Accent Colors */
   --color-blush-100: #fdf6f4;
   --color-blush-200: #f9e8e3;
@@ -63,7 +74,7 @@
   /* ----------------------------------------
      Typography
      ---------------------------------------- */
-  --font-display: 'Bodoni Moda', 'Cormorant Garamond', Georgia, serif;
+  --font-display: 'Newsreader', Georgia, serif;
   --font-body: 'Manrope', 'Outfit', system-ui, sans-serif;
   --font-script: 'Allura', cursive;
   --font-mono: 'SF Mono', Monaco, monospace;
@@ -195,6 +206,95 @@
     background: rgba(255, 255, 255, 0.78);
     box-shadow: 0 20px 48px -36px rgba(46, 33, 13, 0.38);
     backdrop-filter: blur(14px);
+  }
+
+  .cinematic-panel {
+    position: relative;
+    overflow: hidden;
+    border-radius: 2rem;
+    border: 1px solid rgba(232, 212, 176, 0.18);
+    background:
+      radial-gradient(circle at top left, rgba(245, 226, 191, 0.18), transparent 30%),
+      radial-gradient(circle at bottom right, rgba(249, 232, 227, 0.12), transparent 34%),
+      linear-gradient(140deg, rgba(44, 32, 25, 0.98), rgba(58, 42, 33, 0.98) 50%, rgba(77, 58, 44, 0.96));
+    box-shadow: 0 38px 100px -55px rgba(21, 20, 19, 0.82);
+    backdrop-filter: blur(18px);
+  }
+
+  .cinematic-card {
+    position: relative;
+    overflow: hidden;
+    border-radius: 1.5rem;
+    border: 1px solid rgba(232, 212, 176, 0.14);
+    background:
+      linear-gradient(145deg, rgba(255, 247, 235, 0.09), rgba(255, 255, 255, 0.05) 55%, rgba(244, 213, 180, 0.08));
+    box-shadow: 0 22px 55px -42px rgba(21, 20, 19, 0.85);
+    backdrop-filter: blur(16px);
+  }
+
+  .cinematic-chip {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
+    border-radius: 9999px;
+    border: 1px solid rgba(232, 212, 176, 0.18);
+    background: rgba(255, 247, 235, 0.08);
+    padding: 0.5rem 0.95rem;
+    font-size: 0.625rem;
+    font-weight: 600;
+    letter-spacing: 0.32em;
+    text-transform: uppercase;
+    color: rgba(245, 226, 191, 0.86);
+    backdrop-filter: blur(12px);
+  }
+
+  .cinematic-overlay-pill {
+    border-radius: 9999px;
+    border: 1px solid rgba(245, 226, 191, 0.18);
+    background: linear-gradient(145deg, rgba(255, 247, 235, 0.14), rgba(255, 247, 235, 0.07));
+    color: rgba(255, 247, 235, 0.88);
+    box-shadow: 0 16px 40px -28px rgba(21, 20, 19, 0.8);
+    backdrop-filter: blur(14px);
+  }
+
+  .cinematic-overlay-button {
+    border-radius: 9999px;
+    border: 1px solid rgba(245, 226, 191, 0.18);
+    background: linear-gradient(145deg, rgba(255, 247, 235, 0.14), rgba(255, 247, 235, 0.07));
+    color: rgba(255, 247, 235, 0.88);
+    box-shadow: 0 20px 46px -28px rgba(21, 20, 19, 0.82);
+    backdrop-filter: blur(14px);
+    transition:
+      background 180ms var(--ease-smooth),
+      color 180ms var(--ease-smooth),
+      border-color 180ms var(--ease-smooth),
+      transform 180ms var(--ease-smooth);
+  }
+
+  .cinematic-overlay-button:hover {
+    border-color: rgba(245, 226, 191, 0.3);
+    background: linear-gradient(145deg, rgba(255, 247, 235, 0.18), rgba(255, 247, 235, 0.1));
+    color: rgba(255, 247, 235, 0.98);
+    transform: translateY(-1px);
+  }
+
+  .cinematic-toggle-active {
+    background:
+      linear-gradient(145deg, rgba(233, 207, 164, 0.95), rgba(201, 160, 92, 0.95));
+    color: #241b16;
+    box-shadow: 0 18px 38px -24px rgba(46, 33, 13, 0.62);
+  }
+
+  .text-cinematic-primary {
+    color: rgba(255, 247, 235, 0.96);
+  }
+
+  .text-cinematic-secondary {
+    color: rgba(247, 239, 227, 0.8);
+  }
+
+  .text-cinematic-muted {
+    color: rgba(240, 229, 211, 0.66);
   }
 
   /* Text Gradient */

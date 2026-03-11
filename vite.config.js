@@ -12,6 +12,66 @@ const __filename = fileURLToPath(import.meta.url)
 const __dirname = path.dirname(__filename)
 const DEFAULT_SITE_URL = 'https://austin-jordyn-wedding.netlify.app'
 
+function getNodeModulePackage(id) {
+  const normalized = id.replace(/\\/g, '/')
+  const nodeModulesIndex = normalized.lastIndexOf('/node_modules/')
+
+  if (nodeModulesIndex === -1) {
+    return null
+  }
+
+  const packagePath = normalized.slice(nodeModulesIndex + '/node_modules/'.length)
+  const segments = packagePath.split('/')
+
+  if (segments[0]?.startsWith('@')) {
+    return segments.length >= 2 ? `${segments[0]}/${segments[1]}` : segments[0]
+  }
+
+  return segments[0] || null
+}
+
+function getVendorChunkName(id) {
+  if (!id.includes('node_modules')) {
+    return undefined
+  }
+
+  const packageName = getNodeModulePackage(id)
+
+  if (!packageName) {
+    return undefined
+  }
+
+  if (packageName === 'react' || packageName === 'react-dom' || packageName === 'scheduler') {
+    return 'vendor-react'
+  }
+
+  if (packageName === 'react-router-dom') {
+    return 'vendor-router'
+  }
+
+  if (packageName === '@supabase/supabase-js') {
+    return 'vendor-supabase'
+  }
+
+  if (packageName === 'leaflet' || packageName === 'react-leaflet') {
+    return 'vendor-map'
+  }
+
+  if (packageName === 'framer-motion') {
+    return 'vendor-motion'
+  }
+
+  if (packageName === 'lucide-react' || packageName === '@heroicons/react') {
+    return 'vendor-icons'
+  }
+
+  if (packageName.startsWith('@radix-ui/')) {
+    return 'vendor-radix'
+  }
+
+  return undefined
+}
+
 const pwaIcons = [
   {
     src: '/icons/icon-72x72.png',
@@ -148,20 +208,10 @@ export default defineConfig(({ mode }) => {
     build: {
       rollupOptions: {
         output: {
-          manualChunks: {
-            'vendor-core': ['react', 'react-dom'],
-            'vendor-router': ['react-router-dom'],
-            'vendor-ui': ['framer-motion', '@heroicons/react', 'lucide-react'],
-            'vendor-supabase': ['@supabase/supabase-js'],
-            'vendor-map': ['leaflet', 'react-leaflet'],
+          manualChunks(id) {
+            return getVendorChunkName(id)
           },
-          chunkFileNames: chunkInfo => {
-            const size = chunkInfo.moduleIds?.length || 0
-            if (size > 500) {
-              console.warn(`⚠️ Large chunk detected: ${chunkInfo.name} (${size} modules)`)
-            }
-            return 'assets/[name]-[hash].js'
-          },
+          chunkFileNames: 'assets/[name]-[hash].js',
         },
         onwarn: (warning, warn) => {
           // Suppress warnings about dynamic imports

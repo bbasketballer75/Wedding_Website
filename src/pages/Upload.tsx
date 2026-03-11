@@ -342,7 +342,7 @@ export default function UploadPage() {
           <div className="absolute -right-16 top-10 h-44 w-44 rounded-full bg-gold-200/30 blur-3xl" />
           <div className="absolute -left-10 bottom-0 h-28 w-28 rounded-full bg-blush-200/35 blur-3xl" />
 
-          <div className="relative grid gap-10 lg:grid-cols-[minmax(0,1.1fr)_minmax(0,0.9fr)]">
+          <div className="relative grid gap-10 2xl:grid-cols-[minmax(0,1.1fr)_minmax(0,0.9fr)]">
             <div>
               <span className="eyebrow-chip">
                 <Sparkles className="h-3.5 w-3.5" />
@@ -371,7 +371,7 @@ export default function UploadPage() {
               </div>
             </div>
 
-            <div className="grid gap-3 sm:grid-cols-3 lg:grid-cols-1">
+            <div className="grid gap-3 md:grid-cols-3 2xl:grid-cols-1">
               {uploadHighlights.map(({ icon: Icon, title, description }, index) => (
                 <motion.div
                   key={title}
@@ -395,7 +395,7 @@ export default function UploadPage() {
           </div>
         </motion.section>
 
-        <form onSubmit={handleSubmit} className="mt-8 grid gap-8 xl:grid-cols-[minmax(0,1fr)_23rem]">
+        <form onSubmit={handleSubmit} className="mt-8 grid gap-8 2xl:grid-cols-[minmax(0,1fr)_23rem]">
           <div className="grid gap-6">
             <motion.section
               initial={{ opacity: 0, y: 20 }}
@@ -573,7 +573,7 @@ export default function UploadPage() {
             )}
           </div>
 
-          <div className="grid gap-6 xl:sticky xl:top-28 xl:self-start">
+          <div className="grid gap-6 2xl:sticky 2xl:top-28 2xl:self-start">
             <motion.section
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
