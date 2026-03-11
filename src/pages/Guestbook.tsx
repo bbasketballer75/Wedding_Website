@@ -1,19 +1,36 @@
-import { useState, useEffect, useRef } from 'react'
-import { motion, AnimatePresence } from 'framer-motion'
-import { Button } from '@/components/ui/Button'
-import { Input } from '@/components/ui/Input'
-import { Textarea } from '@/components/ui/Textarea'
-import { Label } from '@/components/ui/Label'
+import { useEffect, useRef, useState } from 'react'
+import { AnimatePresence, motion } from 'framer-motion'
 import { Avatar } from '@/components/ui/Avatar'
 import { Badge } from '@/components/ui/Badge'
-import { ReactionPicker, ReactionType } from '@/components/guestbook/ReactionPicker'
-import { VoiceRecorder } from '@/components/guestbook/VoiceRecorder'
+import { Button } from '@/components/ui/Button'
+import { GuestbookSEO } from '@/components/seo/SEOHead'
+import { Input } from '@/components/ui/Input'
+import { Label } from '@/components/ui/Label'
+import { Textarea } from '@/components/ui/Textarea'
+import { ReactionPicker, type ReactionType } from '@/components/guestbook/ReactionPicker'
 import { VideoRecorder } from '@/components/guestbook/VideoRecorder'
-import { MessageCircle, Send, X, CheckCircle, Sparkles, Loader2, Mic, Pause, Play, Video } from 'lucide-react'
-import { cn } from '@/lib/utils'
-import { supabase, GuestbookMessage as SupabaseMessage } from '@/lib/supabase'
+import { VoiceRecorder } from '@/components/guestbook/VoiceRecorder'
 import { useToast } from '@/context/ToastContext'
-import { rateLimiter, formatTimeRemaining } from '@/utils/rateLimiter'
+import { supabase, type GuestbookMessage as SupabaseMessage } from '@/lib/supabase'
+import { cn } from '@/lib/utils'
+import { formatTimeRemaining, rateLimiter } from '@/utils/rateLimiter'
+import {
+  ArrowUpRight,
+  BookHeart,
+  CheckCircle,
+  Heart,
+  Loader2,
+  Mail,
+  MessageCircle,
+  Mic,
+  Pause,
+  PenSquare,
+  Play,
+  Send,
+  Sparkles,
+  Video,
+  X,
+} from 'lucide-react'
 
 interface Comment {
   id: string
@@ -24,6 +41,7 @@ interface Comment {
 
 interface SupabaseCommentRecord {
   id: string
+  message_id?: string
   author: string
   content: string
   timestamp?: string
@@ -33,894 +51,861 @@ interface SupabaseCommentRecord {
 interface Message {
   id: string
   name: string
-  avatar?: string
   content: string
-  type: 'text' | 'photo' | 'video' | 'voice'
+  type: 'text' | 'voice' | 'video'
   mediaUrl?: string
   reactions: Array<{ type: ReactionType; count: number; isActive: boolean }>
   comments: Comment[]
   timestamp: string
 }
 
-// Sample messages as fallback
+const EMPTY_CAPTIONS_TRACK = 'data:text/vtt,WEBVTT'
+const INITIAL_VISIBLE_MESSAGES = 8
+
 const sampleMessages: Message[] = [
   {
-    id: '1',
+    id: 'sample-1',
     name: 'Sarah Mitchell',
-    content: "I'm still crying thinking about your vows. The most beautiful ceremony I've ever witnessed. Wishing you both a lifetime of happiness! 💕",
+    content:
+      "Your vows are still lodged in my chest in the best way. It felt like the room disappeared for a second and it was just the two of you.",
     type: 'text',
     reactions: [
       { type: 'heart', count: 12, isActive: false },
       { type: 'cry', count: 5, isActive: true },
-      { type: 'clap', count: 3, isActive: false },
     ],
     comments: [
-      { id: 'c1', author: 'Jordyn', content: 'Thank you Sarah! Your support means everything ❤️', timestamp: '1 day ago' }
+      {
+        id: 'sample-comment-1',
+        author: 'Jordyn',
+        content: 'This one made us tear up all over again. Thank you.',
+        timestamp: 'May 12',
+      },
     ],
-    timestamp: '2 days ago',
+    timestamp: 'May 12',
   },
   {
-    id: '2',
+    id: 'sample-2',
     name: 'Mike Chen',
-    content: 'The dance floor was absolutely insane! Best wedding party ever. So honored to have been there.',
+    content:
+      'The dance floor was chaos in the most beautiful way. I do not think any of us sat down after sunset.',
     type: 'text',
     reactions: [
       { type: 'fire', count: 8, isActive: false },
       { type: 'clap', count: 4, isActive: true },
     ],
     comments: [],
-    timestamp: '3 days ago',
+    timestamp: 'May 13',
   },
   {
-    id: '3',
+    id: 'sample-3',
     name: 'Emma & David',
-    content: 'That cake was DELICIOUS! Also you two are adorable.',
-    type: 'text',
-    reactions: [
-      { type: 'smile', count: 6, isActive: false },
-      { type: 'heart', count: 2, isActive: false },
-    ],
+    content: 'Left a voice note because there was no way we could keep this one short in writing.',
+    type: 'voice',
+    reactions: [{ type: 'heart', count: 6, isActive: false }],
     comments: [],
-    timestamp: '4 days ago',
+    timestamp: 'May 14',
   },
   {
-    id: '4',
+    id: 'sample-4',
     name: 'Aunt Patricia',
-    content: "I've known Jordyn since she was a baby. Seeing her so happy brought tears to my eyes. Austin, welcome to the family!",
-    type: 'text',
-    reactions: [
-      { type: 'heart', count: 15, isActive: true },
-      { type: 'cry', count: 8, isActive: false },
-    ],
-    comments: [
-      { id: 'c2', author: 'Austin', content: 'Thank you Aunt Patricia! So happy to be part of the family.', timestamp: '3 days ago' }
-    ],
-    timestamp: '5 days ago',
+    content: 'We clipped a quick hello from our table right after the toasts.',
+    type: 'video',
+    reactions: [{ type: 'heart', count: 15, isActive: true }],
+    comments: [],
+    timestamp: 'May 15',
   },
 ]
 
-const EMPTY_CAPTIONS_TRACK = 'data:text/vtt,WEBVTT'
+const composerModes = [
+  { type: 'text', label: 'Text', description: 'Write a note, memory, or blessing.', icon: PenSquare },
+  { type: 'voice', label: 'Voice', description: 'Record something more personal.', icon: Mic },
+  { type: 'video', label: 'Video', description: 'Send a quick face-to-camera hello.', icon: Video },
+] as const
 
-// Helper to convert Supabase message to local format
-const mapSupabaseMessage = (msg: SupabaseMessage & { comments?: SupabaseCommentRecord[] }): Message => {
-  const reactions: Array<{ type: ReactionType; count: number; isActive: boolean }> = []
-  
-  if (msg.reactions) {
-    Object.entries(msg.reactions).forEach(([type, count]) => {
+const messageTypeMeta = {
+  text: { label: 'Written note', icon: PenSquare, badgeClass: 'border-gold-200 bg-gold-50 text-gold-700' },
+  voice: { label: 'Voice note', icon: Mic, badgeClass: 'border-rose-200 bg-rose-50 text-rose-600' },
+  video: { label: 'Video note', icon: Video, badgeClass: 'border-sage-200 bg-sage-100 text-charcoal-700' },
+} as const
+
+function formatGuestbookDate(timestamp?: string) {
+  if (!timestamp) return 'Just now'
+  const parsed = new Date(timestamp)
+  if (Number.isNaN(parsed.getTime())) return timestamp
+  return parsed.toLocaleDateString('en-US', {
+    month: 'short',
+    day: 'numeric',
+    year: parsed.getFullYear() !== new Date().getFullYear() ? 'numeric' : undefined,
+  })
+}
+
+function mapSupabaseMessage(message: SupabaseMessage & { comments?: SupabaseCommentRecord[] }): Message {
+  const reactions: Message['reactions'] = []
+
+  if (message.reactions) {
+    Object.entries(message.reactions).forEach(([type, count]) => {
       if (typeof count === 'number' && count > 0) {
         reactions.push({ type: type as ReactionType, count, isActive: false })
       }
     })
   }
 
-  // Format comments from Supabase
-  const comments: Comment[] = msg.comments?.map(c => ({
-    id: c.id,
-    author: c.author,
-    content: c.content,
-    timestamp: new Date(c.created_at ?? c.timestamp ?? new Date().toISOString()).toLocaleDateString('en-US', { 
-      day: 'numeric', 
-      month: 'short' 
-    })
-  })) || []
-
-  const formattedTimestamp = new Date(msg.created_at).toLocaleDateString('en-US', {
-    day: 'numeric',
-    month: 'short',
-    year: new Date(msg.created_at).getFullYear() !== new Date().getFullYear() ? 'numeric' : undefined,
-  })
-
   return {
-    id: msg.id,
-    name: msg.name,
-    content: msg.content,
-    type: msg.type as 'text' | 'photo' | 'video' | 'voice',
-    mediaUrl: msg.media_url || undefined,
+    id: message.id,
+    name: message.name,
+    content: message.content,
+    type: message.type,
+    mediaUrl: message.media_url || undefined,
     reactions,
-    comments,
-    timestamp: `${formattedTimestamp} ago`,
+    comments: (message.comments || []).map((comment) => ({
+      id: comment.id,
+      author: comment.author,
+      content: comment.content,
+      timestamp: formatGuestbookDate(comment.created_at ?? comment.timestamp),
+    })),
+    timestamp: formatGuestbookDate(message.created_at),
   }
 }
 
-function AudioPlayer({ url }: { url: string }) {
-  const [isPlaying, setIsPlaying] = useState(false)
-  const audioRef = useRef<HTMLAudioElement | null>(null)
-  
-  // Store bar heights - generated once on mount
-  const [barHeights] = useState<number[]>(() =>
-    Array.from({ length: 20 }, (_, i) => ((i * 11) % 20) + 8)
-  )
+function formatAudioTime(seconds: number) {
+  const safe = Number.isFinite(seconds) ? seconds : 0
+  return `${Math.floor(safe / 60)}:${Math.floor(safe % 60).toString().padStart(2, '0')}`
+}
 
-  return (
-    <div className="flex items-center gap-3 bg-charcoal-100 rounded-full p-2 pr-4">
-      <button
-        type="button"
-        onClick={() => {
-          if (audioRef.current) {
-            if (isPlaying) {
-              audioRef.current.pause()
-            } else {
-              void audioRef.current.play()
-            }
-            setIsPlaying(!isPlaying)
-          }
-        }}
-        className="w-10 h-10 bg-gold-500 text-white rounded-full flex items-center justify-center hover:bg-gold-600 transition-colors"
-        aria-label={isPlaying ? 'Pause voice message playback' : 'Play voice message'}
-      >
-        {isPlaying ? <Pause className="w-4 h-4" /> : <Play className="w-4 h-4 ml-0.5" />}
-      </button>
-      <div className="flex-1">
-    <div className="h-8 flex items-center gap-0.5">
-          {Array.from({ length: 20 }).map((_, i) => (
-            <div
-              key={i}
-              className="w-1 bg-gold-400 rounded-full"
-              style={{ height: `${barHeights[i]}px` }}
-            />
-          ))}
+function getDisplayContent(message: Message) {
+  if (message.type === 'voice' && message.content === 'Voice message') return ''
+  if (message.type === 'video' && message.content === 'Video message') return ''
+  return message.content
+}
+
+function AudioPlayer({ url }: { url?: string }) {
+  const [isPlaying, setIsPlaying] = useState(false)
+  const [duration, setDuration] = useState(0)
+  const [currentTime, setCurrentTime] = useState(0)
+  const audioRef = useRef<HTMLAudioElement | null>(null)
+  const [bars] = useState(() => Array.from({ length: 18 }, (_, index) => 10 + ((index * 9) % 18)))
+
+  if (!url) {
+    return (
+      <div className="rounded-[1.5rem] border border-rose-200/70 bg-rose-50/90 px-4 py-4">
+        <div className="flex items-center gap-3">
+          <div className="flex h-11 w-11 items-center justify-center rounded-full border border-white/70 bg-white text-rose-500 shadow-sm">
+            <Mic className="h-4 w-4" />
+          </div>
+          <div>
+            <p className="text-sm font-semibold text-charcoal-900">Voice note shared</p>
+            <p className="text-sm text-charcoal-500">Playback preview is unavailable in sample mode.</p>
+          </div>
         </div>
       </div>
-      <span className="text-charcoal-500 text-sm">0:15</span>
-      <audio ref={audioRef} src={url} onEnded={() => setIsPlaying(false)} aria-label="Voice message playback">
+    )
+  }
+
+  const activeBars = Math.max(1, Math.round((duration > 0 ? currentTime / duration : 0) * bars.length))
+
+  return (
+    <div className="rounded-[1.5rem] border border-rose-200/70 bg-[linear-gradient(135deg,rgba(255,255,255,0.9),rgba(253,246,244,0.98)_55%,rgba(249,232,227,0.94))] px-4 py-4 shadow-sm">
+      <audio
+        ref={audioRef}
+        src={url}
+        onEnded={() => {
+          setIsPlaying(false)
+          setCurrentTime(0)
+        }}
+        onTimeUpdate={(event) => setCurrentTime(event.currentTarget.currentTime)}
+        onLoadedMetadata={(event) => setDuration(event.currentTarget.duration)}
+      >
         <track kind="captions" src={EMPTY_CAPTIONS_TRACK} srcLang="en" label="No captions available" />
       </audio>
+
+      <div className="flex items-center gap-4">
+        <button
+          type="button"
+          onClick={() => {
+            if (!audioRef.current) return
+            if (isPlaying) {
+              audioRef.current.pause()
+              setIsPlaying(false)
+              return
+            }
+            void audioRef.current.play()
+            setIsPlaying(true)
+          }}
+          className="flex h-12 w-12 items-center justify-center rounded-full border border-white/70 bg-charcoal-900 text-white shadow-sm transition-colors hover:bg-charcoal-800"
+          aria-label={isPlaying ? 'Pause voice message playback' : 'Play voice message'}
+        >
+          {isPlaying ? <Pause className="h-4 w-4" /> : <Play className="ml-0.5 h-4 w-4" fill="currentColor" />}
+        </button>
+
+        <div className="min-w-0 flex-1">
+          <div className="flex items-center justify-between gap-3">
+            <p className="text-sm font-semibold text-charcoal-900">Voice note</p>
+            <span className="text-xs uppercase tracking-[0.24em] text-charcoal-400">
+              {formatAudioTime(isPlaying ? currentTime : duration || currentTime)}
+            </span>
+          </div>
+
+          <div className="mt-3 flex h-10 items-end gap-1">
+            {bars.map((height, index) => (
+              <div
+                key={index}
+                className={cn(
+                  'w-1 rounded-full transition-colors duration-300',
+                  index < activeBars ? 'bg-rose-400' : 'bg-rose-200'
+                )}
+                style={{ height }}
+              />
+            ))}
+          </div>
+        </div>
+      </div>
     </div>
   )
 }
 
-function MessageCard({ 
-  message, 
+function MessageCard({
+  message,
   onReact,
-  onReply 
-}: { 
-  message: Message; 
+  onReply,
+}: {
+  message: Message
   onReact: (id: string, type: ReactionType) => void
   onReply: (id: string, content: string) => void
 }) {
   const [showReplyForm, setShowReplyForm] = useState(false)
   const [replyContent, setReplyContent] = useState('')
-
-  const handleReplySubmit = (e: React.FormEvent) => {
-    e.preventDefault()
-    if (replyContent.trim()) {
-      onReply(message.id, replyContent)
-      setReplyContent('')
-      setShowReplyForm(false)
-    }
-  }
+  const meta = messageTypeMeta[message.type]
+  const TypeIcon = meta.icon
+  const displayContent = getDisplayContent(message)
 
   return (
-    <motion.div
-      initial={{ opacity: 0, y: 20 }}
+    <motion.article
+      initial={{ opacity: 0, y: 18 }}
       whileInView={{ opacity: 1, y: 0 }}
-      viewport={{ once: true }}
-      className="bg-white rounded-2xl p-6 shadow-lg hover:shadow-xl border border-gold-200/60 transition-all"
+      viewport={{ once: true, amount: 0.2 }}
+      className="editorial-card px-5 py-5 sm:px-6 sm:py-6"
     >
-      {/* Header */}
-      <div className="flex items-center gap-3 mb-4">
-        <Avatar fallback={message.name} size="md" />
-        <div className="flex-1">
-          <h4 className="font-medium text-charcoal-800">{message.name}</h4>
-          <p className="text-xs text-charcoal-400">{message.timestamp}</p>
+      <div className="flex items-start justify-between gap-4">
+        <div className="flex min-w-0 items-center gap-3">
+          <Avatar fallback={message.name} size="lg" />
+          <div className="min-w-0">
+            <h3 className="truncate text-lg font-semibold text-charcoal-900">{message.name}</h3>
+            <p className="mt-1 text-sm text-charcoal-500">{message.timestamp}</p>
+          </div>
         </div>
-        <Badge variant="ghost" className="text-xs">
-          {message.type === 'text' && 'Message'}
-          {message.type === 'photo' && 'Photo'}
-          {message.type === 'video' && 'Video'}
-          {message.type === 'voice' && 'Voice'}
+
+        <Badge variant="secondary" className={cn('gap-2 border px-3 py-1.5 text-[10px]', meta.badgeClass)}>
+          <TypeIcon className="h-3.5 w-3.5" />
+          {meta.label}
         </Badge>
       </div>
 
-      {/* Content */}
-      <div className="mb-4">
-        {message.type === 'video' && message.mediaUrl && (
-          <div className="aspect-video bg-charcoal-800 rounded-xl mb-4 overflow-hidden">
-            <video
-              src={message.mediaUrl}
-              controls
-              className="w-full h-full object-cover"
-              poster="/images/video-thumbnail.jpg"
-              aria-label={`Video message from ${message.name}`}
-            >
-              <track kind="captions" src={EMPTY_CAPTIONS_TRACK} srcLang="en" label="No captions available" />
-            </video>
-          </div>
-        )}
-
-        {message.type === 'voice' && message.mediaUrl && (
-          <div className="mb-4">
-            <AudioPlayer url={message.mediaUrl} />
-          </div>
-        )}
-        
-        <p className="text-charcoal-700 leading-relaxed">{message.content}</p>
-      </div>
-
-      {/* Comments Preview */}
-      {message.comments.length > 0 && (
-        <div className="mb-4 space-y-2">
-          {message.comments.map((comment) => (
-            <div key={comment.id} className="flex gap-2 text-sm">
-              <span className="font-medium text-charcoal-700">{comment.author}:</span>
-              <span className="text-charcoal-600">{comment.content}</span>
+      <div className="mt-5 space-y-4">
+        {message.type === 'video' &&
+          (message.mediaUrl ? (
+            <div className="overflow-hidden rounded-[1.5rem] border border-charcoal-900/10 bg-charcoal-900 shadow-[0_20px_50px_-32px_rgba(21,20,19,0.7)]">
+              <video
+                src={message.mediaUrl}
+                controls
+                className="aspect-video w-full object-cover"
+                aria-label={`Video message from ${message.name}`}
+              >
+                <track kind="captions" src={EMPTY_CAPTIONS_TRACK} srcLang="en" label="No captions available" />
+              </video>
+            </div>
+          ) : (
+            <div className="rounded-[1.5rem] border border-sage-200/80 bg-sage-100/90 px-4 py-4">
+              <div className="flex items-center gap-3">
+                <div className="flex h-11 w-11 items-center justify-center rounded-full border border-white/70 bg-white text-charcoal-700 shadow-sm">
+                  <Video className="h-4 w-4" />
+                </div>
+                <div>
+                  <p className="text-sm font-semibold text-charcoal-900">Video note shared</p>
+                  <p className="text-sm text-charcoal-500">Sample fallback keeps the note styling without a live preview.</p>
+                </div>
+              </div>
             </div>
           ))}
+
+        {message.type === 'voice' && <AudioPlayer url={message.mediaUrl} />}
+
+        {displayContent && (
+          <div className="rounded-[1.35rem] bg-white/74 px-4 py-4">
+            <p className="text-base leading-7 text-charcoal-700">{displayContent}</p>
+          </div>
+        )}
+      </div>
+
+      {message.comments.length > 0 && (
+        <div className="mt-5 rounded-[1.35rem] border border-white/75 bg-white/74 px-4 py-4">
+          <div className="flex items-center justify-between gap-3">
+            <p className="text-[10px] uppercase tracking-[0.28em] text-charcoal-500">Replies</p>
+            <span className="text-xs text-charcoal-400">{message.comments.length} total</span>
+          </div>
+
+          <div className="mt-4 space-y-3">
+            {message.comments.slice(0, 2).map((comment) => (
+              <div key={comment.id} className="rounded-2xl bg-cream-50/90 px-4 py-3">
+                <div className="flex items-center gap-2 text-sm">
+                  <span className="font-medium text-charcoal-900">{comment.author}</span>
+                  <span className="text-charcoal-400">{comment.timestamp}</span>
+                </div>
+                <p className="mt-2 text-sm leading-6 text-charcoal-600">{comment.content}</p>
+              </div>
+            ))}
+          </div>
         </div>
       )}
 
-      {/* Actions */}
-      <div className="flex items-center justify-between pt-4 border-t border-gold-100">
-        <ReactionPicker 
-          reactions={message.reactions}
-          onReact={(type) => onReact(message.id, type)}
-        />
-        
+      <div className="mt-5 flex flex-col gap-4 border-t border-charcoal-900/8 pt-4 sm:flex-row sm:items-center sm:justify-between">
+        <ReactionPicker reactions={message.reactions} onReact={(type) => onReact(message.id, type)} />
+
         <button
           type="button"
-          onClick={() => setShowReplyForm(!showReplyForm)}
-          className="flex items-center gap-1.5 text-sm text-charcoal-400 hover:text-charcoal-600 transition-colors"
+          onClick={() => setShowReplyForm((current) => !current)}
+          className={cn(
+            'inline-flex items-center gap-2 rounded-full border px-4 py-2 text-sm transition-colors',
+            showReplyForm
+              ? 'border-gold-300 bg-gold-50 text-gold-700'
+              : 'border-white/70 bg-white/74 text-charcoal-500 hover:text-charcoal-700'
+          )}
           aria-expanded={showReplyForm}
         >
-          <MessageCircle className="w-4 h-4" />
-          <span>Reply</span>
-          {message.comments.length > 0 && (
-            <span className="text-charcoal-300">({message.comments.length})</span>
-          )}
+          <MessageCircle className="h-4 w-4" />
+          Reply
+          {message.comments.length > 0 && <span className="text-charcoal-400">({message.comments.length})</span>}
         </button>
       </div>
 
-      {/* Reply Form */}
-      <AnimatePresence>
+      <AnimatePresence initial={false}>
         {showReplyForm && (
           <motion.form
             initial={{ opacity: 0, height: 0 }}
             animate={{ opacity: 1, height: 'auto' }}
             exit={{ opacity: 0, height: 0 }}
-            onSubmit={handleReplySubmit}
-            className="mt-4 pt-4 border-t border-gold-100"
+            onSubmit={(event) => {
+              event.preventDefault()
+              if (!replyContent.trim()) return
+              onReply(message.id, replyContent)
+              setReplyContent('')
+              setShowReplyForm(false)
+            }}
+            className="mt-4 overflow-hidden rounded-[1.35rem] border border-white/80 bg-white/72 px-4 py-4"
           >
-            <div className="flex gap-2">
-              <Input
-                value={replyContent}
-                onChange={(e) => setReplyContent(e.target.value)}
-                placeholder="Write a reply..."
-                className="flex-1"
-              />
+            <Label htmlFor={`reply-${message.id}`}>Add a reply</Label>
+            <div className="mt-3 flex flex-col gap-3 sm:flex-row">
+              <Input id={`reply-${message.id}`} value={replyContent} onChange={(event) => setReplyContent(event.target.value)} placeholder="Write a quick note back..." className="flex-1" />
               <Button type="submit" size="sm" disabled={!replyContent.trim()}>
-                <Send className="w-4 h-4" />
+                <Send className="h-4 w-4" />
+                Send
               </Button>
             </div>
           </motion.form>
         )}
       </AnimatePresence>
-    </motion.div>
+    </motion.article>
   )
 }
-
 export default function Guestbook() {
-  const [messages, setMessages] = useState<Message[]>(sampleMessages)
+  const [messages, setMessages] = useState<Message[]>([])
   const [showForm, setShowForm] = useState(false)
-  const [formType, setFormType] = useState<'text' | 'photo' | 'video' | 'voice'>('text')
+  const [formType, setFormType] = useState<'text' | 'voice' | 'video'>('text')
   const [name, setName] = useState('')
   const [email, setEmail] = useState('')
   const [content, setContent] = useState('')
   const [isSubmitted, setIsSubmitted] = useState(false)
-  const [filter, setFilter] = useState<'all' | 'messages' | 'photos' | 'videos'>('all')
+  const [filter, setFilter] = useState<'all' | 'text' | 'voice' | 'video'>('all')
   const [mediaBlob, setMediaBlob] = useState<Blob | null>(null)
   const [isLoading, setIsLoading] = useState(true)
   const [isSubmitting, setIsSubmitting] = useState(false)
   const [loadError, setLoadError] = useState<string | null>(null)
   const [submitError, setSubmitError] = useState<string | null>(null)
-  
+  const [visibleCount, setVisibleCount] = useState(INITIAL_VISIBLE_MESSAGES)
+  const composerRef = useRef<HTMLDivElement | null>(null)
   const { addToast } = useToast()
 
-  // Fetch messages from Supabase on mount
   useEffect(() => {
     const fetchMessages = async () => {
       try {
         setIsLoading(true)
         setLoadError(null)
 
-        // Try to use the RPC function first (includes comments)
-        const { data: rpcData, error: rpcError } = await supabase
-          .rpc('get_guestbook_messages_with_comments')
-
-        if (!rpcError && rpcData) {
-          const mappedMessages = rpcData.map(mapSupabaseMessage)
-          // Merge with sample messages, keeping Supabase ones first
-          setMessages([...mappedMessages, ...sampleMessages])
-          setIsLoading(false)
+        const { data: rpcData, error: rpcError } = await supabase.rpc('get_guestbook_messages_with_comments')
+        if (!rpcError && Array.isArray(rpcData)) {
+          setMessages(rpcData.map(mapSupabaseMessage))
           return
         }
 
-        // Fallback to regular query if RPC fails
-        const { data, error } = await supabase
-          .from('guestbook_messages')
-          .select('*')
-          .order('created_at', { ascending: false })
+        const [{ data, error }, { data: commentsData, error: commentsError }] = await Promise.all([
+          supabase
+            .from('guestbook_messages')
+            .select('*')
+            .order('created_at', { ascending: false }),
+          supabase
+            .from('guestbook_comments')
+            .select('*')
+            .order('created_at', { ascending: true }),
+        ])
 
         if (error) {
-          // Error handled via UI
-          setLoadError('Could not load messages from database. Using sample messages.')
+          setLoadError('Could not load live messages right now. Showing the saved sample guestbook instead.')
+          setMessages(sampleMessages)
           return
         }
 
-        if (data && data.length > 0) {
-          const mappedMessages = data.map(mapSupabaseMessage)
-          // Merge with sample messages, keeping Supabase ones first
-          setMessages([...mappedMessages, ...sampleMessages])
+        const commentsByMessageId = new Map<string, SupabaseCommentRecord[]>()
+        if (!commentsError) {
+          for (const comment of commentsData || []) {
+            if (!comment.message_id) {
+              continue
+            }
+            const messageComments = commentsByMessageId.get(comment.message_id) || []
+            messageComments.push(comment)
+            commentsByMessageId.set(comment.message_id, messageComments)
+          }
         }
+
+        setMessages(
+          (data || []).map((message) =>
+            mapSupabaseMessage({
+              ...message,
+              comments: commentsByMessageId.get(message.id) || [],
+            })
+          )
+        )
       } catch {
-        // Error handled via UI
-        setLoadError('Could not connect to database. Using sample messages.')
+        setLoadError('Could not connect to the guestbook database. Showing the saved sample guestbook instead.')
+        setMessages(sampleMessages)
       } finally {
         setIsLoading(false)
       }
     }
 
-    fetchMessages()
+    void fetchMessages()
   }, [])
 
+  useEffect(() => {
+    setVisibleCount(INITIAL_VISIBLE_MESSAGES)
+  }, [filter, messages.length])
+
+  useEffect(() => {
+    if (showForm && composerRef.current) {
+      composerRef.current.scrollIntoView({ behavior: 'smooth', block: 'start' })
+    }
+  }, [showForm])
+
+  const openComposer = (nextType?: 'text' | 'voice' | 'video') => {
+    if (nextType) setFormType(nextType)
+    setShowForm(true)
+    setSubmitError(null)
+    setIsSubmitted(false)
+  }
+
   const handleReact = async (messageId: string, reactionType: ReactionType) => {
-    // Optimistically update UI first
-    setMessages(prev => prev.map(msg => {
-      if (msg.id !== messageId) return msg
-      
-      const existingReaction = msg.reactions.find(r => r.type === reactionType)
-      
-      if (existingReaction) {
-        return {
-          ...msg,
-          reactions: msg.reactions.map(r => 
-            r.type === reactionType
-              ? { ...r, count: r.isActive ? r.count - 1 : r.count + 1, isActive: !r.isActive }
-              : r
-          ).filter(r => r.count > 0)
-        }
-      } else {
-        return {
-          ...msg,
-          reactions: [...msg.reactions, { type: reactionType, count: 1, isActive: true }]
-        }
-      }
-    }))
+    const currentMessage = messages.find((message) => message.id === messageId)
+    if (!currentMessage) return
 
-    // Persist to Supabase
-    try {
-      // Get current message to calculate new reactions
-      const message = messages.find(m => m.id === messageId)
-      if (!message) return
+    setMessages((previous) =>
+      previous.map((message) => {
+        if (message.id !== messageId) return message
+        const existing = message.reactions.find((reaction) => reaction.type === reactionType)
 
-      const existingReaction = message.reactions.find(r => r.type === reactionType)
-      const isTogglingOff = existingReaction?.isActive
-      
-      // Build updated reactions object
-      const updatedReactions: Record<string, number> = {}
-      message.reactions.forEach(r => {
-        if (r.type === reactionType) {
-          const newCount = isTogglingOff ? r.count - 1 : r.count + 1
-          if (newCount > 0) updatedReactions[r.type] = newCount
-        } else if (r.count > 0) {
-          updatedReactions[r.type] = r.count
+        if (existing) {
+          return {
+            ...message,
+            reactions: message.reactions
+              .map((reaction) =>
+                reaction.type === reactionType
+                  ? { ...reaction, count: reaction.isActive ? reaction.count - 1 : reaction.count + 1, isActive: !reaction.isActive }
+                  : reaction
+              )
+              .filter((reaction) => reaction.count > 0),
+          }
+        }
+
+        return {
+          ...message,
+          reactions: [...message.reactions, { type: reactionType, count: 1, isActive: true }],
         }
       })
-      
-      // If adding new reaction
-      if (!existingReaction) {
-        updatedReactions[reactionType] = 1
-      }
+    )
 
-      const { error } = await supabase
-        .from('guestbook_messages')
-        .update({ reactions: updatedReactions })
-        .eq('id', messageId)
+    if (messageId.startsWith('sample-')) return
 
-      if (error) {
-        // Error handled via UI
-        // Optionally: revert UI state here
-      }
+    try {
+      const existing = currentMessage.reactions.find((reaction) => reaction.type === reactionType)
+      const updated: Record<string, number> = {}
+
+      currentMessage.reactions.forEach((reaction) => {
+        if (reaction.type === reactionType) {
+          const nextCount = reaction.isActive ? reaction.count - 1 : reaction.count + 1
+          if (nextCount > 0) updated[reaction.type] = nextCount
+        } else if (reaction.count > 0) {
+          updated[reaction.type] = reaction.count
+        }
+      })
+
+      if (!existing) updated[reactionType] = 1
+      await supabase.from('guestbook_messages').update({ reactions: updated }).eq('id', messageId)
     } catch {
-      // Error handled via UI
+      // Keep optimistic UI.
     }
   }
 
   const handleReply = async (messageId: string, replyContent: string) => {
-    const newComment: Comment = {
-      id: `c${Date.now()}`,
-      author: 'Guest',
-      content: replyContent,
-      timestamp: 'Just now'
-    }
-    
-    // Optimistically update UI
-    setMessages(prev => prev.map(msg => 
-      msg.id === messageId 
-        ? { ...msg, comments: [...msg.comments, newComment] }
-        : msg
-    ))
+    const newComment: Comment = { id: `comment-${Date.now()}`, author: 'Guest', content: replyContent, timestamp: 'Just now' }
 
-    // Persist to Supabase
+    setMessages((previous) =>
+      previous.map((message) =>
+        message.id === messageId ? { ...message, comments: [...message.comments, newComment] } : message
+      )
+    )
+
+    if (messageId.startsWith('sample-')) return
+
     try {
-      const { error } = await supabase
+      await supabase
         .from('guestbook_comments')
-        .insert([
-          {
-            message_id: messageId,
-            author: 'Guest',
-            content: replyContent
-          }
-        ])
-
-      if (error) {
-        // Error handled via UI
-        // Optionally: show error toast or revert UI
-      }
+        .insert([{ message_id: messageId, author: 'Guest', content: replyContent }])
     } catch {
-      // Error handled via UI
+      // Keep optimistic UI.
     }
   }
 
-  const uploadMedia = async (blob: Blob, type: 'voice' | 'video'): Promise<string | null> => {
+  const uploadMedia = async (blob: Blob, type: 'voice' | 'video') => {
     try {
       const bucket = type === 'voice' ? 'guest-voice' : 'guest-videos'
-      const ext = type === 'voice' ? 'webm' : 'webm'
-      const fileName = `${Date.now()}_${Math.random().toString(36).substring(7)}.${ext}`
+      const fileName = `${Date.now()}_${Math.random().toString(36).slice(2)}.webm`
 
-      const { error } = await supabase.storage
-        .from(bucket)
-        .upload(fileName, blob, {
-          contentType: type === 'voice' ? 'audio/webm' : 'video/webm'
-        })
+      const { error } = await supabase.storage.from(bucket).upload(fileName, blob, {
+        contentType: type === 'voice' ? 'audio/webm' : 'video/webm',
+      })
 
-      if (error) {
-        // Error handled via UI
-        return null
-      }
+      if (error) return null
 
-      const { data: { publicUrl } } = supabase.storage
-        .from(bucket)
-        .getPublicUrl(fileName)
-
+      const { data: { publicUrl } } = supabase.storage.from(bucket).getPublicUrl(fileName)
       return publicUrl
     } catch {
-      // Error handled via UI
       return null
     }
   }
 
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault()
-    
-    // Client-side rate limiting (first line of defense)
-    const clientRateCheck = rateLimiter.check('guestbook-submit', {
-      maxRequests: 3,
-      windowMs: 60000, // 1 minute
-    })
-    
+  const handleSubmit = async (event: React.FormEvent) => {
+    event.preventDefault()
+
+    const clientRateCheck = rateLimiter.check('guestbook-submit', { maxRequests: 3, windowMs: 60000 })
     if (!clientRateCheck.canProceed) {
-      const timeRemaining = formatTimeRemaining(clientRateCheck.timeRemainingMs)
-      addToast(`Please wait ${timeRemaining} before submitting another message`, 'warning')
+      addToast(`Please wait ${formatTimeRemaining(clientRateCheck.timeRemainingMs)} before submitting another message`, 'warning')
       return
     }
-    
+
+    if (!name || !email || (formType === 'text' && !content.trim())) return
+
     setIsSubmitting(true)
     setSubmitError(null)
 
     try {
       let mediaUrl: string | undefined
 
-      // Upload media if voice or video
       if ((formType === 'voice' || formType === 'video') && mediaBlob) {
         const uploadedUrl = await uploadMedia(mediaBlob, formType)
-        if (uploadedUrl) {
-          mediaUrl = uploadedUrl
-        }
+        if (uploadedUrl) mediaUrl = uploadedUrl
       }
 
-      // Try server-side rate limited submission first
-      const { data: rpcData, error: rpcError } = await supabase
-        .rpc('submit_guestbook_message_with_rate_limit', {
-          p_name: name,
-          p_email: email,
-          p_content: content || (formType === 'voice' ? 'Voice message' : formType === 'video' ? 'Video message' : ''),
-          p_type: formType,
-          p_media_url: mediaUrl,
-          p_max_requests: 3,
-          p_window_minutes: 1
-        })
+      const normalizedContent = content.trim()
+      const fallbackContent = formType === 'voice' ? 'Voice message' : formType === 'video' ? 'Video message' : ''
 
-      // If RPC succeeds, use that result
+      const { data: rpcData, error: rpcError } = await supabase.rpc('submit_guestbook_message_with_rate_limit', {
+        p_name: name,
+        p_email: email,
+        p_content: normalizedContent || fallbackContent,
+        p_type: formType,
+        p_media_url: mediaUrl,
+        p_max_requests: 3,
+        p_window_minutes: 1,
+      })
+
       if (!rpcError && rpcData) {
-        const result = rpcData as { 
-          success: boolean
-          message_id: string
-          error_message: string
-          rate_limit_remaining: number
-          rate_limit_reset_after: number
-        }
-        
+        const result = rpcData as { success: boolean; message_id: string; error_message: string }
+
         if (!result.success) {
-          // Server-side rate limit hit
           addToast(result.error_message || 'Rate limit exceeded. Please try again later.', 'warning')
           setIsSubmitting(false)
           return
         }
-        
-        // Success - create message object from form data (RPC doesn't return full object)
-        const newMessage: Message = {
-          id: result.message_id,
-          name,
-          content: content || (formType === 'voice' ? 'Voice message' : formType === 'video' ? 'Video message' : ''),
-          type: formType,
-          mediaUrl,
-          reactions: [],
-          comments: [],
-          timestamp: 'Just now'
-        }
-        setMessages(prev => [newMessage, ...prev])
+
+        setMessages((previous) => [
+          { id: result.message_id, name, content: normalizedContent || fallbackContent, type: formType, mediaUrl, reactions: [], comments: [], timestamp: 'Just now' },
+          ...previous,
+        ])
       } else {
-        // RPC failed or doesn't exist, fall back to direct insert
-        // This handles cases where the migration hasn't been applied yet
-        // Server-side rate limiting not available, using fallback
-        
         const { data, error } = await supabase
           .from('guestbook_messages')
-          .insert([
-            {
-              name,
-              email,
-              content: content || (formType === 'voice' ? 'Voice message' : formType === 'video' ? 'Video message' : ''),
-              type: formType,
-              media_url: mediaUrl,
-              reactions: {},
-            }
-          ])
+          .insert([{ name, email, content: normalizedContent || fallbackContent, type: formType, media_url: mediaUrl, reactions: {} }])
           .select()
 
         if (error) throw error
-
-        if (data && data[0]) {
-          const newMessage = mapSupabaseMessage(data[0])
-          setMessages(prev => [newMessage, ...prev])
-        }
+        if (data?.[0]) setMessages((previous) => [mapSupabaseMessage(data[0]), ...previous])
       }
 
+      setFilter('all')
+      setVisibleCount(INITIAL_VISIBLE_MESSAGES)
       setIsSubmitted(true)
-      
-      setTimeout(() => {
+
+      window.setTimeout(() => {
         setShowForm(false)
         setIsSubmitted(false)
         setName('')
         setEmail('')
         setContent('')
         setMediaBlob(null)
-      }, 2000)
-
+        setFormType('text')
+      }, 2200)
     } catch {
-      // Error handled via UI
-      setSubmitError('Failed to submit message. Please try again.')
+      setSubmitError('Failed to submit your note. Please try again.')
     } finally {
       setIsSubmitting(false)
     }
   }
 
-  const handleVoiceComplete = (blob: Blob) => {
-    setMediaBlob(blob)
-    setFormType('voice')
+  const filteredMessages = messages.filter((message) => (filter === 'all' ? true : message.type === filter))
+  const visibleMessages = filteredMessages.slice(0, visibleCount)
+  const hasMoreMessages = filteredMessages.length > visibleCount
+  const totalReactions = messages.reduce((total, message) => total + message.reactions.reduce((sum, reaction) => sum + reaction.count, 0), 0)
+  const totalReplies = messages.reduce((total, message) => total + message.comments.length, 0)
+  const counts = {
+    all: messages.length,
+    text: messages.filter((message) => message.type === 'text').length,
+    voice: messages.filter((message) => message.type === 'voice').length,
+    video: messages.filter((message) => message.type === 'video').length,
   }
-
-  const handleVideoComplete = (blob: Blob) => {
-    setMediaBlob(blob)
-    setFormType('video')
-  }
-
-  const filteredMessages = messages.filter(msg => {
-    if (filter === 'all') return true
-    if (filter === 'messages') return msg.type === 'text'
-    if (filter === 'photos') return msg.type === 'photo'
-    if (filter === 'videos') return msg.type === 'video' || msg.type === 'voice'
-    return true
-  })
-
-  const totalReactions = messages.reduce((acc, msg) => 
-    acc + msg.reactions.reduce((sum, r) => sum + r.count, 0), 0
-  )
 
   return (
-    <div className="min-h-screen bg-cream-50 pt-24 pb-20">
-      <div className="max-w-6xl mx-auto px-4">
-        {/* Header */}
-        <motion.div
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          className="text-center mb-12"
-        >
-          <span className="text-gold-600 text-sm uppercase tracking-[0.3em] font-medium">
-            The Guestbook
-          </span>
-          <h1 className="font-display text-5xl md:text-7xl text-charcoal-900 mt-4 mb-4">
-            Messages of Love
-          </h1>
-          <p className="text-charcoal-600 max-w-xl mx-auto mb-4">
-            {messages.length} messages from our favorite people. Leave your own note, photo, or video to add to our memory wall.
-          </p>
-          <div className="flex items-center justify-center gap-4 text-sm text-charcoal-500">
-            <span className="flex items-center gap-1">
-              <Sparkles className="w-4 h-4 text-gold-500" />
-              {totalReactions} reactions
-            </span>
-            <span>•</span>
-            <span>{messages.reduce((acc, m) => acc + m.comments.length, 0)} replies</span>
-          </div>
-        </motion.div>
+    <div className="min-h-screen bg-cream-50 pb-20 pt-28 sm:pt-32">
+      <GuestbookSEO />
 
-        {/* Error Message */}
-        {loadError && (
-          <motion.div
-            initial={{ opacity: 0, y: -10 }}
-            animate={{ opacity: 1, y: 0 }}
-            className="bg-amber-50 border border-amber-200 rounded-xl p-4 mb-6 max-w-xl mx-auto"
-          >
-            <p className="text-amber-700 text-sm text-center">{loadError}</p>
-          </motion.div>
-        )}
-
-        {/* Action Bar */}
-        <div className="flex flex-col sm:flex-row items-center justify-between gap-4 mb-12">
-          {/* Filters */}
-          <div className="flex flex-wrap justify-center gap-2">
-            {[
-              { key: 'all', label: 'All' },
-              { key: 'messages', label: 'Messages' },
-              { key: 'photos', label: 'Photos' },
-              { key: 'videos', label: 'Videos' }
-            ].map(({ key, label }) => (
-              <button
-                key={key}
-                type="button"
-                onClick={() => setFilter(key as typeof filter)}
-                className={cn(
-                  "px-4 py-2 rounded-full text-sm transition-all",
-                  filter === key
-                    ? "bg-gold-500 text-white"
-                    : "bg-white border border-gold-200/60 text-charcoal-600 hover:border-gold-400"
-                )}
-              >
-                {label}
-              </button>
-            ))}
-          </div>
-
-          {/* Leave Message Button */}
-          <Button size="lg" onClick={() => setShowForm(true)} data-testid="leave-message-btn">
-            <Send className="w-4 h-4 mr-2" />
-            Leave a Message
-          </Button>
-        </div>
-
-        {/* Loading State */}
-        {isLoading && (
-          <div className="flex justify-center py-12">
-            <div className="flex items-center gap-2 text-charcoal-400">
-              <Loader2 className="w-5 h-5 animate-spin" />
-              <span>Loading messages...</span>
-            </div>
-          </div>
-        )}
-
-        {/* Messages Grid */}
-        {!isLoading && (
-          <div className="grid md:grid-cols-2 gap-6">
-            {filteredMessages.map((message) => (
-              <MessageCard 
-                key={message.id} 
-                message={message} 
-                onReact={handleReact}
-                onReply={handleReply}
-              />
-            ))}
-          </div>
-        )}
-
-        {!isLoading && filteredMessages.length === 0 && (
-          <div className="text-center py-20">
-            <MessageCircle className="w-12 h-12 text-gold-300 mx-auto mb-4" />
-            <p className="text-charcoal-600">No messages found for this filter</p>
-          </div>
-        )}
-
-        {/* Load More */}
-        {!isLoading && filteredMessages.length > 0 && (
-          <div className="text-center mt-12">
-            <Button variant="secondary">
-              Load More Messages
-            </Button>
-          </div>
-        )}
-      </div>
-
-      {/* Message Form Modal */}
-      <AnimatePresence>
-        {showForm && (
-          <div className="fixed inset-0 z-50 bg-black/60 backdrop-blur-sm flex items-center justify-center p-4">
-            <motion.div
-              initial={{ opacity: 0, scale: 0.95 }}
-              animate={{ opacity: 1, scale: 1 }}
-              exit={{ opacity: 0, scale: 0.95 }}
-              className="bg-white rounded-2xl w-full max-w-lg max-h-[90vh] overflow-y-auto"
-            >
-              {isSubmitted ? (
-                <div className="p-12 text-center">
-                  <div className="w-16 h-16 bg-green-100 rounded-full flex items-center justify-center mx-auto mb-4">
-                    <CheckCircle className="w-8 h-8 text-green-600" />
-                  </div>
-                  <h3 className="font-display text-2xl text-charcoal-900 mb-2">Thank You!</h3>
-                  <p className="text-charcoal-600">Your message has been added to our guestbook.</p>
+      <section className="px-4 pb-8">
+        <div className="mx-auto max-w-6xl">
+          <motion.div initial={{ opacity: 0, y: 24 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.7, ease: [0.16, 1, 0.3, 1] }} className="editorial-panel overflow-hidden px-6 py-8 sm:px-8 sm:py-10 lg:px-10">
+            <div className="absolute -right-16 top-10 h-44 w-44 rounded-full bg-gold-200/30 blur-3xl" />
+            <div className="absolute -left-10 bottom-0 h-32 w-32 rounded-full bg-blush-200/35 blur-3xl" />
+            <div className="relative grid gap-10 lg:grid-cols-[minmax(0,1.08fr)_minmax(0,0.92fr)]">
+              <div>
+                <span className="eyebrow-chip"><BookHeart className="h-3.5 w-3.5" />The guestbook</span>
+                <h1 className="mt-6 max-w-3xl text-5xl text-charcoal-900 sm:text-6xl">Notes, recordings, and the parts of the day only you can tell back to us.</h1>
+                <p className="mt-5 max-w-2xl text-base text-charcoal-600 sm:text-lg">This is where the afterglow lives: a written note from your table, a quick voice memo on the drive home, or a video hello that still sounds like the room felt.</p>
+                <div className="mt-8 flex flex-wrap items-center gap-3 text-sm text-charcoal-500">
+                  <span className="rounded-full border border-white/80 bg-white/76 px-4 py-2">{messages.length} messages collected</span>
+                  <span className="rounded-full border border-white/80 bg-white/76 px-4 py-2">{totalReplies} replies tucked in</span>
+                  <span className="rounded-full border border-white/80 bg-white/76 px-4 py-2">{totalReactions} reactions shared</span>
                 </div>
-              ) : (
-                <>
-                  {/* Modal Header */}
-                  <div className="flex items-center justify-between p-6 border-b border-gold-100">
-                    <h3 className="font-display text-2xl text-charcoal-900">Leave a Message</h3>
-                    <button 
-                      type="button"
-                      onClick={() => setShowForm(false)}
-                      className="p-2 text-charcoal-400 hover:text-charcoal-600"
-                      aria-label="Close message form"
-                    >
-                      <X className="w-5 h-5" />
+                <div className="mt-8 flex flex-wrap gap-3">
+                  <Button size="lg" onClick={() => openComposer('text')}>Leave a note</Button>
+                  <Button size="lg" variant="secondary" onClick={() => openComposer('voice')}>Record a message</Button>
+                </div>
+              </div>
+
+              <div className="grid gap-3 sm:grid-cols-3 lg:grid-cols-1">
+                <div className="editorial-card px-5 py-5">
+                  <div className="flex h-11 w-11 items-center justify-center rounded-2xl border border-gold-200/70 bg-gold-50 text-gold-600"><Sparkles className="h-5 w-5" /></div>
+                  <p className="mt-5 text-xl font-semibold text-charcoal-900">What this is for</p>
+                  <p className="mt-3 text-sm leading-6 text-charcoal-500">A place for the emotional, funny, and in-between memories that do not fit anywhere else on the site.</p>
+                </div>
+                <div className="editorial-card px-5 py-5">
+                  <div className="flex h-11 w-11 items-center justify-center rounded-2xl border border-rose-200/80 bg-rose-50 text-rose-500"><Heart className="h-5 w-5" /></div>
+                  <p className="mt-5 text-xl font-semibold text-charcoal-900">What to share</p>
+                  <p className="mt-3 text-sm leading-6 text-charcoal-500">Blessings, favorite moments, video hellos, and the little details we might not have seen in real time.</p>
+                </div>
+                <div className="editorial-card px-5 py-5">
+                  <div className="flex h-11 w-11 items-center justify-center rounded-2xl border border-sage-200/80 bg-sage-100 text-charcoal-700"><ArrowUpRight className="h-5 w-5" /></div>
+                  <p className="mt-5 text-xl font-semibold text-charcoal-900">How to join in</p>
+                  <p className="mt-3 text-sm leading-6 text-charcoal-500">Pick a format, add your name, and send it through. We keep the experience simple so the memories stay front and center.</p>
+                </div>
+              </div>
+            </div>
+          </motion.div>
+        </div>
+      </section>
+
+      <section className="px-4">
+        <div className="mx-auto grid max-w-6xl gap-6 xl:grid-cols-[minmax(0,22rem)_minmax(0,1fr)] xl:items-start">
+          <div className="grid gap-6 xl:sticky xl:top-28">
+            <motion.div initial={{ opacity: 0, y: 18 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.08 }} className="editorial-card px-5 py-5">
+              <p className="text-[10px] uppercase tracking-[0.3em] text-gold-700">Contribute</p>
+              <h2 className="mt-4 text-3xl text-charcoal-900">Add your side of the day.</h2>
+              <p className="mt-3 text-sm leading-6 text-charcoal-500">Choose the format that feels easiest. You can write, record, or send a quick video without leaving this page.</p>
+              <div className="mt-5 grid gap-2">
+                {composerModes.map((mode) => {
+                  const Icon = mode.icon
+                  const isActive = formType === mode.type
+                  return (
+                    <button key={mode.type} type="button" onClick={() => { setFormType(mode.type); setMediaBlob(null); openComposer(mode.type) }} className={cn('flex items-start gap-3 rounded-[1.25rem] border px-4 py-4 text-left transition-all', isActive ? 'border-gold-300 bg-gold-50/90' : 'border-white/80 bg-white/74 hover:border-gold-200 hover:bg-white')}>
+                      <div className="mt-0.5 flex h-10 w-10 items-center justify-center rounded-2xl border border-white/75 bg-white text-gold-600 shadow-sm"><Icon className="h-4 w-4" /></div>
+                      <div>
+                        <p className="text-sm font-semibold text-charcoal-900">{mode.label}</p>
+                        <p className="mt-1 text-sm leading-6 text-charcoal-500">{mode.description}</p>
+                      </div>
                     </button>
-                  </div>
+                  )
+                })}
+              </div>
+              <Button type="button" size="lg" variant={showForm ? 'secondary' : 'primary'} onClick={() => (showForm ? setShowForm(false) : openComposer(formType))} className="mt-5 w-full" aria-expanded={showForm}>
+                {showForm ? <><X className="h-4 w-4" />Close composer</> : <><Send className="h-4 w-4" />Start your message</>}
+              </Button>
+            </motion.div>
 
-                  {/* Error Message */}
-                  {submitError && (
-                    <div className="px-6 pt-4">
-                      <div className="bg-rose-50 border border-rose-200 rounded-xl p-3">
-                        <p className="text-rose-600 text-sm">{submitError}</p>
-                      </div>
-                    </div>
-                  )}
-
-                  {/* Message Type Selector */}
-                  <div className="p-6 border-b border-gold-100">
-                    <p className="text-sm text-charcoal-500 mb-3">Choose how you would like to share:</p>
-                    <div className="flex gap-2">
-                      {[
-                        { type: 'text', icon: Send, label: 'Text' },
-                        { type: 'voice', icon: Mic, label: 'Voice' },
-                        { type: 'video', icon: Video, label: 'Video' },
-                      ].map(({ type, icon: Icon, label }) => (
-                        <button
-                          key={type}
-                          type="button"
-                          onClick={() => setFormType(type as typeof formType)}
-                          className={cn(
-                            "flex-1 flex flex-col items-center gap-2 p-3 rounded-xl border transition-all",
-                            formType === type
-                              ? "border-gold-500 bg-gold-50 text-gold-700"
-                              : "border-gold-200/60 text-charcoal-600 hover:border-gold-300"
-                          )}
-                        >
-                          <Icon className="w-5 h-5" />
-                          <span className="text-xs font-medium">{label}</span>
-                        </button>
-                      ))}
-                    </div>
-                  </div>
-
-                  {/* Form */}
-                  <form onSubmit={handleSubmit} className="p-6 space-y-4">
-                    {formType === 'voice' && (
-                      <div className="mb-4">
-                        <VoiceRecorder 
-                          onRecordingComplete={handleVoiceComplete}
-                          maxDuration={60}
-                        />
-                      </div>
-                    )}
-
-                    {formType === 'video' && (
-                      <div className="mb-4">
-                        <VideoRecorder 
-                          onRecordingComplete={handleVideoComplete}
-                          maxDuration={30}
-                        />
-                      </div>
-                    )}
-
-                    <div className="grid grid-cols-2 gap-4">
-                      <div>
-                        <Label htmlFor="guestbook-name">Your Name</Label>
-                        <Input
-                          id="guestbook-name"
-                          value={name}
-                          onChange={(e) => setName(e.target.value)}
-                          placeholder="Your name"
-                          required
-                        />
-                      </div>
-                      <div>
-                        <Label htmlFor="guestbook-email">Email</Label>
-                        <Input
-                          id="guestbook-email"
-                          type="email"
-                          value={email}
-                          onChange={(e) => setEmail(e.target.value)}
-                          placeholder="your@email.com"
-                          required
-                        />
-                      </div>
-                    </div>
-
-                    {formType === 'text' && (
-                      <div>
-                        <Label htmlFor="guestbook-message">Your Message</Label>
-                        <Textarea
-                          id="guestbook-message"
-                          value={content}
-                          onChange={(e) => setContent(e.target.value)}
-                          placeholder="Share your favorite memory from our day..."
-                          rows={4}
-                          required
-                        />
-                      </div>
-                    )}
-
-                    {(formType === 'voice' || formType === 'video') && mediaBlob && (
-                      <div>
-                        <Label htmlFor="guestbook-note">Add a Note (Optional)</Label>
-                        <Textarea
-                          id="guestbook-note"
-                          value={content}
-                          onChange={(e) => setContent(e.target.value)}
-                          placeholder="Add context to your recording..."
-                          rows={2}
-                        />
-                      </div>
-                    )}
-
-                    <Button 
-                      type="submit" 
-                      className="w-full"
-                      disabled={isSubmitting || (formType !== 'text' && !mediaBlob) || !name || !email}
-                    >
-                      {isSubmitting ? (
-                        <>
-                          <Loader2 className="w-4 h-4 mr-2 animate-spin" />
-                          Submitting...
-                        </>
-                      ) : (
-                        'Post Message'
-                      )}
-                    </Button>
-                  </form>
-                </>
-              )}
+            <motion.div initial={{ opacity: 0, y: 18 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.14 }} data-testid="guestbook-filters" className="editorial-panel px-5 py-5">
+              <p className="text-[10px] uppercase tracking-[0.3em] text-gold-700">Browse the notes</p>
+              <h2 className="mt-4 text-3xl text-charcoal-900">Find a mood, then settle in.</h2>
+              <p className="mt-3 text-sm leading-6 text-charcoal-500">Switch between written notes, voice memos, and video messages without losing your place in the feed.</p>
+              <div className="mt-5 flex flex-wrap gap-2">
+                {[{ key: 'all', label: 'Everything' }, { key: 'text', label: 'Text' }, { key: 'voice', label: 'Voice' }, { key: 'video', label: 'Video' }].map((option) => (
+                  <button key={option.key} type="button" onClick={() => setFilter(option.key as typeof filter)} className={cn('inline-flex items-center gap-2 rounded-full px-4 py-2 text-sm transition-all', filter === option.key ? 'bg-charcoal-900 text-white shadow-[0_18px_35px_-24px_rgba(21,20,19,0.9)]' : 'bg-white/78 text-charcoal-600 hover:bg-gold-50/80 hover:text-charcoal-800')} aria-pressed={filter === option.key}>
+                    <span>{option.label}</span>
+                    <span className={cn('text-xs', filter === option.key ? 'text-gold-300' : 'text-charcoal-400')}>{counts[option.key as keyof typeof counts]}</span>
+                  </button>
+                ))}
+              </div>
             </motion.div>
           </div>
-        )}
-      </AnimatePresence>
+
+          <div className="space-y-6">
+            <AnimatePresence initial={false}>
+              {showForm && (
+                <motion.div ref={composerRef} initial={{ opacity: 0, y: 18 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -12 }} data-testid="guestbook-composer" className="editorial-panel px-6 py-6 sm:px-8">
+                  {isSubmitted ? (
+                    <div className="text-center">
+                      <div className="mx-auto flex h-20 w-20 items-center justify-center rounded-full border border-green-200/80 bg-green-100/88 shadow-sm"><CheckCircle className="h-10 w-10 text-green-600" /></div>
+                      <span className="eyebrow-chip mt-6"><Sparkles className="h-3.5 w-3.5" />Message sent</span>
+                      <h2 className="mt-6 text-4xl text-charcoal-900 sm:text-5xl">Your note is part of the book now.</h2>
+                      <p className="mx-auto mt-4 max-w-2xl text-base text-charcoal-600 sm:text-lg">Thank you for adding your voice to the day. We just tucked it into the archive.</p>
+                    </div>
+                  ) : (
+                    <form onSubmit={handleSubmit}>
+                      <div className="flex items-start justify-between gap-4">
+                        <div>
+                          <span className="eyebrow-chip"><Send className="h-3.5 w-3.5" />Compose a message</span>
+                          <h2 className="mt-5 text-4xl text-charcoal-900 sm:text-5xl">Share a note in the format that fits.</h2>
+                          <p className="mt-4 max-w-2xl text-base text-charcoal-600 sm:text-lg">Written notes are perfect for a full thought. Voice and video are ideal when tone matters more than polish.</p>
+                        </div>
+                        <button type="button" onClick={() => setShowForm(false)} className="rounded-full border border-white/80 bg-white/78 p-2 text-charcoal-500 transition-colors hover:text-charcoal-800" aria-label="Close composer"><X className="h-5 w-5" /></button>
+                      </div>
+
+                      <div className="mt-6 grid gap-2 sm:grid-cols-3">
+                        {composerModes.map((mode) => {
+                          const Icon = mode.icon
+                          const isActive = formType === mode.type
+                          return (
+                            <button key={mode.type} type="button" onClick={() => { setFormType(mode.type); setMediaBlob(null); setSubmitError(null) }} className={cn('rounded-[1.35rem] border px-4 py-4 text-left transition-all', isActive ? 'border-gold-300 bg-gold-50/90' : 'border-white/78 bg-white/76 hover:border-gold-200 hover:bg-white')} aria-pressed={isActive}>
+                              <div className="flex items-center gap-3">
+                                <div className="flex h-10 w-10 items-center justify-center rounded-2xl border border-white/75 bg-white text-gold-600 shadow-sm"><Icon className="h-4 w-4" /></div>
+                                <div>
+                                  <p className="text-sm font-semibold text-charcoal-900">{mode.label}</p>
+                                  <p className="mt-1 text-xs uppercase tracking-[0.22em] text-charcoal-400">Guestbook mode</p>
+                                </div>
+                              </div>
+                            </button>
+                          )
+                        })}
+                      </div>
+
+                      <div className="mt-6 grid gap-5 sm:grid-cols-2">
+                        <div>
+                          <Label htmlFor="guestbook-name">Your Name</Label>
+                          <Input id="guestbook-name" value={name} onChange={(event) => setName(event.target.value)} placeholder="Your name" required />
+                        </div>
+                        <div>
+                          <Label htmlFor="guestbook-email">Email</Label>
+                          <Input id="guestbook-email" type="email" value={email} onChange={(event) => setEmail(event.target.value)} placeholder="your@email.com" required />
+                          <p className="mt-2 text-xs text-charcoal-400">Only used if we ever need to reach you about your submission.</p>
+                        </div>
+                      </div>
+
+                      <div className="mt-6">
+                        {formType === 'text' && (
+                          <div>
+                            <Label htmlFor="guestbook-message">Your Message</Label>
+                            <Textarea id="guestbook-message" value={content} onChange={(event) => setContent(event.target.value)} placeholder="Tell us what you felt, what you remember, or what you hope for us next." rows={6} required />
+                          </div>
+                        )}
+                        {formType === 'voice' && (
+                          <div className="space-y-4">
+                            <VoiceRecorder onRecordingComplete={setMediaBlob} maxDuration={60} />
+                            <div>
+                              <Label htmlFor="guestbook-voice-note">Add a Note (Optional)</Label>
+                              <Textarea id="guestbook-voice-note" value={content} onChange={(event) => setContent(event.target.value)} placeholder="Add context, a name, or a quick memory to sit alongside the recording." rows={3} />
+                            </div>
+                          </div>
+                        )}
+                        {formType === 'video' && (
+                          <div className="space-y-4">
+                            <VideoRecorder onRecordingComplete={setMediaBlob} maxDuration={30} />
+                            <div>
+                              <Label htmlFor="guestbook-video-note">Add a Note (Optional)</Label>
+                              <Textarea id="guestbook-video-note" value={content} onChange={(event) => setContent(event.target.value)} placeholder="Add context for the clip, or leave this blank and let the video speak for itself." rows={3} />
+                            </div>
+                          </div>
+                        )}
+                      </div>
+
+                      {submitError && <div className="mt-5 rounded-[1.35rem] border border-rose-200 bg-rose-50 px-4 py-3"><p className="text-sm text-rose-600">{submitError}</p></div>}
+
+                      <div className="mt-6 flex flex-col gap-4 border-t border-charcoal-900/8 pt-5 lg:flex-row lg:items-center lg:justify-between">
+                        <div className="space-y-2 text-sm text-charcoal-500">
+                          <p className="flex items-center gap-2"><Mail className="h-4 w-4 text-gold-600" />Keep it simple. We only need your name, email, and the message itself.</p>
+                          <p className="flex items-center gap-2"><Sparkles className="h-4 w-4 text-gold-600" />Voice and video entries stay focused on presentation only. No backend changes in this pass.</p>
+                        </div>
+                        <Button type="submit" size="lg" disabled={isSubmitting || !name || !email || (formType === 'text' && !content.trim()) || (formType !== 'text' && !mediaBlob)}>
+                          {isSubmitting ? <><Loader2 className="h-4 w-4 animate-spin" />Sending...</> : <><Send className="h-4 w-4" />Post to the guestbook</>}
+                        </Button>
+                      </div>
+                    </form>
+                  )}
+                </motion.div>
+              )}
+            </AnimatePresence>
+
+            {loadError && <motion.div initial={{ opacity: 0, y: -10 }} animate={{ opacity: 1, y: 0 }} className="rounded-[1.5rem] border border-amber-200/80 bg-amber-50/90 px-5 py-4 text-sm text-amber-700">{loadError}</motion.div>}
+
+            <motion.div initial={{ opacity: 0, y: 18 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.18 }} data-testid="guestbook-feed" className="editorial-panel px-5 py-5">
+              <div className="flex flex-col gap-4 lg:flex-row lg:items-end lg:justify-between">
+                <div>
+                  <p className="text-[10px] uppercase tracking-[0.3em] text-gold-700">Now showing</p>
+                  <h2 className="mt-3 text-3xl text-charcoal-900 sm:text-4xl">{filter === 'all' ? 'Every guestbook entry' : filter === 'text' ? 'Written notes' : filter === 'voice' ? 'Voice messages' : 'Video messages'}</h2>
+                  <p className="mt-3 max-w-2xl text-sm leading-6 text-charcoal-500 sm:text-base">Browse the latest additions, react to a favorite note, or reply to keep a thread going.</p>
+                </div>
+                <div className="flex flex-wrap gap-2">
+                  <div className="inline-flex items-center gap-2 rounded-full border border-gold-200/70 bg-white/80 px-4 py-2 text-sm text-charcoal-500"><BookHeart className="h-4 w-4 text-gold-500" />{filteredMessages.length} matching entries</div>
+                  <div className="inline-flex items-center gap-2 rounded-full border border-gold-200/70 bg-white/80 px-4 py-2 text-sm text-charcoal-500"><MessageCircle className="h-4 w-4 text-gold-500" />{totalReplies} replies total</div>
+                </div>
+              </div>
+            </motion.div>
+
+            {isLoading ? (
+              <div className="editorial-panel px-6 py-12 text-center">
+                <div className="mx-auto flex h-16 w-16 items-center justify-center rounded-full bg-gold-100 text-gold-600"><Loader2 className="h-7 w-7 animate-spin" /></div>
+                <p className="mt-6 font-display text-2xl text-charcoal-900">Gathering the guestbook</p>
+                <p className="mt-2 text-charcoal-500">Pulling in notes, replies, and recordings from the people we love most.</p>
+              </div>
+            ) : filteredMessages.length > 0 ? (
+              <>
+                <div className="grid gap-5 lg:grid-cols-2">
+                  {visibleMessages.map((message) => <MessageCard key={message.id} message={message} onReact={handleReact} onReply={handleReply} />)}
+                </div>
+                {hasMoreMessages && <div className="flex justify-center pt-2"><Button variant="secondary" size="lg" onClick={() => setVisibleCount((current) => current + INITIAL_VISIBLE_MESSAGES)}>Load more messages</Button></div>}
+              </>
+            ) : (
+              <div className="editorial-panel px-6 py-12 text-center">
+                <div className="mx-auto flex h-16 w-16 items-center justify-center rounded-full bg-gold-100 text-gold-600"><BookHeart className="h-7 w-7" /></div>
+                <p className="mt-6 font-display text-2xl text-charcoal-900">The guestbook is waiting for its first note.</p>
+                <p className="mx-auto mt-2 max-w-md text-charcoal-500">Start with a quick written message or leave a recording so the page feels lived in from the very beginning.</p>
+                <Button className="mt-6" size="lg" onClick={() => openComposer('text')}>Leave the first message</Button>
+              </div>
+            )}
+          </div>
+        </div>
+      </section>
     </div>
   )
 }
+

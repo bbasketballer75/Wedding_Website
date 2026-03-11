@@ -1,8 +1,11 @@
 import { writeFileSync } from 'fs'
+import dotenv from 'dotenv'
 import { SitemapStream, streamToPromise } from 'sitemap'
 import { Readable } from 'stream'
 
-const DOMAIN = 'https://austinandjordyn.com'
+dotenv.config()
+
+const DOMAIN = (process.env.VITE_SITE_URL || 'https://austin-jordyn-wedding.netlify.app').replace(/\/+$/, '')
 
 // Static routes
 const routes = [

@@ -1,5 +1,4 @@
 import React from 'react'
-import { HelmetProvider } from 'react-helmet-async'
 import { ToastProvider } from '../context/ToastContext'
 
 /**
@@ -11,11 +10,7 @@ export interface AppProvidersProps {
 }
 
 export function AppProviders({ children }: AppProvidersProps) {
-  return (
-    <HelmetProvider>
-      <ToastProvider>{children}</ToastProvider>
-    </HelmetProvider>
-  )
+  return <ToastProvider>{children}</ToastProvider>
 }
 
 export default AppProviders

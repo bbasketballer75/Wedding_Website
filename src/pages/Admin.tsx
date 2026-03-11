@@ -771,6 +771,7 @@ function AdminLayout() {
 // Main Admin Component with Auth Check
 export default function Admin() {
   const { isAuthenticated, isLoading, isAdmin } = useAuthStore()
+  const location = useLocation()
 
   if (isLoading) {
     return (
@@ -782,7 +783,8 @@ export default function Admin() {
 
   // Redirect if not authenticated or not admin
   if (!isAuthenticated || !isAdmin) {
-    return <Navigate to="/" replace />
+    const redirectTo = `${location.pathname}${location.search}${location.hash}`
+    return <Navigate to="/admin/login" replace state={{ from: redirectTo }} />
   }
 
   return <AdminLayout />

@@ -1,5 +1,6 @@
-import { useState, useMemo, useEffect } from 'react'
+import { useState, useMemo, useEffect, useDeferredValue } from 'react'
 import { motion } from 'framer-motion'
+import { GallerySEO } from '@/components/seo/SEOHead'
 import { PhotoGrid } from '@/components/gallery/PhotoGrid'
 import { TimelineView } from '@/components/gallery/TimelineView'
 import { MapView } from '@/components/gallery/MapView'
@@ -11,7 +12,7 @@ import { Button } from '@/components/ui/Button'
 import { Input } from '@/components/ui/Input'
 import { downloadFile } from '@/utils/download'
 import { useInfiniteScroll } from '@/hooks/useInfiniteScroll'
-import { Search, Grid3X3, LayoutGrid, Heart, Filter, Sparkles, Share2, Clock, MapPin, Loader2 } from 'lucide-react'
+import { Search, Grid3X3, LayoutGrid, Heart, Filter, Sparkles, Share2, Clock, MapPin, Loader2, ArrowRight, Images, X, SlidersHorizontal, Users } from 'lucide-react'
 import { cn } from '@/lib/utils'
 import { supabase, Photo as SupabasePhoto } from '@/lib/supabase'
 
@@ -199,6 +200,33 @@ const samplePhotos: Photo[] = [
 
 const categories = ['All', 'Getting Ready', 'Ceremony', 'Portraits', 'Reception', 'Dancing', 'Details']
 
+const viewOptions = [
+  {
+    key: 'masonry',
+    label: 'Masonry',
+    description: 'A flowing wall of moments.',
+    icon: LayoutGrid,
+  },
+  {
+    key: 'grid',
+    label: 'Grid',
+    description: 'A tidy overview for quick browsing.',
+    icon: Grid3X3,
+  },
+  {
+    key: 'timeline',
+    label: 'Timeline',
+    description: 'Follow the day as it unfolded.',
+    icon: Clock,
+  },
+  {
+    key: 'map',
+    label: 'Map',
+    description: 'Browse photos by place.',
+    icon: MapPin,
+  },
+] as const
+
 // Helper to convert Supabase photo to local Photo type
 const mapSupabasePhoto = (photo: SupabasePhoto): Photo => ({
   id: photo.id,
@@ -230,6 +258,7 @@ export default function Gallery() {
   const [downloadingId, setDownloadingId] = useState<string | null>(null)
   const [isLoading, setIsLoading] = useState(true)
   const [loadError, setLoadError] = useState<string | null>(null)
+  const deferredSearchQuery = useDeferredValue(searchQuery)
 
   // Fetch photos from Supabase on mount
   useEffect(() => {
@@ -244,21 +273,15 @@ export default function Gallery() {
           .order('created_at', { ascending: false })
 
         if (error) {
-          // Error handled via UI
-          setLoadError('Could not load photos from database. Using sample photos.')
-          // Keep using sample photos as fallback
+          setLoadError('Could not load photos from the database. Showing the curated highlight set instead.')
           return
         }
 
         if (data && data.length > 0) {
-          // Map Supabase photos to local format
-          const mappedPhotos = data.map(mapSupabasePhoto)
-          setPhotos(mappedPhotos)
+          setPhotos(data.map(mapSupabasePhoto))
         }
-        // If no data, keep using sample photos
       } catch {
-        // Error handled via UI
-        setLoadError('Could not connect to database. Using sample photos.')
+        setLoadError('Could not connect to the gallery database. Showing the curated highlight set instead.')
       } finally {
         setIsLoading(false)
       }
@@ -282,17 +305,28 @@ export default function Gallery() {
     }
   }, [photos, sortBy])
 
-  // Filter photos
   const filteredPhotos = useMemo(() => {
+    const normalizedQuery = deferredSearchQuery.trim().toLowerCase()
+
     return sortedPhotos.filter((photo) => {
-      const matchesSearch = photo.caption?.toLowerCase().includes(searchQuery.toLowerCase())
+      const searchableText = [
+        photo.caption,
+        photo.location,
+        photo.photographer,
+        ...(photo.tags || []),
+      ]
+        .filter(Boolean)
+        .join(' ')
+        .toLowerCase()
+
+      const matchesSearch = !normalizedQuery || searchableText.includes(normalizedQuery)
       const matchesCategory = selectedCategory === 'All' || photo.category === selectedCategory
       const matchesFavorites = !showFavorites || (photo.likes && photo.likes > 40)
       const matchesFace = !faceFilter || photo.faces?.some(f => f.name === faceFilter)
       
       return matchesSearch && matchesCategory && matchesFavorites && matchesFace
     })
-  }, [sortedPhotos, searchQuery, selectedCategory, showFavorites, faceFilter])
+  }, [sortedPhotos, deferredSearchQuery, selectedCategory, showFavorites, faceFilter])
 
   // Infinite scroll for masonry/grid views
   const {
@@ -305,6 +339,32 @@ export default function Gallery() {
     items: filteredPhotos,
     itemsPerPage: viewMode === 'grid' ? 16 : 12,
   })
+
+  const favoritePhotoCount = useMemo(
+    () => photos.filter(photo => (photo.likes ?? 0) > 40).length,
+    [photos]
+  )
+
+  const peopleCount = useMemo(
+    () => new Set(photos.flatMap(photo => (photo.faces || []).map(face => face.name))).size,
+    [photos]
+  )
+
+  const categoryCounts = useMemo(() => {
+    return categories.reduce<Record<string, number>>((acc, category) => {
+      acc[category] = category === 'All'
+        ? photos.length
+        : photos.filter(photo => photo.category === category).length
+      return acc
+    }, {})
+  }, [photos])
+
+  const visiblePhotoCount = viewMode === 'masonry' || viewMode === 'grid'
+    ? displayedItems.length
+    : filteredPhotos.length
+
+  const activeView = viewOptions.find(option => option.key === viewMode) || viewOptions[0]
+  const hasActiveFilters = Boolean(searchQuery || selectedCategory !== 'All' || showFavorites || faceFilter)
 
   const openLightbox = (index: number) => {
     if (index >= 0) {
@@ -359,296 +419,433 @@ export default function Gallery() {
     setFaceFilter(null)
   }
 
+  const clearAllFilters = () => {
+    setSearchQuery('')
+    setSelectedCategory('All')
+    setShowFavorites(false)
+    setFaceFilter(null)
+  }
+
   const currentPhoto = lightboxIndex !== null ? filteredPhotos[lightboxIndex] : null
 
   return (
     <div className="min-h-screen bg-cream-50 pt-24 pb-20">
-      {/* Header */}
-      <section className="px-4 mb-8">
-        <div className="max-w-7xl mx-auto">
+      <GallerySEO />
+
+      <section className="relative overflow-hidden px-4 pb-10">
+        <div className="absolute inset-x-0 top-0 h-[30rem] bg-gradient-to-b from-cream-100 via-cream-50 to-transparent" />
+        <div className="pointer-events-none absolute inset-0 overflow-hidden">
           <motion.div
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.6 }}
-            className="text-center mb-8"
-          >
-            <span className="text-gold-600 text-sm uppercase tracking-[0.3em] font-medium">
-              Our Gallery
-            </span>
-            <h1 className="font-display text-5xl md:text-7xl text-charcoal-900 mt-4 mb-4">
-              {photos.length} Moments
-            </h1>
-            <p className="text-charcoal-600 max-w-xl mx-auto">
-              Every laugh, every tear, every dance move captured from our perfect day
-            </p>
-          </motion.div>
-
-          {/* Loading Indicator */}
-          {isLoading && (
-            <motion.div
-              initial={{ opacity: 0 }}
-              animate={{ opacity: 1 }}
-              className="flex justify-center py-4"
-            >
-              <div className="flex items-center gap-2 text-charcoal-400">
-                <Loader2 className="w-5 h-5 animate-spin" />
-                <span>Loading photos...</span>
-              </div>
-            </motion.div>
-          )}
-
-          {/* Error Message */}
-          {loadError && (
-            <motion.div
-              initial={{ opacity: 0, y: -10 }}
-              animate={{ opacity: 1, y: 0 }}
-              className="bg-amber-50 border border-amber-200 rounded-xl p-4 mb-6 max-w-xl mx-auto"
-            >
-              <p className="text-amber-700 text-sm text-center">{loadError}</p>
-            </motion.div>
-          )}
-
-          {/* Search & Filters */}
+            animate={{ x: [0, 40, 0], y: [0, 30, 0] }}
+            transition={{ duration: 18, repeat: Infinity, ease: 'linear' }}
+            className="absolute -left-16 top-20 h-56 w-56 rounded-full bg-gold-200/25 blur-3xl"
+          />
           <motion.div
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.6, delay: 0.1 }}
-            className="flex flex-col md:flex-row gap-4 items-center justify-between mb-6"
-          >
-            {/* Search */}
-            <div className="relative w-full md:w-72">
-              <Search className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-charcoal-400" />
-              <Input
-                type="text"
-                placeholder="Search photos..."
-                value={searchQuery}
-                onChange={(e) => setSearchQuery(e.target.value)}
-                className="pl-10"
-              />
-            </div>
-
-            <div className="flex items-center gap-2 flex-wrap justify-center">
-              {/* Sort Dropdown */}
-              <SortDropdown value={sortBy} onChange={setSortBy} />
-
-              {/* Face Recognition Button */}
-              <FaceRecognition onPhotoFilter={handleFaceFilter} />
-              
-              {/* Share Gallery Button */}
-              <Button variant="glass" size="sm" onClick={() => setShareModalOpen(true)}>
-                <Share2 className="w-4 h-4 mr-2" />
-                Share
-              </Button>
-              
-              {/* View Toggle */}
-              <div className="flex items-center gap-1 bg-white rounded-full p-1 border border-gold-200/60">
-                <button
-                  onClick={() => setViewMode('masonry')}
-                  type="button"
-                  aria-label="Switch to masonry view"
-                  aria-pressed={viewMode === 'masonry'}
-                  className={cn(
-                    "p-2 rounded-full transition-all",
-                    viewMode === 'masonry' ? "bg-gold-100 text-gold-700" : "text-charcoal-400 hover:text-charcoal-600"
-                  )}
-                  title="Masonry view"
-                >
-                  <LayoutGrid className="w-4 h-4" />
-                </button>
-                <button
-                  onClick={() => setViewMode('grid')}
-                  type="button"
-                  aria-label="Switch to grid view"
-                  aria-pressed={viewMode === 'grid'}
-                  className={cn(
-                    "p-2 rounded-full transition-all",
-                    viewMode === 'grid' ? "bg-gold-100 text-gold-700" : "text-charcoal-400 hover:text-charcoal-600"
-                  )}
-                  title="Grid view"
-                >
-                  <Grid3X3 className="w-4 h-4" />
-                </button>
-                <button
-                  onClick={() => setViewMode('timeline')}
-                  type="button"
-                  aria-label="Switch to timeline view"
-                  aria-pressed={viewMode === 'timeline'}
-                  className={cn(
-                    "p-2 rounded-full transition-all",
-                    viewMode === 'timeline' ? "bg-gold-100 text-gold-700" : "text-charcoal-400 hover:text-charcoal-600"
-                  )}
-                  title="Timeline view"
-                >
-                  <Clock className="w-4 h-4" />
-                </button>
-                <button
-                  onClick={() => setViewMode('map')}
-                  type="button"
-                  aria-label="Switch to map view"
-                  aria-pressed={viewMode === 'map'}
-                  className={cn(
-                    "p-2 rounded-full transition-all",
-                    viewMode === 'map' ? "bg-gold-100 text-gold-700" : "text-charcoal-400 hover:text-charcoal-600"
-                  )}
-                  title="Map view"
-                >
-                  <MapPin className="w-4 h-4" />
-                </button>
-              </div>
-
-              {/* Favorites Toggle */}
-              <button
-                onClick={() => setShowFavorites(!showFavorites)}
-                type="button"
-                aria-pressed={showFavorites}
-                className={cn(
-                  "flex items-center gap-2 px-4 py-2 rounded-full text-sm transition-all",
-                  showFavorites 
-                    ? "bg-rose-100 text-rose-700" 
-                    : "bg-white border border-gold-200/60 text-charcoal-600 hover:bg-gold-50"
-                )}
-              >
-                <Heart className={cn("w-4 h-4", showFavorites && "fill-current")} />
-                Favorites
-              </button>
-            </div>
-          </motion.div>
-
-          {/* Face Filter Active Indicator */}
-          {faceFilter && (
-            <motion.div
-              initial={{ opacity: 0, y: -10 }}
-              animate={{ opacity: 1, y: 0 }}
-              className="flex items-center justify-center gap-2 mb-4"
-            >
-              <span className="text-charcoal-600 text-sm">Showing photos of:</span>
-              <span className="inline-flex items-center gap-1 px-3 py-1 bg-gold-100 text-gold-800 rounded-full text-sm font-medium">
-                <Sparkles className="w-3 h-3" />
-                {faceFilter}
-                <button 
-                  onClick={clearFaceFilter}
-                  type="button"
-                  aria-label="Clear face filter"
-                  className="ml-1 hover:text-gold-600"
-                >
-                  ×
-                </button>
-              </span>
-              <span className="text-charcoal-400 text-sm">
-                ({filteredPhotos.length} photos)
-              </span>
-            </motion.div>
-          )}
-
-          {/* Category Filters - Only show for non-timeline/map views */}
-          {viewMode !== 'timeline' && viewMode !== 'map' && (
-            <motion.div
-              initial={{ opacity: 0, y: 20 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.6, delay: 0.2 }}
-              className="flex flex-wrap justify-center gap-2 mb-8"
-            >
-              {categories.map((category) => (
-                <button
-                  key={category}
-                  onClick={() => setSelectedCategory(category)}
-                  type="button"
-                  aria-pressed={selectedCategory === category}
-                  className={cn(
-                    "px-4 py-2 rounded-full text-sm transition-all",
-                    selectedCategory === category
-                      ? "bg-gold-500 text-white"
-                      : "bg-white border border-gold-200/60 text-charcoal-600 hover:border-gold-400"
-                  )}
-                >
-                  {category}
-                </button>
-              ))}
-            </motion.div>
-          )}
+            animate={{ x: [0, -30, 0], y: [0, 50, 0] }}
+            transition={{ duration: 22, repeat: Infinity, ease: 'linear' }}
+            className="absolute right-0 top-16 h-72 w-72 rounded-full bg-blush-200/30 blur-3xl"
+          />
+          <div className="absolute bottom-8 left-[8%] text-gold-500/10">
+            <Heart className="h-24 w-24 fill-current" />
+          </div>
         </div>
-      </section>
 
-      {/* Photo Grid / Timeline / Map */}
-      <section className="px-4">
-        <div className="max-w-7xl mx-auto">
-          {filteredPhotos.length > 0 ? (
-            <>
-              {viewMode === 'map' ? (
-                <MapView
-                  photos={filteredPhotos.map(p => ({
-                    id: p.id,
-                    url: p.url,
-                    thumbnail: p.thumbnail,
-                    caption: p.caption,
-                    location: p.location || 'Reception Hall',
-                    likes: p.likes,
-                    x: 50,
-                    y: 50,
-                  }))}
-                  onPhotoClick={(photo) => openLightbox(filteredPhotos.findIndex(p => p.id === photo.id))}
-                />
-              ) : viewMode === 'timeline' ? (
-                <TimelineView
-                  photos={filteredPhotos}
-                  onPhotoClick={(photo) => openLightbox(filteredPhotos.findIndex((galleryPhoto) => galleryPhoto.id === photo.id))}
-                />
-              ) : (
-                <>
-                  <PhotoGrid
-                    photos={displayedItems.map(p => ({
-                      ...p,
-                      comments: p.comments?.length
-                    }))}
-                    viewMode={viewMode as 'masonry' | 'grid'}
-                    onPhotoClick={(_, index) => openLightbox(index)}
-                  />
-                  
-                  {/* Infinite Scroll Observer */}
-                  {hasMore && (
-                    <div
-                      ref={observerRef}
-                      className="flex justify-center py-8"
-                    >
-                      {isLoadingMore ? (
-                        <div className="flex items-center gap-2 text-charcoal-400">
-                          <div className="w-5 h-5 border-2 border-gold-300 border-t-gold-500 rounded-full animate-spin" />
-                          <span>Loading more...</span>
-                        </div>
-                      ) : (
-                        <Button variant="secondary" onClick={loadMore}>
-                          Load More
-                        </Button>
+        <div className="relative mx-auto max-w-7xl">
+          <motion.div
+            initial={{ opacity: 0, y: 24 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.7 }}
+            className="overflow-hidden rounded-[2rem] border border-white/70 bg-[linear-gradient(135deg,rgba(255,255,255,0.94),rgba(250,248,244,0.98)_58%,rgba(246,239,226,0.92))] p-6 shadow-[0_35px_90px_-48px_rgba(46,33,13,0.42)] backdrop-blur-xl sm:p-8 lg:p-10"
+          >
+            <div className="grid gap-8 xl:grid-cols-[minmax(0,1.1fr)_minmax(20rem,0.9fr)] xl:items-start">
+              <div>
+                <div className="mb-5 inline-flex items-center gap-2 rounded-full border border-gold-300/60 bg-white/75 px-4 py-2 text-[10px] uppercase tracking-[0.35em] text-gold-700 shadow-sm">
+                  <Sparkles className="h-3.5 w-3.5" />
+                  Our wedding gallery
+                </div>
+
+                <h1 className="max-w-3xl font-display text-4xl text-charcoal-900 sm:text-5xl lg:text-6xl">
+                  A living archive of the day, one angle at a time.
+                </h1>
+
+                <p className="mt-4 max-w-2xl text-base text-charcoal-600 sm:text-lg">
+                  Browse the portraits, find the loudest dance-floor photos, follow the day in sequence,
+                  or jump straight to the moments that include the people you love most.
+                </p>
+
+                <div className="mt-6 flex flex-wrap gap-3">
+                  <div className="inline-flex items-center gap-2 rounded-full border border-gold-200/70 bg-white/75 px-4 py-2 text-xs uppercase tracking-[0.22em] text-charcoal-500">
+                    <Images className="h-4 w-4 text-gold-500" />
+                    {photos.length} captured moments
+                  </div>
+                  <div className="inline-flex items-center gap-2 rounded-full border border-gold-200/70 bg-white/75 px-4 py-2 text-xs uppercase tracking-[0.22em] text-charcoal-500">
+                    <Users className="h-4 w-4 text-gold-500" />
+                    {peopleCount || 1} familiar faces
+                  </div>
+                  <div className="inline-flex items-center gap-2 rounded-full border border-gold-200/70 bg-white/75 px-4 py-2 text-xs uppercase tracking-[0.22em] text-charcoal-500">
+                    <SlidersHorizontal className="h-4 w-4 text-gold-500" />
+                    4 ways to browse
+                  </div>
+                </div>
+              </div>
+
+              <div className="grid gap-3 sm:grid-cols-2">
+                {[
+                  { label: 'Captured', value: photos.length.toString(), detail: 'Total images ready to browse' },
+                  { label: 'Showing', value: filteredPhotos.length.toString(), detail: hasActiveFilters ? 'Matching the current filters' : 'Visible in the full collection' },
+                  { label: 'Favorites', value: favoritePhotoCount.toString(), detail: 'The most-loved moments so far' },
+                  { label: 'View', value: activeView.label, detail: activeView.description },
+                ].map((item, index) => (
+                  <motion.div
+                    key={item.label}
+                    initial={{ opacity: 0, y: 16 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    transition={{ duration: 0.45, delay: 0.08 + index * 0.08 }}
+                    className="rounded-[1.5rem] border border-white/80 bg-white/72 p-5 shadow-sm backdrop-blur-sm"
+                  >
+                    <p className="text-xs uppercase tracking-[0.32em] text-charcoal-500">
+                      {item.label}
+                    </p>
+                    <p className="mt-3 font-display text-4xl text-gold-600">
+                      {item.value}
+                    </p>
+                    <p className="mt-3 text-sm leading-6 text-charcoal-500">
+                      {item.detail}
+                    </p>
+                  </motion.div>
+                ))}
+              </div>
+            </div>
+
+            <div className="mt-8 border-t border-charcoal-900/8 pt-6">
+              {loadError && (
+                <motion.div
+                  initial={{ opacity: 0, y: -10 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  className="mb-4 rounded-[1.25rem] border border-amber-200/80 bg-amber-50/90 p-4 text-sm text-amber-700"
+                >
+                  {loadError}
+                </motion.div>
+              )}
+
+              <div className="grid gap-4 xl:grid-cols-[minmax(0,1fr)_auto] xl:items-start">
+                <div data-testid="gallery-control-bar" className="rounded-[1.5rem] border border-white/80 bg-white/72 p-4 shadow-sm">
+                  <div className="flex flex-col gap-4 lg:flex-row lg:items-center">
+                    <div className="relative flex-1">
+                      <Search className="pointer-events-none absolute left-4 top-1/2 h-4 w-4 -translate-y-1/2 text-charcoal-400" />
+                      <Input
+                        type="text"
+                        placeholder="Search by caption, location, photographer, or tags"
+                        value={searchQuery}
+                        onChange={(event) => setSearchQuery(event.target.value)}
+                        className="h-12 rounded-full border-gold-200/70 bg-cream-50/85 pl-11 pr-11 shadow-none"
+                      />
+                      {searchQuery && (
+                        <button
+                          type="button"
+                          onClick={() => setSearchQuery('')}
+                          aria-label="Clear gallery search"
+                          className="absolute right-3 top-1/2 flex h-7 w-7 -translate-y-1/2 items-center justify-center rounded-full text-charcoal-400 transition-colors hover:bg-white hover:text-charcoal-600"
+                        >
+                          <X className="h-4 w-4" />
+                        </button>
                       )}
                     </div>
+
+                    <div className="flex flex-wrap items-center gap-2">
+                      <SortDropdown value={sortBy} onChange={setSortBy} />
+                      <FaceRecognition onPhotoFilter={handleFaceFilter} />
+                      <Button variant="glass" size="sm" onClick={() => setShareModalOpen(true)}>
+                        <Share2 className="mr-2 h-4 w-4" />
+                        Share
+                      </Button>
+                    </div>
+                  </div>
+
+                  {hasActiveFilters && (
+                    <div className="mt-4 flex flex-wrap items-center gap-2 rounded-[1.25rem] border border-gold-200/80 bg-cream-50/80 px-3 py-3">
+                      <span className="text-[10px] uppercase tracking-[0.28em] text-charcoal-500">
+                        Active filters
+                      </span>
+                      {searchQuery && (
+                        <span className="inline-flex items-center gap-2 rounded-full bg-white px-3 py-1 text-sm text-charcoal-600">
+                          Search: “{searchQuery}”
+                        </span>
+                      )}
+                      {selectedCategory !== 'All' && (
+                        <span className="inline-flex items-center gap-2 rounded-full bg-white px-3 py-1 text-sm text-charcoal-600">
+                          Category: {selectedCategory}
+                        </span>
+                      )}
+                      {showFavorites && (
+                        <span className="inline-flex items-center gap-2 rounded-full bg-white px-3 py-1 text-sm text-charcoal-600">
+                          Favorites
+                        </span>
+                      )}
+                      {faceFilter && (
+                        <button
+                          type="button"
+                          onClick={clearFaceFilter}
+                          className="inline-flex items-center gap-2 rounded-full bg-white px-3 py-1 text-sm text-charcoal-600 transition-colors hover:text-gold-700"
+                        >
+                          <Sparkles className="h-3.5 w-3.5 text-gold-500" />
+                          {faceFilter}
+                          <X className="h-3.5 w-3.5" />
+                        </button>
+                      )}
+                      <button
+                        type="button"
+                        onClick={clearAllFilters}
+                        className="ml-auto text-sm text-gold-700 transition-colors hover:text-gold-800"
+                      >
+                        Clear all
+                      </button>
+                    </div>
                   )}
-                </>
+                </div>
+
+                <div className="grid gap-3 sm:grid-cols-2 xl:grid-cols-1">
+                  <div className="rounded-[1.5rem] border border-white/80 bg-white/72 p-4 shadow-sm">
+                    <p className="text-[10px] uppercase tracking-[0.32em] text-charcoal-500">
+                      Browse mode
+                    </p>
+                    <div className="mt-3 grid grid-cols-2 gap-2">
+                      {viewOptions.map((option) => {
+                        const Icon = option.icon
+                        const isActive = viewMode === option.key
+
+                        return (
+                          <button
+                            key={option.key}
+                            type="button"
+                            onClick={() => setViewMode(option.key)}
+                            aria-pressed={isActive}
+                            className={cn(
+                              'flex items-center gap-2 rounded-2xl px-3 py-3 text-left text-sm transition-all',
+                              isActive
+                                ? 'bg-charcoal-900 text-white shadow-[0_18px_35px_-24px_rgba(21,20,19,0.9)]'
+                                : 'bg-cream-50 text-charcoal-500 hover:bg-gold-50/70 hover:text-charcoal-700'
+                            )}
+                          >
+                            <Icon className={cn('h-4 w-4', isActive ? 'text-gold-300' : 'text-gold-500')} />
+                            <span className="font-medium">{option.label}</span>
+                          </button>
+                        )
+                      })}
+                    </div>
+                  </div>
+
+                  <div className="rounded-[1.5rem] border border-white/80 bg-white/72 p-4 shadow-sm">
+                    <p className="text-[10px] uppercase tracking-[0.32em] text-charcoal-500">
+                      Refine the story
+                    </p>
+                    <div className="mt-3 flex flex-wrap gap-2">
+                      <button
+                        type="button"
+                        onClick={() => setShowFavorites(!showFavorites)}
+                        aria-pressed={showFavorites}
+                        className={cn(
+                          'inline-flex items-center gap-2 rounded-full px-4 py-2 text-sm transition-all',
+                          showFavorites
+                            ? 'bg-rose-100 text-rose-700'
+                            : 'bg-cream-50 text-charcoal-600 hover:bg-gold-50/70'
+                        )}
+                      >
+                        <Heart className={cn('h-4 w-4', showFavorites && 'fill-current')} />
+                        Favorites
+                      </button>
+                      <div className="inline-flex items-center gap-2 rounded-full bg-cream-50 px-4 py-2 text-sm text-charcoal-500">
+                        <Filter className="h-4 w-4 text-gold-500" />
+                        {filteredPhotos.length} visible
+                      </div>
+                    </div>
+                    <p className="mt-3 text-sm leading-6 text-charcoal-500">
+                      Mix categories, favorites, and face search to narrow the gallery without losing your place.
+                    </p>
+                  </div>
+                </div>
+              </div>
+
+              {viewMode !== 'timeline' && viewMode !== 'map' && (
+                <div className="mt-4 rounded-[1.5rem] border border-white/80 bg-white/72 p-4 shadow-sm">
+                  <p className="text-[10px] uppercase tracking-[0.32em] text-charcoal-500">
+                    Chapters of the day
+                  </p>
+                  <div className="mt-3 flex flex-wrap gap-2">
+                    {categories.map((category) => (
+                      <button
+                        key={category}
+                        type="button"
+                        onClick={() => setSelectedCategory(category)}
+                        aria-pressed={selectedCategory === category}
+                        className={cn(
+                          'inline-flex items-center gap-2 rounded-full px-4 py-2 text-sm transition-all',
+                          selectedCategory === category
+                            ? 'bg-gold-500 text-white'
+                            : 'bg-cream-50 text-charcoal-600 hover:bg-gold-50/70 hover:text-charcoal-700'
+                        )}
+                      >
+                        <span>{category}</span>
+                        <span className={cn('text-xs', selectedCategory === category ? 'text-white/80' : 'text-charcoal-400')}>
+                          {categoryCounts[category] ?? 0}
+                        </span>
+                      </button>
+                    ))}
+                  </div>
+                </div>
               )}
-            </>
-          ) : (
-            <div className="text-center py-20">
-              <Filter className="w-12 h-12 text-gold-300 mx-auto mb-4" />
-              <p className="text-charcoal-600 text-lg mb-2">No photos match your filters</p>
-              <p className="text-charcoal-400 text-sm">Try adjusting your search or category</p>
             </div>
-          )}
+          </motion.div>
         </div>
       </section>
 
-      {/* CTA */}
-      <section className="px-4 mt-16">
-        <div className="max-w-4xl mx-auto text-center">
-          <div className="bg-gradient-to-br from-gold-100/50 to-cream-100 rounded-2xl p-8 md:p-12">
-            <h3 className="font-display text-2xl md:text-3xl text-charcoal-900 mb-4">
-              Have Photos From Our Day?
-            </h3>
-            <p className="text-charcoal-600 mb-6 max-w-lg mx-auto">
-              We would love to see your perspective! Share your photos and videos to help us complete our wedding album.
-            </p>
-            <Button size="lg" to="/upload">
-              Share Your Photos
-            </Button>
+      <section className="px-4 pb-8">
+        <div className="mx-auto max-w-7xl">
+          <div className="mb-6 flex flex-col gap-3 lg:flex-row lg:items-end lg:justify-between">
+            <div>
+              <p className="text-[10px] uppercase tracking-[0.35em] text-gold-700">
+                Now viewing
+              </p>
+              <h2 className="mt-2 font-display text-3xl text-charcoal-900 sm:text-4xl">
+                {activeView.label} view
+              </h2>
+              <p className="mt-2 max-w-2xl text-charcoal-600">
+                {activeView.description}
+              </p>
+            </div>
+
+            <div className="flex flex-wrap gap-2">
+              <div className="inline-flex items-center gap-2 rounded-full border border-gold-200/70 bg-white/80 px-4 py-2 text-sm text-charcoal-500">
+                <Images className="h-4 w-4 text-gold-500" />
+                {visiblePhotoCount} on screen
+              </div>
+              {selectedCategory !== 'All' && (
+                <div className="inline-flex items-center gap-2 rounded-full border border-gold-200/70 bg-white/80 px-4 py-2 text-sm text-charcoal-500">
+                  {selectedCategory}
+                </div>
+              )}
+            </div>
           </div>
+
+          <div
+            data-testid="gallery-results"
+            className="rounded-[2rem] border border-white/80 bg-white/72 p-4 shadow-[0_28px_70px_-48px_rgba(46,33,13,0.38)] backdrop-blur-sm sm:p-6"
+          >
+            {isLoading ? (
+              <div className="flex min-h-[20rem] flex-col items-center justify-center text-center">
+                <div className="flex h-16 w-16 items-center justify-center rounded-full bg-gold-100 text-gold-600">
+                  <Loader2 className="h-7 w-7 animate-spin" />
+                </div>
+                <p className="mt-6 font-display text-2xl text-charcoal-900">
+                  Gathering the gallery
+                </p>
+                <p className="mt-2 max-w-md text-charcoal-500">
+                  Pulling in portraits, candids, and the loudest dance-floor moments.
+                </p>
+              </div>
+            ) : filteredPhotos.length > 0 ? (
+              <>
+                {viewMode === 'map' ? (
+                  <MapView
+                    photos={filteredPhotos.map(photo => ({
+                      id: photo.id,
+                      url: photo.url,
+                      thumbnail: photo.thumbnail,
+                      caption: photo.caption,
+                      location: photo.location || 'Reception Hall',
+                      likes: photo.likes,
+                      x: 50,
+                      y: 50,
+                    }))}
+                    onPhotoClick={(photo) => openLightbox(filteredPhotos.findIndex(item => item.id === photo.id))}
+                  />
+                ) : viewMode === 'timeline' ? (
+                  <TimelineView
+                    photos={filteredPhotos}
+                    onPhotoClick={(photo) => openLightbox(filteredPhotos.findIndex(item => item.id === photo.id))}
+                  />
+                ) : (
+                  <>
+                    <PhotoGrid
+                      photos={displayedItems.map(photo => ({
+                        ...photo,
+                        comments: photo.comments?.length
+                      }))}
+                      viewMode={viewMode}
+                      onPhotoClick={(_, index) => openLightbox(index)}
+                    />
+
+                    {hasMore && (
+                      <div ref={observerRef} className="flex justify-center py-8">
+                        {isLoadingMore ? (
+                          <div className="flex items-center gap-2 rounded-full bg-cream-50 px-4 py-2 text-charcoal-500">
+                            <Loader2 className="h-4 w-4 animate-spin text-gold-500" />
+                            Loading more moments...
+                          </div>
+                        ) : (
+                          <Button variant="secondary" onClick={loadMore}>
+                            Load more
+                          </Button>
+                        )}
+                      </div>
+                    )}
+                  </>
+                )}
+              </>
+            ) : (
+              <div className="flex min-h-[20rem] flex-col items-center justify-center text-center">
+                <div className="flex h-16 w-16 items-center justify-center rounded-full bg-gold-100 text-gold-600">
+                  <Filter className="h-7 w-7" />
+                </div>
+                <p className="mt-6 font-display text-2xl text-charcoal-900">
+                  No moments match this mix yet
+                </p>
+                <p className="mt-2 max-w-md text-charcoal-500">
+                  Try a wider category, clear the face filter, or switch back to the full gallery.
+                </p>
+                <Button variant="secondary" className="mt-6" onClick={clearAllFilters}>
+                  Reset filters
+                </Button>
+              </div>
+            )}
+          </div>
+        </div>
+      </section>
+
+      <section className="px-4 pt-8">
+        <div className="mx-auto max-w-5xl">
+          <motion.div
+            initial={{ opacity: 0, y: 24 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            viewport={{ once: true }}
+            transition={{ duration: 0.6 }}
+            className="overflow-hidden rounded-[2rem] border border-charcoal-900/8 bg-[linear-gradient(135deg,rgba(247,241,232,0.92),rgba(252,250,246,0.98)_58%,rgba(244,232,213,0.86))] p-8 shadow-[0_28px_80px_-52px_rgba(46,33,13,0.45)] sm:p-10"
+          >
+            <div className="grid gap-6 lg:grid-cols-[minmax(0,1fr)_auto] lg:items-end">
+              <div>
+                <p className="text-[10px] uppercase tracking-[0.35em] text-gold-700">
+                  Add your angle
+                </p>
+                <h3 className="mt-3 font-display text-3xl text-charcoal-900 sm:text-4xl">
+                  Help the gallery feel even more complete.
+                </h3>
+                <p className="mt-3 max-w-2xl text-charcoal-600">
+                  We already have the portraits and the big moments. What we still love most are the in-between shots,
+                  the table laughs, the phone candids, and the memories only your camera caught.
+                </p>
+              </div>
+
+              <div className="flex flex-col gap-3 sm:flex-row lg:flex-col">
+                <Button size="lg" to="/upload">
+                  Share Your Photos
+                </Button>
+                <div className="inline-flex items-center gap-2 text-sm text-charcoal-500">
+                  Review before publish
+                  <ArrowRight className="h-4 w-4 text-gold-500" />
+                </div>
+              </div>
+            </div>
+          </motion.div>
         </div>
       </section>
 

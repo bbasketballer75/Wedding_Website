@@ -5,7 +5,7 @@ export default defineConfig({
   fullyParallel: false,
   forbidOnly: !!process.env.CI,
   retries: 0,
-  workers: 1,
+  workers: 2,
   reporter: [['list'], ['html', { open: 'never' }]],
   timeout: 60000,
   expect: {
@@ -13,7 +13,7 @@ export default defineConfig({
   },
 
   use: {
-    baseURL: 'http://localhost:4174',
+    baseURL: 'http://127.0.0.1:4174',
     trace: 'on',
     screenshot: 'on',
     actionTimeout: 15000,
@@ -29,9 +29,9 @@ export default defineConfig({
   ],
 
   webServer: {
-    command: 'npm run preview -- --port 4174 --strictPort',
-    url: 'http://localhost:4174',
-    reuseExistingServer: false,
-    timeout: 60000,
+    command: 'npm run build && npx vite preview --host 127.0.0.1 --port 4174 --strictPort',
+    url: 'http://127.0.0.1:4174',
+    reuseExistingServer: !process.env.CI,
+    timeout: 180000,
   },
 })

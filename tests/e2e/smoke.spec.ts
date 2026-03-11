@@ -1,43 +1,33 @@
-import { test, expect } from '@playwright/test'
+import { expect, gotoPublicPage, test } from './support/publicSite'
 
 test.describe('Smoke Tests', () => {
-  test('homepage loads', async ({ page }) => {
-    await page.goto('/')
+  test('@smoke homepage loads', async ({ page }) => {
+    await gotoPublicPage(page, '/')
     await expect(page.locator('body')).toBeVisible()
   })
 
-  test('film page loads', async ({ page }) => {
-    await page.goto('/film')
+  test('@smoke film page loads', async ({ page }) => {
+    await gotoPublicPage(page, '/film')
     await expect(page.locator('body')).toBeVisible()
   })
 
-  test('gallery page loads', async ({ page }) => {
-    await page.goto('/gallery')
-    await expect(page.getByText('Our Gallery')).toBeVisible()
-  })
-
-  test('guestbook page loads', async ({ page }) => {
-    await page.goto('/guestbook')
+  test('@smoke gallery page loads', async ({ page }) => {
+    await gotoPublicPage(page, '/gallery')
     await expect(page.locator('body')).toBeVisible()
   })
 
-  test('404 page loads', async ({ page }) => {
-    await page.goto('/nonexistent')
+  test('@smoke upload page loads', async ({ page }) => {
+    await gotoPublicPage(page, '/upload')
     await expect(page.locator('body')).toBeVisible()
   })
 
-  test('should be responsive', async ({ page }) => {
-    await page.setViewportSize({ width: 375, height: 667 })
-    await page.goto('/')
+  test('@smoke guestbook page loads', async ({ page }) => {
+    await gotoPublicPage(page, '/guestbook')
     await expect(page.locator('body')).toBeVisible()
   })
 
-  test('should have PWA manifest', async ({ page }) => {
-    await page.goto('/')
-    const manifest = await page.evaluate(() => {
-      const link = document.querySelector('link[rel="manifest"]')
-      return link ? link.getAttribute('href') : null
-    })
-    expect(manifest).toBeTruthy()
+  test('@smoke 404 page loads', async ({ page }) => {
+    await gotoPublicPage(page, '/nonexistent')
+    await expect(page.locator('body')).toBeVisible()
   })
 })

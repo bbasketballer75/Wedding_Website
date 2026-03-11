@@ -245,6 +245,7 @@ export function VideoPlayer({
         onEnded={onEnded}
         onClick={togglePlay}
         playsInline
+        preload="metadata"
       >
         <track
           kind="captions"
@@ -308,6 +309,7 @@ export function VideoPlayer({
                   <button
                     onClick={() => setShowChapterMenu(!showChapterMenu)}
                     className="mt-2 text-gold-400 text-sm hover:text-gold-300 transition-colors flex items-center gap-1"
+                    aria-label={`${showChapterMenu ? 'Hide' : 'Show'} chapters`}
                     aria-expanded={showChapterMenu}
                     aria-controls="video-chapter-menu"
                   >
@@ -322,6 +324,7 @@ export function VideoPlayer({
                 <button 
                   onClick={toggleFullscreen}
                   className="p-2 text-white/80 hover:text-white transition-colors rounded-full hover:bg-white/10"
+                  aria-label={isFullscreen ? 'Exit fullscreen' : 'Enter fullscreen'}
                 >
                   <Cast className="w-5 h-5" />
                 </button>
@@ -372,6 +375,7 @@ export function VideoPlayer({
                   max={duration || 100}
                   value={currentTime}
                   onChange={handleSeek}
+                  aria-label="Seek through the wedding film"
                   className="w-full h-1.5 bg-white/30 rounded-full appearance-none cursor-pointer [&::-webkit-slider-thumb]:appearance-none [&::-webkit-slider-thumb]:w-4 [&::-webkit-slider-thumb]:h-4 [&::-webkit-slider-thumb]:rounded-full [&::-webkit-slider-thumb]:bg-gold-500 [&::-webkit-slider-thumb]:transition-transform [&::-webkit-slider-thumb]:hover:scale-125"
                   style={{
                     background: `linear-gradient(to right, #c9a05c 0%, #c9a05c ${duration > 0 ? (currentTime / duration) * 100 : 0}%, rgba(255,255,255,0.3) ${duration > 0 ? (currentTime / duration) * 100 : 0}%, rgba(255,255,255,0.3) 100%)`
@@ -397,6 +401,7 @@ export function VideoPlayer({
                   <button
                     onClick={togglePlay}
                     className="p-2 text-white hover:text-gold-400 transition-colors"
+                    aria-label={isPlaying ? 'Pause film' : 'Play film'}
                   >
                     {isPlaying ? (
                       <Pause className="w-6 h-6" fill="currentColor" />
@@ -409,12 +414,14 @@ export function VideoPlayer({
                   <button
                     onClick={() => skip(-10)}
                     className="hidden md:block p-2 text-white/70 hover:text-white transition-colors"
+                    aria-label="Skip back 10 seconds"
                   >
                     <SkipBack className="w-5 h-5" />
                   </button>
                   <button
                     onClick={() => skip(10)}
                     className="hidden md:block p-2 text-white/70 hover:text-white transition-colors"
+                    aria-label="Skip forward 10 seconds"
                   >
                     <SkipForward className="w-5 h-5" />
                   </button>
@@ -424,6 +431,7 @@ export function VideoPlayer({
                     <button
                       onClick={toggleMute}
                       className="p-2 text-white/70 hover:text-white transition-colors"
+                      aria-label={isMuted || volume === 0 ? 'Unmute film' : 'Mute film'}
                     >
                       {isMuted || volume === 0 ? (
                         <VolumeX className="w-5 h-5" />
@@ -438,6 +446,7 @@ export function VideoPlayer({
                       step={0.1}
                       value={isMuted ? 0 : volume}
                       onChange={handleVolumeChange}
+                      aria-label="Adjust film volume"
                       className="w-0 group-hover/volume:w-20 transition-all duration-300 h-1 bg-white/30 rounded-full appearance-none cursor-pointer [&::-webkit-slider-thumb]:appearance-none [&::-webkit-slider-thumb]:w-3 [&::-webkit-slider-thumb]:h-3 [&::-webkit-slider-thumb]:rounded-full [&::-webkit-slider-thumb]:bg-white"
                     />
                   </div>
@@ -453,6 +462,7 @@ export function VideoPlayer({
                   <button
                     onClick={toggleFullscreen}
                     className="p-2 text-white/70 hover:text-white transition-colors"
+                    aria-label={isFullscreen ? 'Exit fullscreen' : 'Enter fullscreen'}
                   >
                     {isFullscreen ? (
                       <Minimize className="w-5 h-5" />

@@ -78,6 +78,7 @@ function ImageModal({
         <button
           className="w-10 h-10 flex items-center justify-center rounded-full hover:bg-white/10 transition-colors"
           onClick={onClose}
+          aria-label="Close image gallery"
         >
           <X className="w-6 h-6 text-white" />
         </button>
@@ -94,12 +95,14 @@ function ImageModal({
             <button
               className="absolute left-4 top-1/2 -translate-y-1/2 w-12 h-12 bg-white/10 hover:bg-white/20 rounded-full flex items-center justify-center transition-colors z-10"
               onClick={onPrev}
+              aria-label="Previous image"
             >
               <ChevronLeft className="w-6 h-6 text-white" />
             </button>
             <button
               className="absolute right-4 top-1/2 -translate-y-1/2 w-12 h-12 bg-white/10 hover:bg-white/20 rounded-full flex items-center justify-center transition-colors z-10"
               onClick={onNext}
+              aria-label="Next image"
             >
               <ChevronRight className="w-6 h-6 text-white" />
             </button>
@@ -132,6 +135,7 @@ function ImageModal({
                   e.stopPropagation()
                   onGoTo(index)
                 }}
+                aria-label={`View image ${index + 1}`}
                 className={cn(
                   "relative flex-shrink-0 w-16 h-16 rounded-lg overflow-hidden transition-all",
                   index === currentIndex 
@@ -295,12 +299,14 @@ export function ImageCarousel({
             <button
               className="absolute left-2 top-1/2 -translate-y-1/2 w-8 h-8 bg-white/90 backdrop-blur-sm rounded-full flex items-center justify-center shadow-lg z-20 opacity-0 group-hover:opacity-100 transition-opacity duration-200 hover:bg-white"
               onClick={(e) => { e.stopPropagation(); prevSlide() }}
+              aria-label="Previous carousel image"
             >
               <ChevronLeft className="w-5 h-5 text-charcoal-700" />
             </button>
             <button
               className="absolute right-2 top-1/2 -translate-y-1/2 w-8 h-8 bg-white/90 backdrop-blur-sm rounded-full flex items-center justify-center shadow-lg z-20 opacity-0 group-hover:opacity-100 transition-opacity duration-200 hover:bg-white"
               onClick={(e) => { e.stopPropagation(); nextSlide() }}
+              aria-label="Next carousel image"
             >
               <ChevronRight className="w-5 h-5 text-charcoal-700" />
             </button>
@@ -317,6 +323,7 @@ export function ImageCarousel({
                   e.stopPropagation()
                   goToSlide(index)
                 }}
+                aria-label={`Go to image ${index + 1}`}
                 className={cn(
                   "h-2 rounded-full transition-all duration-300",
                   index === currentIndex 

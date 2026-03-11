@@ -1,5 +1,6 @@
 import { motion } from 'framer-motion'
 import { Button } from '@/components/ui/Button'
+import { NotFoundSEO } from '@/components/seo/SEOHead'
 import { Heart, Home, ArrowLeft } from 'lucide-react'
 import { useNavigate } from 'react-router-dom'
 
@@ -8,6 +9,8 @@ export default function NotFound() {
 
   return (
     <div className="min-h-screen bg-cream-50 flex items-center justify-center px-4">
+      <NotFoundSEO />
+
       <motion.div
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}

@@ -1,10 +1,24 @@
-import { useState, useCallback } from 'react'
+import { useCallback, useState } from 'react'
 import { motion } from 'framer-motion'
+import { UploadSEO } from '@/components/seo/SEOHead'
 import { Button } from '@/components/ui/Button'
 import { Input } from '@/components/ui/Input'
 import { Textarea } from '@/components/ui/Textarea'
 import { Label } from '@/components/ui/Label'
-import { Upload, X, Image as ImageIcon, Video, CheckCircle, AlertCircle, Loader2 } from 'lucide-react'
+import {
+  Upload,
+  X,
+  Image as ImageIcon,
+  Video,
+  CheckCircle,
+  AlertCircle,
+  Loader2,
+  ShieldCheck,
+  Sparkles,
+  Mail,
+  Clock3,
+  ArrowRight,
+} from 'lucide-react'
 import { cn } from '@/lib/utils'
 import { supabase } from '@/lib/supabase'
 
@@ -15,6 +29,46 @@ interface UploadingFile {
   status: 'uploading' | 'complete' | 'error'
   preview?: string
   publicUrl?: string
+}
+
+const uploadHighlights = [
+  {
+    icon: ShieldCheck,
+    title: 'Private review first',
+    description: 'Uploads stay between us until we approve them for the gallery.',
+  },
+  {
+    icon: Clock3,
+    title: 'Large moments welcome',
+    description: 'Phones, cameras, videos, and all the candid little pieces in between.',
+  },
+  {
+    icon: Mail,
+    title: 'Contact details kept with the upload',
+    description: 'We keep your name and email with the submission in case we need context while reviewing it.',
+  },
+] as const
+
+function formatMediaCount(count: number, singular: string, plural = `${singular}s`) {
+  return count === 1 ? `1 ${singular}` : `${count} ${plural}`
+}
+
+function describeUploadSummary(photoCount: number, videoCount: number) {
+  const parts: string[] = []
+  if (photoCount > 0) parts.push(formatMediaCount(photoCount, 'photo'))
+  if (videoCount > 0) parts.push(formatMediaCount(videoCount, 'video'))
+
+  if (parts.length === 0) return 'your upload'
+  if (parts.length === 1) return parts[0]
+  return `${parts[0]} and ${parts[1]}`
+}
+
+function describeSubmitLabel(photoCount: number, videoCount: number) {
+  if (photoCount === 0 && videoCount === 0) {
+    return 'Select Files First'
+  }
+
+  return `Submit ${describeUploadSummary(photoCount, videoCount)}`
 }
 
 export default function UploadPage() {
@@ -42,61 +96,61 @@ export default function UploadPage() {
       const file = fileObj.file
       const isVideo = file.type.startsWith('video/')
       const bucket = isVideo ? 'guest-videos' : 'guest-photos'
-      
-      // Create unique filename
+
       const fileExt = file.name.split('.').pop()
       const fileName = `${Date.now()}_${Math.random().toString(36).substring(7)}.${fileExt}`
       const filePath = `${fileName}`
 
-      // Update progress periodically
       const progressInterval = setInterval(() => {
-        setFiles(prev => prev.map(f => {
-          if (f.id === fileObj.id && f.progress < 90) {
-            return { ...f, progress: f.progress + Math.random() * 10 }
-          }
-          return f
-        }))
+        setFiles(prev =>
+          prev.map(f => {
+            if (f.id === fileObj.id && f.progress < 90) {
+              return { ...f, progress: f.progress + Math.random() * 10 }
+            }
+            return f
+          })
+        )
       }, 300)
 
-      // Upload to Supabase Storage
       const { error } = await supabase.storage
         .from(bucket)
         .upload(filePath, file, {
           cacheControl: '3600',
-          upsert: false
+          upsert: false,
         })
 
       clearInterval(progressInterval)
 
       if (error) {
-        // Error handled via UI toast
-        setFiles(prev => prev.map(f => 
-          f.id === fileObj.id 
-            ? { ...f, status: 'error', progress: 0 }
-            : f
-        ))
+        setFiles(prev =>
+          prev.map(f =>
+            f.id === fileObj.id
+              ? { ...f, status: 'error', progress: 0 }
+              : f
+          )
+        )
         return
       }
 
-      // Get public URL
       const { data: { publicUrl } } = supabase.storage
         .from(bucket)
         .getPublicUrl(filePath)
 
-      // Update file as complete
-      setFiles(prev => prev.map(f => 
-        f.id === fileObj.id 
-          ? { ...f, status: 'complete', progress: 100, publicUrl }
-          : f
-      ))
-
+      setFiles(prev =>
+        prev.map(f =>
+          f.id === fileObj.id
+            ? { ...f, status: 'complete', progress: 100, publicUrl }
+            : f
+        )
+      )
     } catch {
-      // Error handled via UI toast
-      setFiles(prev => prev.map(f => 
-        f.id === fileObj.id 
-          ? { ...f, status: 'error', progress: 0 }
-          : f
-      ))
+      setFiles(prev =>
+        prev.map(f =>
+          f.id === fileObj.id
+            ? { ...f, status: 'error', progress: 0 }
+            : f
+        )
+      )
     }
   }, [])
 
@@ -104,8 +158,8 @@ export default function UploadPage() {
     const validFiles = newFiles.filter(file => {
       const isImage = file.type.startsWith('image/')
       const isVideo = file.type.startsWith('video/')
-      const isValidSize = file.size <= 500 * 1024 * 1024 // 500MB
-      
+      const isValidSize = file.size <= 500 * 1024 * 1024
+
       return (isImage || isVideo) && isValidSize
     })
 
@@ -114,13 +168,12 @@ export default function UploadPage() {
       file,
       progress: 0,
       status: 'uploading',
-      preview: file.type.startsWith('image/') ? URL.createObjectURL(file) : undefined
+      preview: file.type.startsWith('image/') ? URL.createObjectURL(file) : undefined,
     }))
 
     setFiles(prev => [...prev, ...newUploadingFiles])
 
-    // Start uploading files to Supabase
-    newUploadingFiles.forEach((fileObj) => {
+    newUploadingFiles.forEach(fileObj => {
       void uploadFileToSupabase(fileObj)
     })
   }, [uploadFileToSupabase])
@@ -128,7 +181,7 @@ export default function UploadPage() {
   const handleDrop = useCallback((e: React.DragEvent) => {
     e.preventDefault()
     setIsDragging(false)
-    
+
     const droppedFiles = Array.from(e.dataTransfer.files)
     addFiles(droppedFiles)
   }, [addFiles])
@@ -146,11 +199,8 @@ export default function UploadPage() {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
-    
-    // Form submission started
-    
+
     if (files.length === 0 || !name || !email) {
-      // Validation error shown in UI
       return
     }
 
@@ -158,20 +208,16 @@ export default function UploadPage() {
     setSubmitError(null)
 
     try {
-      // Separate photo and video URLs
       const photoUrls = files
         .filter(f => f.status === 'complete' && !f.file.type.startsWith('video/'))
         .map(f => f.publicUrl)
         .filter(Boolean) as string[]
-      
+
       const videoUrls = files
         .filter(f => f.status === 'complete' && f.file.type.startsWith('video/'))
         .map(f => f.publicUrl)
         .filter(Boolean) as string[]
 
-      // Saving to database
-      
-      // Save to guest_uploads table
       const { error } = await supabase
         .from('guest_uploads')
         .insert([
@@ -181,21 +227,16 @@ export default function UploadPage() {
             message: message || null,
             photo_urls: photoUrls,
             video_urls: videoUrls,
-            status: 'pending'
-          }
+            status: 'pending',
+          },
         ])
-        .select()
-
-      // Response handled
 
       if (error) {
         throw error
       }
 
       setIsSubmitted(true)
-      
     } catch {
-      // Error handled via UI toast
       setSubmitError('Something went wrong. Please try again.')
     } finally {
       setIsSubmitting(false)
@@ -205,45 +246,81 @@ export default function UploadPage() {
   const retryUpload = (fileId: string) => {
     const file = files.find(f => f.id === fileId)
     if (file) {
-      setFiles(prev => prev.map(f => 
-        f.id === fileId 
-          ? { ...f, status: 'uploading', progress: 0 }
-          : f
-      ))
+      setFiles(prev =>
+        prev.map(f =>
+          f.id === fileId
+            ? { ...f, status: 'uploading', progress: 0 }
+            : f
+        )
+      )
       void uploadFileToSupabase(file)
     }
   }
 
+  const completedFiles = files.filter(f => f.status === 'complete').length
+  const hasErrors = files.some(f => f.status === 'error')
+  const completedPhotoCount = files.filter(f => f.status === 'complete' && !f.file.type.startsWith('video/')).length
+  const completedVideoCount = files.filter(f => f.status === 'complete' && f.file.type.startsWith('video/')).length
+  const selectedPhotoCount = files.filter(f => !f.file.type.startsWith('video/')).length
+  const selectedVideoCount = files.filter(f => f.file.type.startsWith('video/')).length
+
   if (isSubmitted) {
+    const uploadSummary = describeUploadSummary(completedPhotoCount, completedVideoCount)
+
     return (
-      <div className="min-h-screen bg-cream-50 pt-32 pb-20 px-4">
-        <div className="max-w-2xl mx-auto text-center">
+      <div className="min-h-screen bg-cream-50 px-4 pb-20 pt-32">
+        <UploadSEO />
+
+        <div className="mx-auto max-w-3xl">
           <motion.div
-            initial={{ opacity: 0, scale: 0.9 }}
-            animate={{ opacity: 1, scale: 1 }}
-            transition={{ duration: 0.5 }}
-            className="bg-white rounded-2xl p-12 shadow-lg border border-gold-200/60"
+            initial={{ opacity: 0, scale: 0.96, y: 20 }}
+            animate={{ opacity: 1, scale: 1, y: 0 }}
+            transition={{ duration: 0.55, ease: [0.16, 1, 0.3, 1] }}
+            data-testid="upload-success-panel"
+            className="editorial-panel px-6 py-10 text-center sm:px-10"
           >
-            <div className="w-20 h-20 bg-green-100 rounded-full flex items-center justify-center mx-auto mb-6">
-              <CheckCircle className="w-10 h-10 text-green-600" />
-            </div>
-            <h2 className="font-display text-3xl text-charcoal-900 mb-4">
-              Thank You!
-            </h2>
-            <p className="text-charcoal-600 mb-6">
-              Your {files.length} photo{files.length !== 1 && 's'} have been uploaded and are pending approval. 
-              We'll review them and add them to the gallery soon!
-            </p>
-            <p className="text-charcoal-500 text-sm mb-8">
-              You'll receive an email at {email} when your photos are live.
-            </p>
-            <div className="flex gap-4 justify-center">
-              <Button to="/gallery" variant="secondary">
-                View Gallery
-              </Button>
-              <Button onClick={() => window.location.reload()}>
-                Upload More
-              </Button>
+            <div className="absolute -right-10 top-6 h-28 w-28 rounded-full bg-gold-200/35 blur-3xl" />
+            <div className="absolute -left-8 bottom-0 h-28 w-28 rounded-full bg-blush-200/35 blur-3xl" />
+
+            <div className="relative">
+              <div className="mx-auto flex h-20 w-20 items-center justify-center rounded-full border border-green-200/80 bg-green-100/88 shadow-sm">
+                <CheckCircle className="h-10 w-10 text-green-600" />
+              </div>
+
+              <span className="eyebrow-chip mt-6">
+                <Sparkles className="h-3.5 w-3.5" />
+                Upload received
+              </span>
+
+              <h1 className="mt-6 text-4xl text-charcoal-900 sm:text-5xl">
+                Thank you for adding to the archive.
+              </h1>
+
+              <p className="mx-auto mt-4 max-w-2xl text-base text-charcoal-600 sm:text-lg">
+                Your {uploadSummary} {completedPhotoCount + completedVideoCount === 1 ? 'is' : 'are'} uploaded and pending review.
+                We’ll take a look and add the approved moments to the shared archive after review.
+              </p>
+
+              <div className="mt-8 flex flex-wrap items-center justify-center gap-3 text-sm text-charcoal-500">
+                <span className="rounded-full border border-white/80 bg-white/76 px-4 py-2">
+                  {completedPhotoCount > 0 ? formatMediaCount(completedPhotoCount, 'photo') : 'No photos'}
+                </span>
+                <span className="rounded-full border border-white/80 bg-white/76 px-4 py-2">
+                  {completedVideoCount > 0 ? formatMediaCount(completedVideoCount, 'video') : 'No videos'}
+                </span>
+                <span className="rounded-full border border-white/80 bg-white/76 px-4 py-2">
+                  Contact saved for {email}
+                </span>
+              </div>
+
+              <div className="mt-8 flex flex-wrap justify-center gap-3">
+                <Button to="/gallery" variant="secondary" size="lg">
+                  View Gallery
+                </Button>
+                <Button onClick={() => window.location.reload()} size="lg">
+                  Upload More
+                </Button>
+              </div>
             </div>
           </motion.div>
         </div>
@@ -251,47 +328,88 @@ export default function UploadPage() {
     )
   }
 
-  const completedFiles = files.filter(f => f.status === 'complete').length
-  const hasErrors = files.some(f => f.status === 'error')
-
   return (
-    <div className="min-h-screen bg-cream-50 pt-24 pb-20">
-      <div className="max-w-4xl mx-auto px-4">
-        {/* Header */}
-        <motion.div
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          className="text-center mb-12"
-        >
-          <span className="text-gold-600 text-sm uppercase tracking-[0.3em] font-medium">
-            Share Your Memories
-          </span>
-          <h1 className="font-display text-5xl md:text-6xl text-charcoal-900 mt-4 mb-4">
-            Upload Your Photos
-          </h1>
-          <p className="text-charcoal-600 max-w-xl mx-auto">
-            Help us complete the story! Share your photos and videos from our wedding day. 
-            All uploads are reviewed before being added to the gallery.
-          </p>
-        </motion.div>
+    <div className="min-h-screen bg-cream-50 pb-20 pt-28 sm:pt-32">
+      <UploadSEO />
 
-        <form onSubmit={handleSubmit}>
-          {/* Drop Zone */}
-          <motion.div
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ delay: 0.1 }}
-            className="mb-8"
-          >
-            <div
+      <div className="mx-auto max-w-6xl px-4">
+        <motion.section
+          initial={{ opacity: 0, y: 24 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.7, ease: [0.16, 1, 0.3, 1] }}
+          className="editorial-panel px-6 py-8 sm:px-8 sm:py-10"
+        >
+          <div className="absolute -right-16 top-10 h-44 w-44 rounded-full bg-gold-200/30 blur-3xl" />
+          <div className="absolute -left-10 bottom-0 h-28 w-28 rounded-full bg-blush-200/35 blur-3xl" />
+
+          <div className="relative grid gap-10 lg:grid-cols-[minmax(0,1.1fr)_minmax(0,0.9fr)]">
+            <div>
+              <span className="eyebrow-chip">
+                <Sparkles className="h-3.5 w-3.5" />
+                Share your memories
+              </span>
+
+              <h1 className="mt-6 text-5xl text-charcoal-900 sm:text-6xl">
+                Help us fill in the corners we could not see.
+              </h1>
+
+              <p className="mt-5 max-w-2xl text-base text-charcoal-600 sm:text-lg">
+                Phone photos, shaky dance-floor videos, ceremony candids, quiet table moments:
+                the whole archive gets better when your side of the day is part of it too.
+              </p>
+
+              <div className="mt-8 flex flex-wrap items-center gap-3 text-sm text-charcoal-500">
+                <span className="rounded-full border border-white/80 bg-white/76 px-4 py-2">
+                  {selectedPhotoCount > 0 ? formatMediaCount(selectedPhotoCount, 'selected photo') : 'Photos welcome'}
+                </span>
+                <span className="rounded-full border border-white/80 bg-white/76 px-4 py-2">
+                  {selectedVideoCount > 0 ? formatMediaCount(selectedVideoCount, 'selected video') : 'Videos welcome'}
+                </span>
+                <span className="rounded-full border border-white/80 bg-white/76 px-4 py-2">
+                  Reviewed before posting
+                </span>
+              </div>
+            </div>
+
+            <div className="grid gap-3 sm:grid-cols-3 lg:grid-cols-1">
+              {uploadHighlights.map(({ icon: Icon, title, description }, index) => (
+                <motion.div
+                  key={title}
+                  initial={{ opacity: 0, y: 18 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  transition={{ duration: 0.45, delay: 0.12 + index * 0.08 }}
+                  className="editorial-card px-5 py-5"
+                >
+                  <div className="flex h-11 w-11 items-center justify-center rounded-2xl border border-gold-200/70 bg-gold-50 text-gold-600">
+                    <Icon className="h-5 w-5" />
+                  </div>
+                  <p className="mt-5 text-xl font-semibold text-charcoal-900">
+                    {title}
+                  </p>
+                  <p className="mt-3 text-sm leading-6 text-charcoal-500">
+                    {description}
+                  </p>
+                </motion.div>
+              ))}
+            </div>
+          </div>
+        </motion.section>
+
+        <form onSubmit={handleSubmit} className="mt-8 grid gap-8 xl:grid-cols-[minmax(0,1fr)_23rem]">
+          <div className="grid gap-6">
+            <motion.section
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ delay: 0.08 }}
               onDragOver={handleDragOver}
               onDragLeave={handleDragLeave}
               onDrop={handleDrop}
+              data-testid="upload-dropzone"
               className={cn(
-                "relative border-2 border-dashed rounded-2xl p-12 text-center transition-all",
-                isDragging 
-                  ? "border-gold-500 bg-gold-50/50" 
-                  : "border-gold-200/60 bg-white hover:border-gold-400"
+                'relative overflow-hidden rounded-[2rem] border-2 border-dashed px-6 py-8 text-center transition-all sm:px-8 sm:py-10',
+                isDragging
+                  ? 'border-gold-500 bg-gold-50/72 shadow-[0_24px_60px_-45px_rgba(201,160,92,0.65)]'
+                  : 'border-gold-200/80 bg-white/82 hover:border-gold-400 hover:bg-white'
               )}
             >
               <input
@@ -299,223 +417,304 @@ export default function UploadPage() {
                 multiple
                 accept="image/*,video/*"
                 onChange={handleFileSelect}
-                className="absolute inset-0 w-full h-full opacity-0 cursor-pointer"
+                aria-label="Select photos or videos to upload"
+                className="absolute inset-0 h-full w-full cursor-pointer opacity-0"
               />
-              
-              <div className="w-16 h-16 bg-gold-100 rounded-full flex items-center justify-center mx-auto mb-4">
-                <Upload className="w-8 h-8 text-gold-600" />
-              </div>
-              
-              <p className="text-charcoal-700 font-medium mb-2">
-                Drop your photos here
-              </p>
-              <p className="text-charcoal-500 text-sm mb-4">
-                or click to browse your files
-              </p>
-              
-              <div className="flex items-center justify-center gap-4 text-xs text-charcoal-400">
-                <span className="flex items-center gap-1">
-                  <ImageIcon className="w-3 h-3" />
-                  Photos: JPG, PNG, HEIC
-                </span>
-                <span className="flex items-center gap-1">
-                  <Video className="w-3 h-3" />
-                  Videos: MP4, MOV
-                </span>
-              </div>
-              <p className="text-charcoal-400 text-xs mt-2">
-                Up to 50 files, 500MB each
-              </p>
-            </div>
-          </motion.div>
 
-          {/* File List */}
-          {files.length > 0 && (
-            <motion.div
-              initial={{ opacity: 0, height: 0 }}
-              animate={{ opacity: 1, height: 'auto' }}
-              className="mb-8"
-            >
-              <h3 className="text-sm font-medium text-charcoal-700 mb-4">
-                {completedFiles} of {files.length} file{files.length !== 1 && 's'} uploaded
-                {hasErrors && ' (some failed)'}
-              </h3>
-              <div className="space-y-3">
-                {files.map((file) => (
-                  <div key={file.id} className={cn(
-                    "flex items-center gap-4 bg-white p-4 rounded-xl border border-gold-200/60 shadow-sm",
-                    file.status === 'error' ? "border-rose-200" : "border-gold-100"
-                  )}>
-                    {file.preview ? (
-                      <img src={file.preview} alt="" className="w-12 h-12 rounded-lg object-cover" />
-                    ) : (
-                      <div className="w-12 h-12 bg-charcoal-100 rounded-lg flex items-center justify-center">
-                        <Video className="w-5 h-5 text-charcoal-400" />
-                      </div>
-                    )}
-                    
-                    <div className="flex-1 min-w-0">
-                      <p className="text-sm font-medium text-charcoal-700 truncate">
-                        {file.file.name}
-                      </p>
-                      <p className="text-xs text-charcoal-400">
-                        {(file.file.size / 1024 / 1024).toFixed(1)} MB
-                      </p>
-                      
-                      {file.status === 'uploading' && (
-                        <div className="mt-2">
-                          <div className="h-1 bg-gold-100 rounded-full overflow-hidden">
-                            <div 
-                              className="h-full bg-gold-500 transition-all duration-300"
-                              style={{ width: `${Math.min(file.progress, 100)}%` }}
-                            />
-                          </div>
-                        </div>
-                      )}
-                      
-                      {file.status === 'error' && (
-                        <p className="text-xs text-rose-500 mt-1">
-                          Upload failed - 
-                          <button 
-                            type="button"
-                            onClick={() => retryUpload(file.id)}
-                            className="underline ml-1 hover:text-rose-600"
-                          >
-                            retry
-                          </button>
-                        </p>
-                      )}
-                    </div>
+              <div className="mx-auto flex h-18 w-18 items-center justify-center rounded-full border border-gold-200/70 bg-gold-100 sm:h-20 sm:w-20">
+                <Upload className="h-9 w-9 text-gold-600 sm:h-10 sm:w-10" />
+              </div>
 
-                    {file.status === 'complete' ? (
-                      <CheckCircle className="w-5 h-5 text-green-500" />
-                    ) : file.status === 'error' ? (
-                      <AlertCircle className="w-5 h-5 text-rose-500" />
-                    ) : (
-                      <button
-                        type="button"
-                        onClick={() => removeFile(file.id)}
-                        className="p-1 text-charcoal-400 hover:text-rose-500 transition-colors"
-                      >
-                        <X className="w-5 h-5" />
-                      </button>
+              <h2 className="mt-6 text-4xl text-charcoal-900 sm:text-5xl">
+                {isDragging ? 'Drop them right here.' : 'Drop photos or videos to begin.'}
+              </h2>
+
+              <p className="mx-auto mt-4 max-w-2xl text-base text-charcoal-600 sm:text-lg">
+                Click anywhere in this panel or drag files in from your desktop. We’ll upload first,
+                then you can add your name and a note before sending everything through for review.
+              </p>
+
+              <div className="mt-8 flex flex-wrap items-center justify-center gap-3 text-sm text-charcoal-500">
+                <span className="rounded-full border border-white/80 bg-white/76 px-4 py-2">
+                  <span className="inline-flex items-center gap-2">
+                    <ImageIcon className="h-4 w-4 text-gold-600" />
+                    JPG, PNG, HEIC
+                  </span>
+                </span>
+                <span className="rounded-full border border-white/80 bg-white/76 px-4 py-2">
+                  <span className="inline-flex items-center gap-2">
+                    <Video className="h-4 w-4 text-gold-600" />
+                    MP4, MOV
+                  </span>
+                </span>
+                <span className="rounded-full border border-white/80 bg-white/76 px-4 py-2">
+                  Up to 50 files, 500MB each
+                </span>
+              </div>
+            </motion.section>
+
+            {files.length > 0 && (
+              <motion.section
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+                className="editorial-panel px-6 py-6 sm:px-8"
+              >
+                <div className="flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between">
+                  <div>
+                    <span className="eyebrow-chip">
+                      <Upload className="h-3.5 w-3.5" />
+                      Upload queue
+                    </span>
+                    <h3 className="mt-5 text-3xl text-charcoal-900 sm:text-4xl">
+                      {completedFiles} of {files.length} files ready to send
+                    </h3>
+                    <p className="mt-3 max-w-2xl text-sm text-charcoal-500 sm:text-base">
+                      Review everything here before you submit. Remove anything you do not want included,
+                      or retry files that had trouble on the way up.
+                    </p>
+                  </div>
+
+                  <div className="flex flex-wrap items-center gap-3 text-sm text-charcoal-500">
+                    <span className="rounded-full border border-white/80 bg-white/76 px-4 py-2">
+                      {describeUploadSummary(completedPhotoCount, completedVideoCount)}
+                    </span>
+                    {hasErrors && (
+                      <span className="rounded-full border border-rose-200 bg-rose-50 px-4 py-2 text-rose-600">
+                        Some files need attention
+                      </span>
                     )}
                   </div>
-                ))}
-              </div>
-            </motion.div>
-          )}
+                </div>
 
-          {/* Error Message */}
-          {submitError && (
-            <motion.div
-              initial={{ opacity: 0, y: 10 }}
+                <div className="mt-6 space-y-3">
+                  {files.map(file => (
+                    <div
+                      key={file.id}
+                      className={cn(
+                        'editorial-card flex flex-col gap-4 px-4 py-4 sm:flex-row sm:items-center',
+                        file.status === 'error' && 'border-rose-200/80'
+                      )}
+                    >
+                      <div className="flex items-center gap-4">
+                        {file.preview ? (
+                          <img src={file.preview} alt="" className="h-16 w-16 rounded-2xl object-cover" />
+                        ) : (
+                          <div className="flex h-16 w-16 items-center justify-center rounded-2xl border border-gold-200/70 bg-gold-50 text-gold-600">
+                            <Video className="h-6 w-6" />
+                          </div>
+                        )}
+
+                        <div className="min-w-0">
+                          <p className="truncate text-sm font-semibold text-charcoal-800">
+                            {file.file.name}
+                          </p>
+                          <div className="mt-1 flex flex-wrap items-center gap-2 text-xs text-charcoal-400">
+                            <span>{(file.file.size / 1024 / 1024).toFixed(1)} MB</span>
+                            <span className="h-1 w-1 rounded-full bg-gold-300" />
+                            <span>{file.file.type.startsWith('video/') ? 'Video' : 'Photo'}</span>
+                          </div>
+                        </div>
+                      </div>
+
+                      <div className="flex-1">
+                        {file.status === 'uploading' && (
+                          <div>
+                            <div className="mb-2 flex items-center justify-between text-xs text-charcoal-500">
+                              <span>Uploading…</span>
+                              <span>{Math.min(Math.round(file.progress), 100)}%</span>
+                            </div>
+                            <div className="h-2 overflow-hidden rounded-full bg-gold-100">
+                              <div
+                                className="h-full rounded-full bg-gradient-to-r from-gold-400 to-gold-600 transition-all duration-300"
+                                style={{ width: `${Math.min(file.progress, 100)}%` }}
+                              />
+                            </div>
+                          </div>
+                        )}
+
+                        {file.status === 'complete' && (
+                          <div className="inline-flex items-center gap-2 rounded-full border border-emerald-200 bg-emerald-50 px-3 py-1.5 text-xs font-medium text-emerald-700">
+                            <CheckCircle className="h-3.5 w-3.5" />
+                            Uploaded and ready
+                          </div>
+                        )}
+
+                        {file.status === 'error' && (
+                          <div className="flex flex-wrap items-center gap-3">
+                            <div className="inline-flex items-center gap-2 rounded-full border border-rose-200 bg-rose-50 px-3 py-1.5 text-xs font-medium text-rose-600">
+                              <AlertCircle className="h-3.5 w-3.5" />
+                              Upload failed
+                            </div>
+                            <button
+                              type="button"
+                              onClick={() => retryUpload(file.id)}
+                              className="text-xs font-medium uppercase tracking-[0.22em] text-gold-700 transition-colors hover:text-gold-600"
+                            >
+                              Retry
+                            </button>
+                          </div>
+                        )}
+                      </div>
+
+                      {file.status !== 'complete' && (
+                        <button
+                          type="button"
+                          onClick={() => removeFile(file.id)}
+                          className="self-start rounded-full p-2 text-charcoal-400 transition-colors hover:bg-white hover:text-rose-500 sm:self-center"
+                          aria-label={`Remove ${file.file.name}`}
+                        >
+                          <X className="h-5 w-5" />
+                        </button>
+                      )}
+                    </div>
+                  ))}
+                </div>
+              </motion.section>
+            )}
+          </div>
+
+          <div className="grid gap-6 xl:sticky xl:top-28 xl:self-start">
+            <motion.section
+              initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
-              className="bg-rose-50 border border-rose-200 rounded-xl p-4 mb-8"
+              transition={{ delay: 0.14 }}
+              className="editorial-panel px-6 py-6"
             >
-              <p className="text-rose-600 text-sm flex items-center gap-2">
-                <AlertCircle className="w-4 h-4" />
-                {submitError}
+              <span className="eyebrow-chip">
+                <Mail className="h-3.5 w-3.5" />
+                Your details
+              </span>
+
+              <h2 className="mt-5 text-3xl text-charcoal-900">
+                Tell us who this upload came from.
+              </h2>
+
+              <p className="mt-3 text-sm leading-6 text-charcoal-500">
+                We only need enough information to credit the memories and send you a quick note when they are approved.
               </p>
-            </motion.div>
-          )}
 
-          {/* Contact Info */}
-          <motion.div
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ delay: 0.2 }}
-            className="bg-white rounded-2xl p-8 shadow-lg border border-gold-200/60 mb-8"
-          >
-            <h3 className="font-display text-xl text-charcoal-900 mb-6">Your Information</h3>
-            
-            <div className="grid md:grid-cols-2 gap-6 mb-6">
-              <div>
-                <Label htmlFor="name">Your Name</Label>
-                <Input
-                  id="name"
-                  value={name}
-                  onChange={(e) => setName(e.target.value)}
-                  placeholder="e.g., Sarah Johnson"
-                  required
-                />
+              <div className="mt-6 space-y-5">
+                <div>
+                  <Label htmlFor="name">Your Name</Label>
+                  <Input
+                    id="name"
+                    value={name}
+                    onChange={(e) => setName(e.target.value)}
+                    placeholder="e.g., Sarah Johnson"
+                    required
+                  />
+                </div>
+
+                <div>
+                  <Label htmlFor="email">Email</Label>
+                  <Input
+                    id="email"
+                    type="email"
+                    value={email}
+                    onChange={(e) => setEmail(e.target.value)}
+                    placeholder="your@email.com"
+                    required
+                  />
+                  <p className="mt-2 text-xs text-charcoal-400">
+                    Saved with the upload so we can identify the submission if questions come up.
+                  </p>
+                </div>
+
+                <div>
+                  <Label htmlFor="message">Add a Note (Optional)</Label>
+                  <Textarea
+                    id="message"
+                    value={message}
+                    onChange={(e) => setMessage(e.target.value)}
+                    placeholder="Tell us where these were taken, who shared them, or leave a little note from the day."
+                    rows={4}
+                  />
+                </div>
               </div>
-              <div>
-                <Label htmlFor="email">Email</Label>
-                <Input
-                  id="email"
-                  type="email"
-                  value={email}
-                  onChange={(e) => setEmail(e.target.value)}
-                  placeholder="your@email.com"
-                  required
-                />
-                <p className="text-xs text-charcoal-400 mt-1">
-                  We'll notify you when your photos are approved
-                </p>
-              </div>
-            </div>
+            </motion.section>
 
-            <div>
-              <Label htmlFor="message">Add a Note (Optional)</Label>
-              <Textarea
-                id="message"
-                value={message}
-                onChange={(e) => setMessage(e.target.value)}
-                placeholder="Tell us about these photos or leave a message..."
-                rows={4}
-              />
-            </div>
-          </motion.div>
-
-          {/* Privacy Notice */}
-          <motion.div
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ delay: 0.3 }}
-            className="bg-cream-100 rounded-xl p-6 mb-8"
-          >
-            <div className="flex items-start gap-3">
-              <AlertCircle className="w-5 h-5 text-gold-600 mt-0.5 flex-shrink-0" />
-              <div>
-                <p className="text-sm font-medium text-charcoal-700 mb-1">
-                  Privacy Notice
-                </p>
-                <p className="text-sm text-charcoal-600">
-                  By uploading, you confirm these are your photos from our wedding day. 
-                  Only Austin & Jordyn will see these until approved. 
-                  Once approved, they'll be visible to other wedding guests.
-                </p>
-              </div>
-            </div>
-          </motion.div>
-
-          {/* Submit */}
-          <motion.div
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ delay: 0.4 }}
-            className="flex justify-center"
-          >
-            <Button 
-              type="submit" 
-              size="lg" 
-              disabled={files.length === 0 || !name || !email || isSubmitting || completedFiles === 0}
+            <motion.section
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ delay: 0.2 }}
+              className="editorial-card px-5 py-5"
             >
-              {isSubmitting ? (
-                <>
-                  <Loader2 className="w-4 h-4 mr-2 animate-spin" />
-                  Submitting...
-                </>
-              ) : completedFiles === 0 && files.length > 0 ? (
-                'Wait for uploads...'
-              ) : files.length > 0 ? (
-                `Submit ${completedFiles} Photo${completedFiles !== 1 ? 's' : ''}`
-              ) : (
-                'Select Photos First'
-              )}
-            </Button>
-          </motion.div>
+              <p className="text-[10px] uppercase tracking-[0.3em] text-gold-700">
+                Before you send
+              </p>
+              <p className="mt-3 text-lg font-semibold text-charcoal-900">
+                A few reassurance points
+              </p>
+              <ul className="mt-4 space-y-3 text-sm leading-6 text-charcoal-500">
+                <li className="flex items-start gap-3">
+                  <ShieldCheck className="mt-0.5 h-4 w-4 shrink-0 text-gold-600" />
+                  Only Austin & Jordyn can see these until they are approved.
+                </li>
+                <li className="flex items-start gap-3">
+                  <Clock3 className="mt-0.5 h-4 w-4 shrink-0 text-gold-600" />
+                  Uploads stay in review until we sort and caption them for the gallery.
+                </li>
+                <li className="flex items-start gap-3">
+                  <Mail className="mt-0.5 h-4 w-4 shrink-0 text-gold-600" />
+                  Your contact details stay with the submission in case we need context while reviewing it.
+                </li>
+              </ul>
+            </motion.section>
+
+            {submitError && (
+              <motion.div
+                initial={{ opacity: 0, y: 10 }}
+                animate={{ opacity: 1, y: 0 }}
+                className="rounded-[1.5rem] border border-rose-200 bg-rose-50 px-5 py-4"
+              >
+                <p className="flex items-center gap-2 text-sm text-rose-600">
+                  <AlertCircle className="h-4 w-4" />
+                  {submitError}
+                </p>
+              </motion.div>
+            )}
+
+            <motion.div
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ delay: 0.24 }}
+              className="editorial-panel px-5 py-5"
+            >
+              <div className="flex items-start justify-between gap-4">
+                <div>
+                  <p className="text-[10px] uppercase tracking-[0.3em] text-gold-700">
+                    Final step
+                  </p>
+                  <p className="mt-3 text-lg font-semibold text-charcoal-900">
+                    Send everything through for review.
+                  </p>
+                </div>
+                <ArrowRight className="mt-1 h-5 w-5 text-gold-600" />
+              </div>
+
+              <p className="mt-3 text-sm leading-6 text-charcoal-500">
+                You can submit once at least one file finishes uploading and your contact details are filled in.
+              </p>
+
+              <Button
+                type="submit"
+                size="lg"
+                className="mt-6 w-full"
+                disabled={files.length === 0 || !name || !email || isSubmitting || completedFiles === 0}
+              >
+                {isSubmitting ? (
+                  <>
+                    <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                    Submitting…
+                  </>
+                ) : completedFiles === 0 && files.length > 0 ? (
+                  'Wait for uploads…'
+                ) : (
+                  describeSubmitLabel(completedPhotoCount, completedVideoCount)
+                )}
+              </Button>
+            </motion.div>
+          </div>
         </form>
       </div>
     </div>

@@ -1,48 +1,58 @@
 # Production Readiness
 
-> Last Updated: March 10, 2026
+> Last Updated: March 11, 2026
 > Project: Austin & Jordyn Wedding Website
 
-## Current Shipping App
+## Shipping Surface
 
-Source of truth:
-- `src/main.jsx`
-- `src/App.tsx`
-- Routes: `/`, `/film`, `/gallery`, `/upload`, `/guestbook`, `/admin/*`
+Live routes in the shipping app:
 
-## Verified Status
+- `/`
+- `/film`
+- `/gallery`
+- `/upload`
+- `/guestbook`
+- `/admin/login`
+- `/admin/*`
+
+There is no RSVP feature in the current shipping app. Older launch docs that reference RSVP are stale and should not drive launch work.
+
+## Current Confirmed State
 
 | Area | Status | Notes |
 |------|--------|-------|
-| Runtime baseline | ✅ | `Node >=20.19.0`, `npm@11.11.0`, `.nvmrc` added |
-| Dependency freshness | ✅ | `npm outdated` returns no remaining outdated packages |
-| Vite / React | ✅ | `vite 7.3.1`, `react 19.2.4`, `react-dom 19.2.4` |
-| Lint | ✅ | Passes with warnings only |
+| Runtime baseline | ✅ | Node 20+, current Vite/React stack |
 | TypeScript | ✅ | `npx tsc --noEmit` passes |
 | Unit tests | ✅ | `npm run test:run` passes |
-| E2E tests | ✅ | `npm run test:e2e` passes |
+| Public E2E | ✅ | `npm run test:e2e:public` passes |
 | Production build | ✅ | `npm run build` passes |
-| PWA assets | ✅ | Manifest unified in Vite config; favicon/app icons generated |
-| Supabase integration | ✅ | Gallery, uploads, guestbook, and admin moderation are wired to Supabase |
+| Admin login | ✅ | `/admin/login` exists and uses Supabase auth |
+| Supabase integration | ✅ | guestbook, uploads, moderation, and guestbook RPC verified |
+| Staging metadata | ✅ | fallback metadata, `robots.txt`, and `sitemap.xml` use the Netlify staging URL |
+| Security headers | ✅ | CSP, HSTS, frame/content/referrer policies are active |
+| Release verification | ✅ | release checks exist and pass in current staging config |
 
-## Completed Stabilization Work
+## Launch Model
 
-- Removed unused Apollo, React Query, repository, plugin, monitoring, and alternate-router code paths from the shipping bundle.
-- Fixed live-route TypeScript, accessibility, and React lint issues across Home, Film, Gallery, Upload, Guestbook, Admin, and shared UI.
-- Replaced the flaky gallery Playwright assertion with real page-content checks and moved Playwright preview to a dedicated port.
-- Added `VITE_MEDIA_BASE_URL` support for heavy media and a postbuild prune step so remote-hosted video/audio/timeline assets can be excluded from `dist`.
-- Corrected sitemap routes to match the actual public app.
+- Private staging/testing URL: `https://austin-jordyn-wedding.netlify.app`
+- Final public launch URL: `https://wedding.theporadas.com`
+- Custom domain is intentionally delayed until the site is fully approved.
+- Deep-link crawler previews are accepted to fall back to homepage metadata for this launch because the app is an SPA without prerendering or SSR.
 
-## Remaining Operational Work
+## Remaining Work to Reach Public Launch
 
-- Configure production env vars:
-  - `VITE_SUPABASE_URL`
-  - `VITE_SUPABASE_ANON_KEY`
-  - optional `VITE_MEDIA_BASE_URL`
-  - optional `VITE_SITE_URL`
-- If media is offloaded, upload large `/video`, `/background_audio`, and `/media` assets to Supabase Storage or another CDN before enabling `VITE_MEDIA_BASE_URL`.
-- Decide whether to spend a follow-up pass reducing the remaining lint warnings in utility and worker files.
+- Reconcile the current working tree into a clean Git-backed release on `main`.
+- Configure required launch monitoring envs:
+  - `VITE_SENTRY_DSN`
+  - `VITE_GA_ID`
+  - recommended `VITE_APP_VERSION`
+- Run `npm run verify:launch`.
+- Run `npm run verify:deployed` against the staging URL.
+- Complete final staging manual QA and content sign-off.
+- Configure the custom domain in Netlify and DNS only on launch day.
+- Update `VITE_SITE_URL` to the custom domain at cutover and verify the deployed site again.
 
-## Known Caveat
+## Accepted Launch Risks
 
-- `npm audit` still reports four high-severity findings through `vite-plugin-pwa` and `workbox-build`. The dependency tree is otherwise current, and the reported remediation path in npm advisories is inconsistent with the currently published `vite-plugin-pwa` line, so this needs a separate upstream/package-audit review rather than an automatic fix.
+- Remaining lint warnings in utility and worker files are non-blocking unless they begin affecting shipping routes.
+- `npm audit` findings in the `vite-plugin-pwa` / `workbox-build` chain are currently treated as documented launch risk unless a safe upstream fix becomes available before launch.

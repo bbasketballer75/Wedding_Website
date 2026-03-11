@@ -4,11 +4,14 @@ import react from '@vitejs/plugin-react'
 import path from 'path'
 import { visualizer } from 'rollup-plugin-visualizer'
 import { fileURLToPath } from 'url'
-import { defineConfig } from 'vite'
+import { defineConfig, loadEnv } from 'vite'
 import { VitePWA } from 'vite-plugin-pwa'
+import packageJson from './package.json' with { type: 'json' }
 
 const __filename = fileURLToPath(import.meta.url)
 const __dirname = path.dirname(__filename)
+const DEFAULT_SITE_URL = 'https://austin-jordyn-wedding.netlify.app'
+
 const pwaIcons = [
   {
     src: '/icons/icon-72x72.png',
@@ -94,89 +97,98 @@ const pwaManifest = {
 }
 
 // https://vite.dev/config/
-export default defineConfig({
-  base: '/',
-  plugins: [
-    react({
-      // Enable fast refresh for TypeScript
-      fastRefresh: true,
-    }),
-    tailwindcss(),
-    VitePWA({
-      registerType: 'autoUpdate',
-      devOptions: {
-        enabled: false,
-      },
-      manifestFilename: 'manifest.webmanifest',
-      includeAssets: [
-        'favicon-custom.svg',
-        'favicon-16x16.png',
-        'favicon-32x32.png',
-        'apple-touch-icon.png',
-        'browserconfig.xml',
-        'robots.txt',
-        'offline.html',
-      ],
-      manifest: pwaManifest,
-    }),
-    process.env.ANALYZE &&
-      visualizer({
-        filename: 'dist/stats.html',
-        open: true,
-        gzipSize: true,
-        brotliSize: true,
+export default defineConfig(({ mode }) => {
+  const env = loadEnv(mode, process.cwd(), '')
+  const siteUrl = (env.VITE_SITE_URL || DEFAULT_SITE_URL).replace(/\/+$/, '')
+
+  return {
+    base: '/',
+    plugins: [
+      react({
+        // Enable fast refresh for TypeScript
+        fastRefresh: true,
       }),
-  ].filter(Boolean),
-  resolve: {
-    alias: {
-      '@': path.resolve(__dirname, './src'),
-    },
-  },
-  build: {
-    rollupOptions: {
-      output: {
-        manualChunks: {
-          'vendor-core': ['react', 'react-dom'],
-          'vendor-router': ['react-router-dom'],
-          'vendor-ui': ['framer-motion', '@heroicons/react', 'lucide-react'],
-          'vendor-supabase': ['@supabase/supabase-js'],
-          'vendor-map': ['leaflet', 'react-leaflet'],
-        },
-        chunkFileNames: chunkInfo => {
-          const size = chunkInfo.moduleIds?.length || 0
-          if (size > 500) {
-            console.warn(`⚠️ Large chunk detected: ${chunkInfo.name} (${size} modules)`)
-          }
-          return 'assets/[name]-[hash].js'
+      tailwindcss(),
+      {
+        name: 'inject-site-url-fallback-metadata',
+        transformIndexHtml(html) {
+          return html.replaceAll('__SITE_URL__', siteUrl)
         },
       },
-      onwarn: (warning, warn) => {
-        // Suppress warnings about dynamic imports
-        if (warning.code === 'DYNAMIC_IMPORT') return
-        // Warn about large chunks
-        if (warning.code === 'MODULE_LEVEL_DIRECTIVE') return
-        warn(warning)
+      VitePWA({
+        registerType: 'autoUpdate',
+        devOptions: {
+          enabled: false,
+        },
+        manifestFilename: 'manifest.webmanifest',
+        includeAssets: [
+          'favicon-custom.svg',
+          'favicon-16x16.png',
+          'favicon-32x32.png',
+          'apple-touch-icon.png',
+          'browserconfig.xml',
+          'robots.txt',
+          'offline.html',
+        ],
+        manifest: pwaManifest,
+      }),
+      process.env.ANALYZE &&
+        visualizer({
+          filename: 'dist/stats.html',
+          open: true,
+          gzipSize: true,
+          brotliSize: true,
+        }),
+    ].filter(Boolean),
+    resolve: {
+      alias: {
+        '@': path.resolve(__dirname, './src'),
       },
     },
-    chunkSizeWarningLimit: 500, // Lowered from 1000 for stricter limits
-    // Performance budgets
-    assetsInlineLimit: 4096, // 4kb
-    // Enforce size limits in CI
-    reportCompressedSize: true,
-    minify: 'terser',
-    terserOptions: {
-      compress: {
-        drop_console: false,
-        drop_debugger: true,
+    build: {
+      rollupOptions: {
+        output: {
+          manualChunks: {
+            'vendor-core': ['react', 'react-dom'],
+            'vendor-router': ['react-router-dom'],
+            'vendor-ui': ['framer-motion', '@heroicons/react', 'lucide-react'],
+            'vendor-supabase': ['@supabase/supabase-js'],
+            'vendor-map': ['leaflet', 'react-leaflet'],
+          },
+          chunkFileNames: chunkInfo => {
+            const size = chunkInfo.moduleIds?.length || 0
+            if (size > 500) {
+              console.warn(`⚠️ Large chunk detected: ${chunkInfo.name} (${size} modules)`)
+            }
+            return 'assets/[name]-[hash].js'
+          },
+        },
+        onwarn: (warning, warn) => {
+          // Suppress warnings about dynamic imports
+          if (warning.code === 'DYNAMIC_IMPORT') return
+          // Warn about large chunks
+          if (warning.code === 'MODULE_LEVEL_DIRECTIVE') return
+          warn(warning)
+        },
+      },
+      chunkSizeWarningLimit: 500,
+      assetsInlineLimit: 4096,
+      reportCompressedSize: true,
+      minify: 'terser',
+      terserOptions: {
+        compress: {
+          drop_console: false,
+          drop_debugger: true,
+        },
       },
     },
-  },
-  server: {
-    port: 5173,
-    strictPort: true,
-  },
-  define: {
-    // Performance tracking
-    __DEV__: process.env.NODE_ENV === 'development',
-  },
+    server: {
+      port: 5173,
+      strictPort: true,
+    },
+    define: {
+      __DEV__: process.env.NODE_ENV === 'development',
+      __APP_VERSION__: JSON.stringify(process.env.VITE_APP_VERSION || packageJson.version),
+    },
+  }
 })

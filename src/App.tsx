@@ -6,6 +6,8 @@ import { Footer } from '@/components/layout/Footer'
 import { PageLoader } from '@/components/ui/PageLoader'
 import { SkipLink } from '@/components/accessibility/SkipLink'
 import { AccessibilityProvider, useAccessibility } from '@/accessibility/AccessibilityProvider'
+import { trackPageView } from '@/services/AnalyticsService'
+import { useEffect } from 'react'
 
 // Lazy load pages for code splitting
 const Home = lazy(() => import('@/pages/Home'))
@@ -14,6 +16,7 @@ const Gallery = lazy(() => import('@/pages/Gallery'))
 const Upload = lazy(() => import('@/pages/Upload'))
 const Guestbook = lazy(() => import('@/pages/Guestbook'))
 const Admin = lazy(() => import('@/pages/Admin'))
+const AdminLogin = lazy(() => import('@/pages/AdminLogin'))
 const NotFound = lazy(() => import('@/pages/NotFound'))
 
 // Page transition wrapper
@@ -58,9 +61,16 @@ function AppContent() {
       '/gallery': 'Photo Gallery',
       '/upload': 'Upload Photos',
       '/guestbook': 'Guestbook',
+      '/admin/login': 'Admin Login',
+      '/admin': 'Admin Dashboard',
     }
     return titles[path]
   }
+
+  useEffect(() => {
+    const path = `${location.pathname}${location.search}${location.hash}`
+    trackPageView(path, getPageTitle(location.pathname))
+  }, [location.hash, location.pathname, location.search])
 
   return (
     <div className="min-h-screen bg-cream-50">
@@ -121,6 +131,14 @@ function AppContent() {
                   <Guestbook />
                 </LazyPage>
               } 
+            />
+            <Route 
+              path="/admin/login"
+              element={
+                <LazyPage title="Admin Login">
+                  <AdminLogin />
+                </LazyPage>
+              }
             />
             <Route 
               path="/admin/*" 

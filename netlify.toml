@@ -1,6 +1,6 @@
 [build]
   publish = "dist"
-  command = "npm run build"
+  command = "npm run verify:env && npm run build"
 
 [build.environment]
   NODE_VERSION = "20"
@@ -14,7 +14,7 @@
   environment = { NODE_ENV = "production" }
 
 [context.deploy-preview]
-  command = "npm run build"
+  command = "npm run verify:env && npm run build"
 
 [context.branch-deploy]
-  command = "npm run build"
+  command = "npm run verify:env && npm run build"

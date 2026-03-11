@@ -48,6 +48,8 @@ const BOUNCE_ANIMATION = {
 export function TimelineIcon({ type, className }: TimelineIconProps) {
   const config = iconConfig[type] || iconConfig.generic
   const Icon = config.icon
+  const pulseOuterClass = config.bgColor.replace('100', '200')
+  const pulseInnerClass = config.bgColor.replace('100', '300')
 
   return (
     <motion.div 
@@ -62,32 +64,34 @@ export function TimelineIcon({ type, className }: TimelineIconProps) {
       <div className={cn(
         "absolute inset-0 rounded-xl overflow-hidden",
         config.bgColor
-      )}>
-        {/* Animated background circles - synced with icon bounce */}
+      )} />
+
+      <div className="absolute left-1/2 top-14 -translate-x-1/2 -translate-y-1/2">
         <motion.div
-          className={cn("absolute left-1/2 -translate-x-1/2 w-24 h-24 rounded-full opacity-40", config.bgColor.replace('100', '200'))}
-          style={{ top: '0px' }}
-          animate={{ 
+          className={cn(
+            "absolute left-1/2 top-1/2 h-24 w-24 -translate-x-1/2 -translate-y-1/2 rounded-full",
+            pulseOuterClass
+          )}
+          animate={{
             y: BOUNCE_ANIMATION.y,
-            scale: [1, 1.3, 1],
-            opacity: [0.4, 0.6, 0.4]
+            scale: [0.92, 1.2, 0.92],
+            opacity: [0.22, 0.45, 0.22]
           }}
           transition={BOUNCE_ANIMATION.transition}
         />
         <motion.div
-          className={cn("absolute left-1/2 -translate-x-1/2 w-20 h-20 rounded-full opacity-50", config.bgColor.replace('100', '300'))}
-          style={{ top: '8px' }}
-          animate={{ 
+          className={cn(
+            "absolute left-1/2 top-1/2 h-20 w-20 -translate-x-1/2 -translate-y-1/2 rounded-full",
+            pulseInnerClass
+          )}
+          animate={{
             y: BOUNCE_ANIMATION.y,
-            scale: [1.1, 0.9, 1.1],
-            opacity: [0.5, 0.7, 0.5]
+            scale: [0.9, 1.08, 0.9],
+            opacity: [0.28, 0.62, 0.28]
           }}
-          transition={{ ...BOUNCE_ANIMATION.transition, delay: 0.2 }}
+          transition={{ ...BOUNCE_ANIMATION.transition, delay: 0.15 }}
         />
-      </div>
 
-      {/* Icon - positioned at top */}
-      <div className="absolute top-4 left-1/2 -translate-x-1/2">
         <motion.div
           className={cn(
             "relative w-14 h-14 rounded-full flex items-center justify-center",

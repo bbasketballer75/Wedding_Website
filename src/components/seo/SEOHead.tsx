@@ -19,6 +19,22 @@ interface SEOHeadProps {
   noIndex?: boolean
 }
 
+const SITE_NAME = "Austin & Jordyn's Wedding"
+const SITE_URL = 'https://austin-jordyn-wedding.netlify.app'
+const DEFAULT_SOCIAL_IMAGE = '/images/home/intro-video-poster.png'
+const FILM_SOCIAL_IMAGE = '/images/film/main-film-poster.png'
+const EVENT_DETAILS = {
+  date: '2025-05-10T15:30:00-04:00',
+  location: {
+    name: 'The Lodge at Indian Lake',
+    address: 'The Lodge at Indian Lake',
+  },
+  couple: {
+    partner1: 'Austin Baskerville',
+    partner2: 'Jordyn Porada',
+  },
+} as const
+
 /**
  * SEOHead - Comprehensive SEO meta tags
  * 
@@ -34,18 +50,22 @@ export function SEOHead({
   title,
   description,
   canonical,
-  image = '/images/og-default.jpg',
+  image = DEFAULT_SOCIAL_IMAGE,
   type = 'website',
   twitterCard = 'summary_large_image',
   additionalMeta = {},
   structuredData,
   noIndex = false,
 }: SEOHeadProps) {
-  const siteName = "Austin & Jordyn's Wedding"
-  const baseUrl = import.meta.env.VITE_SITE_URL || 'https://austinandjordyn.wedding'
+  const siteName = SITE_NAME
+  const baseUrl = import.meta.env.VITE_SITE_URL || SITE_URL
   const fullTitle = `${title} | ${siteName}`
   const fullImageUrl = image.startsWith('http') ? image : `${baseUrl}${image}`
-  const fullCanonical = canonical ? `${baseUrl}${canonical}` : undefined
+  const fullCanonical = canonical
+    ? canonical.startsWith('http')
+      ? canonical
+      : `${baseUrl}${canonical}`
+    : undefined
 
   useEffect(() => {
     // Update document title
@@ -109,14 +129,17 @@ export function SEOHead({
     }
 
     // JSON-LD structured data
+    let script = document.querySelector('script[data-seo-structured-data="true"]')
     if (structuredData) {
-      let script = document.querySelector('script[type="application/ld+json"]')
       if (!script) {
         script = document.createElement('script')
         script.setAttribute('type', 'application/ld+json')
+        script.setAttribute('data-seo-structured-data', 'true')
         document.head.appendChild(script)
       }
       script.textContent = JSON.stringify(structuredData)
+    } else if (script) {
+      script.remove()
     }
 
     // Cleanup on unmount
@@ -135,17 +158,62 @@ export function HomeSEO() {
     <SEOHead
       title="Home"
       description="Join us in celebrating the wedding of Austin and Jordyn. View our story, photos, and share your memories."
-      image="/images/og-home.jpg"
+      canonical="/"
+      image={DEFAULT_SOCIAL_IMAGE}
       structuredData={{
         '@context': 'https://schema.org',
-        '@type': 'WebSite',
-        name: "Austin & Jordyn's Wedding",
-        url: import.meta.env.VITE_SITE_URL,
-        potentialAction: {
-          '@type': 'SearchAction',
-          target: '{search_term_string}',
-          'query-input': 'required name=search_term_string',
-        },
+        '@graph': [
+          {
+            '@type': 'WebSite',
+            name: SITE_NAME,
+            url: import.meta.env.VITE_SITE_URL || SITE_URL,
+          },
+          {
+            '@type': 'Event',
+            name: SITE_NAME,
+            description: 'Relive the ceremony, portraits, guestbook, and shared memories from Austin and Jordyn’s wedding day.',
+            startDate: EVENT_DETAILS.date,
+            eventStatus: 'https://schema.org/EventCompleted',
+            eventAttendanceMode: 'https://schema.org/OfflineEventAttendanceMode',
+            image: `${import.meta.env.VITE_SITE_URL || SITE_URL}${DEFAULT_SOCIAL_IMAGE}`,
+            location: {
+              '@type': 'Place',
+              name: EVENT_DETAILS.location.name,
+              address: {
+                '@type': 'PostalAddress',
+                streetAddress: EVENT_DETAILS.location.address,
+              },
+            },
+            organizer: {
+              '@type': 'Organization',
+              name: SITE_NAME,
+            },
+            performer: [
+              { '@type': 'Person', name: EVENT_DETAILS.couple.partner1 },
+              { '@type': 'Person', name: EVENT_DETAILS.couple.partner2 },
+            ],
+          },
+        ],
+      }}
+    />
+  )
+}
+
+export function FilmSEO() {
+  return (
+    <SEOHead
+      title="Wedding Film"
+      description="Watch the full wedding film for Austin and Jordyn, from getting ready through the last dance."
+      canonical="/film"
+      image={FILM_SOCIAL_IMAGE}
+      structuredData={{
+        '@context': 'https://schema.org',
+        '@type': 'VideoObject',
+        name: "Austin & Jordyn's Wedding Film",
+        description: 'A feature-length wedding film covering the ceremony, speeches, and celebration.',
+        thumbnailUrl: `${import.meta.env.VITE_SITE_URL || SITE_URL}${FILM_SOCIAL_IMAGE}`,
+        uploadDate: '2025-05-10',
+        embedUrl: `${import.meta.env.VITE_SITE_URL || SITE_URL}/film`,
       }}
     />
   )
@@ -156,12 +224,13 @@ export function GallerySEO() {
     <SEOHead
       title="Photo Gallery"
       description="Browse our wedding photos and share your own. A collection of memories from our special day."
-      image="/images/og-gallery.jpg"
+      canonical="/gallery"
+      image={DEFAULT_SOCIAL_IMAGE}
       structuredData={{
         '@context': 'https://schema.org',
         '@type': 'ImageGallery',
         name: 'Wedding Photo Gallery',
-        description: 'A collection of wedding photos',
+        description: 'A collection of wedding portraits, candids, and guest photos from Austin and Jordyn’s wedding.',
       }}
     />
   )
@@ -172,7 +241,49 @@ export function GuestbookSEO() {
     <SEOHead
       title="Guestbook"
       description="Leave a message for Austin and Jordyn. Share your favorite memories from our wedding day."
-      image="/images/og-guestbook.jpg"
+      canonical="/guestbook"
+      image={DEFAULT_SOCIAL_IMAGE}
+      structuredData={{
+        '@context': 'https://schema.org',
+        '@type': 'CollectionPage',
+        name: "Austin & Jordyn's Guestbook",
+        description: 'Messages, replies, voice notes, and video notes from family and friends.',
+      }}
+    />
+  )
+}
+
+export function UploadSEO() {
+  return (
+    <SEOHead
+      title="Share Photos"
+      description="Upload your wedding photos and videos so Austin and Jordyn can add them to the shared archive."
+      canonical="/upload"
+      image={DEFAULT_SOCIAL_IMAGE}
+      structuredData={{
+        '@context': 'https://schema.org',
+        '@type': 'WebPage',
+        name: 'Upload Wedding Photos',
+        description: 'A guest upload page for sharing photos and videos from Austin and Jordyn’s wedding.',
+      }}
+    />
+  )
+}
+
+export function NotFoundSEO() {
+  return (
+    <SEOHead
+      title="Page Not Found"
+      description="This page could not be found."
+      canonical="/404"
+      image={DEFAULT_SOCIAL_IMAGE}
+      noIndex
+      structuredData={{
+        '@context': 'https://schema.org',
+        '@type': 'WebPage',
+        name: '404 Page Not Found',
+        description: 'A missing page on the Austin and Jordyn wedding website.',
+      }}
     />
   )
 }

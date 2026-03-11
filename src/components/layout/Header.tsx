@@ -1,45 +1,72 @@
-import { useState, useEffect, useRef } from 'react'
+import { type ElementType, useEffect, useRef, useState } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
 import { Link, useLocation } from 'react-router-dom'
-import { Menu, X } from 'lucide-react'
 import { cn } from '@/lib/utils'
+import { publicNavLinks } from './publicNav'
 
-const navLinks = [
-  { name: 'Watch Film', path: '/film', icon: '▶' },
-  { name: 'Gallery', path: '/gallery', icon: '◻' },
-  { name: 'Share Photos', path: '/upload', icon: '+' },
-  { name: 'Guestbook', path: '/guestbook', icon: '✎' },
-]
-
-type HeaderContentProps = {
-  location: ReturnType<typeof useLocation>
+function HeaderLink({
+  path,
+  name,
+  mobileName,
+  icon: Icon,
+  isActive,
+  isPrimary = false,
+}: {
+  path: string
+  name: string
+  mobileName: string
+  icon: ElementType
+  isActive: boolean
+  isPrimary?: boolean
+}) {
+  return (
+    <Link
+      to={path}
+      className={cn(
+        'flex shrink-0 items-center gap-1 rounded-full px-2 py-2 text-[9px] font-medium leading-none uppercase tracking-[0.16em] transition-all duration-300 max-[360px]:gap-0 max-[360px]:px-1.5 max-[360px]:text-[8px] max-[360px]:tracking-[0.12em] min-[430px]:px-2.5 sm:gap-2 sm:px-4 sm:py-2.5 sm:text-xs sm:tracking-[0.24em]',
+        isActive
+          ? 'bg-charcoal-900 text-white shadow-[0_16px_32px_-24px_rgba(21,20,19,0.9)]'
+          : isPrimary
+            ? 'text-gold-700 hover:bg-white/80 hover:text-gold-800'
+            : 'text-charcoal-700 hover:bg-white/80 hover:text-charcoal-900'
+      )}
+    >
+      <Icon
+        className={cn(
+          'h-3.5 w-3.5 max-[360px]:h-3 max-[360px]:w-3 sm:h-4 sm:w-4',
+          isActive ? 'text-gold-300' : isPrimary ? 'text-gold-500' : 'text-gold-600'
+        )}
+      />
+      <span className="whitespace-nowrap max-[360px]:hidden sm:hidden">{mobileName}</span>
+      <span className="hidden whitespace-nowrap sm:inline">{name}</span>
+    </Link>
+  )
 }
 
-function HeaderContent({ location }: HeaderContentProps) {
+function HeaderContent() {
+  const location = useLocation()
   const [isVisible, setIsVisible] = useState(true)
-  const [showNav, setShowNav] = useState(location.pathname !== '/')
-  const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false)
   const lastScrollYRef = useRef(0)
 
-  // Show nav after 3 seconds on home page
-  useEffect(() => {
-    if (location.pathname !== '/') {
-      return undefined
-    }
-
-    const timer = setTimeout(() => setShowNav(true), 3000)
-    return () => clearTimeout(timer)
-  }, [location.pathname])
-
-  // Hide/show on scroll
   useEffect(() => {
     const handleScroll = () => {
       const currentScrollY = window.scrollY
-      if (currentScrollY > lastScrollYRef.current && currentScrollY > 100) {
+      const shouldAutoHide = window.innerWidth < 1024
+
+      if (!shouldAutoHide) {
+        setIsVisible(true)
+        lastScrollYRef.current = currentScrollY
+        return
+      }
+
+      if (currentScrollY < 40) {
+        setIsVisible(true)
+      } else if (currentScrollY > lastScrollYRef.current) {
         setIsVisible(false)
       } else {
         setIsVisible(true)
       }
+
       lastScrollYRef.current = currentScrollY
     }
 
@@ -49,108 +76,42 @@ function HeaderContent({ location }: HeaderContentProps) {
 
   return (
     <AnimatePresence>
-      {isVisible && showNav && (
+      {isVisible && (
         <motion.header
-          initial={{ y: -100, opacity: 0 }}
-          animate={{ y: 0, opacity: 1 }}
-          exit={{ y: -100, opacity: 0 }}
-          transition={{ duration: 0.6, ease: [0.22, 1, 0.36, 1] }}
-          className="fixed top-6 left-0 right-0 z-50 flex justify-center px-4"
+          initial={{ opacity: 0, y: -16 }}
+          animate={{ opacity: 1, y: 0 }}
+          exit={{ opacity: 0, y: -16 }}
+          transition={{ duration: 0.45, ease: [0.16, 1, 0.3, 1] }}
+          data-testid="public-header"
+          className="fixed left-1/2 top-3 z-50 w-[calc(100vw-1rem)] max-w-[28rem] -translate-x-1/2 px-0 sm:top-6 sm:w-auto sm:max-w-max"
         >
-          <nav className="flex items-center justify-between gap-6 md:gap-8 px-6 md:px-8 py-3 md:py-4 rounded-full bg-charcoal-900/95 backdrop-blur-xl border border-gold-500/20 shadow-2xl shadow-black/20 transition-all duration-500 hover:border-gold-500/40">
-            {/* Logo */}
+          <div className="flex w-full items-center justify-between rounded-full border border-gold-300/45 bg-gradient-to-r from-cream-100/92 via-gold-50/92 to-cream-100/92 px-2 py-1.5 shadow-[0_18px_40px_-28px_rgba(46,33,13,0.42)] backdrop-blur-xl max-[360px]:px-1.5 sm:w-auto sm:px-2 sm:py-2">
             <Link
               to="/"
-              className="font-display text-xl md:text-2xl font-bold tracking-widest no-underline transition-all duration-300 hover:scale-105 group"
+              className="shrink-0 px-3 py-2 font-display text-lg text-charcoal-900 transition-colors hover:text-gold-600 max-[360px]:px-2.5 max-[360px]:text-base sm:px-4 sm:text-xl"
               onClick={() => window.scrollTo({ top: 0, behavior: 'smooth' })}
             >
-              <span className="text-gold-500 group-hover:text-gold-400 transition-colors">
-                「
-              </span>
-              <span className="bg-gradient-to-r from-gold-300 via-gold-500 to-gold-300 bg-clip-text text-transparent">
-                A&J
-              </span>
-              <span className="text-gold-500 group-hover:text-gold-400 transition-colors">
-                」
-              </span>
+              <span className="text-gold-500">A</span>&<span className="text-gold-500">J</span>
             </Link>
 
-            {/* Desktop Nav */}
-            <div className="hidden md:flex items-center gap-6">
-              {navLinks.map((link) => {
-                const isActive = location.pathname === link.path
-                return (
-                  <Link
-                    key={link.name}
-                    to={link.path}
-                    className={cn(
-                      'relative text-[10px] uppercase tracking-[0.3em] font-medium transition-all duration-300',
-                      isActive
-                        ? 'text-gold-400'
-                        : 'text-neutral-300 hover:text-white'
-                    )}
-                  >
-                    {link.name}
-                    {isActive && (
-                      <motion.span
-                        layoutId="nav-dot"
-                        className="absolute -bottom-2 left-1/2 -translate-x-1/2 w-1 h-1 rounded-full bg-gold-500"
-                        transition={{ type: 'spring', stiffness: 300, damping: 30 }}
-                      />
-                    )}
-                  </Link>
-                )
-              })}
-            </div>
+            <div className="hidden h-5 w-px bg-gold-300/60 sm:block" />
 
-            {/* Mobile Menu Button */}
-            <button
-              onClick={() => setIsMobileMenuOpen(true)}
-              className="md:hidden p-2 text-gold-500 hover:text-white transition-colors"
-              aria-label="Open menu"
-            >
-              <Menu className="w-5 h-5" />
-            </button>
-          </nav>
-
-          {/* Mobile Menu */}
-          <AnimatePresence>
-            {isMobileMenuOpen && (
-              <motion.div
-                initial={{ opacity: 0 }}
-                animate={{ opacity: 1 }}
-                exit={{ opacity: 0 }}
-                className="fixed inset-0 bg-black/90 backdrop-blur-xl z-50 md:hidden"
-              >
-                <div className="flex flex-col items-center justify-center h-full gap-8">
-                  <button
-                    onClick={() => setIsMobileMenuOpen(false)}
-                    className="absolute top-8 right-8 p-2 text-gold-500 hover:text-white"
-                    aria-label="Close menu"
-                  >
-                    <X className="w-6 h-6" />
-                  </button>
-
-                  {navLinks.map((link, i) => (
-                    <motion.div
-                      key={link.name}
-                      initial={{ opacity: 0, y: 20 }}
-                      animate={{ opacity: 1, y: 0 }}
-                      transition={{ delay: i * 0.1 }}
-                    >
-                      <Link
-                        to={link.path}
-                        onClick={() => setIsMobileMenuOpen(false)}
-                        className="text-2xl font-display text-white hover:text-gold-400 transition-colors"
-                      >
-                        {link.name}
-                      </Link>
-                    </motion.div>
-                  ))}
-                </div>
-              </motion.div>
-            )}
-          </AnimatePresence>
+            {publicNavLinks.map((link, index) => (
+              <div key={link.path} className="contents">
+                <HeaderLink
+                  path={link.path}
+                  name={link.label}
+                  mobileName={link.mobileLabel}
+                  icon={link.icon}
+                  isActive={location.pathname === link.path}
+                  isPrimary={link.isPrimary}
+                />
+                {index < publicNavLinks.length - 1 && (
+                  <div className="hidden h-5 w-px bg-gold-300/60 sm:block" />
+                )}
+              </div>
+            ))}
+          </div>
         </motion.header>
       )}
     </AnimatePresence>
@@ -158,8 +119,5 @@ function HeaderContent({ location }: HeaderContentProps) {
 }
 
 export function Header() {
-  const location = useLocation()
-  const headerKey = location.pathname === '/' ? `home-${location.key}` : 'shared-header'
-
-  return <HeaderContent key={headerKey} location={location} />
+  return <HeaderContent />
 }

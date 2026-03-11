@@ -44,6 +44,8 @@ const supabase = createClient(
 - Frontend env templates have been cleaned to remove service-role examples.
 - The shipping app uses the anon key client path.
 - Media offload is controlled through `VITE_MEDIA_BASE_URL`, which is safe to expose when it points at public storage/CDN assets.
+- `npm run verify:env` checks the active public env configuration and fails if a populated `SUPABASE_SERVICE_ROLE_KEY` appears in browser-facing env files.
+- `npm run verify:secrets` scans repo text files for populated service-role assignments or browser-facing mentions.
 
 ## Follow-Up Review Items
 

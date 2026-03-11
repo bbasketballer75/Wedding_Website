@@ -48,7 +48,9 @@ export function initErrorTracking(): void {
   Sentry.init({
     dsn,
     environment: getEnvironment(),
-    release: import.meta.env.VITE_APP_VERSION || 'development',
+    release: import.meta.env.VITE_APP_VERSION || __APP_VERSION__ || 'development',
+    enabled: import.meta.env.PROD,
+    sendDefaultPii: false,
     
     // Performance monitoring (optional)
     tracesSampleRate: import.meta.env.PROD ? 0.1 : 1.0,

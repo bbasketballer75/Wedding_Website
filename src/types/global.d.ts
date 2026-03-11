@@ -3,6 +3,8 @@
 // Global types for the wedding website
 
 declare global {
+  const __APP_VERSION__: string
+
   interface Window {
     // Service Worker
     serviceWorkerReady?: boolean
@@ -11,7 +13,8 @@ declare global {
     deferredPWAInstallPrompt?: BeforeInstallPromptEvent
 
     // Analytics
-    gtag?: (command: string, ...args: any[]) => void
+    dataLayer?: unknown[][]
+    gtag?: (command: string, ...args: unknown[]) => void
 
     // Custom properties
     __WEDDING_SITE__?: {

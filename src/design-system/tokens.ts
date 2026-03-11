@@ -6,43 +6,43 @@
 export const colors = {
   // Brand colors
   primary: {
-    50: '#FDF8F3',
-    100: '#F9EFE0',
-    200: '#F3DFC1',
-    300: '#EDCFA2',
-    400: '#E7BF83',
-    500: '#D4AF37', // Gold - Main brand color
-    600: '#B89730',
-    700: '#9C7F29',
-    800: '#806722',
-    900: '#644F1B',
+    50: '#FDFBF7',
+    100: '#F9F4EB',
+    200: '#F2E8D5',
+    300: '#E8D4B0',
+    400: '#DBB880',
+    500: '#C9A05C', // Gold - Main brand color
+    600: '#A6824A',
+    700: '#85633B',
+    800: '#6D5135',
+    900: '#5A432E',
   },
 
   // Secondary colors
   sage: {
-    50: '#F5F7F4',
-    100: '#E8EDE5',
-    200: '#D1DBD0',
-    300: '#BAC9BB',
-    400: '#A3B7A6',
-    500: '#87A96B', // Sage Green
-    600: '#6D8A56',
-    700: '#536B41',
-    800: '#394C2C',
-    900: '#1F2D17',
+    50: '#F5F8F5',
+    100: '#F0F4F0',
+    200: '#D4DDD4',
+    300: '#B8C9B8',
+    400: '#A6B7A6',
+    500: '#8AA08A', // Sage Green
+    600: '#738973',
+    700: '#5C725C',
+    800: '#465B46',
+    900: '#304430',
   },
 
   blush: {
-    50: '#FEF9F9',
-    100: '#FDF0F0',
-    200: '#FBE0E0',
-    300: '#F9D0D0',
-    400: '#F7C0C0',
-    500: '#F5C0C0', // Blush Pink
-    600: '#E09999',
-    700: '#CB7373',
-    800: '#B64C4C',
-    900: '#A12626',
+    50: '#FDF8F7',
+    100: '#FDF6F4',
+    200: '#F9E8E3',
+    300: '#F5D8CE',
+    400: '#EEB9A8',
+    500: '#E39A8A', // Blush Pink
+    600: '#C87E6E',
+    700: '#AA6558',
+    800: '#8D4F46',
+    900: '#6F3B34',
   },
 
   // Neutral colors
@@ -50,16 +50,16 @@ export const colors = {
   black: '#000000',
 
   gray: {
-    50: '#F9FAFB',
-    100: '#F3F4F6',
-    200: '#E5E7EB',
-    300: '#D1D5DB',
-    400: '#9CA3AF',
-    500: '#6B7280',
-    600: '#4B5563',
-    700: '#374151',
-    800: '#1F2937',
-    900: '#111827',
+    50: '#FAF8F4',
+    100: '#F5F2EC',
+    200: '#E8E2D8',
+    300: '#D7CFC3',
+    400: '#A7A098',
+    500: '#6B6560',
+    600: '#4A4642',
+    700: '#2D2B28',
+    800: '#1F1D1B',
+    900: '#151413',
   },
 
   // Semantic colors
@@ -91,8 +91,8 @@ export const colors = {
 export const typography = {
   // Font families
   fontFamily: {
-    heading: "'Cormorant Garamond', serif",
-    body: "'Inter', sans-serif",
+    heading: "'Bodoni Moda', 'Cormorant Garamond', Georgia, serif",
+    body: "'Manrope', 'Outfit', system-ui, sans-serif",
     script: "'Allura', cursive",
     mono: "'Fira Code', monospace",
   },
