@@ -1,99 +1,137 @@
 # Supabase CLI Guide
 
-This project uses Supabase CLI for database management.
+This repo is set up for both:
 
-## Quick Start
+- local Docker-based Supabase development
+- linked remote management for the live project `rxzbbtghnrvzubqrbhhx`
 
-Run the setup script:
-```powershell
-.\supabase-setup.ps1
-```
+The supported CLI path for this project is the version in `package.json`, invoked through `npx` or the npm scripts below. Do not rely on an older globally installed `supabase` binary.
 
-Or manually execute these commands:
+## Canonical Commands
 
-## Commands
-
-### Link to Remote Project
 ```bash
-npx supabase link --project-ref rxzbbtghnrvzubqrbhhx
+npm run supabase:start
+npm run supabase:status
+npm run supabase:stop
+
+npm run supabase:migrations
+npm run supabase:db:push:dry
+npm run supabase:db:push
+npm run supabase:db:pull
+npm run supabase:types
 ```
 
-### Push Database Schema
+## Local Quickstart
+
+Requirements:
+
+- Docker Desktop running
+- Node 20.19+ (the repo already requires this)
+
+Start the local stack:
+
 ```bash
-npx supabase db push
+npm run supabase:start
 ```
 
-### Start Local Development
+Check status:
+
 ```bash
-npx supabase start
+npm run supabase:status
 ```
 
-### Stop Local Development
+The local services should come up on the standard ports configured in `supabase/config.toml`:
+
+- API: `http://127.0.0.1:54321`
+- DB: `postgresql://postgres:postgres@127.0.0.1:54322/postgres`
+- Studio: `http://127.0.0.1:54323`
+- Mailpit: `http://127.0.0.1:54324`
+
+Local auth is configured for the actual Vite frontend:
+
+- `auth.site_url = http://127.0.0.1:5173`
+- additional redirects:
+  - `http://127.0.0.1:5173`
+  - `http://localhost:5173`
+
+Stop the local stack when you are done:
+
 ```bash
-npx supabase stop
+npm run supabase:stop
 ```
 
-### View Status
+## Remote Workflow
+
+This repo is linked to:
+
+- project ref: `rxzbbtghnrvzubqrbhhx`
+- live backend: Supabase
+- canonical frontend: `https://www.theporadas.com`
+- large media: Cloudflare R2 / `https://media.wedding.theporadas.com`
+
+Check remote migration history:
+
 ```bash
-npx supabase status
+npm run supabase:migrations
 ```
 
-### Open Supabase Studio (Local)
+Current baseline:
+
+- `20240303000000`
+- `20240303000001`
+- `20240303000002`
+- `20240303000003`
+- `20260312000100`
+
+Safe push flow:
+
 ```bash
-npx supabase studio
+npm run supabase:db:push:dry
+npm run supabase:db:push
 ```
 
-## Database Migrations
+If the hosted pooler starts throwing auth circuit-breaker errors during CLI operations, use the password-backed flow instead of repeatedly retrying temp-role login. The current project has already needed this fallback once.
 
-Migrations are stored in `supabase/migrations/`:
-- `20240303000000_init_schema.sql` - Initial tables and RLS policies
-- `20240303000001_storage_buckets.sql` - Storage bucket policies
+Important rules:
 
-## Project Structure
+- prefer `--dry-run` before remote pushes
+- do not use `--include-all` unless you are intentionally repairing migration history
+- keep the linked project as `rxzbbtghnrvzubqrbhhx`
 
-```
-supabase/
-├── config.toml              # Supabase configuration
-├── seed.sql                 # Seed data for development
-├── migrations/
-│   ├── 20240303000000_init_schema.sql
-│   └── 20240303000001_storage_buckets.sql
-└── .temp/                   # Temporary files
-```
+## Type Generation
 
-## Environment Variables
+Generate fresh database types into the repo with:
 
-Your frontend `.env` file should contain only browser-safe values:
-```
-VITE_SUPABASE_URL=https://your-project.supabase.co
-VITE_SUPABASE_ANON_KEY=your-anon-public-key
-# Optional when media is hosted outside /public
-# VITE_MEDIA_BASE_URL=https://your-project.supabase.co/storage/v1/object/public/wedding-media
-```
-
-Keep `SUPABASE_SERVICE_ROLE_KEY` in server-only environments such as Edge Functions, CI secrets, or deployment dashboards. Do not store it in frontend env templates.
-
-## First-Time Setup Checklist
-
-- [ ] Run `npx supabase link --project-ref rxzbbtghnrvzubqrbhhx`
-- [ ] Run `npx supabase db push`
-- [ ] Create storage buckets in Dashboard:
-  - `guest-photos` (Public)
-  - `guest-videos` (Public)
-  - `guest-voice` (Public)
-- [ ] Test upload functionality
-- [ ] Deploy to production
-
-## Troubleshooting
-
-### "Project not linked"
-Run: `npx supabase link --project-ref rxzbbtghnrvzubqrbhhx`
-
-### "Not authenticated"
-Run: `npx supabase login`
-
-### Migration fails
-Check SQL syntax in migration files, then:
 ```bash
-npx supabase db reset  # Warning: This clears local data!
+npm run supabase:types
 ```
+
+This uses the linked project and writes:
+
+- `src/types/supabase.generated.ts`
+
+## Verification Checklist
+
+Local:
+
+1. `npm run supabase:start`
+2. `npm run supabase:status`
+3. confirm Studio opens on `http://127.0.0.1:54323`
+4. confirm the frontend can use local Supabase if you point env values there
+
+Remote:
+
+1. `npm run supabase:migrations`
+2. `npm run supabase:db:push:dry`
+3. `npm run build`
+4. `npx tsc --noEmit`
+
+## Notes
+
+- Frontend env files must contain only browser-safe values such as `VITE_SUPABASE_URL` and `VITE_SUPABASE_ANON_KEY`.
+- Do not put `SUPABASE_SERVICE_ROLE_KEY` into frontend env files.
+- For live operations, the source of truth is:
+  - frontend: Netlify
+  - backend: Supabase
+  - media: Cloudflare R2
+  - public URL: `https://www.theporadas.com`

@@ -1,4 +1,17 @@
-# 🗄️ Supabase Setup Guide
+# Supabase Setup Guide
+
+This file is now a historical bootstrap reference.
+
+For the current repo-accurate workflow, use:
+
+- `SUPABASE_CLI_GUIDE.md` for local + remote CLI operations
+- `README-DEPLOY.md` and `DEPLOYMENT_SUMMARY.md` for the live architecture snapshot
+
+The shipping app already uses a linked Supabase project, Cloudflare R2 for large media, and `https://www.theporadas.com` as the public frontend host.
+
+---
+
+# Historical bootstrap notes
 
 ## What is Supabase?
 Supabase is an open-source Firebase alternative that provides:

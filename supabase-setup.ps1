@@ -16,37 +16,41 @@ if (!(Get-Command npx -ErrorAction SilentlyContinue)) {
 Write-Host "Available commands:" -ForegroundColor Green
 Write-Host ""
 Write-Host "1. Link to remote project:" -ForegroundColor Yellow
-Write-Host "   npx supabase link --project-ref rxzbbtghnrvzubqrbhhx" -ForegroundColor Gray
+Write-Host "   npm run supabase:link" -ForegroundColor Gray
 Write-Host ""
 Write-Host "2. Push database schema to remote:" -ForegroundColor Yellow
-Write-Host "   npx supabase db push" -ForegroundColor Gray
+Write-Host "   npm run supabase:db:push:dry" -ForegroundColor Gray
+Write-Host "   npm run supabase:db:push" -ForegroundColor Gray
 Write-Host ""
 Write-Host "3. Start local development:" -ForegroundColor Yellow
-Write-Host "   npx supabase start" -ForegroundColor Gray
+Write-Host "   npm run supabase:start" -ForegroundColor Gray
 Write-Host ""
 Write-Host "4. Stop local development:" -ForegroundColor Yellow
-Write-Host "   npx supabase stop" -ForegroundColor Gray
+Write-Host "   npm run supabase:stop" -ForegroundColor Gray
 Write-Host ""
 Write-Host "5. View status:" -ForegroundColor Yellow
-Write-Host "   npx supabase status" -ForegroundColor Gray
-Write-Host ""
-Write-Host "6. Open Supabase Studio (local):" -ForegroundColor Yellow
-Write-Host "   npx supabase studio" -ForegroundColor Gray
+Write-Host "   npm run supabase:status" -ForegroundColor Gray
 Write-Host ""
 Write-Host "============================================" -ForegroundColor Cyan
 Write-Host "First-time setup steps:" -ForegroundColor Cyan
 Write-Host "============================================" -ForegroundColor Cyan
 Write-Host ""
 Write-Host "Step 1: Link your project" -ForegroundColor Green
-Write-Host "   npx supabase link --project-ref rxzbbtghnrvzubqrbhhx" -ForegroundColor Gray
+Write-Host "   npm run supabase:link" -ForegroundColor Gray
 Write-Host ""
-Write-Host "Step 2: Push the schema" -ForegroundColor Green
-Write-Host "   npx supabase db push" -ForegroundColor Gray
+Write-Host "Step 2: Start the local stack" -ForegroundColor Green
+Write-Host "   npm run supabase:start" -ForegroundColor Gray
 Write-Host ""
-Write-Host "Step 3: Create storage buckets (in Dashboard)" -ForegroundColor Green
-Write-Host "   Go to: https://rxzbbtghnrvzubqrbhhx.supabase.co" -ForegroundColor Gray
-Write-Host "   Navigate to: Storage → New Bucket" -ForegroundColor Gray
-Write-Host "   Create: guest-photos, guest-videos, guest-voice" -ForegroundColor Gray
+Write-Host "Step 3: Verify local URLs" -ForegroundColor Green
+Write-Host "   Frontend auth URL: http://127.0.0.1:5173" -ForegroundColor Gray
+Write-Host "   Supabase Studio:   http://127.0.0.1:54323" -ForegroundColor Gray
+Write-Host ""
+Write-Host "Step 4: Dry-run remote migrations before pushing" -ForegroundColor Green
+Write-Host "   npm run supabase:db:push:dry" -ForegroundColor Gray
+Write-Host ""
+Write-Host "Note:" -ForegroundColor Yellow
+Write-Host "   If the hosted pooler starts throwing auth circuit-breaker errors," -ForegroundColor Gray
+Write-Host "   use a password-backed CLI push instead of retrying temp-role login." -ForegroundColor Gray
 Write-Host ""
 Write-Host "============================================" -ForegroundColor Cyan
 
@@ -54,24 +58,24 @@ Write-Host "============================================" -ForegroundColor Cyan
 $response = Read-Host "`nDo you want to link to the remote project now? (y/n)"
 if ($response -eq 'y' -or $response -eq 'Y') {
     Write-Host "`nLinking to remote project..." -ForegroundColor Green
-    npx supabase link --project-ref rxzbbtghnrvzubqrbhhx
+    npm run supabase:link
     
     if ($LASTEXITCODE -eq 0) {
         Write-Host "`nLink successful!" -ForegroundColor Green
         
-        $pushResponse = Read-Host "`nDo you want to push the database schema now? (y/n)"
-        if ($pushResponse -eq 'y' -or $pushResponse -eq 'Y') {
-            Write-Host "`nPushing schema to remote..." -ForegroundColor Green
-            npx supabase db push
+        $startResponse = Read-Host "`nDo you want to start the local Supabase stack now? (y/n)"
+        if ($startResponse -eq 'y' -or $startResponse -eq 'Y') {
+            Write-Host "`nStarting local Supabase..." -ForegroundColor Green
+            npm run supabase:start
             
             if ($LASTEXITCODE -eq 0) {
-                Write-Host "`nSchema pushed successfully!" -ForegroundColor Green
+                Write-Host "`nLocal Supabase started successfully!" -ForegroundColor Green
                 Write-Host "`nNext steps:" -ForegroundColor Cyan
-                Write-Host "1. Create storage buckets in the Supabase Dashboard" -ForegroundColor Yellow
-                Write-Host "2. Run 'npm run dev' to test locally" -ForegroundColor Yellow
-                Write-Host "3. Deploy to production" -ForegroundColor Yellow
+                Write-Host "1. Run 'npm run supabase:status' to confirm service health" -ForegroundColor Yellow
+                Write-Host "2. Run 'npm run dev' to test locally against the app" -ForegroundColor Yellow
+                Write-Host "3. Use 'npm run supabase:db:push:dry' before any remote migration push" -ForegroundColor Yellow
             } else {
-                Write-Host "`nSchema push failed. Check errors above." -ForegroundColor Red
+                Write-Host "`nLocal start failed. Check Docker and the CLI output above." -ForegroundColor Red
             }
         }
     } else {

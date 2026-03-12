@@ -27,12 +27,36 @@ create table if not exists photos (
 alter table photos enable row level security;
 
 -- Allow public read access
-create policy if not exists "Allow public read access" on photos
-  for select using (true);
+do $$
+begin
+  if not exists (
+    select 1
+    from pg_policies
+    where schemaname = 'public'
+      and tablename = 'photos'
+      and policyname = 'Allow public read access'
+  ) then
+    create policy "Allow public read access" on photos
+      for select using (true);
+  end if;
+end
+$$;
 
 -- Allow inserts only from authenticated users (for admin)
-create policy if not exists "Allow authenticated insert" on photos
-  for insert with check (auth.role() = 'authenticated');
+do $$
+begin
+  if not exists (
+    select 1
+    from pg_policies
+    where schemaname = 'public'
+      and tablename = 'photos'
+      and policyname = 'Allow authenticated insert'
+  ) then
+    create policy "Allow authenticated insert" on photos
+      for insert with check (auth.role() = 'authenticated');
+  end if;
+end
+$$;
 
 -- Create index for faster queries
 create index if not exists idx_photos_category on photos(category);
@@ -56,20 +80,68 @@ create table if not exists guest_uploads (
 alter table guest_uploads enable row level security;
 
 -- Allow public insert (guests can upload)
-create policy if not exists "Allow public insert" on guest_uploads
-  for insert with check (true);
+do $$
+begin
+  if not exists (
+    select 1
+    from pg_policies
+    where schemaname = 'public'
+      and tablename = 'guest_uploads'
+      and policyname = 'Allow public insert'
+  ) then
+    create policy "Allow public insert" on guest_uploads
+      for insert with check (true);
+  end if;
+end
+$$;
 
 -- Allow public read of approved uploads only
-create policy if not exists "Allow public read approved" on guest_uploads
-  for select using (status = 'approved');
+do $$
+begin
+  if not exists (
+    select 1
+    from pg_policies
+    where schemaname = 'public'
+      and tablename = 'guest_uploads'
+      and policyname = 'Allow public read approved'
+  ) then
+    create policy "Allow public read approved" on guest_uploads
+      for select using (status = 'approved');
+  end if;
+end
+$$;
 
 -- Allow authenticated users to see all (for admin)
-create policy if not exists "Allow authenticated read all" on guest_uploads
-  for select using (auth.role() = 'authenticated');
+do $$
+begin
+  if not exists (
+    select 1
+    from pg_policies
+    where schemaname = 'public'
+      and tablename = 'guest_uploads'
+      and policyname = 'Allow authenticated read all'
+  ) then
+    create policy "Allow authenticated read all" on guest_uploads
+      for select using (auth.role() = 'authenticated');
+  end if;
+end
+$$;
 
 -- Allow authenticated users to update status (for admin approval)
-create policy if not exists "Allow authenticated update" on guest_uploads
-  for update using (auth.role() = 'authenticated');
+do $$
+begin
+  if not exists (
+    select 1
+    from pg_policies
+    where schemaname = 'public'
+      and tablename = 'guest_uploads'
+      and policyname = 'Allow authenticated update'
+  ) then
+    create policy "Allow authenticated update" on guest_uploads
+      for update using (auth.role() = 'authenticated');
+  end if;
+end
+$$;
 
 create index if not exists idx_guest_uploads_status on guest_uploads(status);
 create index if not exists idx_guest_uploads_created_at on guest_uploads(created_at desc);
@@ -92,16 +164,52 @@ create table if not exists guestbook_messages (
 alter table guestbook_messages enable row level security;
 
 -- Allow public read
-create policy if not exists "Allow public read" on guestbook_messages
-  for select using (true);
+do $$
+begin
+  if not exists (
+    select 1
+    from pg_policies
+    where schemaname = 'public'
+      and tablename = 'guestbook_messages'
+      and policyname = 'Allow public read'
+  ) then
+    create policy "Allow public read" on guestbook_messages
+      for select using (true);
+  end if;
+end
+$$;
 
 -- Allow public insert (guests can sign)
-create policy if not exists "Allow public insert" on guestbook_messages
-  for insert with check (true);
+do $$
+begin
+  if not exists (
+    select 1
+    from pg_policies
+    where schemaname = 'public'
+      and tablename = 'guestbook_messages'
+      and policyname = 'Allow public insert'
+  ) then
+    create policy "Allow public insert" on guestbook_messages
+      for insert with check (true);
+  end if;
+end
+$$;
 
 -- Allow authenticated users to update reactions
-create policy if not exists "Allow authenticated update" on guestbook_messages
-  for update using (auth.role() = 'authenticated');
+do $$
+begin
+  if not exists (
+    select 1
+    from pg_policies
+    where schemaname = 'public'
+      and tablename = 'guestbook_messages'
+      and policyname = 'Allow authenticated update'
+  ) then
+    create policy "Allow authenticated update" on guestbook_messages
+      for update using (auth.role() = 'authenticated');
+  end if;
+end
+$$;
 
 create index if not exists idx_guestbook_created_at on guestbook_messages(created_at desc);
 

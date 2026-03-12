@@ -20,15 +20,26 @@ CREATE TABLE IF NOT EXISTS rate_limit_logs (
 ALTER TABLE rate_limit_logs ENABLE ROW LEVEL SECURITY;
 
 -- Only service role can access rate limit logs
-CREATE POLICY IF NOT EXISTS "Service role only" ON rate_limit_logs
-  FOR ALL USING (auth.role() = 'service_role');
+DO $$
+BEGIN
+  IF NOT EXISTS (
+    SELECT 1
+    FROM pg_policies
+    WHERE schemaname = 'public'
+      AND tablename = 'rate_limit_logs'
+      AND policyname = 'Service role only'
+  ) THEN
+    CREATE POLICY "Service role only" ON rate_limit_logs
+      FOR ALL USING (auth.role() = 'service_role');
+  END IF;
+END
+$$;
 
 -- Indexes for performance
 CREATE INDEX IF NOT EXISTS idx_rate_limit_logs_lookup 
   ON rate_limit_logs(ip_address, action, window_start);
 CREATE INDEX IF NOT EXISTS idx_rate_limit_logs_cleanup 
-  ON rate_limit_logs(window_start) 
-  WHERE window_start < now() - interval '1 hour';
+  ON rate_limit_logs(window_start DESC);
 
 -- Function: check_rate_limit
 -- Checks if a request is within rate limits

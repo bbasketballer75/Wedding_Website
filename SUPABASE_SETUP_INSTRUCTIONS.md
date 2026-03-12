@@ -1,5 +1,20 @@
 # Supabase Setup Instructions
 
+This file is now a historical bootstrap note.
+
+For the current repo-accurate setup, use:
+
+- `SUPABASE_CLI_GUIDE.md`
+
+That guide reflects:
+
+- the linked live project `rxzbbtghnrvzubqrbhhx`
+- the local CLI workflow via `npx supabase`
+- the current frontend host `https://www.theporadas.com`
+- the current media host `https://media.wedding.theporadas.com`
+
+---
+
 ## Step 1: Run Database Schema
 
 1. Go to your Supabase Dashboard: https://rxzbbtghnrvzubqrbhhx.supabase.co

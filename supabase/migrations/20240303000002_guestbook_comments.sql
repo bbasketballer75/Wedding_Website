@@ -17,12 +17,36 @@ CREATE TABLE IF NOT EXISTS guestbook_comments (
 ALTER TABLE guestbook_comments ENABLE ROW LEVEL SECURITY;
 
 -- Allow public read access
-CREATE POLICY IF NOT EXISTS "Allow public read comments" ON guestbook_comments
-  FOR SELECT USING (true);
+DO $$
+BEGIN
+  IF NOT EXISTS (
+    SELECT 1
+    FROM pg_policies
+    WHERE schemaname = 'public'
+      AND tablename = 'guestbook_comments'
+      AND policyname = 'Allow public read comments'
+  ) THEN
+    CREATE POLICY "Allow public read comments" ON guestbook_comments
+      FOR SELECT USING (true);
+  END IF;
+END
+$$;
 
 -- Allow public insert (guests can reply)
-CREATE POLICY IF NOT EXISTS "Allow public insert comments" ON guestbook_comments
-  FOR INSERT WITH CHECK (true);
+DO $$
+BEGIN
+  IF NOT EXISTS (
+    SELECT 1
+    FROM pg_policies
+    WHERE schemaname = 'public'
+      AND tablename = 'guestbook_comments'
+      AND policyname = 'Allow public insert comments'
+  ) THEN
+    CREATE POLICY "Allow public insert comments" ON guestbook_comments
+      FOR INSERT WITH CHECK (true);
+  END IF;
+END
+$$;
 
 -- Create indexes
 CREATE INDEX IF NOT EXISTS idx_guestbook_comments_message_id ON guestbook_comments(message_id);
