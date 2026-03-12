@@ -329,17 +329,17 @@ export default function Film() {
     {
       icon: Clock3,
       title: `${MAIN_FILM_RUNTIME_LABEL} feature`,
-      description: 'From the opening chapter to the final stretch of the party.',
+      description: 'From the first nervous seconds to the last blur of the dance floor, uninterrupted.',
     },
     {
       icon: Camera,
       title: 'Track-synced chapters',
-      description: 'Pulled from the real chapter file so every jump matches the actual edit.',
+      description: 'Every chapter jump lands on the real beat of the edit, not an approximation.',
     },
     {
       icon: HeartHandshake,
       title: 'Parent dances',
-      description: 'A second spotlight for the dances that slowed the room down in the best way.',
+      description: 'A quieter second spotlight for the dances that made the whole room soften.',
     },
   ] as const
 
@@ -480,17 +480,17 @@ export default function Film() {
                   <div className="cinematic-card px-3.5 py-3.5">
                     <p className="text-[10px] uppercase tracking-[0.28em] text-gold-300/80">Runtime</p>
                     <p className="mt-2 font-display text-[1.35rem] leading-none text-cinematic-primary sm:text-[1.5rem]">{MAIN_FILM_RUNTIME_LABEL}</p>
-                    <p className="mt-2 text-sm leading-5 text-cinematic-secondary">The full film cut.</p>
+                    <p className="mt-2 text-sm leading-5 text-cinematic-secondary">The whole day, kept intact.</p>
                   </div>
                   <div className="cinematic-card px-3.5 py-3.5">
                     <p className="text-[10px] uppercase tracking-[0.28em] text-gold-300/80">Chapters</p>
                     <p className="mt-2 font-display text-[1.35rem] leading-none text-cinematic-primary sm:text-[1.5rem]">{chapters.length}</p>
-                    <p className="mt-2 text-sm leading-5 text-cinematic-secondary">Mapped from the real VTT track.</p>
+                    <p className="mt-2 text-sm leading-5 text-cinematic-secondary">Every jump mapped from the real chapter track.</p>
                   </div>
                   <div className="cinematic-card px-3.5 py-3.5">
                     <p className="text-[10px] uppercase tracking-[0.28em] text-gold-300/80">Best viewed</p>
                     <p className="mt-2 font-display text-[1.35rem] leading-none text-cinematic-primary sm:text-[1.5rem]">With sound</p>
-                    <p className="mt-2 text-sm leading-5 text-cinematic-secondary">For the vows and speeches.</p>
+                    <p className="mt-2 text-sm leading-5 text-cinematic-secondary">For the vows, speeches, and little laughs in between.</p>
                   </div>
                 </div>
               </motion.div>

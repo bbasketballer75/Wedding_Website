@@ -1,3 +1,5 @@
+import { getMediaPath } from '@/utils/media'
+
 export interface FilmChapter {
   label: string
   time: number
@@ -99,7 +101,7 @@ export function parseMainFilmChapters(vttText: string): FilmChapter[] {
 }
 
 export async function loadMainFilmChapters() {
-  const response = await fetch('/video/main-film-chapters.vtt')
+  const response = await fetch(getMediaPath('/video/main-film-chapters.vtt'))
 
   if (!response.ok) {
     throw new Error(`Unable to load main film chapters: ${response.status}`)

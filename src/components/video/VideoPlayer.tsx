@@ -1,4 +1,4 @@
-import { useState, useRef, useEffect, useCallback } from 'react'
+import { useState, useRef, useEffect, useCallback, useMemo } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
 import { 
   Play, Pause, Volume2, VolumeX, Maximize, Minimize, 
@@ -45,6 +45,10 @@ export function VideoPlayer({
   const [showChapterMenu, setShowChapterMenu] = useState(false)
   
   const controlsTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null)
+  const resolvedChapters = useMemo(
+    () => chapters.filter((chapter) => Number.isFinite(chapter.time) && chapter.label.trim().length > 0),
+    [chapters]
+  )
   const progressPercent = duration > 0 ? (currentTime / duration) * 100 : 0
 
   // Load saved progress
@@ -68,8 +72,8 @@ export function VideoPlayer({
     return () => clearInterval(interval)
   }, [isPlaying, src])
 
-  const activeChapter = chapters.findIndex((ch, i) => {
-    const nextCh = chapters[i + 1]
+  const activeChapter = resolvedChapters.findIndex((ch, i) => {
+    const nextCh = resolvedChapters[i + 1]
     return currentTime >= ch.time && (!nextCh || currentTime < nextCh.time)
   })
 
@@ -310,7 +314,7 @@ export function VideoPlayer({
                     {title}
                   </h3>
                 )}
-                {chapters.length > 0 && (
+                {resolvedChapters.length > 0 && (
                   <button
                     onClick={() => setShowChapterMenu(!showChapterMenu)}
                     className="mt-2 flex items-center gap-1 text-sm text-gold-300 transition-colors hover:text-candle-100"
@@ -320,7 +324,7 @@ export function VideoPlayer({
                   >
                     <span className="text-cinematic-muted">Now playing</span>
                     <span className="text-cinematic-primary">
-                      Chapter {Math.max(activeChapter, 0) + 1}: {chapters[Math.max(activeChapter, 0)]?.label}
+                      Chapter {Math.max(activeChapter, 0) + 1}: {resolvedChapters[Math.max(activeChapter, 0)]?.label}
                     </span>
                     <ChevronRight className={cn('w-4 h-4 transition-transform', showChapterMenu && 'rotate-90')} />
                   </button>
@@ -341,7 +345,7 @@ export function VideoPlayer({
 
             {/* Chapter Menu */}
             <AnimatePresence>
-              {showChapterMenu && chapters.length > 0 && (
+              {showChapterMenu && resolvedChapters.length > 0 && (
                 <motion.div
                   initial={{ opacity: 0, x: -20 }}
                   animate={{ opacity: 1, x: 0 }}
@@ -351,7 +355,7 @@ export function VideoPlayer({
                 >
                   <h4 className="mb-3 text-sm font-medium uppercase tracking-wider text-cinematic-primary">Chapters</h4>
                   <div className="space-y-1">
-                    {chapters.map((chapter, i) => (
+                    {resolvedChapters.map((chapter, i) => (
                       <button
                         key={i}
                         onClick={() => jumpToChapter(chapter, i)}
@@ -378,7 +382,7 @@ export function VideoPlayer({
               {/* Progress Bar */}
               <div className="group/progress relative mb-4 rounded-[1.35rem] border border-gold-200/10 bg-[linear-gradient(135deg,rgba(255,247,235,0.08),rgba(255,255,255,0.03))] px-3 py-3 backdrop-blur-md sm:px-4">
                 <div className="mb-3 flex items-center justify-between gap-3 text-[10px] uppercase tracking-[0.28em] text-cinematic-muted">
-                  <span>{chapters.length} chapters</span>
+                  <span>{resolvedChapters.length} chapters</span>
                   <span>{Math.round(progressPercent)}% watched</span>
                 </div>
                 <input
@@ -395,7 +399,7 @@ export function VideoPlayer({
                 />
                 
                 {/* Chapter Markers */}
-                {chapters.map((chapter, i) => (
+                {resolvedChapters.map((chapter, i) => (
                   <button
                     key={i}
                     onClick={() => jumpToChapter(chapter, i)}
@@ -472,7 +476,7 @@ export function VideoPlayer({
                 {/* Right Side Controls */}
                 <div className="flex items-center gap-2">
                   <div className="rounded-full border border-gold-200/10 bg-white/6 px-3 py-1.5 text-[10px] uppercase tracking-[0.26em] text-cinematic-muted">
-                    {activeChapter >= 0 ? chapters[activeChapter]?.label : 'Opening'}
+                    {activeChapter >= 0 ? resolvedChapters[activeChapter]?.label : 'Opening'}
                   </div>
                   <button
                     onClick={toggleFullscreen}
