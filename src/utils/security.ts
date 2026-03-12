@@ -89,7 +89,7 @@ export const securityHeaders = {
   'X-XSS-Protection': '1; mode=block',
   'Referrer-Policy': 'strict-origin-when-cross-origin',
   'Content-Security-Policy':
-    "default-src 'self'; script-src 'self' 'unsafe-inline' 'unsafe-eval'; style-src 'self' 'unsafe-inline'; img-src 'self' data: https:; font-src 'self' https:; connect-src 'self' https://api.supabase.co",
+    "default-src 'self'; script-src 'self' 'unsafe-inline' 'unsafe-eval'; style-src 'self' 'unsafe-inline'; img-src 'self' data: https:; font-src 'self' https:; connect-src 'self' https://api.supabase.co https://*.supabase.co https://*.netlify.app https://media.wedding.theporadas.com https://*.r2.dev; media-src 'self' data: blob: https:",
 }
 
 // Audit logging
