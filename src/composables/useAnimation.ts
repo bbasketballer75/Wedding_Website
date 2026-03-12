@@ -1,7 +1,5 @@
-// @ts-nocheck
 /**
- * TEMPORARILY DISABLED: Framer Motion Variants type inference issues.
- * TODO: Fix type compatibility with Framer Motion v12 and remove @ts-nocheck.
+ * Shared Framer Motion variants for the live public app.
  */
 import { Variants } from 'framer-motion'
 
@@ -128,19 +126,27 @@ export const createSlideVariant = (
 ): Variants => {
   const axis = direction === 'up' || direction === 'down' ? 'y' : 'x'
   const initialValue = direction === 'up' || direction === 'left' ? distance : -distance
+  const hidden = { opacity: 0, x: 0, y: 0 }
+  const visible = {
+    opacity: 1,
+    x: 0,
+    y: 0,
+    transition: { duration, ease: 'easeOut' as const },
+  }
+  const exit = {
+    opacity: 0,
+    x: 0,
+    y: 0,
+    transition: { duration: duration * 0.5, ease: 'easeIn' as const },
+  }
+
+  hidden[axis] = initialValue
+  exit[axis] = -initialValue
 
   return {
-    hidden: { opacity: 0, [axis]: initialValue },
-    visible: {
-      opacity: 1,
-      [axis]: 0,
-      transition: { duration, ease: 'easeOut' },
-    },
-    exit: {
-      opacity: 0,
-      [axis]: -initialValue,
-      transition: { duration: duration * 0.5, ease: 'easeIn' },
-    },
+    hidden,
+    visible,
+    exit,
   }
 }
 

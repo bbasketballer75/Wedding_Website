@@ -18,7 +18,7 @@ test.describe('Upload Page', () => {
     ])
 
     await expect(page.getByText('Uploaded and ready')).toBeVisible()
-    await expect(page.getByText('Upload failed')).toBeVisible()
+    await expect(page.getByText('Needs retry')).toBeVisible()
   })
 
   test('submits a successful upload and renders the completion panel', async ({ page }) => {

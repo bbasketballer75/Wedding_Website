@@ -31,10 +31,10 @@ const Navbar = () => {
   }, [lastScrollY])
 
   const navLinks = [
-    { name: 'Our Story', path: '/our-story' },
+    { name: 'Watch Film', path: '/film' },
     { name: 'Photos', path: '/gallery' },
-    { name: 'Wedding Party', path: '/wedding-party' },
     { name: 'Guestbook', path: '/guestbook' },
+    { name: 'Share', path: '/upload' },
   ]
 
   return (

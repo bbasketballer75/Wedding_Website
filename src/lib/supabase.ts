@@ -76,3 +76,107 @@ export interface GuestbookMessage {
   reactions: Record<string, number>
   created_at: string
 }
+
+export type ModerationAuditEntityType = 'guest_upload' | 'guestbook_message'
+
+export type ModerationAuditAction =
+  | 'upload_moved_to_pending'
+  | 'upload_approved_unpublished'
+  | 'upload_approved_published'
+  | 'upload_rejected'
+  | 'upload_bulk_rejected'
+  | 'guestbook_message_deleted'
+  | 'guestbook_bulk_deleted'
+
+export interface ModerationAuditLog {
+  id: string
+  entity_type: ModerationAuditEntityType
+  entity_id: string
+  action: ModerationAuditAction
+  actor_user_id?: string | null
+  actor_email?: string | null
+  actor_name?: string | null
+  from_status?: string | null
+  to_status?: string | null
+  summary: string
+  metadata: Record<string, unknown>
+  created_at: string
+}
+
+export interface ModerationAuditActor {
+  userId?: string | null
+  email?: string | null
+  name?: string | null
+}
+
+export interface RecordModerationAuditInput {
+  entityType: ModerationAuditEntityType
+  entityId: string
+  action: ModerationAuditAction
+  summary: string
+  metadata?: Record<string, unknown>
+  fromStatus?: string | null
+  toStatus?: string | null
+  actor?: ModerationAuditActor | null
+}
+
+export interface ModerationAuditTimelineFilters {
+  entityType?: ModerationAuditEntityType
+  entityId?: string
+  action?: ModerationAuditAction
+  actorEmail?: string
+  limit?: number
+}
+
+export async function recordModerationAudit(input: RecordModerationAuditInput) {
+  return await supabase
+    .from('moderation_audit_log')
+    .insert({
+      entity_type: input.entityType,
+      entity_id: input.entityId,
+      action: input.action,
+      actor_user_id: input.actor?.userId ?? null,
+      actor_email: input.actor?.email ?? null,
+      actor_name: input.actor?.name ?? null,
+      from_status: input.fromStatus ?? null,
+      to_status: input.toStatus ?? null,
+      summary: input.summary,
+      metadata: input.metadata ?? {},
+    })
+    .select('*')
+    .single<ModerationAuditLog>()
+}
+
+export async function fetchModerationAuditTimeline(filters: ModerationAuditTimelineFilters = {}) {
+  let query = supabase
+    .from('moderation_audit_log')
+    .select('*')
+    .order('created_at', { ascending: false })
+    .limit(filters.limit ?? 200)
+
+  if (filters.entityType) {
+    query = query.eq('entity_type', filters.entityType)
+  }
+
+  if (filters.entityId) {
+    query = query.eq('entity_id', filters.entityId)
+  }
+
+  if (filters.action) {
+    query = query.eq('action', filters.action)
+  }
+
+  if (filters.actorEmail) {
+    query = query.eq('actor_email', filters.actorEmail)
+  }
+
+  return await query.returns<ModerationAuditLog[]>()
+}
+
+export async function fetchModerationAuditForEntity(
+  entityType: ModerationAuditEntityType,
+  entityId: string,
+  limit = 10
+) {
+  return await fetchModerationAuditTimeline({ entityType, entityId, limit })
+}

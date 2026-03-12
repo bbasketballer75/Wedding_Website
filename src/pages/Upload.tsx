@@ -32,10 +32,10 @@ import { supabase } from '@/lib/supabase'
 interface UploadingFile {
   id: string
   file: File
-  progress: number
   status: 'uploading' | 'complete' | 'error'
   preview?: string
   publicUrl?: string
+  errorMessage?: string
 }
 
 const uploadHighlights = [
@@ -78,6 +78,12 @@ function describeSubmitLabel(photoCount: number, videoCount: number) {
   return `Submit ${describeUploadSummary(photoCount, videoCount)}`
 }
 
+function createUploadId() {
+  return typeof crypto !== 'undefined' && typeof crypto.randomUUID === 'function'
+    ? crypto.randomUUID()
+    : `${Date.now()}_${Math.random().toString(36).slice(2)}`
+}
+
 export default function UploadPage() {
   const [files, setFiles] = useState<UploadingFile[]>([])
   const [name, setName] = useState('')
@@ -88,6 +94,7 @@ export default function UploadPage() {
   const [isSubmitting, setIsSubmitting] = useState(false)
   const [submitError, setSubmitError] = useState<string | null>(null)
   const [shareCopied, setShareCopied] = useState(false)
+  const [queueNotice, setQueueNotice] = useState<string | null>(null)
 
   const siteShareUrl = typeof window !== 'undefined'
     ? import.meta.env.VITE_SITE_URL || window.location.origin
@@ -112,19 +119,8 @@ export default function UploadPage() {
       const bucket = isVideo ? 'guest-videos' : 'guest-photos'
 
       const fileExt = file.name.split('.').pop()
-      const fileName = `${Date.now()}_${Math.random().toString(36).substring(7)}.${fileExt}`
+      const fileName = `${createUploadId()}.${fileExt}`
       const filePath = `${fileName}`
-
-      const progressInterval = setInterval(() => {
-        setFiles(prev =>
-          prev.map(f => {
-            if (f.id === fileObj.id && f.progress < 90) {
-              return { ...f, progress: f.progress + Math.random() * 10 }
-            }
-            return f
-          })
-        )
-      }, 300)
 
       const { error } = await supabase.storage
         .from(bucket)
@@ -133,13 +129,15 @@ export default function UploadPage() {
           upsert: false,
         })
 
-      clearInterval(progressInterval)
-
       if (error) {
         setFiles(prev =>
           prev.map(f =>
             f.id === fileObj.id
-              ? { ...f, status: 'error', progress: 0 }
+              ? {
+                  ...f,
+                  status: 'error',
+                  errorMessage: error.message || 'The file could not be uploaded. Please try again.',
+                }
               : f
           )
         )
@@ -153,15 +151,20 @@ export default function UploadPage() {
       setFiles(prev =>
         prev.map(f =>
           f.id === fileObj.id
-            ? { ...f, status: 'complete', progress: 100, publicUrl }
+            ? { ...f, status: 'complete', publicUrl, errorMessage: undefined }
             : f
         )
       )
-    } catch {
+    } catch (error) {
+      const message =
+        error instanceof Error
+          ? error.message
+          : 'The file could not be uploaded. Please try again.'
+
       setFiles(prev =>
         prev.map(f =>
           f.id === fileObj.id
-            ? { ...f, status: 'error', progress: 0 }
+            ? { ...f, status: 'error', errorMessage: message }
             : f
         )
       )
@@ -169,18 +172,42 @@ export default function UploadPage() {
   }, [])
 
   const addFiles = useCallback((newFiles: File[]) => {
+    const existingFingerprints = new Set(
+      files.map(({ file }) => `${file.name}:${file.size}:${file.lastModified}`)
+    )
+    const batchFingerprints = new Set<string>()
+    const notices: string[] = []
+
     const validFiles = newFiles.filter(file => {
       const isImage = file.type.startsWith('image/')
       const isVideo = file.type.startsWith('video/')
       const isValidSize = file.size <= 500 * 1024 * 1024
+      const fingerprint = `${file.name}:${file.size}:${file.lastModified}`
 
-      return (isImage || isVideo) && isValidSize
+      if (!isImage && !isVideo) {
+        notices.push(`${file.name} was skipped because only photos and videos can be uploaded.`)
+        return false
+      }
+
+      if (!isValidSize) {
+        notices.push(`${file.name} is over the 500MB limit and was skipped.`)
+        return false
+      }
+
+      if (existingFingerprints.has(fingerprint) || batchFingerprints.has(fingerprint)) {
+        notices.push(`${file.name} was already in the queue, so the duplicate was skipped.`)
+        return false
+      }
+
+      batchFingerprints.add(fingerprint)
+      return true
     })
 
+    setQueueNotice(notices.length > 0 ? notices[0] : null)
+
     const newUploadingFiles: UploadingFile[] = validFiles.map(file => ({
-      id: Math.random().toString(36).substring(7),
+      id: createUploadId(),
       file,
-      progress: 0,
       status: 'uploading',
       preview: file.type.startsWith('image/') ? URL.createObjectURL(file) : undefined,
     }))
@@ -190,7 +217,7 @@ export default function UploadPage() {
     newUploadingFiles.forEach(fileObj => {
       void uploadFileToSupabase(fileObj)
     })
-  }, [uploadFileToSupabase])
+  }, [files, uploadFileToSupabase])
 
   const handleDrop = useCallback((e: React.DragEvent) => {
     e.preventDefault()
@@ -250,6 +277,7 @@ export default function UploadPage() {
       }
 
       setIsSubmitted(true)
+      setQueueNotice(null)
     } catch {
       setSubmitError('Something went wrong. Please try again.')
     } finally {
@@ -263,7 +291,7 @@ export default function UploadPage() {
       setFiles(prev =>
         prev.map(f =>
           f.id === fileId
-            ? { ...f, status: 'uploading', progress: 0 }
+            ? { ...f, status: 'uploading', errorMessage: undefined }
             : f
         )
       )
@@ -283,6 +311,7 @@ export default function UploadPage() {
 
   const completedFiles = files.filter(f => f.status === 'complete').length
   const hasErrors = files.some(f => f.status === 'error')
+  const uploadingCount = files.filter(f => f.status === 'uploading').length
   const completedPhotoCount = files.filter(f => f.status === 'complete' && !f.file.type.startsWith('video/')).length
   const completedVideoCount = files.filter(f => f.status === 'complete' && f.file.type.startsWith('video/')).length
   const selectedPhotoCount = files.filter(f => !f.file.type.startsWith('video/')).length
@@ -335,6 +364,24 @@ export default function UploadPage() {
                 <span className="rounded-full border border-white/80 bg-white/76 px-4 py-2">
                   Contact saved for {email}
                 </span>
+              </div>
+
+              <div className="mt-8 grid gap-3 sm:grid-cols-3">
+                <div className="rounded-[1.35rem] border border-gold-100 bg-white/76 px-4 py-4">
+                  <p className="text-[10px] uppercase tracking-[0.28em] text-gold-700">Step 1</p>
+                  <p className="mt-3 text-sm font-semibold text-charcoal-900">We review it first.</p>
+                  <p className="mt-2 text-sm leading-6 text-charcoal-500">Nothing goes public automatically. We sort through everything before it appears anywhere on the site.</p>
+                </div>
+                <div className="rounded-[1.35rem] border border-gold-100 bg-white/76 px-4 py-4">
+                  <p className="text-[10px] uppercase tracking-[0.28em] text-gold-700">Step 2</p>
+                  <p className="mt-3 text-sm font-semibold text-charcoal-900">We tag it into the right story lane.</p>
+                  <p className="mt-2 text-sm leading-6 text-charcoal-500">The best photos get captioned, tagged, and placed into the wedding-day, engagement, or guest-upload collections.</p>
+                </div>
+                <div className="rounded-[1.35rem] border border-gold-100 bg-white/76 px-4 py-4">
+                  <p className="text-[10px] uppercase tracking-[0.28em] text-gold-700">Step 3</p>
+                  <p className="mt-3 text-sm font-semibold text-charcoal-900">The approved moments join the archive.</p>
+                  <p className="mt-2 text-sm leading-6 text-charcoal-500">Photos can appear in the live gallery, and approved video clips stay ready for featured guest-highlight lanes.</p>
+                </div>
               </div>
 
               <div className="mt-8 flex flex-wrap justify-center gap-3">
@@ -401,11 +448,11 @@ export default function UploadPage() {
                       Share the site too
                     </p>
                     <p className="mt-3 text-lg font-semibold text-charcoal-900">
-                      Send the wedding film, gallery, and guestbook to family who want the whole story.
+                      Pass along the film, gallery, guestbook, and upload page in one share.
                     </p>
                     <p className="mt-2 text-sm leading-6 text-charcoal-500">
-                      Copy the link, text it, email it, or use your phone&apos;s native share sheet. Uploads still go
-                      through review, but the site itself is ready to pass around.
+                      These buttons share the site itself. Uploads happen separately below, so guests can either send the
+                      link around or start contributing right away.
                     </p>
                   </div>
 
@@ -564,6 +611,19 @@ export default function UploadPage() {
               </div>
             </motion.section>
 
+            {queueNotice && (
+              <motion.div
+                initial={{ opacity: 0, y: 12 }}
+                animate={{ opacity: 1, y: 0 }}
+                className="rounded-[1.5rem] border border-amber-200 bg-amber-50 px-5 py-4"
+              >
+                <p className="flex items-start gap-2 text-sm leading-6 text-amber-700">
+                  <AlertCircle className="mt-0.5 h-4 w-4 shrink-0" />
+                  {queueNotice}
+                </p>
+              </motion.div>
+            )}
+
             {files.length > 0 && (
               <motion.section
                 initial={{ opacity: 0, y: 20 }}
@@ -581,7 +641,7 @@ export default function UploadPage() {
                     </h3>
                     <p className="mt-3 max-w-2xl text-sm text-charcoal-500 sm:text-base">
                       Review everything here before you submit. Remove anything you do not want included,
-                      or retry files that had trouble on the way up.
+                      retry anything that failed, and only send once the files you want are marked ready.
                     </p>
                   </div>
 
@@ -589,9 +649,14 @@ export default function UploadPage() {
                     <span className="rounded-full border border-white/80 bg-white/76 px-4 py-2">
                       {describeUploadSummary(completedPhotoCount, completedVideoCount)}
                     </span>
+                    {uploadingCount > 0 && (
+                      <span className="rounded-full border border-gold-200 bg-gold-50 px-4 py-2 text-gold-700">
+                        {uploadingCount} still uploading
+                      </span>
+                    )}
                     {hasErrors && (
                       <span className="rounded-full border border-rose-200 bg-rose-50 px-4 py-2 text-rose-600">
-                        Some files need attention
+                        Failed files stay out until you retry or remove them
                       </span>
                     )}
                   </div>
@@ -631,15 +696,20 @@ export default function UploadPage() {
                         {file.status === 'uploading' && (
                           <div>
                             <div className="mb-2 flex items-center justify-between text-xs text-charcoal-500">
-                              <span>Uploading…</span>
-                              <span>{Math.min(Math.round(file.progress), 100)}%</span>
+                              <span>Uploading to the private review queue…</span>
+                              <span>Processing</span>
                             </div>
                             <div className="h-2 overflow-hidden rounded-full bg-gold-100">
-                              <div
-                                className="h-full rounded-full bg-gradient-to-r from-gold-400 to-gold-600 transition-all duration-300"
-                                style={{ width: `${Math.min(file.progress, 100)}%` }}
+                              <motion.div
+                                initial={{ x: '-100%' }}
+                                animate={{ x: '250%' }}
+                                transition={{ repeat: Infinity, duration: 1.25, ease: 'easeInOut' }}
+                                className="h-full w-1/3 rounded-full bg-gradient-to-r from-gold-300 via-gold-500 to-gold-300"
                               />
                             </div>
+                            <p className="mt-2 text-xs text-charcoal-400">
+                              We only show ready vs failed states here so the queue never implies fake precision.
+                            </p>
                           </div>
                         )}
 
@@ -651,17 +721,20 @@ export default function UploadPage() {
                         )}
 
                         {file.status === 'error' && (
-                          <div className="flex flex-wrap items-center gap-3">
+                          <div className="space-y-2">
                             <div className="inline-flex items-center gap-2 rounded-full border border-rose-200 bg-rose-50 px-3 py-1.5 text-xs font-medium text-rose-600">
                               <AlertCircle className="h-3.5 w-3.5" />
-                              Upload failed
+                              Needs retry
                             </div>
+                            <p className="text-xs leading-5 text-rose-600">
+                              {file.errorMessage || 'This file did not make it through. Retry it or remove it before you submit.'}
+                            </p>
                             <button
                               type="button"
                               onClick={() => retryUpload(file.id)}
                               className="text-xs font-medium uppercase tracking-[0.22em] text-gold-700 transition-colors hover:text-gold-600"
                             >
-                              Retry
+                              Retry upload
                             </button>
                           </div>
                         )}
@@ -769,6 +842,10 @@ export default function UploadPage() {
                   <Mail className="mt-0.5 h-4 w-4 shrink-0 text-gold-600" />
                   Your contact details stay with the submission in case we need context while reviewing it.
                 </li>
+                <li className="flex items-start gap-3">
+                  <AlertCircle className="mt-0.5 h-4 w-4 shrink-0 text-gold-600" />
+                  Duplicates and oversized files are called out before submission so the queue stays honest.
+                </li>
               </ul>
             </motion.section>
 
@@ -804,8 +881,17 @@ export default function UploadPage() {
               </div>
 
               <p className="mt-3 text-sm leading-6 text-charcoal-500">
-                You can submit once at least one file finishes uploading and your contact details are filled in.
+                You can submit once at least one file is marked ready and your contact details are filled in. Files that
+                failed will stay out until you retry or remove them.
               </p>
+
+              <div className="mt-4 rounded-[1.25rem] border border-gold-100 bg-white/76 px-4 py-4">
+                <p className="text-[10px] uppercase tracking-[0.28em] text-gold-700">What happens next</p>
+                <p className="mt-3 text-sm leading-6 text-charcoal-500">
+                  After you send, the upload enters a private review queue. Approved photos can be published into the
+                  live gallery, while approved video clips stay available for guest-highlight features.
+                </p>
+              </div>
 
               <Button
                 type="submit"

@@ -4,11 +4,10 @@ import { useNavigate } from 'react-router-dom'
 
 interface SearchResult {
   id: string
-  type: 'page' | 'photo' | 'guest' | 'story'
+  type: 'page'
   title: string
   description?: string
   url: string
-  imageUrl?: string
   relevance: number
 }
 
@@ -19,7 +18,7 @@ interface SearchProps {
 }
 
 const Search: React.FC<SearchProps> = ({
-  placeholder = 'Search photos, stories, guests...',
+  placeholder = 'Search the wedding site...',
   maxResults = 8,
   showSuggestions = true,
 }) => {
@@ -30,81 +29,39 @@ const Search: React.FC<SearchProps> = ({
   const [selectedIndex, setSelectedIndex] = useState(-1)
   const navigate = useNavigate()
 
-  // Mock data - in production, this would come from your API
-  const mockData = useMemo(
-    () => ({
-      pages: [
-        {
-          id: '1',
-          title: 'Our Story',
-          url: '/our-story',
-          description: 'How we met and fell in love',
-        },
-        {
-          id: '2',
-          title: 'Photo Gallery',
-          url: '/gallery',
-          description: 'Browse our wedding photos',
-        },
-        {
-          id: '3',
-          title: 'Wedding Party',
-          url: '/wedding-party',
-          description: 'Meet our wedding party',
-        },
-        { id: '4', title: 'Guest Book', url: '/guestbook', description: 'Leave us a message' },
-        { id: '5', title: 'Registry', url: '/registry', description: 'Our gift registry' },
-      ],
-      photos: [
-        {
-          id: 'p1',
-          title: 'First Dance',
-          url: '/gallery#first-dance',
-          imageUrl: '/images/gallery/1.jpg',
-        },
-        {
-          id: 'p2',
-          title: 'Ceremony',
-          url: '/gallery#ceremony',
-          imageUrl: '/images/gallery/2.jpg',
-        },
-        {
-          id: 'p3',
-          title: 'Reception',
-          url: '/gallery#reception',
-          imageUrl: '/images/gallery/3.jpg',
-        },
-        {
-          id: 'p4',
-          title: 'Family Photos',
-          url: '/gallery#family',
-          imageUrl: '/images/gallery/4.jpg',
-        },
-      ],
-      guests: [
-        {
-          id: 'g1',
-          title: 'John Doe',
-          url: '/guestbook#john',
-          description: 'Left a lovely message',
-        },
-        { id: 'g2', title: 'Jane Smith', url: '/guestbook#jane', description: 'Shared a memory' },
-      ],
-      stories: [
-        {
-          id: 's1',
-          title: 'The Proposal',
-          url: '/our-story#proposal',
-          description: 'How I proposed',
-        },
-        {
-          id: 's2',
-          title: 'Engagement',
-          url: '/our-story#engagement',
-          description: 'Our engagement party',
-        },
-      ],
-    }),
+  const searchablePages = useMemo(
+    () => [
+      {
+        id: 'home',
+        title: 'Home',
+        url: '/',
+        description: 'The welcome page, timeline, and the big-day overview.',
+      },
+      {
+        id: 'film',
+        title: 'Watch Film',
+        url: '/film',
+        description: 'Watch the full wedding film and parent dances.',
+      },
+      {
+        id: 'gallery',
+        title: 'Gallery',
+        url: '/gallery',
+        description: 'Browse the professional photos and approved guest uploads.',
+      },
+      {
+        id: 'guestbook',
+        title: 'Guestbook',
+        url: '/guestbook',
+        description: 'Leave a note, voice message, or video for Austin and Jordyn.',
+      },
+      {
+        id: 'share',
+        title: 'Share',
+        url: '/upload',
+        description: 'Upload your photos and videos or share the site with loved ones.',
+      },
+    ],
     []
   )
 
@@ -117,74 +74,28 @@ const Search: React.FC<SearchProps> = ({
 
       setLoading(true)
 
-      // Simulate API delay
-      await new Promise(resolve => setTimeout(resolve, 200))
-
       const queryLower = searchQuery.toLowerCase()
-      const searchResults: SearchResult[] = []
-
-      // Search pages
-      mockData.pages.forEach(page => {
+      const searchResults: SearchResult[] = searchablePages.reduce<SearchResult[]>((matches, page) => {
         const titleMatch = page.title.toLowerCase().includes(queryLower)
         const descMatch = page.description?.toLowerCase().includes(queryLower)
         const relevance = titleMatch ? 2 : descMatch ? 1 : 0
 
         if (relevance > 0) {
-          searchResults.push({
+          matches.push({
             ...page,
             type: 'page',
             relevance,
           })
         }
-      })
-
-      // Search photos
-      mockData.photos.forEach(photo => {
-        if (photo.title.toLowerCase().includes(queryLower)) {
-          searchResults.push({
-            ...photo,
-            type: 'photo',
-            relevance: 1,
-          })
-        }
-      })
-
-      // Search guests
-      mockData.guests.forEach(guest => {
-        const nameMatch = guest.title.toLowerCase().includes(queryLower)
-        const descMatch = guest.description?.toLowerCase().includes(queryLower)
-        const relevance = nameMatch ? 2 : descMatch ? 1 : 0
-
-        if (relevance > 0) {
-          searchResults.push({
-            ...guest,
-            type: 'guest',
-            relevance,
-          })
-        }
-      })
-
-      // Search stories
-      mockData.stories.forEach(story => {
-        const titleMatch = story.title.toLowerCase().includes(queryLower)
-        const descMatch = story.description?.toLowerCase().includes(queryLower)
-        const relevance = titleMatch ? 2 : descMatch ? 1 : 0
-
-        if (relevance > 0) {
-          searchResults.push({
-            ...story,
-            type: 'story',
-            relevance,
-          })
-        }
-      })
+        return matches
+      }, [])
 
       // Sort by relevance and limit results
       searchResults.sort((a, b) => b.relevance - a.relevance)
       setResults(searchResults.slice(0, maxResults))
       setLoading(false)
     },
-    [mockData, maxResults]
+    [maxResults, searchablePages]
   )
 
   // Debounced search
@@ -228,20 +139,7 @@ const Search: React.FC<SearchProps> = ({
     setResults([])
   }
 
-  const getTypeIcon = (type: string) => {
-    switch (type) {
-      case 'page':
-        return '📄'
-      case 'photo':
-        return '📸'
-      case 'guest':
-        return '👤'
-      case 'story':
-        return '📖'
-      default:
-        return '🔍'
-    }
-  }
+  const getTypeIcon = () => '↗'
 
   return (
     <div className='relative w-full max-w-2xl mx-auto'>
@@ -296,7 +194,7 @@ const Search: React.FC<SearchProps> = ({
                         index === selectedIndex ? 'bg-gray-50 dark:bg-gray-700' : ''
                       }`}
                     >
-                      <span className='text-xl'>{getTypeIcon(result.type)}</span>
+                      <span className='text-xl'>{getTypeIcon()}</span>
                       <div className='flex-1 text-left'>
                         <div className='font-medium text-gray-900 dark:text-white'>
                           {result.title}
@@ -307,13 +205,6 @@ const Search: React.FC<SearchProps> = ({
                           </div>
                         )}
                       </div>
-                      {result.imageUrl && (
-                        <img
-                          src={result.imageUrl}
-                          alt={result.title}
-                          className='w-10 h-10 object-cover rounded'
-                        />
-                      )}
                     </button>
                   </li>
                 ))}
@@ -324,9 +215,9 @@ const Search: React.FC<SearchProps> = ({
               </div>
             ) : (
               <div className='px-4 py-2'>
-                <p className='text-sm text-gray-500 dark:text-gray-400 mb-2'>Popular searches:</p>
+                <p className='text-sm text-gray-500 dark:text-gray-400 mb-2'>Try one of these:</p>
                 <div className='flex flex-wrap gap-2'>
-                  {['Photos', 'Our Story', 'Guest Book'].map(term => (
+                  {['Film', 'Gallery', 'Guestbook', 'Share'].map(term => (
                     <button
                       key={term}
                       onClick={() => setQuery(term)}

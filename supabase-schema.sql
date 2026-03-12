@@ -105,6 +105,38 @@ create policy if not exists "Allow authenticated update" on guestbook_messages
 
 create index if not exists idx_guestbook_created_at on guestbook_messages(created_at desc);
 
+-- Table: moderation_audit_log
+-- Append-only moderation history for guest uploads and guestbook actions
+create table if not exists moderation_audit_log (
+  id uuid primary key default gen_random_uuid(),
+  entity_type text not null check (entity_type in ('guest_upload', 'guestbook_message')),
+  entity_id uuid not null,
+  action text not null,
+  actor_user_id uuid,
+  actor_email text,
+  actor_name text,
+  from_status text,
+  to_status text,
+  summary text not null,
+  metadata jsonb not null default '{}'::jsonb,
+  created_at timestamptz default now()
+);
+
+alter table moderation_audit_log enable row level security;
+
+create index if not exists idx_moderation_audit_entity_created
+  on moderation_audit_log(entity_type, entity_id, created_at desc);
+create index if not exists idx_moderation_audit_created_at
+  on moderation_audit_log(created_at desc);
+create index if not exists idx_moderation_audit_actor_user_id
+  on moderation_audit_log(actor_user_id, created_at desc);
+
+create policy if not exists "Allow authenticated read audit log" on moderation_audit_log
+  for select to authenticated using (true);
+
+create policy if not exists "Allow authenticated insert audit log" on moderation_audit_log
+  for insert to authenticated with check (true);
+
 -- ============================================
 -- Storage Buckets Setup
 -- Run these after creating buckets in the Storage UI

@@ -17,6 +17,7 @@ export function VoiceRecorder({ onRecordingComplete, maxDuration = 60 }: VoiceRe
   const [audioBlob, setAudioBlob] = useState<Blob | null>(null)
   const [audioUrl, setAudioUrl] = useState<string | null>(null)
   const [isPlaying, setIsPlaying] = useState(false)
+  const [errorMessage, setErrorMessage] = useState<string | null>(null)
 
   const mediaRecorderRef = useRef<MediaRecorder | null>(null)
   const audioChunksRef = useRef<Blob[]>([])
@@ -48,6 +49,7 @@ export function VoiceRecorder({ onRecordingComplete, maxDuration = 60 }: VoiceRe
 
   const startRecording = useCallback(async () => {
     try {
+      setErrorMessage(null)
       const stream = await navigator.mediaDevices.getUserMedia({ audio: true })
       const mediaRecorder = new MediaRecorder(stream)
       mediaRecorderRef.current = mediaRecorder
@@ -84,7 +86,7 @@ export function VoiceRecorder({ onRecordingComplete, maxDuration = 60 }: VoiceRe
       }, 1000)
     } catch (error) {
       console.error('Error accessing microphone:', error)
-      alert('Could not access microphone. Please check permissions.')
+      setErrorMessage('We could not access the microphone. Please allow mic access and try recording again.')
     }
   }, [maxDuration, stopRecording])
 
@@ -96,6 +98,7 @@ export function VoiceRecorder({ onRecordingComplete, maxDuration = 60 }: VoiceRe
     if (audioUrl) {
       URL.revokeObjectURL(audioUrl)
     }
+    setErrorMessage(null)
   }, [audioUrl])
 
   const togglePlayback = useCallback(() => {
@@ -240,6 +243,12 @@ export function VoiceRecorder({ onRecordingComplete, maxDuration = 60 }: VoiceRe
           </>
         )}
       </div>
+
+      {errorMessage && (
+        <div className="mt-4 rounded-2xl border border-rose-200 bg-rose-50 px-4 py-3 text-center text-sm text-rose-700">
+          {errorMessage}
+        </div>
+      )}
 
       <p className="text-center text-charcoal-500 text-sm mt-4">
         {isRecording 

@@ -116,6 +116,12 @@ function formatAudioTime(seconds: number) {
   return `${Math.floor(safe / 60)}:${Math.floor(safe % 60).toString().padStart(2, '0')}`
 }
 
+function createGuestMediaFileName(extension = 'webm') {
+  return typeof crypto !== 'undefined' && typeof crypto.randomUUID === 'function'
+    ? `${crypto.randomUUID()}.${extension}`
+    : `${Date.now()}_${Math.random().toString(36).slice(2)}.${extension}`
+}
+
 function getDisplayContent(message: Message) {
   if (message.type === 'voice' && message.content === 'Voice message') return ''
   if (message.type === 'video' && message.content === 'Video message') return ''
@@ -217,10 +223,12 @@ function MessageCard({
   onReply: (id: string, content: string) => void
 }) {
   const [showReplyForm, setShowReplyForm] = useState(false)
+  const [showAllReplies, setShowAllReplies] = useState(false)
   const [replyContent, setReplyContent] = useState('')
   const meta = messageTypeMeta[message.type]
   const TypeIcon = meta.icon
   const displayContent = getDisplayContent(message)
+  const visibleComments = showAllReplies ? message.comments : message.comments.slice(0, 2)
 
   return (
     <motion.article
@@ -288,7 +296,7 @@ function MessageCard({
           </div>
 
           <div className="mt-4 space-y-3">
-            {message.comments.slice(0, 2).map((comment) => (
+            {visibleComments.map((comment) => (
               <div key={comment.id} className="rounded-2xl bg-cream-50/90 px-4 py-3">
                 <div className="flex items-center gap-2 text-sm">
                   <span className="font-medium text-charcoal-900">{comment.author}</span>
@@ -298,6 +306,16 @@ function MessageCard({
               </div>
             ))}
           </div>
+
+          {message.comments.length > 2 && (
+            <button
+              type="button"
+              onClick={() => setShowAllReplies((current) => !current)}
+              className="mt-4 text-xs font-medium uppercase tracking-[0.24em] text-gold-700 transition-colors hover:text-gold-600"
+            >
+              {showAllReplies ? 'Show fewer replies' : `Show all ${message.comments.length} replies`}
+            </button>
+          )}
         </div>
       )}
 
@@ -517,7 +535,7 @@ export default function Guestbook() {
   const uploadMedia = async (blob: Blob, type: 'voice' | 'video') => {
     try {
       const bucket = type === 'voice' ? 'guest-voice' : 'guest-videos'
-      const fileName = `${Date.now()}_${Math.random().toString(36).slice(2)}.webm`
+      const fileName = createGuestMediaFileName('webm')
 
       const { error } = await supabase.storage.from(bucket).upload(fileName, blob, {
         contentType: type === 'voice' ? 'audio/webm' : 'video/webm',
@@ -615,6 +633,7 @@ export default function Guestbook() {
   const hasMoreMessages = filteredMessages.length > visibleCount
   const totalReactions = messages.reduce((total, message) => total + message.reactions.reduce((sum, reaction) => sum + reaction.count, 0), 0)
   const totalReplies = messages.reduce((total, message) => total + message.comments.length, 0)
+  const featuredMessage = messages[0]
   const counts = {
     all: messages.length,
     text: messages.filter((message) => message.type === 'text').length,
@@ -707,6 +726,24 @@ export default function Guestbook() {
                   </button>
                 ))}
               </div>
+            </motion.div>
+
+            <motion.div initial={{ opacity: 0, y: 18 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.18 }} className="editorial-card px-5 py-5">
+              <p className="text-[10px] uppercase tracking-[0.3em] text-gold-700">Newest note</p>
+              {featuredMessage ? (
+                <>
+                  <p className="mt-3 text-lg font-semibold text-charcoal-900">{featuredMessage.name}</p>
+                  <p className="mt-2 text-sm text-charcoal-500">{featuredMessage.timestamp}</p>
+                  <p className="mt-4 text-sm leading-6 text-charcoal-600">
+                    {getDisplayContent(featuredMessage).slice(0, 120)}
+                    {getDisplayContent(featuredMessage).length > 120 ? '…' : ''}
+                  </p>
+                </>
+              ) : (
+                <p className="mt-3 text-sm leading-6 text-charcoal-500">
+                  The first note will appear here once someone adds a memory, blessing, or little story from the day.
+                </p>
+              )}
             </motion.div>
           </div>
 
@@ -835,6 +872,13 @@ export default function Guestbook() {
                 </div>
                 {hasMoreMessages && <div className="flex justify-center pt-2"><Button variant="secondary" size="lg" onClick={() => setVisibleCount((current) => current + INITIAL_VISIBLE_MESSAGES)}>Load more messages</Button></div>}
               </>
+            ) : messages.length > 0 ? (
+              <div className="editorial-panel px-6 py-12 text-center">
+                <div className="mx-auto flex h-16 w-16 items-center justify-center rounded-full bg-gold-100 text-gold-600"><BookHeart className="h-7 w-7" /></div>
+                <p className="mt-6 font-display text-2xl text-charcoal-900">Nothing matches this filter just yet.</p>
+                <p className="mx-auto mt-2 max-w-md text-charcoal-500">Try switching formats or opening everything again to read straight through the guestbook.</p>
+                <Button className="mt-6" size="lg" variant="secondary" onClick={() => setFilter('all')}>Show everything</Button>
+              </div>
             ) : (
               <div className="editorial-panel px-6 py-12 text-center">
                 <div className="mx-auto flex h-16 w-16 items-center justify-center rounded-full bg-gold-100 text-gold-600"><BookHeart className="h-7 w-7" /></div>

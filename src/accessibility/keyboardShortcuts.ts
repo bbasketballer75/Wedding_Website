@@ -171,9 +171,9 @@ export const defaultShortcuts: KeyboardShortcut[] = [
   },
   {
     key: 's',
-    description: 'Go to our story',
+    description: 'Go to share page',
     category: 'Navigation',
-    action: () => (window.location.href = '/our-story'),
+    action: () => (window.location.href = '/upload'),
   },
 
   // Search

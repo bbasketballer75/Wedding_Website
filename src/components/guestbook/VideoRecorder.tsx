@@ -17,6 +17,7 @@ export function VideoRecorder({ onRecordingComplete, maxDuration = 30 }: VideoRe
   const [videoUrl, setVideoUrl] = useState<string | null>(null)
   const [facingMode, setFacingMode] = useState<'user' | 'environment'>('user')
   const [countdown, setCountdown] = useState(0)
+  const [errorMessage, setErrorMessage] = useState<string | null>(null)
 
   const videoRef = useRef<HTMLVideoElement>(null)
   const streamRef = useRef<MediaStream | null>(null)
@@ -40,6 +41,7 @@ export function VideoRecorder({ onRecordingComplete, maxDuration = 30 }: VideoRe
 
   const startCamera = useCallback(async () => {
     try {
+      setErrorMessage(null)
       const stream = await navigator.mediaDevices.getUserMedia({
         video: { facingMode },
         audio: true
@@ -50,7 +52,7 @@ export function VideoRecorder({ onRecordingComplete, maxDuration = 30 }: VideoRe
       }
     } catch (error) {
       console.error('Error accessing camera:', error)
-      alert('Could not access camera. Please check permissions.')
+      setErrorMessage('We could not access the camera and microphone. Please allow access and try again.')
     }
   }, [facingMode])
 
@@ -66,6 +68,16 @@ export function VideoRecorder({ onRecordingComplete, maxDuration = 30 }: VideoRe
   }, [isRecording])
 
   const startRecording = useCallback(async () => {
+    setErrorMessage(null)
+
+    if (!streamRef.current) {
+      await startCamera()
+    }
+
+    if (!streamRef.current) {
+      return
+    }
+
     // Countdown
     setCountdown(3)
     for (let i = 3; i > 0; i--) {
@@ -73,10 +85,6 @@ export function VideoRecorder({ onRecordingComplete, maxDuration = 30 }: VideoRe
       await new Promise(resolve => setTimeout(resolve, 1000))
     }
     setCountdown(0)
-
-    if (!streamRef.current) {
-      await startCamera()
-    }
 
     if (streamRef.current) {
       const mediaRecorder = new MediaRecorder(streamRef.current)
@@ -120,6 +128,7 @@ export function VideoRecorder({ onRecordingComplete, maxDuration = 30 }: VideoRe
     setVideoBlob(null)
     setVideoUrl(null)
     setRecordingTime(0)
+    setErrorMessage(null)
     if (videoUrl) {
       URL.revokeObjectURL(videoUrl)
     }
@@ -250,6 +259,12 @@ export function VideoRecorder({ onRecordingComplete, maxDuration = 30 }: VideoRe
           </button>
         )}
       </div>
+
+      {errorMessage && (
+        <div className="mt-4 rounded-2xl border border-rose-200 bg-rose-50 px-4 py-3 text-center text-sm text-rose-700">
+          {errorMessage}
+        </div>
+      )}
 
       <p className="text-center text-charcoal-500 text-sm mt-4">
         {isRecording 

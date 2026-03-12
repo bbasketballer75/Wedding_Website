@@ -4,6 +4,7 @@ import { FilmSEO } from '@/components/seo/SEOHead'
 import { VideoPlayer } from '@/components/video/VideoPlayer'
 import { Button } from '@/components/ui/Button'
 import { FamilyTree } from '@/components/family-tree/FamilyTree'
+import { supabase, type GuestUpload } from '@/lib/supabase'
 import {
   MAIN_FILM_CHAPTERS_FALLBACK,
   MAIN_FILM_RUNTIME_LABEL,
@@ -21,6 +22,7 @@ import {
   Sparkles,
   Camera,
   HeartHandshake,
+  Smartphone,
   X,
 } from 'lucide-react'
 
@@ -284,9 +286,156 @@ function ParentDanceModal({
   )
 }
 
+interface GuestVideoHighlight {
+  id: string
+  guestName: string
+  title: string
+  description: string
+  videoUrl: string
+  createdAt: string
+}
+
+function GuestVideoHighlightCard({
+  clip,
+  onOpen,
+}: {
+  clip: GuestVideoHighlight
+  onOpen: (clip: GuestVideoHighlight) => void
+}) {
+  const videoRef = useRef<HTMLVideoElement | null>(null)
+
+  return (
+    <button
+      type="button"
+      onClick={() => onOpen(clip)}
+      onMouseEnter={() => {
+        if (!videoRef.current) return
+        videoRef.current.currentTime = 0
+        void videoRef.current.play().catch(() => {})
+      }}
+      onMouseLeave={() => {
+        if (!videoRef.current) return
+        videoRef.current.pause()
+        videoRef.current.currentTime = 0
+      }}
+      onFocus={() => {
+        if (!videoRef.current) return
+        videoRef.current.currentTime = 0
+        void videoRef.current.play().catch(() => {})
+      }}
+      onBlur={() => {
+        if (!videoRef.current) return
+        videoRef.current.pause()
+        videoRef.current.currentTime = 0
+      }}
+      className="group cinematic-card min-h-[19rem] overflow-hidden p-0 text-left transition-transform duration-300 hover:-translate-y-1"
+    >
+      <div className="relative aspect-[4/5] overflow-hidden">
+        <video
+          ref={videoRef}
+          src={clip.videoUrl}
+          muted
+          playsInline
+          preload="metadata"
+          loop
+          className="h-full w-full object-cover transition-transform duration-500 group-hover:scale-[1.03]"
+        >
+          <track kind="captions" src={EMPTY_CAPTIONS_TRACK} srcLang="en" label="No captions available" />
+        </video>
+        <div className="absolute inset-0 bg-[linear-gradient(to_top,rgba(24,17,14,0.92),rgba(24,17,14,0.12)_58%)]" />
+        <div className="absolute left-4 top-4 inline-flex items-center gap-2 rounded-full border border-[#f5e2bf]/30 bg-[rgba(64,44,34,0.68)] px-3 py-1.5 text-[10px] uppercase tracking-[0.26em] text-[#fff7eb] backdrop-blur-sm">
+          From your phones
+        </div>
+      </div>
+
+      <div className="p-5 sm:p-6">
+        <p className="text-[10px] uppercase tracking-[0.28em] text-gold-300/78">{clip.guestName}</p>
+        <h3 className="mt-3 font-display text-[1.8rem] leading-none text-cinematic-primary">
+          {clip.title}
+        </h3>
+        <p className="mt-3 text-sm leading-6 text-cinematic-secondary">
+          {clip.description}
+        </p>
+      </div>
+    </button>
+  )
+}
+
+function GuestVideoHighlightModal({
+  clip,
+  onClose,
+}: {
+  clip: GuestVideoHighlight | null
+  onClose: () => void
+}) {
+  if (!clip) return null
+
+  return (
+    <AnimatePresence>
+      <motion.div
+        initial={{ opacity: 0 }}
+        animate={{ opacity: 1 }}
+        exit={{ opacity: 0 }}
+        className="fixed inset-0 z-[90] flex items-center justify-center bg-[rgba(18,12,10,0.82)] p-4 backdrop-blur-md"
+        onClick={onClose}
+      >
+        <motion.div
+          initial={{ opacity: 0, y: 24, scale: 0.98 }}
+          animate={{ opacity: 1, y: 0, scale: 1 }}
+          exit={{ opacity: 0, y: 24, scale: 0.98 }}
+          transition={{ duration: 0.28, ease: [0.16, 1, 0.3, 1] }}
+          className="cinematic-panel w-full max-w-4xl overflow-hidden"
+          onClick={(event) => event.stopPropagation()}
+        >
+          <div className="flex items-center justify-between border-b border-gold-200/14 px-5 py-4 sm:px-6">
+            <div>
+              <p className="text-[10px] uppercase tracking-[0.32em] text-gold-300/82">Guest highlight</p>
+              <h3 className="mt-2 font-display text-3xl text-cinematic-primary">{clip.title}</h3>
+            </div>
+            <button
+              type="button"
+              onClick={onClose}
+              className="flex h-11 w-11 items-center justify-center rounded-full border border-gold-200/18 bg-[rgba(255,247,235,0.08)] text-cinematic-primary transition-colors hover:border-gold-300/35 hover:text-gold-300"
+              aria-label="Close guest highlight video"
+            >
+              <X className="h-5 w-5" />
+            </button>
+          </div>
+
+          <div className="grid gap-6 p-5 sm:p-6 lg:grid-cols-[minmax(0,1.15fr)_minmax(18rem,0.85fr)]">
+            <div className="overflow-hidden rounded-[1.75rem] border border-gold-200/16 bg-black/20">
+              <video src={clip.videoUrl} controls autoPlay playsInline className="aspect-video w-full object-cover">
+                <track kind="captions" src={EMPTY_CAPTIONS_TRACK} srcLang="en" label="No captions available" />
+              </video>
+            </div>
+
+            <div className="cinematic-card px-5 py-5">
+              <p className="text-[10px] uppercase tracking-[0.3em] text-gold-300/82">Shared by</p>
+              <p className="mt-4 font-display text-3xl text-cinematic-primary">{clip.guestName}</p>
+              <p className="mt-4 text-base leading-7 text-cinematic-secondary">{clip.description}</p>
+              <div className="mt-6 rounded-2xl border border-gold-200/14 bg-[rgba(255,247,235,0.06)] px-4 py-3">
+                <span className="text-[10px] uppercase tracking-[0.28em] text-gold-300/78">Added</span>
+                <p className="mt-2 text-cinematic-secondary">
+                  {new Date(clip.createdAt).toLocaleDateString('en-US', {
+                    month: 'long',
+                    day: 'numeric',
+                    year: 'numeric',
+                  })}
+                </p>
+              </div>
+            </div>
+          </div>
+        </motion.div>
+      </motion.div>
+    </AnimatePresence>
+  )
+}
+
 export default function Film() {
   const [chapters, setChapters] = useState<FilmChapter[]>(MAIN_FILM_CHAPTERS_FALLBACK)
   const [activeFamilyFilm, setActiveFamilyFilm] = useState<FamilyFilm | null>(null)
+  const [guestHighlights, setGuestHighlights] = useState<GuestVideoHighlight[]>([])
+  const [activeGuestHighlight, setActiveGuestHighlight] = useState<GuestVideoHighlight | null>(null)
 
   useEffect(() => {
     let isActive = true
@@ -298,6 +447,43 @@ export default function Film() {
         }
       })
       .catch(() => {})
+
+    return () => {
+      isActive = false
+    }
+  }, [])
+
+  useEffect(() => {
+    let isActive = true
+
+    async function fetchGuestHighlights() {
+      const { data } = await supabase
+        .from('guest_uploads')
+        .select('*')
+        .eq('status', 'approved')
+        .order('created_at', { ascending: false })
+        .limit(12)
+
+      if (!isActive || !Array.isArray(data)) return
+
+      const highlights = (data as GuestUpload[])
+        .filter((upload) => Array.isArray(upload.video_urls) && upload.video_urls.length > 0)
+        .slice(0, 6)
+        .map((upload, index) => ({
+          id: `${upload.id}-${index}`,
+          guestName: upload.guest_name,
+          title: upload.message?.trim() || `A guest angle from ${upload.guest_name}`,
+          description:
+            upload.message?.trim() ||
+            'A little handheld piece of the day, straight from the room and exactly how it felt to be there.',
+          videoUrl: upload.video_urls[0],
+          createdAt: upload.created_at,
+        }))
+
+      setGuestHighlights(highlights)
+    }
+
+    void fetchGuestHighlights()
 
     return () => {
       isActive = false
@@ -630,7 +816,42 @@ export default function Film() {
         </div>
       </section>
 
+      {guestHighlights.length > 0 && (
+        <section className="px-4 pb-16">
+          <div className="mx-auto max-w-6xl">
+            <motion.div
+              initial={{ opacity: 0, y: 20 }}
+              whileInView={{ opacity: 1, y: 0 }}
+              viewport={{ once: true }}
+              transition={{ duration: 0.6 }}
+              className="mb-8 max-w-3xl"
+            >
+              <span className="eyebrow-chip">
+                <Smartphone className="h-3.5 w-3.5" />
+                From your phones
+              </span>
+              <h2 className="mt-5 text-4xl text-charcoal-900 sm:text-5xl">
+                Small clips from the room that make the day feel alive again.
+              </h2>
+              <p className="mt-4 text-base text-charcoal-600 sm:text-lg">
+                These are the quick guest angles that fill in the edges: the table laughs, the dance-floor blur, and
+                the little in-between pieces no feature camera can catch from every side of the room.
+              </p>
+            </motion.div>
+
+            <div className="overflow-x-auto pb-2 hide-scrollbar">
+              <div className="grid grid-flow-col auto-cols-[minmax(16rem,1fr)] gap-4">
+                {guestHighlights.map((clip) => (
+                  <GuestVideoHighlightCard key={clip.id} clip={clip} onOpen={setActiveGuestHighlight} />
+                ))}
+              </div>
+            </div>
+          </div>
+        </section>
+      )}
+
       <ParentDanceModal film={activeFamilyFilm} onClose={() => setActiveFamilyFilm(null)} />
+      <GuestVideoHighlightModal clip={activeGuestHighlight} onClose={() => setActiveGuestHighlight(null)} />
     </div>
   )
 }

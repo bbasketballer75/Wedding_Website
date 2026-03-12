@@ -299,9 +299,9 @@ export class GDPRManager {
    * Trigger data export background job
    */
   private async triggerDataExport(userId: string): Promise<void> {
-    // In production, this would trigger a backend job
-    // For now, we'll create a mock export
-    console.log(`Data export triggered for user ${userId}`)
+    console.info(
+      `Data export request recorded for user ${userId}. Fulfillment is a manual operational step via Supabase exports or storage-provider tooling.`
+    )
   }
 
   /**
