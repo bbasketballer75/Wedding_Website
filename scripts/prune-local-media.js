@@ -1,3 +1,4 @@
+import 'dotenv/config'
 import { access, rm } from 'fs/promises'
 import path from 'path'
 
