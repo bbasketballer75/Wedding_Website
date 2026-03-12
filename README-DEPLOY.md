@@ -11,7 +11,7 @@ For the actual end-to-end launch process, use:
 ## Current Deployment Model
 
 - Private staging/testing: `https://austin-jordyn-wedding.netlify.app`
-- Final public launch: `https://wedding.theporadas.com`
+- Final public launch: `https://www.theporadas.com`
 - Do not attach the custom domain until the site is fully approved.
 
 ## Most Important Commands

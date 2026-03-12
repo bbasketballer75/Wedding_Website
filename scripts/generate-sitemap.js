@@ -5,7 +5,7 @@ import { Readable } from 'stream'
 
 dotenv.config()
 
-const DOMAIN = (process.env.VITE_SITE_URL || 'https://wedding.theporadas.com').replace(/\/+$/, '')
+const DOMAIN = (process.env.VITE_SITE_URL || 'https://www.theporadas.com').replace(/\/+$/, '')
 
 // Static routes
 const routes = [

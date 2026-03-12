@@ -35,7 +35,7 @@ There is no RSVP feature in the current shipping app. Older launch docs that ref
 ## Launch Model
 
 - Private staging/testing URL: `https://austin-jordyn-wedding.netlify.app`
-- Final public launch URL: `https://wedding.theporadas.com`
+- Final public launch URL: `https://www.theporadas.com`
 - Custom domain is intentionally delayed until the site is fully approved.
 - Deep-link crawler previews are accepted to fall back to homepage metadata for this launch because the app is an SPA without prerendering or SSR.
 

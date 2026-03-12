@@ -4,7 +4,7 @@
 
 - Launch runbook: `LAUNCH_RUNBOOK.md`
 - Staging URL: `https://austin-jordyn-wedding.netlify.app`
-- Public launch URL: `https://wedding.theporadas.com`
+- Public launch URL: `https://www.theporadas.com`
 
 ## Release Control
 
@@ -79,9 +79,9 @@
 ## Launch Day Domain Cutover
 
 - [ ] Custom domain added in Netlify
-- [ ] DNS records added for `wedding.theporadas.com`
+- [ ] DNS records added for `www.theporadas.com`
 - [ ] TLS certificate active
-- [ ] `VITE_SITE_URL` changed to `https://wedding.theporadas.com`
+- [ ] `VITE_SITE_URL` changed to `https://www.theporadas.com`
 - [ ] Final deploy published after domain/env update
 - [ ] `npm run verify:deployed` passes on custom domain
 

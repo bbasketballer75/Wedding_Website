@@ -2,12 +2,12 @@
 
 ## Purpose
 
-This is the source of truth for taking the wedding site from private staging on Netlify to a public custom-domain launch on `wedding.theporadas.com`.
+This is the source of truth for taking the wedding site from private staging on Netlify to a public custom-domain launch on `www.theporadas.com`.
 
 ## Current Strategy
 
 - Staging and QA URL: `https://austin-jordyn-wedding.netlify.app`
-- Public launch URL: `https://wedding.theporadas.com`
+- Public launch URL: `https://www.theporadas.com`
 - Do not attach the custom domain until the site is fully approved.
 - Deep-link crawler previews may fall back to the homepage metadata for this launch because the site is a client-rendered SPA.
 
@@ -102,12 +102,12 @@ Execute in this order:
 2. Re-run `npm run verify:release`.
 3. Confirm the final launch commit is pushed to `main`.
 4. Confirm Netlify production has deployed that commit.
-5. Add `wedding.theporadas.com` as the custom domain in Netlify.
+5. Keep `wedding.theporadas.com` as the stable Netlify origin and present `www.theporadas.com` as the public domain.
 6. Add the required DNS records at the domain host.
 7. Wait for Netlify to verify the domain and provision TLS.
-8. Confirm `https://wedding.theporadas.com` loads successfully.
+8. Confirm `https://www.theporadas.com` loads successfully.
 9. Update Netlify env:
-   - `VITE_SITE_URL=https://wedding.theporadas.com`
+   - `VITE_SITE_URL=https://www.theporadas.com`
    - set `VITE_APP_VERSION` to the launch release label if needed
 10. Commit the static fallback metadata/domain updates if not already parameterized by env.
 11. Trigger the final post-cutover production deploy from `main`.
@@ -117,7 +117,7 @@ Execute in this order:
 
 ## Post-Cutover Validation
 
-Check these live on `https://wedding.theporadas.com`:
+Check these live on `https://www.theporadas.com`:
 
 - homepage
 - film

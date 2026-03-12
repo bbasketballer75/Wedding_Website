@@ -20,7 +20,7 @@ interface SEOHeadProps {
 }
 
 const SITE_NAME = "Austin & Jordyn's Wedding"
-const SITE_URL = 'https://wedding.theporadas.com'
+const SITE_URL = 'https://www.theporadas.com'
 const DEFAULT_SOCIAL_IMAGE = '/images/home/intro-video-poster.png'
 const FILM_SOCIAL_IMAGE = '/images/film/main-film-poster.png'
 const EVENT_DETAILS = {
