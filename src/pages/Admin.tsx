@@ -16,7 +16,9 @@ import {
   BarChart3
 } from 'lucide-react'
 import { Button } from '@/components/ui/Button'
+import { Input } from '@/components/ui/Input'
 import { Label } from '@/components/ui/Label'
+import { Textarea } from '@/components/ui/Textarea'
 import { useToast } from '@/context/ToastContext'
 
 // Admin sub-pages
@@ -146,8 +148,96 @@ function StatCard({
 
 type ModerationUpload = Omit<GuestUpload, 'message'> & { message?: string | null }
 
+type ModerationCollection = 'Wedding Day' | 'Engagement' | 'Bach+ette' | 'Guest Uploads'
+
+interface PromotionDraft {
+  collection: ModerationCollection
+  category: string
+  caption: string
+  tags: string
+  location: string
+}
+
+const collectionOptions: Array<{
+  value: ModerationCollection
+  description: string
+  defaultCategory: string
+  defaultTags: string[]
+}> = [
+  {
+    value: 'Wedding Day',
+    description: 'For ceremony, portraits, reception, and the main day-of archive.',
+    defaultCategory: 'Wedding Day',
+    defaultTags: ['wedding day'],
+  },
+  {
+    value: 'Engagement',
+    description: 'For proposal, engagement portraits, and pre-wedding keepsakes.',
+    defaultCategory: 'Engagement',
+    defaultTags: ['engagement'],
+  },
+  {
+    value: 'Bach+ette',
+    description: 'For bachelor and bachelorette moments from the pre-wedding weekends.',
+    defaultCategory: 'Bach+ette',
+    defaultTags: ['bach', 'bachelorette'],
+  },
+  {
+    value: 'Guest Uploads',
+    description: 'Keeps the item in the general guest lane without forcing a story chapter.',
+    defaultCategory: 'Guest Uploads',
+    defaultTags: ['guest upload'],
+  },
+]
+
+const guestTagByCollection: Record<ModerationCollection, string[]> = {
+  'Wedding Day': ['wedding day'],
+  Engagement: ['engagement'],
+  'Bach+ette': ['bach', 'bachelorette'],
+  'Guest Uploads': ['guest upload'],
+}
+
+const defaultPromotionDraft: PromotionDraft = {
+  collection: 'Wedding Day',
+  category: 'Wedding Day',
+  caption: '',
+  tags: 'wedding day',
+  location: '',
+}
+
+function normalizeTags(rawTags: string) {
+  return Array.from(
+    new Set(
+      rawTags
+        .split(',')
+        .map(tag => tag.trim().toLowerCase())
+        .filter(Boolean)
+    )
+  )
+}
+
+function createPromotionDraft(upload: ModerationUpload): PromotionDraft {
+  const lowerMessage = (upload.message || '').toLowerCase()
+  const matchingCollection =
+    collectionOptions.find(option =>
+      option.defaultTags.some(tag => lowerMessage.includes(tag))
+    )?.value || 'Wedding Day'
+
+  const preset = collectionOptions.find(option => option.value === matchingCollection) || collectionOptions[0]
+
+  return {
+    collection: matchingCollection,
+    category: preset.defaultCategory,
+    caption: upload.message || '',
+    tags: preset.defaultTags.join(', '),
+    location: '',
+  }
+}
+
 function PhotoModeration() {
   const [photos, setPhotos] = useState<ModerationUpload[]>([])
+  const [drafts, setDrafts] = useState<Record<string, PromotionDraft>>({})
+  const [busyId, setBusyId] = useState<string | null>(null)
   const [loading, setLoading] = useState(true)
   const { addToast } = useToast()
 
@@ -162,7 +252,17 @@ function PhotoModeration() {
     if (error) {
       addToast('Failed to load photos', 'error')
     } else {
-      setPhotos((data as ModerationUpload[] | null) || [])
+      const uploads = (data as ModerationUpload[] | null) || []
+      setPhotos(uploads)
+      setDrafts(prev => {
+        const next: Record<string, PromotionDraft> = {}
+
+        for (const upload of uploads) {
+          next[upload.id] = prev[upload.id] || createPromotionDraft(upload)
+        }
+
+        return next
+      })
     }
     setLoading(false)
   }, [addToast])
@@ -175,21 +275,92 @@ function PhotoModeration() {
     return () => window.clearTimeout(timeoutId)
   }, [fetchPendingPhotos])
 
-  async function handleApprove(id: string) {
-    const { error } = await supabase
+  function updateDraft(id: string, patch: Partial<PromotionDraft>) {
+    const upload = photos.find(photo => photo.id === id)
+    setDrafts(prev => ({
+      ...prev,
+      [id]: {
+        ...(prev[id] || (upload ? createPromotionDraft(upload) : defaultPromotionDraft)),
+        ...patch,
+      },
+    }))
+  }
+
+  async function handleApprove(upload: ModerationUpload) {
+    const draft = drafts[upload.id] || createPromotionDraft(upload)
+    const uploadPhotoUrls = upload.photo_urls || []
+    const uploadVideoUrls = upload.video_urls || []
+    const tags = Array.from(new Set([...guestTagByCollection[draft.collection], ...normalizeTags(draft.tags)]))
+    const category = draft.category.trim() || collectionOptions.find(option => option.value === draft.collection)?.defaultCategory || 'Wedding Day'
+    const caption = draft.caption.trim() || upload.message?.trim() || undefined
+    const location = draft.location.trim() || undefined
+
+    setBusyId(upload.id)
+
+    const rowsToInsert = uploadPhotoUrls.map(photoUrl => ({
+      url: photoUrl,
+      thumbnail: photoUrl,
+      caption,
+      category,
+      location,
+      date: upload.created_at,
+      likes: 0,
+      photographer: `${upload.guest_name} (Guest)`,
+      is_professional: false,
+      tags,
+      faces: [],
+    }))
+
+    if (rowsToInsert.length > 0) {
+      const { error: insertError } = await supabase
+        .from('photos')
+        .insert(rowsToInsert)
+
+      if (insertError) {
+        addToast('Failed to publish approved photos into the gallery', 'error')
+        setBusyId(null)
+        return
+      }
+    }
+
+    const { error: updateError } = await supabase
       .from('guest_uploads')
       .update({ status: 'approved' })
-      .eq('id', id)
+      .eq('id', upload.id)
 
-    if (error) {
-      addToast('Failed to approve photo', 'error')
-    } else {
-      addToast('Photo approved', 'success')
-      setPhotos(prev => prev.filter(p => p.id !== id))
+    if (updateError) {
+      if (rowsToInsert.length > 0) {
+        await supabase
+          .from('photos')
+          .delete()
+          .in('url', rowsToInsert.map(row => row.url))
+      }
+
+      addToast('The upload could not be marked approved after publishing', 'error')
+      setBusyId(null)
+      return
     }
+
+    addToast(
+      rowsToInsert.length > 0
+        ? `Approved and published ${rowsToInsert.length} guest photo${rowsToInsert.length === 1 ? '' : 's'} to ${draft.collection}.`
+        : uploadVideoUrls.length > 0
+          ? 'Approved the video-only upload. Videos stay in the approved archive until you feature them elsewhere.'
+          : 'Approved the upload.',
+      'success'
+    )
+
+    setPhotos(prev => prev.filter(photo => photo.id !== upload.id))
+    setDrafts(prev => {
+      const next = { ...prev }
+      delete next[upload.id]
+      return next
+    })
+    setBusyId(null)
   }
 
   async function handleReject(id: string) {
+    setBusyId(id)
     const { error } = await supabase
       .from('guest_uploads')
       .update({ status: 'rejected' })
@@ -200,7 +371,13 @@ function PhotoModeration() {
     } else {
       addToast('Photo rejected', 'success')
       setPhotos(prev => prev.filter(p => p.id !== id))
+      setDrafts(prev => {
+        const next = { ...prev }
+        delete next[id]
+        return next
+      })
     }
+    setBusyId(null)
   }
 
   if (loading) {
@@ -209,52 +386,207 @@ function PhotoModeration() {
 
   return (
     <div className="space-y-6">
-      <h2 className="text-2xl font-display text-charcoal-900">Photo Moderation</h2>
+      <div className="space-y-2">
+        <h2 className="text-2xl font-display text-charcoal-900">Photo Moderation</h2>
+        <p className="max-w-3xl text-sm leading-6 text-charcoal-500">
+          Approval now does the curation work too: choose the story lane, tighten the caption, and publish guest photos
+          directly into the live gallery with their source preserved.
+        </p>
+      </div>
       
       {photos.length === 0 ? (
         <div className="text-center py-12 bg-white rounded-xl border border-gold-100">
           <CheckCircle className="w-12 h-12 text-green-500 mx-auto mb-4" />
-          <p className="text-charcoal-600">No pending photos to review!</p>
+          <p className="text-charcoal-600">No pending guest uploads to review.</p>
         </div>
       ) : (
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+        <div className="grid grid-cols-1 gap-5 xl:grid-cols-2">
           {photos.map((photo) => (
-            <div key={photo.id} className="bg-white rounded-xl overflow-hidden border border-gold-100 shadow-sm">
-              <div className="aspect-video bg-gray-100">
-                {photo.photo_urls?.[0] && (
+            <div key={photo.id} className="overflow-hidden rounded-[1.5rem] border border-gold-100 bg-white shadow-sm">
+              <div className="grid gap-0 lg:grid-cols-[minmax(0,0.9fr)_minmax(0,1.1fr)]">
+                <div className="relative aspect-[4/3] bg-gray-100 lg:aspect-auto">
+                  {photo.photo_urls?.[0] ? (
                   <img 
                     src={photo.photo_urls[0]} 
                     alt="Guest upload" 
                     className="w-full h-full object-cover"
                   />
-                )}
-              </div>
-              <div className="p-4">
-                <p className="font-medium text-charcoal-900">{photo.guest_name}</p>
-                <p className="text-sm text-charcoal-500">{photo.guest_email}</p>
-                {photo.message && (
-                  <p className="text-sm text-charcoal-600 mt-2 line-clamp-2">
-                    "{photo.message}"
-                  </p>
-                )}
-                <div className="flex gap-2 mt-4">
-                  <Button 
-                    size="sm" 
-                    className="flex-1"
-                    onClick={() => handleApprove(photo.id)}
-                  >
-                    <CheckCircle className="w-4 h-4 mr-1" />
-                    Approve
-                  </Button>
-                  <Button 
-                    size="sm" 
-                    variant="danger"
-                    className="flex-1"
-                    onClick={() => handleReject(photo.id)}
-                  >
-                    <XCircle className="w-4 h-4 mr-1" />
-                    Reject
-                  </Button>
+                  ) : (
+                    <div className="flex h-full flex-col items-center justify-center gap-3 bg-[linear-gradient(145deg,rgba(250,242,231,0.9),rgba(255,249,241,0.96))] px-6 text-center">
+                      <span className="rounded-full bg-white/80 px-3 py-1 text-[10px] uppercase tracking-[0.28em] text-charcoal-500">
+                        Video-only upload
+                      </span>
+                      <p className="max-w-xs text-sm leading-6 text-charcoal-500">
+                        This submission only includes video clips. Approval will archive it as approved, but it will not
+                        appear in the photo gallery until you feature it elsewhere.
+                      </p>
+                    </div>
+                  )}
+
+                  <div className="absolute left-4 top-4 flex flex-wrap gap-2">
+                    <span className="rounded-full bg-charcoal-900/72 px-3 py-1 text-[10px] uppercase tracking-[0.28em] text-white backdrop-blur-sm">
+                      {photo.photo_urls?.length || 0} photo{(photo.photo_urls?.length || 0) === 1 ? '' : 's'}
+                    </span>
+                    {(photo.video_urls?.length || 0) > 0 && (
+                      <span className="rounded-full bg-white/80 px-3 py-1 text-[10px] uppercase tracking-[0.28em] text-charcoal-600 backdrop-blur-sm">
+                        {photo.video_urls.length} video{photo.video_urls.length === 1 ? '' : 's'}
+                      </span>
+                    )}
+                  </div>
+                </div>
+
+                <div className="space-y-5 p-5">
+                  <div className="space-y-3">
+                    <div className="flex flex-wrap items-start justify-between gap-3">
+                      <div>
+                        <p className="font-medium text-charcoal-900">{photo.guest_name}</p>
+                        <p className="text-sm text-charcoal-500">{photo.guest_email}</p>
+                      </div>
+                      <span className="rounded-full bg-gold-50 px-3 py-1 text-[10px] uppercase tracking-[0.28em] text-gold-700">
+                        Pending curation
+                      </span>
+                    </div>
+
+                    {photo.message && (
+                      <p className="rounded-2xl border border-gold-100 bg-cream-50/70 px-4 py-3 text-sm leading-6 text-charcoal-600">
+                        “{photo.message}”
+                      </p>
+                    )}
+                  </div>
+
+                  <div className="rounded-[1.25rem] border border-gold-100 bg-[linear-gradient(145deg,rgba(250,245,236,0.82),rgba(255,252,248,0.96))] p-4">
+                    <p className="text-[10px] uppercase tracking-[0.3em] text-charcoal-500">
+                      Publish into the gallery
+                    </p>
+
+                    <div className="mt-4 grid gap-4">
+                      <div>
+                        <Label
+                          htmlFor={`collection-${photo.id}`}
+                          className="mb-2 text-xs normal-case tracking-normal text-charcoal-500"
+                        >
+                          Story lane
+                        </Label>
+                        <select
+                          id={`collection-${photo.id}`}
+                          value={drafts[photo.id]?.collection || 'Wedding Day'}
+                          onChange={(event) => {
+                            const collection = event.target.value as ModerationCollection
+                            const preset = collectionOptions.find(option => option.value === collection)
+                            updateDraft(photo.id, {
+                              collection,
+                              category: preset?.defaultCategory || collection,
+                              tags: Array.from(
+                                new Set([
+                                  ...normalizeTags(drafts[photo.id]?.tags || ''),
+                                  ...(preset?.defaultTags || []),
+                                ])
+                              ).join(', '),
+                            })
+                          }}
+                          className="h-11 w-full rounded-full border border-gold-200/70 bg-white px-4 text-sm text-charcoal-900 outline-none transition focus:border-gold-500 focus:ring-2 focus:ring-gold-500/20"
+                        >
+                          {collectionOptions.map(option => (
+                            <option key={option.value} value={option.value}>
+                              {option.value}
+                            </option>
+                          ))}
+                        </select>
+                        <p className="mt-2 text-xs leading-5 text-charcoal-500">
+                          {collectionOptions.find(option => option.value === (drafts[photo.id]?.collection || 'Wedding Day'))?.description}
+                        </p>
+                      </div>
+
+                      <div className="grid gap-4 md:grid-cols-2">
+                        <div>
+                          <Label
+                            htmlFor={`category-${photo.id}`}
+                            className="mb-2 text-xs normal-case tracking-normal text-charcoal-500"
+                          >
+                            Category
+                          </Label>
+                          <Input
+                            id={`category-${photo.id}`}
+                            value={drafts[photo.id]?.category || ''}
+                            onChange={(event) => updateDraft(photo.id, { category: event.target.value })}
+                            placeholder="Wedding Day, Ceremony, Reception..."
+                          />
+                        </div>
+
+                        <div>
+                          <Label
+                            htmlFor={`location-${photo.id}`}
+                            className="mb-2 text-xs normal-case tracking-normal text-charcoal-500"
+                          >
+                            Location
+                          </Label>
+                          <Input
+                            id={`location-${photo.id}`}
+                            value={drafts[photo.id]?.location || ''}
+                            onChange={(event) => updateDraft(photo.id, { location: event.target.value })}
+                            placeholder="Reception hall, ceremony lawn..."
+                          />
+                        </div>
+                      </div>
+
+                      <div>
+                        <Label
+                          htmlFor={`caption-${photo.id}`}
+                          className="mb-2 text-xs normal-case tracking-normal text-charcoal-500"
+                        >
+                          Caption for the gallery
+                        </Label>
+                        <Textarea
+                          id={`caption-${photo.id}`}
+                          value={drafts[photo.id]?.caption || ''}
+                          onChange={(event) => updateDraft(photo.id, { caption: event.target.value })}
+                          placeholder="A polished caption guests will read in the gallery lightbox."
+                          className="min-h-[96px]"
+                        />
+                      </div>
+
+                      <div>
+                        <Label
+                          htmlFor={`tags-${photo.id}`}
+                          className="mb-2 text-xs normal-case tracking-normal text-charcoal-500"
+                        >
+                          Tags
+                        </Label>
+                        <Input
+                          id={`tags-${photo.id}`}
+                          value={drafts[photo.id]?.tags || ''}
+                          onChange={(event) => updateDraft(photo.id, { tags: event.target.value })}
+                          placeholder="wedding day, dance floor, table candids"
+                        />
+                        <p className="mt-2 text-xs leading-5 text-charcoal-500">
+                          Separate tags with commas. The selected story lane will automatically add the right chapter tag.
+                        </p>
+                      </div>
+                    </div>
+                  </div>
+
+                  <div className="flex flex-wrap gap-2">
+                    <Button
+                      size="sm"
+                      className="flex-1 min-w-[11rem]"
+                      onClick={() => handleApprove(photo)}
+                      disabled={busyId === photo.id}
+                      isLoading={busyId === photo.id}
+                    >
+                      <CheckCircle className="mr-1 h-4 w-4" />
+                      Approve + Publish
+                    </Button>
+                    <Button
+                      size="sm"
+                      variant="danger"
+                      className="flex-1 min-w-[9rem]"
+                      onClick={() => handleReject(photo.id)}
+                      disabled={busyId === photo.id}
+                    >
+                      <XCircle className="mr-1 h-4 w-4" />
+                      Reject
+                    </Button>
+                  </div>
                 </div>
               </div>
             </div>

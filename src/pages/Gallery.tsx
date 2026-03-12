@@ -309,6 +309,29 @@ const viewOptions = [
 
 // Helper to convert Supabase photo to local Photo type
 const deriveCollection = (photo: Pick<SupabasePhoto, 'is_professional' | 'category' | 'caption' | 'tags' | 'location'>): Photo['collection'] => {
+  const normalizedCategory = (photo.category || '').trim().toLowerCase()
+
+  if (normalizedCategory === 'engagement') {
+    return 'Engagement'
+  }
+
+  if (
+    normalizedCategory === 'bach+ette' ||
+    normalizedCategory === 'bach' ||
+    normalizedCategory === 'bachelorette' ||
+    normalizedCategory === 'bachelor'
+  ) {
+    return 'Bach+ette'
+  }
+
+  if (normalizedCategory === 'wedding day') {
+    return 'Wedding Day'
+  }
+
+  if (normalizedCategory === 'guest uploads' || normalizedCategory === 'guest upload') {
+    return 'Guest Uploads'
+  }
+
   const haystack = [
     photo.category,
     photo.caption,
@@ -330,6 +353,18 @@ const deriveCollection = (photo: Pick<SupabasePhoto, 'is_professional' | 'catego
     haystack.includes('ette')
   ) {
     return 'Bach+ette'
+  }
+
+  if (
+    haystack.includes('wedding day') ||
+    haystack.includes('wedding') ||
+    haystack.includes('ceremony') ||
+    haystack.includes('reception') ||
+    haystack.includes('first dance') ||
+    haystack.includes('dance floor') ||
+    haystack.includes('portraits')
+  ) {
+    return 'Wedding Day'
   }
 
   if (!photo.is_professional) {

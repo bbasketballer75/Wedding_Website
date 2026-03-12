@@ -25,18 +25,20 @@ That means:
 
 ## Ongoing Workflow
 
-1. Approve guest uploads that should become public.
-2. Make sure the approved record has useful metadata:
+1. Open `/admin/photos` and review pending guest uploads.
+2. Before approving, fill in the curation fields:
    - caption
    - category
    - tags
    - location
-3. Use that metadata to guide collection placement:
+3. Choose the story lane that should publish the upload:
    - engagement / proposal -> `Engagement`
    - bach / bachelor / bachelorette / ette -> `Bach+ette`
    - everything else defaults into `Wedding Day`
-4. Keep `source=guest` intact so the gallery still labels the item as a guest upload.
-5. Re-check the gallery after approval to make sure the item appears in the expected tabs.
+   - use `Guest Uploads` when you want it to stay in the general guest lane only
+4. Approving now publishes the photo URLs directly into the live `photos` table as `source=guest`.
+5. Keep `source=guest` intact so the gallery still labels the item as a guest upload.
+6. Re-check the gallery after approval to make sure the item appears in the expected tabs.
 
 ## Curation Guidance
 
