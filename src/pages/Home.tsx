@@ -12,7 +12,7 @@ import { cn } from '@/lib/utils'
 import { getMediaPath } from '@/utils/media'
 
 const HERO_POSTER = '/images/home/intro-video-poster.png'
-const HERO_VIDEO = getMediaPath('/video/optimized_background.mp4')
+const HERO_VIDEO = getMediaPath('/video/edited_background_cut.mp4')
 
 interface HomeStat {
   icon: ElementType
