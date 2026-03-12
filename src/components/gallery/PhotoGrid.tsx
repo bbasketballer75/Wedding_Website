@@ -12,6 +12,8 @@ interface Photo {
   likes?: number
   comments?: number
   aspectRatio?: number
+  source?: 'professional' | 'guest'
+  collection?: string
 }
 
 interface PhotoGridProps {
@@ -53,6 +55,38 @@ function PhotoStats({ photo, invert = false }: { photo: Photo; invert?: boolean 
         </span>
       )}
     </div>
+  )
+}
+
+function SourceBadge({ photo, invert = false }: { photo: Photo; invert?: boolean }) {
+  const isGuest = photo.source === 'guest'
+
+  if (invert) {
+    return (
+      <span
+        className={cn(
+          'inline-flex items-center gap-2 rounded-full border px-3 py-1.5 text-[10px] uppercase tracking-[0.28em] backdrop-blur-sm',
+          isGuest
+            ? 'border-blush-200/40 bg-blush-200/18 text-blush-100'
+            : 'border-gold-200/28 bg-white/10 text-gold-100'
+        )}
+      >
+        {isGuest ? 'Guest upload' : 'Professional'}
+      </span>
+    )
+  }
+
+  return (
+    <span
+      className={cn(
+        'inline-flex items-center gap-2 rounded-full border px-3 py-1.5 text-[10px] uppercase tracking-[0.28em]',
+        isGuest
+          ? 'border-blush-200/80 bg-blush-50 text-rose-700'
+          : 'border-gold-200/80 bg-white/80 text-charcoal-600'
+      )}
+    >
+      {isGuest ? 'Guest upload' : 'Professional'}
+    </span>
   )
 }
 
@@ -114,8 +148,11 @@ function MasonryGrid({ photos, onPhotoClick }: PhotoGridProps) {
                 <div className="pointer-events-none absolute inset-0 bg-[linear-gradient(180deg,rgba(31,24,17,0.05),rgba(31,24,17,0.14)_38%,rgba(22,17,12,0.78))]" />
 
                 <div className="absolute inset-x-0 top-0 flex items-start justify-between p-3">
-                  <div className="cinematic-overlay-pill inline-flex items-center gap-2 px-3 py-1.5 text-[10px] uppercase tracking-[0.3em]">
-                    {photo.photographer || 'Gallery moment'}
+                  <div className="flex flex-wrap gap-2">
+                    <SourceBadge photo={photo} invert />
+                    <div className="cinematic-overlay-pill inline-flex items-center gap-2 px-3 py-1.5 text-[10px] uppercase tracking-[0.3em]">
+                      {photo.photographer || (photo.source === 'guest' ? 'From our guests' : 'Gallery moment')}
+                    </div>
                   </div>
 
                   <span className="cinematic-overlay-button inline-flex h-9 w-9 items-center justify-center opacity-0 transition-opacity duration-300 group-hover:opacity-100">
@@ -172,8 +209,11 @@ function StandardGrid({ photos, onPhotoClick }: PhotoGridProps) {
 
             <div className="pointer-events-none absolute inset-0 bg-[linear-gradient(180deg,rgba(27,22,16,0.02),rgba(27,22,16,0.1)_40%,rgba(27,22,16,0.5))]" />
 
-            <div className="absolute left-3 top-3 inline-flex items-center gap-2 rounded-full border border-white/55 bg-white/82 px-3 py-1.5 text-[10px] uppercase tracking-[0.3em] text-charcoal-600 shadow-sm">
-              {photo.photographer || 'Gallery'}
+            <div className="absolute left-3 top-3 flex flex-wrap gap-2">
+              <SourceBadge photo={photo} />
+              <div className="inline-flex items-center gap-2 rounded-full border border-white/55 bg-white/82 px-3 py-1.5 text-[10px] uppercase tracking-[0.3em] text-charcoal-600 shadow-sm">
+                {photo.photographer || (photo.source === 'guest' ? 'From our guests' : 'Gallery')}
+              </div>
             </div>
 
             <div className="absolute right-3 top-3 flex h-9 w-9 items-center justify-center rounded-full border border-white/40 bg-white/20 text-white backdrop-blur-sm transition-transform duration-300 group-hover:scale-105">

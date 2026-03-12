@@ -49,6 +49,60 @@ type CollectionTab = 'All' | 'Professional' | 'Guest Uploads' | 'Engagement' | '
 
 const collectionTabs: CollectionTab[] = ['All', 'Professional', 'Guest Uploads', 'Engagement', 'Bach+ette', 'Wedding Day']
 
+const collectionMeta: Record<
+  CollectionTab,
+  {
+    eyebrow: string
+    title: string
+    description: string
+    supporting: string
+    sourceHint: string
+  }
+> = {
+  All: {
+    eyebrow: 'Full archive',
+    title: 'Everything we have so far',
+    description: 'The complete mix of curated portraits, approved guest submissions, and the in-between frames that keep the day feeling alive.',
+    supporting: 'Use this when you want the whole story in one pass.',
+    sourceHint: 'Mixed source',
+  },
+  Professional: {
+    eyebrow: 'Curated work',
+    title: 'Professional coverage and polished edits',
+    description: 'The formal portraits, ceremony coverage, and editorial frames that anchor the archive with the photographer’s eye.',
+    supporting: 'Best for the big portraits and the polished storytelling beats.',
+    sourceHint: 'Curated source',
+  },
+  'Guest Uploads': {
+    eyebrow: 'From everyone we love',
+    title: 'Guest uploads and personal camera-roll angles',
+    description: 'Phone photos, table candids, dance floor snapshots, and the little perspectives only family and friends would catch.',
+    supporting: 'Approved uploads stay clearly marked as guest-submitted so they never blur into the curated set.',
+    sourceHint: 'Guest source',
+  },
+  Engagement: {
+    eyebrow: 'Before the wedding',
+    title: 'Proposal and engagement portraits',
+    description: 'The proposal, the yes, the blue-hour portraits, and all the frames from the season when everything started feeling official.',
+    supporting: 'This collection can now hold both photographer coverage and approved guest angles from engagement events.',
+    sourceHint: 'Engagement chapter',
+  },
+  'Bach+ette': {
+    eyebrow: 'Pre-wedding weekends',
+    title: 'Bachelor and bachelorette memories',
+    description: 'A dedicated lane for the pre-wedding celebrations, with room for both professional keepsakes and guest-submitted highlights.',
+    supporting: 'As the album grows, this tab becomes the easiest way to revisit the full weekend energy.',
+    sourceHint: 'Bach+ette chapter',
+  },
+  'Wedding Day': {
+    eyebrow: 'The day itself',
+    title: 'Ceremony, portraits, reception, and dance floor',
+    description: 'The main wedding-day archive, where polished coverage and approved guest uploads can sit together without losing their source labels.',
+    supporting: 'This is the best place to browse the day as one continuous story.',
+    sourceHint: 'Wedding-day chapter',
+  },
+}
+
 const curatedPhotos: Photo[] = [
   { 
     id: 'curated-1', 
@@ -255,10 +309,6 @@ const viewOptions = [
 
 // Helper to convert Supabase photo to local Photo type
 const deriveCollection = (photo: Pick<SupabasePhoto, 'is_professional' | 'category' | 'caption' | 'tags' | 'location'>): Photo['collection'] => {
-  if (!photo.is_professional) {
-    return 'Guest Uploads'
-  }
-
   const haystack = [
     photo.category,
     photo.caption,
@@ -280,6 +330,10 @@ const deriveCollection = (photo: Pick<SupabasePhoto, 'is_professional' | 'catego
     haystack.includes('ette')
   ) {
     return 'Bach+ette'
+  }
+
+  if (!photo.is_professional) {
+    return 'Guest Uploads'
   }
 
   return 'Wedding Day'
@@ -507,6 +561,23 @@ export default function Gallery() {
     })
   }, [photos])
 
+  const selectedCollectionMeta = collectionMeta[selectedCollection]
+  const selectedCollectionPreview = useMemo(() => {
+    if (selectedCollection === 'All') {
+      return photos[0] ?? null
+    }
+
+    if (selectedCollection === 'Professional') {
+      return photos.find(photo => photo.source === 'professional') ?? null
+    }
+
+    if (selectedCollection === 'Guest Uploads') {
+      return photos.find(photo => photo.source === 'guest') ?? null
+    }
+
+    return photos.find(photo => photo.collection === selectedCollection) ?? null
+  }, [photos, selectedCollection])
+
   const visiblePhotoCount = viewMode === 'masonry' || viewMode === 'grid'
     ? displayedItems.length
     : filteredPhotos.length
@@ -583,30 +654,14 @@ export default function Gallery() {
 
   const currentPhoto = lightboxIndex !== null ? filteredPhotos[lightboxIndex] : null
   const emptyStateTitle =
-    selectedCollection === 'Guest Uploads'
-      ? 'Guest uploads will land here once they are approved'
-      : selectedCollection === 'Professional'
-        ? 'The professional collection is still taking shape'
-        : selectedCollection === 'Engagement'
-          ? 'The engagement collection is still being arranged'
-          : selectedCollection === 'Bach+ette'
-            ? 'The Bach+ette collection is on deck'
-            : selectedCollection === 'Wedding Day'
-              ? 'The wedding-day collection is still being sorted'
-              : 'No moments match this mix yet'
+    selectedCollection === 'All'
+      ? 'No moments match this mix yet'
+      : `${selectedCollectionMeta.title} is waiting for the next upload`
 
   const emptyStateBody =
-    selectedCollection === 'Guest Uploads'
-      ? 'As friends and family share photos, the best approved guest angles will appear here without mixing into the curated sets.'
-      : selectedCollection === 'Professional'
-        ? 'Curated portrait work, ceremony coverage, and polished documentary frames will collect here as the archive grows.'
-        : selectedCollection === 'Engagement'
-          ? 'We already have the proposal gallery started here. Try clearing the search or switching back to the full archive if you narrowed it too far.'
-          : selectedCollection === 'Bach+ette'
-            ? 'This tab is ready for the pre-wedding weekends as soon as the photos are sorted and uploaded.'
-            : selectedCollection === 'Wedding Day'
-              ? 'Ceremony, reception, portraits, and dance-floor coverage will settle into this collection as the full album comes together.'
-              : 'Try a wider collection, clear the face filter, or switch back to the full gallery.'
+    selectedCollection === 'All'
+      ? 'Try a wider collection, clear the face filter, or switch back to the full gallery.'
+      : `${selectedCollectionMeta.description} ${selectedCollectionMeta.supporting}`
 
   return (
     <div className="min-h-screen bg-cream-50 pt-24 pb-20">
@@ -698,6 +753,69 @@ export default function Gallery() {
             </div>
 
             <div className="mt-8 border-t border-charcoal-900/8 pt-6">
+              <div className="mb-4 overflow-hidden rounded-[1.6rem] border border-gold-200/65 bg-[linear-gradient(135deg,rgba(255,252,247,0.9),rgba(248,242,233,0.95)_52%,rgba(243,234,221,0.88))] shadow-[0_22px_58px_-46px_rgba(46,33,13,0.3)]">
+                <div className="grid gap-0 lg:grid-cols-[minmax(0,1.15fr)_minmax(18rem,0.85fr)]">
+                  <div className="p-5 sm:p-6">
+                    <p className="text-[10px] uppercase tracking-[0.34em] text-gold-700">
+                      {selectedCollectionMeta.eyebrow}
+                    </p>
+                    <h2 className="mt-3 font-display text-3xl text-charcoal-900 sm:text-[2.25rem]">
+                      {selectedCollectionMeta.title}
+                    </h2>
+                    <p className="mt-3 max-w-2xl text-sm leading-7 text-charcoal-600 sm:text-[0.98rem]">
+                      {selectedCollectionMeta.description}
+                    </p>
+                    <div className="mt-4 flex flex-wrap gap-2">
+                      <span className="inline-flex items-center gap-2 rounded-full border border-gold-200/70 bg-white/80 px-4 py-2 text-xs uppercase tracking-[0.22em] text-charcoal-500">
+                        {collectionCounts[selectedCollection]} visible in this lane
+                      </span>
+                      <span className="inline-flex items-center gap-2 rounded-full border border-gold-200/70 bg-white/80 px-4 py-2 text-xs uppercase tracking-[0.22em] text-charcoal-500">
+                        {selectedCollectionMeta.sourceHint}
+                      </span>
+                    </div>
+                    <p className="mt-4 max-w-2xl text-sm leading-6 text-charcoal-500">
+                      {selectedCollectionMeta.supporting}
+                    </p>
+                  </div>
+
+                  <div className="border-t border-gold-200/60 bg-white/55 p-4 lg:border-l lg:border-t-0">
+                    {selectedCollectionPreview ? (
+                      <div className="relative overflow-hidden rounded-[1.35rem] border border-white/80 bg-charcoal-200 shadow-sm">
+                        <img
+                          src={selectedCollectionPreview.thumbnail || selectedCollectionPreview.url}
+                          alt={selectedCollectionPreview.caption || selectedCollectionMeta.title}
+                          className="aspect-[1.25/1] w-full object-cover"
+                          loading="lazy"
+                        />
+                        <div className="pointer-events-none absolute inset-0 bg-[linear-gradient(180deg,rgba(27,22,16,0.02),rgba(27,22,16,0.18)_40%,rgba(27,22,16,0.72))]" />
+                        <div className="absolute inset-x-0 bottom-0 p-4">
+                          <p className="text-[10px] uppercase tracking-[0.32em] text-gold-200/92">
+                            {selectedCollectionPreview.source === 'professional' ? 'Professional frame' : 'Guest-submitted frame'}
+                          </p>
+                          <p className="mt-2 line-clamp-2 text-sm leading-6 text-white/92">
+                            {selectedCollectionPreview.caption || selectedCollectionMeta.title}
+                          </p>
+                        </div>
+                      </div>
+                    ) : (
+                      <div className="flex h-full min-h-[13rem] flex-col items-start justify-between rounded-[1.35rem] border border-dashed border-gold-200/80 bg-cream-50/80 p-5 text-left">
+                        <div className="inline-flex items-center gap-2 rounded-full border border-gold-200/70 bg-white/80 px-4 py-2 text-[10px] uppercase tracking-[0.3em] text-gold-700">
+                          Collection cover
+                        </div>
+                        <div>
+                          <p className="font-display text-2xl text-charcoal-900">
+                            Ready for the next standout frame
+                          </p>
+                          <p className="mt-2 text-sm leading-6 text-charcoal-500">
+                            The structure is live. Once more images land in this collection, the cover spot will update automatically.
+                          </p>
+                        </div>
+                      </div>
+                    )}
+                  </div>
+                </div>
+              </div>
+
               {loadError && (
                 <motion.div
                   initial={{ opacity: 0, y: -10 }}

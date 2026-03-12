@@ -1,29 +1,31 @@
 # Deployment Notes
 
-This file is now a quick pointer.
+The wedding site is already live.
 
-For the actual end-to-end launch process, use:
+Use this file as the short pointer to the current operating docs:
 
-- `LAUNCH_RUNBOOK.md`
-- `PRE_LAUNCH_CHECKLIST.md`
-- `PRODUCTION_READINESS.md`
+- `PRODUCTION_READINESS.md` for the live architecture snapshot
+- `LAUNCH_RUNBOOK.md` for the historical launch path and verification commands
+- `GALLERY_OPERATIONS.md` for the ongoing photo curation workflow
 
-## Current Deployment Model
+## Current Live Model
 
-- Private staging/testing: `https://austin-jordyn-wedding.netlify.app`
-- Final public launch: `https://www.theporadas.com`
-- Do not attach the custom domain until the site is fully approved.
+- Public site: `https://www.theporadas.com`
+- Legacy host redirect: `https://wedding.theporadas.com` -> `https://www.theporadas.com`
+- Frontend hosting: Netlify
+- DNS and large media: Cloudflare
+- Backend and guest data: Supabase
 
-## Most Important Commands
+## Most Useful Commands
 
 ```bash
-npm run verify:release
-npm run verify:launch
 npm run verify:deployed
+npm run verify:launch
+npm run test:e2e:public
 ```
 
 ## Notes
 
-- The shipping app is Netlify-first for this launch.
-- The custom domain cutover is a one-time final launch action, not a testing step.
-- Deep-link crawler previews are intentionally accepted as homepage-fallback metadata for this launch because the site is an SPA.
+- The public media origin is controlled by `VITE_MEDIA_BASE_URL`.
+- The current intended media host is `https://media.wedding.theporadas.com`.
+- Deep-link crawler previews are still accepted as homepage-fallback metadata because the app is a client-rendered SPA.
