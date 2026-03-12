@@ -8,6 +8,13 @@
 
 [[redirects]]
   from = "/*"
+  to = "https://www.theporadas.com/:splat"
+  status = 301
+  force = true
+  conditions = {Host = ["wedding.theporadas.com"]}
+
+[[redirects]]
+  from = "/*"
   to = "/index.html"
   status = 200
 
