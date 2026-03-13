@@ -3,6 +3,7 @@ import { Navigate, Routes, Route, Link, useLocation } from 'react-router-dom'
 import { useAuthStore } from '@/stores/authStore'
 import {
   fetchModerationAuditTimeline,
+  fetchSiteEditorialFeatures,
   recordModerationAudit,
   supabase,
   type GuestUpload,
@@ -10,6 +11,10 @@ import {
   type ModerationAuditAction,
   type ModerationAuditLog,
   type RecordModerationAuditInput,
+  type SiteEditorialFeature,
+  type SiteEditorialFeatureSlot,
+  type SiteEditorialFeatureSourceType,
+  upsertSiteEditorialFeature,
 } from '@/lib/supabase'
 import { 
   LayoutDashboard, 
@@ -23,7 +28,8 @@ import {
   Eye,
   BarChart3,
   Video,
-  History
+  History,
+  Sparkles,
 } from 'lucide-react'
 import { Button } from '@/components/ui/Button'
 import { Input } from '@/components/ui/Input'
@@ -275,6 +281,94 @@ const auditActionLabels: Record<ModerationAuditAction, string> = {
   upload_bulk_rejected: 'Bulk rejected',
   guestbook_message_deleted: 'Deleted message',
   guestbook_bulk_deleted: 'Bulk deleted message',
+}
+
+const editorialSlotDefinitions: Array<{
+  slot: SiteEditorialFeatureSlot
+  label: string
+  description: string
+  defaultTrail: string
+  defaultSourceType: SiteEditorialFeatureSourceType
+  defaultTitle: string
+}> = [
+  {
+    slot: 'home_newest_standout_upload',
+    label: 'Home: Standout upload',
+    description: 'Use this for the first “Now Unfolding” card when you want to spotlight a guest contribution on Home.',
+    defaultTrail: 'From your phones',
+    defaultSourceType: 'guest_upload',
+    defaultTitle: 'Newest standout upload',
+  },
+  {
+    slot: 'home_featured_guestbook_note',
+    label: 'Home: Featured guestbook note',
+    description: 'Highlights one especially meaningful note from the guestbook as a keepsake moment on Home.',
+    defaultTrail: 'Guestbook keepsake',
+    defaultSourceType: 'guestbook_message',
+    defaultTitle: 'Featured guestbook note',
+  },
+  {
+    slot: 'home_moment_of_the_week',
+    label: 'Home: Moment of the week',
+    description: 'A curated editorial spotlight for whatever feels worth revisiting this week, whether it comes from the film or a custom story beat.',
+    defaultTrail: 'Now unfolding',
+    defaultSourceType: 'custom',
+    defaultTitle: 'Moment of the week',
+  },
+  {
+    slot: 'film_featured_guest_video',
+    label: 'Film: Featured guest video',
+    description: 'Overrides the public guest-video highlight so you can feature the right clip under the main film.',
+    defaultTrail: 'From your phones',
+    defaultSourceType: 'guest_upload',
+    defaultTitle: 'Featured guest highlight',
+  },
+]
+
+const editorialSourceLabels: Record<SiteEditorialFeatureSourceType, string> = {
+  guest_upload: 'Guest upload',
+  guestbook_message: 'Guestbook note',
+  film_chapter: 'Film chapter',
+  custom: 'Custom editorial',
+}
+
+const filmChapterFeatureOptions = [
+  { value: 'start', label: 'Film chapter: Start' },
+  { value: 'bachelor-ette', label: 'Film chapter: Bachelor+ette' },
+  { value: 'who-is-it', label: 'Film chapter: "Who Is It"' },
+  { value: 'wedding-party', label: 'Film chapter: Wedding Party' },
+  { value: 'our-vows', label: 'Film chapter: Our Vows' },
+  { value: 'the-ceremony', label: 'Film chapter: The Ceremony' },
+  { value: 'the-reception', label: 'Film chapter: The Reception' },
+  { value: 'first-dance', label: 'Film chapter: First Dance' },
+  { value: 'bloopers', label: 'Film chapter: Bloopers' },
+  { value: 'the-party', label: 'Film chapter: The Party' },
+]
+
+interface EditorialDraft {
+  title: string
+  summary: string
+  trail: string
+  sourceType: SiteEditorialFeatureSourceType
+  sourceId: string
+  sourceLabel: string
+  sourceUrl: string
+  isActive: boolean
+}
+
+function createEditorialDraft(slot: SiteEditorialFeatureSlot, feature?: SiteEditorialFeature | null): EditorialDraft {
+  const defaults = editorialSlotDefinitions.find((definition) => definition.slot === slot)
+
+  return {
+    title: feature?.title || defaults?.defaultTitle || '',
+    summary: feature?.summary || '',
+    trail: feature?.trail || defaults?.defaultTrail || '',
+    sourceType: feature?.source_type || defaults?.defaultSourceType || 'custom',
+    sourceId: feature?.source_id || '',
+    sourceLabel: feature?.source_label || '',
+    sourceUrl: feature?.source_url || '',
+    isActive: feature?.is_active ?? false,
+  }
 }
 
 function getAdminAuditActor(user: ReturnType<typeof useAuthStore.getState>['user']): AuditActor {
@@ -1553,6 +1647,381 @@ function AuditLogView() {
   )
 }
 
+function FeaturedContentManager() {
+  const [featuresBySlot, setFeaturesBySlot] = useState<Record<SiteEditorialFeatureSlot, SiteEditorialFeature | null>>(() =>
+    editorialSlotDefinitions.reduce(
+      (acc, definition) => ({ ...acc, [definition.slot]: null }),
+      {} as Record<SiteEditorialFeatureSlot, SiteEditorialFeature | null>
+    )
+  )
+  const [drafts, setDrafts] = useState<Record<SiteEditorialFeatureSlot, EditorialDraft>>(() =>
+    editorialSlotDefinitions.reduce(
+      (acc, definition) => ({ ...acc, [definition.slot]: createEditorialDraft(definition.slot) }),
+      {} as Record<SiteEditorialFeatureSlot, EditorialDraft>
+    )
+  )
+  const [recentUploads, setRecentUploads] = useState<ModerationUpload[]>([])
+  const [recentMessages, setRecentMessages] = useState<GuestbookMessage[]>([])
+  const [loading, setLoading] = useState(true)
+  const [savingSlot, setSavingSlot] = useState<SiteEditorialFeatureSlot | null>(null)
+  const { addToast } = useToast()
+  const { user } = useAuthStore()
+
+  const loadEditorialState = useCallback(async () => {
+    setLoading(true)
+    const [featuresResult, uploadsResult, messagesResult] = await Promise.all([
+      fetchSiteEditorialFeatures(),
+      supabase.from('guest_uploads').select('*').order('created_at', { ascending: false }).limit(20),
+      supabase.from('guestbook_messages').select('*').order('created_at', { ascending: false }).limit(20),
+    ])
+
+    const featuresError = featuresResult.error
+    const uploadsError = uploadsResult.error
+    const messagesError = messagesResult.error
+
+    if (featuresError || uploadsError || messagesError) {
+      addToast('Failed to load featured content settings', 'error')
+      setLoading(false)
+      return
+    }
+
+    const features = (featuresResult.data || []) as SiteEditorialFeature[]
+    const bySlot = editorialSlotDefinitions.reduce((acc, definition) => {
+      acc[definition.slot] = features.find((feature) => feature.slot === definition.slot) || null
+      return acc
+    }, {} as Record<SiteEditorialFeatureSlot, SiteEditorialFeature | null>)
+
+    setFeaturesBySlot(bySlot)
+    setDrafts(
+      editorialSlotDefinitions.reduce((acc, definition) => {
+        acc[definition.slot] = createEditorialDraft(definition.slot, bySlot[definition.slot])
+        return acc
+      }, {} as Record<SiteEditorialFeatureSlot, EditorialDraft>)
+    )
+    setRecentUploads(((uploadsResult.data as ModerationUpload[] | null) || []))
+    setRecentMessages(((messagesResult.data as GuestbookMessage[] | null) || []))
+    setLoading(false)
+  }, [addToast])
+
+  useEffect(() => {
+    const timeoutId = window.setTimeout(() => {
+      void loadEditorialState()
+    }, 0)
+
+    return () => window.clearTimeout(timeoutId)
+  }, [loadEditorialState])
+
+  function updateDraft(slot: SiteEditorialFeatureSlot, patch: Partial<EditorialDraft>) {
+    setDrafts((previous) => ({
+      ...previous,
+      [slot]: {
+        ...previous[slot],
+        ...patch,
+      },
+    }))
+  }
+
+  async function handleSave(slot: SiteEditorialFeatureSlot) {
+    const draft = drafts[slot]
+    if (!draft.title.trim()) {
+      addToast('Featured content needs a title before it can be saved.', 'error')
+      return
+    }
+
+    setSavingSlot(slot)
+    const result = await upsertSiteEditorialFeature({
+      slot,
+      title: draft.title.trim(),
+      summary: draft.summary.trim() || null,
+      trail: draft.trail.trim() || null,
+      sourceType: draft.sourceType,
+      sourceId: draft.sourceId.trim() || null,
+      sourceLabel: draft.sourceLabel.trim() || null,
+      sourceUrl: draft.sourceUrl.trim() || null,
+      isActive: draft.isActive,
+      displayOrder: editorialSlotDefinitions.findIndex((definition) => definition.slot === slot),
+      actor: {
+        userId: user?.id ?? null,
+        email: user?.email ?? null,
+      },
+      metadata: {
+        slot,
+      },
+    })
+
+    if (result.error || !result.data) {
+      addToast('Could not save the featured content slot.', 'error')
+      setSavingSlot(null)
+      return
+    }
+
+    setFeaturesBySlot((previous) => ({
+      ...previous,
+      [slot]: result.data as SiteEditorialFeature,
+    }))
+    setDrafts((previous) => ({
+      ...previous,
+      [slot]: createEditorialDraft(slot, result.data as SiteEditorialFeature),
+    }))
+    addToast('Featured content slot saved.', 'success')
+    setSavingSlot(null)
+  }
+
+  if (loading) {
+    return (
+      <div className="rounded-xl border border-gold-100 bg-white px-6 py-12 text-center">
+        <div className="mx-auto h-10 w-10 animate-spin rounded-full border-b-2 border-gold-500" />
+        <p className="mt-4 text-charcoal-500">Loading featured content slots...</p>
+      </div>
+    )
+  }
+
+  return (
+    <div className="space-y-6">
+      <div className="space-y-2">
+        <h2 className="text-2xl font-display text-charcoal-900">Featured Content</h2>
+        <p className="max-w-3xl text-sm leading-6 text-charcoal-500">
+          These editorial slots feed the homepage and film page when you want to spotlight a specific upload, note,
+          or moment. They are intentionally simple so you can keep the public experience curated without turning admin
+          into a full CMS.
+        </p>
+      </div>
+
+      <div className="rounded-xl border border-blue-200 bg-blue-50 p-4">
+        <p className="font-medium text-blue-900">How v1 works</p>
+        <p className="mt-1 text-sm text-blue-700">
+          Save one row per slot. You can point a slot at a guest upload, a guestbook note, a film chapter, or a
+          custom editorial highlight. Public pages can then read these slots without guessing what should be featured.
+        </p>
+      </div>
+
+      <div className="grid gap-6 xl:grid-cols-2">
+        {editorialSlotDefinitions.map((definition) => {
+          const draft = drafts[definition.slot]
+          const feature = featuresBySlot[definition.slot]
+          const isSaving = savingSlot === definition.slot
+          const uploadOptions = recentUploads.map((upload) => ({
+            value: upload.id,
+            label: `${upload.guest_name} · ${upload.status} · ${new Date(upload.created_at).toLocaleDateString()}`,
+          }))
+          const guestbookOptions = recentMessages.map((message) => ({
+            value: message.id,
+            label: `${message.name} · ${message.type} · ${new Date(message.created_at).toLocaleDateString()}`,
+          }))
+
+          return (
+            <section key={definition.slot} className="rounded-xl border border-gold-100 bg-white p-6 shadow-sm">
+              <div className="flex flex-wrap items-start justify-between gap-4">
+                <div>
+                  <p className="text-[10px] uppercase tracking-[0.28em] text-gold-700">{definition.slot}</p>
+                  <h3 className="mt-2 text-xl font-display text-charcoal-900">{definition.label}</h3>
+                  <p className="mt-2 max-w-xl text-sm leading-6 text-charcoal-500">{definition.description}</p>
+                </div>
+                <span
+                  className={`rounded-full border px-3 py-1 text-[10px] uppercase tracking-[0.24em] ${
+                    draft.isActive
+                      ? 'border-sage-200 bg-sage-100 text-charcoal-700'
+                      : 'border-charcoal-200 bg-charcoal-50 text-charcoal-500'
+                  }`}
+                >
+                  {draft.isActive ? 'Active' : 'Inactive'}
+                </span>
+              </div>
+
+              <div className="mt-5 grid gap-4">
+                <div className="grid gap-4 lg:grid-cols-2">
+                  <div>
+                    <Label htmlFor={`${definition.slot}-title`}>Title</Label>
+                    <Input
+                      id={`${definition.slot}-title`}
+                      value={draft.title}
+                      onChange={(event) => updateDraft(definition.slot, { title: event.target.value })}
+                      placeholder="Card headline"
+                    />
+                  </div>
+                  <div>
+                    <Label htmlFor={`${definition.slot}-trail`}>Trail label</Label>
+                    <Input
+                      id={`${definition.slot}-trail`}
+                      value={draft.trail}
+                      onChange={(event) => updateDraft(definition.slot, { trail: event.target.value })}
+                      placeholder="Ceremony, Family, From your phones..."
+                    />
+                  </div>
+                </div>
+
+                <div>
+                  <Label htmlFor={`${definition.slot}-summary`}>Summary</Label>
+                  <Textarea
+                    id={`${definition.slot}-summary`}
+                    value={draft.summary}
+                    onChange={(event) => updateDraft(definition.slot, { summary: event.target.value })}
+                    rows={3}
+                    placeholder="Short editorial summary for the public card."
+                  />
+                </div>
+
+                <div className="grid gap-4 lg:grid-cols-2">
+                  <div>
+                    <Label htmlFor={`${definition.slot}-source-type`}>Source type</Label>
+                    <select
+                      id={`${definition.slot}-source-type`}
+                      value={draft.sourceType}
+                      onChange={(event) =>
+                        updateDraft(definition.slot, {
+                          sourceType: event.target.value as SiteEditorialFeatureSourceType,
+                          sourceId: '',
+                          sourceLabel: '',
+                        })
+                      }
+                      className="mt-2 h-11 w-full rounded-xl border border-gold-200/70 bg-white px-4 text-sm text-charcoal-900 outline-none transition focus:border-gold-500 focus:ring-2 focus:ring-gold-500/20"
+                    >
+                      {Object.entries(editorialSourceLabels).map(([value, label]) => (
+                        <option key={value} value={value}>
+                          {label}
+                        </option>
+                      ))}
+                    </select>
+                  </div>
+
+                  <div>
+                    <Label htmlFor={`${definition.slot}-source-label`}>Source label</Label>
+                    <Input
+                      id={`${definition.slot}-source-label`}
+                      value={draft.sourceLabel}
+                      onChange={(event) => updateDraft(definition.slot, { sourceLabel: event.target.value })}
+                      placeholder="Optional public-facing source label"
+                    />
+                  </div>
+                </div>
+
+                {draft.sourceType === 'guest_upload' && (
+                  <div>
+                    <Label htmlFor={`${definition.slot}-source-id-upload`}>Choose a guest upload</Label>
+                    <select
+                      id={`${definition.slot}-source-id-upload`}
+                      value={draft.sourceId}
+                      onChange={(event) => updateDraft(definition.slot, { sourceId: event.target.value })}
+                      className="mt-2 h-11 w-full rounded-xl border border-gold-200/70 bg-white px-4 text-sm text-charcoal-900 outline-none transition focus:border-gold-500 focus:ring-2 focus:ring-gold-500/20"
+                    >
+                      <option value="">No linked upload</option>
+                      {uploadOptions.map((option) => (
+                        <option key={option.value} value={option.value}>
+                          {option.label}
+                        </option>
+                      ))}
+                    </select>
+                  </div>
+                )}
+
+                {draft.sourceType === 'guestbook_message' && (
+                  <div>
+                    <Label htmlFor={`${definition.slot}-source-id-guestbook`}>Choose a guestbook note</Label>
+                    <select
+                      id={`${definition.slot}-source-id-guestbook`}
+                      value={draft.sourceId}
+                      onChange={(event) => updateDraft(definition.slot, { sourceId: event.target.value })}
+                      className="mt-2 h-11 w-full rounded-xl border border-gold-200/70 bg-white px-4 text-sm text-charcoal-900 outline-none transition focus:border-gold-500 focus:ring-2 focus:ring-gold-500/20"
+                    >
+                      <option value="">No linked note</option>
+                      {guestbookOptions.map((option) => (
+                        <option key={option.value} value={option.value}>
+                          {option.label}
+                        </option>
+                      ))}
+                    </select>
+                  </div>
+                )}
+
+                {draft.sourceType === 'film_chapter' && (
+                  <div>
+                    <Label htmlFor={`${definition.slot}-source-id-film`}>Choose a film chapter</Label>
+                    <select
+                      id={`${definition.slot}-source-id-film`}
+                      value={draft.sourceId}
+                      onChange={(event) => updateDraft(definition.slot, { sourceId: event.target.value })}
+                      className="mt-2 h-11 w-full rounded-xl border border-gold-200/70 bg-white px-4 text-sm text-charcoal-900 outline-none transition focus:border-gold-500 focus:ring-2 focus:ring-gold-500/20"
+                    >
+                      <option value="">No linked chapter</option>
+                      {filmChapterFeatureOptions.map((option) => (
+                        <option key={option.value} value={option.value}>
+                          {option.label}
+                        </option>
+                      ))}
+                    </select>
+                  </div>
+                )}
+
+                {draft.sourceType === 'custom' && (
+                  <div>
+                    <Label htmlFor={`${definition.slot}-source-id-custom`}>Custom source key</Label>
+                    <Input
+                      id={`${definition.slot}-source-id-custom`}
+                      value={draft.sourceId}
+                      onChange={(event) => updateDraft(definition.slot, { sourceId: event.target.value })}
+                      placeholder="Optional custom identifier"
+                    />
+                  </div>
+                )}
+
+                <div>
+                  <Label htmlFor={`${definition.slot}-source-url`}>Source URL</Label>
+                  <Input
+                    id={`${definition.slot}-source-url`}
+                    value={draft.sourceUrl}
+                    onChange={(event) => updateDraft(definition.slot, { sourceUrl: event.target.value })}
+                    placeholder="Optional deep link for the public card"
+                  />
+                </div>
+
+                <label className="flex items-center gap-3 rounded-xl border border-gold-100 bg-cream-50/70 px-4 py-3 text-sm text-charcoal-600">
+                  <input
+                    type="checkbox"
+                    checked={draft.isActive}
+                    onChange={(event) => updateDraft(definition.slot, { isActive: event.target.checked })}
+                    className="h-4 w-4 rounded border-gold-300 text-gold-600 focus:ring-gold-500/30"
+                  />
+                  Make this slot active on the public site
+                </label>
+              </div>
+
+              {feature && (
+                <div className="mt-5 rounded-2xl border border-gold-100 bg-cream-50/70 px-4 py-4">
+                  <p className="text-[10px] uppercase tracking-[0.28em] text-charcoal-500">Current live row</p>
+                  <p className="mt-2 text-sm font-medium text-charcoal-900">
+                    Updated {formatAuditTimestamp(feature.updated_at)}
+                    {feature.updated_by_email ? ` by ${feature.updated_by_email}` : ''}
+                  </p>
+                  <p className="mt-2 text-sm leading-6 text-charcoal-600">
+                    {feature.title}
+                    {feature.summary ? ` — ${feature.summary}` : ''}
+                  </p>
+                </div>
+              )}
+
+              <div className="mt-5 flex flex-wrap gap-3">
+                <Button
+                  onClick={() => void handleSave(definition.slot)}
+                  disabled={isSaving}
+                >
+                  {isSaving ? 'Saving...' : 'Save featured slot'}
+                </Button>
+                <Button
+                  variant="secondary"
+                  onClick={() => updateDraft(definition.slot, createEditorialDraft(definition.slot, featuresBySlot[definition.slot]))}
+                  disabled={isSaving}
+                >
+                  Reset changes
+                </Button>
+              </div>
+            </section>
+          )
+        })}
+      </div>
+    </div>
+  )
+}
+
 // Analytics Dashboard Component
 function Analytics() {
   const [timeRange, setTimeRange] = useState<'7d' | '30d' | '90d'>('30d')
@@ -1808,6 +2277,14 @@ function Settings() {
               This admin area only shows database-backed counts and moderation workflow.
             </p>
           </div>
+          <div className="rounded-xl border border-gold-100 bg-cream-50/70 px-4 py-4">
+            <p className="font-medium text-charcoal-900">Featured content is curated in one place.</p>
+            <p className="mt-2 text-sm text-charcoal-500">
+              Use <span className="font-medium text-charcoal-700">/admin/featured</span> to decide what Home and Film
+              should spotlight next. These editorial slots are schema-backed, read/write, and meant to keep the public
+              site feeling intentional without guessing from raw moderation state.
+            </p>
+          </div>
         </div>
       </div>
 
@@ -1846,6 +2323,7 @@ function AdminLayout() {
     { path: '/admin', label: 'Dashboard', icon: LayoutDashboard },
     { path: '/admin/photos', label: 'Photos', icon: Image },
     { path: '/admin/guestbook', label: 'Guestbook', icon: MessageSquare },
+    { path: '/admin/featured', label: 'Featured', icon: Sparkles },
     { path: '/admin/audit', label: 'Audit Trail', icon: History },
     { path: '/admin/analytics', label: 'Analytics', icon: BarChart3 },
     { path: '/admin/settings', label: 'Settings', icon: SettingsIcon },
@@ -1905,6 +2383,7 @@ function AdminLayout() {
             <Route index element={<Dashboard />} />
             <Route path="photos" element={<PhotoModeration />} />
             <Route path="guestbook" element={<GuestbookModeration />} />
+            <Route path="featured" element={<FeaturedContentManager />} />
             <Route path="audit" element={<AuditLogView />} />
             <Route path="analytics" element={<Analytics />} />
             <Route path="settings" element={<Settings />} />

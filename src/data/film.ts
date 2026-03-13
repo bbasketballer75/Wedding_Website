@@ -15,6 +15,23 @@ export interface FamilyFilm {
   previewFrameTimestamps: number[]
 }
 
+export interface FilmQuote {
+  id: string
+  quote: string
+  speaker: string
+  note: string
+  time: number
+  momentSlug: string
+}
+
+export interface FilmWatchPath {
+  id: string
+  label: string
+  description: string
+  momentSlug?: string
+  clipId?: FamilyFilm['id']
+}
+
 export const MAIN_FILM_RUNTIME_LABEL = '45:53'
 
 export const MAIN_FILM_CHAPTERS_FALLBACK: FilmChapter[] = [
@@ -69,6 +86,74 @@ export const familyFilms: FamilyFilm[] = [
   },
 ]
 
+export const filmQuotes: FilmQuote[] = [
+  {
+    id: 'quote-vows',
+    quote: 'A promise that lands best when you hear it with the room still quiet around it.',
+    speaker: 'Our vows',
+    note: 'Start here if you want the emotional center of the day in one jump.',
+    time: 1211,
+    momentSlug: 'our-vows',
+  },
+  {
+    id: 'quote-ceremony',
+    quote: 'The part where everything stopped feeling like planning and started feeling real.',
+    speaker: 'Ceremony',
+    note: 'For the walk in, the exchange, and the room holding its breath.',
+    time: 1537.88,
+    momentSlug: 'the-ceremony',
+  },
+  {
+    id: 'quote-first-dance',
+    quote: 'A softer beat in the middle of the reception before the floor fully opened up.',
+    speaker: 'First dance',
+    note: 'The cleanest jump if you want romance before the party blur.',
+    time: 1814.88,
+    momentSlug: 'first-dance',
+  },
+  {
+    id: 'quote-party',
+    quote: 'The exact kind of joyful chaos guests remember best on the drive home.',
+    speaker: 'The party',
+    note: 'Best for the late-night, loud-table, everybody-on-the-floor version of the day.',
+    time: 2375.12,
+    momentSlug: 'the-party',
+  },
+]
+
+export const filmWatchPaths: FilmWatchPath[] = [
+  {
+    id: 'full-film',
+    label: 'Full film',
+    description: 'Start at the beginning and let the whole day unfold without skipping ahead.',
+    momentSlug: 'start',
+  },
+  {
+    id: 'ceremony-only',
+    label: 'Ceremony only',
+    description: 'Jump right into the walk, vows, and the official heartbeat of the day.',
+    momentSlug: 'the-ceremony',
+  },
+  {
+    id: 'speeches',
+    label: 'Speeches',
+    description: 'Go straight to the words people still quote back to us.',
+    momentSlug: 'the-reception',
+  },
+  {
+    id: 'dancing',
+    label: 'Dancing',
+    description: 'Start where the floor loosens up and the party starts carrying the night.',
+    momentSlug: 'first-dance',
+  },
+  {
+    id: 'family-moments',
+    label: 'Family moments',
+    description: 'Open the parent dances first, then move into the quieter emotional beats.',
+    clipId: 'mom',
+  },
+]
+
 function parseTimecode(value: string) {
   const segments = value.trim().split(':').map((segment) => Number.parseFloat(segment))
 
@@ -98,6 +183,15 @@ export function parseMainFilmChapters(vttText: string): FilmChapter[] {
         },
       ]
     })
+}
+
+export function slugifyFilmMoment(value: string) {
+  return value
+    .trim()
+    .toLowerCase()
+    .replace(/["']/g, '')
+    .replace(/[^a-z0-9]+/g, '-')
+    .replace(/^-+|-+$/g, '')
 }
 
 export async function loadMainFilmChapters() {

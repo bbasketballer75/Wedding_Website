@@ -1,18 +1,23 @@
-import { useEffect, useRef, useState } from 'react'
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import { AnimatePresence, motion } from 'framer-motion'
+import { useSearchParams } from 'react-router-dom'
 import { FilmSEO } from '@/components/seo/SEOHead'
 import { VideoPlayer } from '@/components/video/VideoPlayer'
 import { Button } from '@/components/ui/Button'
 import { FamilyTree } from '@/components/family-tree/FamilyTree'
-import { supabase, type GuestUpload } from '@/lib/supabase'
+import { fetchSiteEditorialFeatureBySlot, supabase, type GuestUpload, type SiteEditorialFeature } from '@/lib/supabase'
 import {
   MAIN_FILM_CHAPTERS_FALLBACK,
   MAIN_FILM_RUNTIME_LABEL,
   familyFilms,
+  filmQuotes,
+  filmWatchPaths,
   type FamilyFilm,
   loadMainFilmChapters,
+  slugifyFilmMoment,
   type FilmChapter,
 } from '@/data/film'
+import { memoryTrails } from '@/data/memoryTrails'
 import { getMediaPath } from '@/utils/media'
 import {
   Play,
@@ -24,6 +29,8 @@ import {
   HeartHandshake,
   Smartphone,
   X,
+  Link2,
+  Search,
 } from 'lucide-react'
 
 const MAIN_FILM_POSTER = '/images/film/main-film-poster.png'
@@ -288,11 +295,14 @@ function ParentDanceModal({
 
 interface GuestVideoHighlight {
   id: string
+  uploadId: string
   guestName: string
   title: string
   description: string
   videoUrl: string
   createdAt: string
+  badge?: string
+  trail?: string
 }
 
 function GuestVideoHighlightCard({
@@ -344,12 +354,14 @@ function GuestVideoHighlightCard({
         </video>
         <div className="absolute inset-0 bg-[linear-gradient(to_top,rgba(24,17,14,0.92),rgba(24,17,14,0.12)_58%)]" />
         <div className="absolute left-4 top-4 inline-flex items-center gap-2 rounded-full border border-[#f5e2bf]/30 bg-[rgba(64,44,34,0.68)] px-3 py-1.5 text-[10px] uppercase tracking-[0.26em] text-[#fff7eb] backdrop-blur-sm">
-          From your phones
+          {clip.badge || 'From your phones'}
         </div>
       </div>
 
       <div className="p-5 sm:p-6">
-        <p className="text-[10px] uppercase tracking-[0.28em] text-gold-300/78">{clip.guestName}</p>
+        <p className="text-[10px] uppercase tracking-[0.28em] text-gold-300/78">
+          {clip.trail || clip.guestName}
+        </p>
         <h3 className="mt-3 font-display text-[1.8rem] leading-none text-cinematic-primary">
           {clip.title}
         </h3>
@@ -410,7 +422,9 @@ function GuestVideoHighlightModal({
             </div>
 
             <div className="cinematic-card px-5 py-5">
-              <p className="text-[10px] uppercase tracking-[0.3em] text-gold-300/82">Shared by</p>
+              <p className="text-[10px] uppercase tracking-[0.3em] text-gold-300/82">
+                {clip.badge || 'Shared by'}
+              </p>
               <p className="mt-4 font-display text-3xl text-cinematic-primary">{clip.guestName}</p>
               <p className="mt-4 text-base leading-7 text-cinematic-secondary">{clip.description}</p>
               <div className="mt-6 rounded-2xl border border-gold-200/14 bg-[rgba(255,247,235,0.06)] px-4 py-3">
@@ -436,6 +450,10 @@ export default function Film() {
   const [activeFamilyFilm, setActiveFamilyFilm] = useState<FamilyFilm | null>(null)
   const [guestHighlights, setGuestHighlights] = useState<GuestVideoHighlight[]>([])
   const [activeGuestHighlight, setActiveGuestHighlight] = useState<GuestVideoHighlight | null>(null)
+  const [featuredGuestVideo, setFeaturedGuestVideo] = useState<SiteEditorialFeature | null>(null)
+  const [quoteQuery, setQuoteQuery] = useState('')
+  const [copiedMoment, setCopiedMoment] = useState<string | null>(null)
+  const [searchParams, setSearchParams] = useSearchParams()
 
   useEffect(() => {
     let isActive = true
@@ -457,20 +475,30 @@ export default function Film() {
     let isActive = true
 
     async function fetchGuestHighlights() {
-      const { data } = await supabase
-        .from('guest_uploads')
-        .select('*')
-        .eq('status', 'approved')
-        .order('created_at', { ascending: false })
-        .limit(12)
+      const [highlightsResult, featureResult] = await Promise.all([
+        supabase
+          .from('guest_uploads')
+          .select('*')
+          .eq('status', 'approved')
+          .order('created_at', { ascending: false })
+          .limit(12),
+        fetchSiteEditorialFeatureBySlot('film_featured_guest_video'),
+      ])
+
+      const data = highlightsResult.data
+      const featuredSlot =
+        !featureResult.error && featureResult.data?.is_active
+          ? (featureResult.data as SiteEditorialFeature)
+          : null
 
       if (!isActive || !Array.isArray(data)) return
 
       const highlights = (data as GuestUpload[])
         .filter((upload) => Array.isArray(upload.video_urls) && upload.video_urls.length > 0)
         .slice(0, 6)
-        .map((upload, index) => ({
-          id: `${upload.id}-${index}`,
+        .map((upload, videoIndex) => ({
+          id: `${upload.id}-${videoIndex}`,
+          uploadId: upload.id,
           guestName: upload.guest_name,
           title: upload.message?.trim() || `A guest angle from ${upload.guest_name}`,
           description:
@@ -478,9 +506,34 @@ export default function Film() {
             'A little handheld piece of the day, straight from the room and exactly how it felt to be there.',
           videoUrl: upload.video_urls[0],
           createdAt: upload.created_at,
+          badge: 'From your phones',
+          trail: 'Guest point of view',
         }))
 
-      setGuestHighlights(highlights)
+      const orderedHighlights = featuredSlot?.source_id
+        ? [...highlights].sort((a, b) => {
+            if (a.uploadId === featuredSlot.source_id) return -1
+            if (b.uploadId === featuredSlot.source_id) return 1
+            return 0
+          })
+        : highlights
+
+      const decoratedHighlights = orderedHighlights.map((highlight) => {
+        if (featuredSlot?.source_id === highlight.uploadId) {
+          return {
+            ...highlight,
+            title: featuredSlot.title || highlight.title,
+            description: featuredSlot.summary || highlight.description,
+            badge: featuredSlot.source_label || 'Featured guest clip',
+            trail: featuredSlot.trail || 'Moment of the week',
+          }
+        }
+
+        return highlight
+      })
+
+      setFeaturedGuestVideo(featuredSlot)
+      setGuestHighlights(decoratedHighlights)
     }
 
     void fetchGuestHighlights()
@@ -490,11 +543,18 @@ export default function Film() {
     }
   }, [])
 
-  const scrollToVideo = () => {
-    document.getElementById('wedding-film-player')?.scrollIntoView({ behavior: 'smooth', block: 'start' })
-  }
+  const clipFromUrl = useMemo(() => {
+    const clip = searchParams.get('clip')
+    return clip ? familyFilms.find((film) => film.id === clip) ?? null : null
+  }, [searchParams])
 
-  const jumpToChapter = (time: number) => {
+  const activeParentDance = activeFamilyFilm ?? clipFromUrl
+
+  const scrollToVideo = useCallback(() => {
+    document.getElementById('wedding-film-player')?.scrollIntoView({ behavior: 'smooth', block: 'start' })
+  }, [])
+
+  const jumpToChapter = useCallback((time: number) => {
     scrollToVideo()
 
     window.setTimeout(() => {
@@ -509,6 +569,26 @@ export default function Film() {
         playAttempt.catch(() => {})
       }
     }, 420)
+  }, [scrollToVideo])
+
+  const setMomentInUrl = (key: 'moment' | 'clip', value: string) => {
+    setSearchParams((prev) => {
+      const next = new URLSearchParams(prev)
+      next.delete('moment')
+      next.delete('clip')
+      next.set(key, value)
+      return next
+    }, { replace: true })
+  }
+
+  const copyMomentLink = async (key: 'moment' | 'clip', value: string, label: string) => {
+    const url = new URL(window.location.href)
+    url.searchParams.delete('moment')
+    url.searchParams.delete('clip')
+    url.searchParams.set(key, value)
+    await navigator.clipboard.writeText(url.toString())
+    setCopiedMoment(label)
+    window.setTimeout(() => setCopiedMoment((current) => (current === label ? null : current)), 1800)
   }
 
   const filmHighlights = [
@@ -528,6 +608,31 @@ export default function Film() {
       description: 'A quieter second spotlight for the dances that made the whole room soften.',
     },
   ] as const
+
+  const filteredQuotes = useMemo(() => {
+    const normalized = quoteQuery.trim().toLowerCase()
+    if (!normalized) return filmQuotes
+
+    return filmQuotes.filter((quote) =>
+      [quote.quote, quote.speaker, quote.note].join(' ').toLowerCase().includes(normalized)
+    )
+  }, [quoteQuery])
+
+  useEffect(() => {
+    const moment = searchParams.get('moment')
+    const clip = searchParams.get('clip')
+
+    if (clip) {
+      return
+    }
+
+    if (!moment) return
+
+    const targetChapter = chapters.find((chapter) => slugifyFilmMoment(chapter.label) === moment)
+    if (targetChapter) {
+      jumpToChapter(targetChapter.time)
+    }
+  }, [chapters, jumpToChapter, searchParams])
 
   return (
     <div className="min-h-screen bg-cream-50">
@@ -581,6 +686,38 @@ export default function Film() {
                   <Button size="lg" variant="secondary" to="/upload">
                     Share Your Angle
                   </Button>
+                </div>
+
+                <div className="mt-8 rounded-[1.5rem] border border-white/80 bg-white/76 p-4 shadow-sm">
+                  <p className="text-[10px] uppercase tracking-[0.3em] text-gold-700">Watch paths</p>
+                  <div className="mt-4 grid gap-2 sm:grid-cols-2 xl:grid-cols-3">
+                    {filmWatchPaths.map((path) => (
+                      <button
+                        key={path.id}
+                        type="button"
+                        onClick={() => {
+                          if (path.clipId) {
+                            setMomentInUrl('clip', path.clipId)
+                            const clip = familyFilms.find((film) => film.id === path.clipId)
+                            if (clip) setActiveFamilyFilm(clip)
+                            return
+                          }
+
+                          if (path.momentSlug) {
+                            setMomentInUrl('moment', path.momentSlug)
+                            const chapter = MAIN_FILM_CHAPTERS_FALLBACK.find(
+                              (entry) => slugifyFilmMoment(entry.label) === path.momentSlug
+                            )
+                            if (chapter) jumpToChapter(chapter.time)
+                          }
+                        }}
+                        className="rounded-[1.2rem] border border-gold-100 bg-cream-50/84 px-4 py-3 text-left transition-colors hover:border-gold-300/70 hover:bg-white"
+                      >
+                        <p className="text-sm font-semibold text-charcoal-900">{path.label}</p>
+                        <p className="mt-2 text-xs leading-5 text-charcoal-500">{path.description}</p>
+                      </button>
+                    ))}
+                  </div>
                 </div>
               </div>
 
@@ -738,6 +875,76 @@ export default function Film() {
                 </div>
               </div>
             </motion.div>
+
+            <motion.div
+              initial={{ opacity: 0, y: 18 }}
+              whileInView={{ opacity: 1, y: 0 }}
+              viewport={{ once: true }}
+              transition={{ duration: 0.55, delay: 0.2 }}
+              className="mt-7 rounded-[1.75rem] border border-gold-200/14 bg-[rgba(255,247,235,0.06)] px-4 py-5 sm:px-5"
+            >
+              <div className="flex flex-col gap-4 lg:flex-row lg:items-start lg:justify-between">
+                <div className="max-w-2xl">
+                  <p className="text-[10px] uppercase tracking-[0.3em] text-gold-300/82">Quote rail</p>
+                  <h3 className="mt-3 text-3xl text-cinematic-primary sm:text-4xl">
+                    Re-enter the film from a line, a vow, or a feeling.
+                  </h3>
+                  <p className="mt-3 text-sm leading-6 text-cinematic-secondary">
+                    Use this as a soft search layer for the film. It is not a full transcript yet, but it gives guests
+                    a faster way back into the moments people quote most.
+                  </p>
+                </div>
+                <div className="relative w-full lg:max-w-sm">
+                  <Search className="pointer-events-none absolute left-4 top-1/2 h-4 w-4 -translate-y-1/2 text-gold-300/72" />
+                  <input
+                    type="text"
+                    value={quoteQuery}
+                    onChange={(event) => setQuoteQuery(event.target.value)}
+                    placeholder="Search vows, speeches, or funny moments"
+                    className="h-12 w-full rounded-full border border-gold-200/16 bg-[rgba(255,247,235,0.08)] px-11 pr-4 text-sm text-cinematic-primary placeholder:text-cinematic-muted focus:border-gold-300/38 focus:outline-none focus:ring-2 focus:ring-gold-300/12"
+                  />
+                </div>
+              </div>
+
+              <div className="mt-5 grid gap-3 lg:grid-cols-2">
+                {filteredQuotes.map((quote) => (
+                  <div key={quote.id} className="cinematic-card px-4 py-4">
+                    <div className="flex items-start justify-between gap-3">
+                      <div>
+                        <p className="text-[10px] uppercase tracking-[0.28em] text-gold-300/78">{quote.speaker}</p>
+                        <p className="mt-3 text-base leading-7 text-cinematic-primary">“{quote.quote}”</p>
+                      </div>
+                      <button
+                        type="button"
+                        onClick={() => void copyMomentLink('moment', quote.momentSlug, quote.id)}
+                        className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full border border-gold-200/18 bg-[rgba(255,247,235,0.08)] text-gold-300 transition-colors hover:border-gold-300/35 hover:text-cinematic-primary"
+                        aria-label={`Copy share link for ${quote.speaker}`}
+                      >
+                        <Link2 className="h-4 w-4" />
+                      </button>
+                    </div>
+                    <p className="mt-3 text-sm leading-6 text-cinematic-secondary">{quote.note}</p>
+                    <div className="mt-4 flex flex-wrap gap-2">
+                      <button
+                        type="button"
+                        onClick={() => {
+                          setMomentInUrl('moment', quote.momentSlug)
+                          jumpToChapter(quote.time)
+                        }}
+                        className="rounded-full border border-gold-200/18 bg-[rgba(255,247,235,0.08)] px-3 py-1.5 text-xs uppercase tracking-[0.2em] text-cinematic-primary transition-colors hover:border-gold-300/35"
+                      >
+                        Jump to moment
+                      </button>
+                      {copiedMoment === quote.id && (
+                        <span className="rounded-full border border-gold-200/18 bg-[rgba(255,247,235,0.08)] px-3 py-1.5 text-xs uppercase tracking-[0.2em] text-gold-300">
+                          Link copied
+                        </span>
+                      )}
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </motion.div>
             </div>
           </div>
         </div>
@@ -774,6 +981,16 @@ export default function Film() {
                 className="min-w-0"
               >
                 <ParentDanceCard film={film} onOpen={setActiveFamilyFilm} />
+                <div className="mt-3 flex justify-end">
+                  <button
+                    type="button"
+                    onClick={() => void copyMomentLink('clip', film.id, film.id)}
+                    className="inline-flex items-center gap-2 rounded-full border border-gold-200/70 bg-white/82 px-3 py-1.5 text-xs uppercase tracking-[0.18em] text-charcoal-600 transition-colors hover:border-gold-300 hover:text-gold-700"
+                  >
+                    <Link2 className="h-3.5 w-3.5" />
+                    {copiedMoment === film.id ? 'Copied' : 'Share moment'}
+                  </button>
+                </div>
               </motion.div>
             ))}
             </div>
@@ -837,6 +1054,27 @@ export default function Film() {
                 These are the quick guest angles that fill in the edges: the table laughs, the dance-floor blur, and
                 the little in-between pieces no feature camera can catch from every side of the room.
               </p>
+              {featuredGuestVideo?.is_active && (
+                <div className="mt-5 rounded-[1.25rem] border border-gold-200/70 bg-white/82 px-4 py-3 shadow-sm">
+                  <p className="text-[10px] uppercase tracking-[0.28em] text-gold-700">
+                    {featuredGuestVideo.trail || 'Featured guest clip'}
+                  </p>
+                  <p className="mt-2 text-sm font-semibold text-charcoal-900">{featuredGuestVideo.title}</p>
+                  {featuredGuestVideo.summary && (
+                    <p className="mt-2 text-sm leading-6 text-charcoal-500">{featuredGuestVideo.summary}</p>
+                  )}
+                </div>
+              )}
+              <div className="mt-5 flex flex-wrap gap-2">
+                {memoryTrails.slice(0, 3).map((trail) => (
+                  <span
+                    key={trail.id}
+                    className="rounded-full border border-gold-200/70 bg-white/76 px-3 py-1.5 text-xs uppercase tracking-[0.2em] text-gold-700"
+                  >
+                    {trail.label}
+                  </span>
+                ))}
+              </div>
             </motion.div>
 
             <div className="overflow-x-auto pb-2 hide-scrollbar">
@@ -850,7 +1088,19 @@ export default function Film() {
         </section>
       )}
 
-      <ParentDanceModal film={activeFamilyFilm} onClose={() => setActiveFamilyFilm(null)} />
+      <ParentDanceModal
+        film={activeParentDance}
+        onClose={() => {
+          setActiveFamilyFilm(null)
+          if (searchParams.get('clip')) {
+            setSearchParams((prev) => {
+              const next = new URLSearchParams(prev)
+              next.delete('clip')
+              return next
+            }, { replace: true })
+          }
+        }}
+      />
       <GuestVideoHighlightModal clip={activeGuestHighlight} onClose={() => setActiveGuestHighlight(null)} />
     </div>
   )

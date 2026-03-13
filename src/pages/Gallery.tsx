@@ -1,5 +1,6 @@
 import { useState, useMemo, useEffect, useDeferredValue } from 'react'
 import { motion } from 'framer-motion'
+import { useSearchParams } from 'react-router-dom'
 import { GallerySEO } from '@/components/seo/SEOHead'
 import { PhotoGrid } from '@/components/gallery/PhotoGrid'
 import { TimelineView } from '@/components/gallery/TimelineView'
@@ -394,6 +395,7 @@ const mapSupabasePhoto = (photo: SupabasePhoto): Photo => ({
 })
 
 export default function Gallery() {
+  const [searchParams] = useSearchParams()
   const [searchQuery, setSearchQuery] = useState('')
   const [selectedCollection, setSelectedCollection] = useState<CollectionTab>('All')
   const [selectedCategory, setSelectedCategory] = useState('All')
@@ -456,6 +458,26 @@ export default function Gallery() {
 
     fetchPhotos()
   }, [])
+
+  useEffect(() => {
+    const requestedQuery = searchParams.get('q') || ''
+    const requestedCollection = searchParams.get('collection') as CollectionTab | null
+    const requestedPhotoId = searchParams.get('photo')
+
+    setSearchQuery((current) => (current !== requestedQuery ? requestedQuery : current))
+
+    if (requestedCollection && collectionTabs.includes(requestedCollection)) {
+      setSelectedCollection((current) => (current !== requestedCollection ? requestedCollection : current))
+      return
+    }
+
+    if (!requestedCollection && requestedPhotoId) {
+      const targetPhoto = photos.find((photo) => photo.id === requestedPhotoId)
+      if (targetPhoto) {
+        setSelectedCollection((current) => (current !== targetPhoto.collection ? targetPhoto.collection : current))
+      }
+    }
+  }, [photos, searchParams])
 
   // Sort photos
   const sortedPhotos = useMemo(() => {
@@ -523,6 +545,18 @@ export default function Gallery() {
       return matchesSearch && matchesCategory && matchesFavorites && matchesFace
     })
   }, [collectionScopedPhotos, deferredSearchQuery, selectedCategory, showFavorites, faceFilter])
+
+  useEffect(() => {
+    const requestedPhotoId = searchParams.get('photo')
+    if (!requestedPhotoId || isLoading) {
+      return
+    }
+
+    const photoIndex = filteredPhotos.findIndex((photo) => photo.id === requestedPhotoId)
+    if (photoIndex >= 0 && lightboxIndex !== photoIndex) {
+      setLightboxIndex(photoIndex)
+    }
+  }, [filteredPhotos, isLoading, lightboxIndex, searchParams])
 
   // Infinite scroll for masonry/grid views
   const {

@@ -1,4 +1,5 @@
 import { createClient } from '@supabase/supabase-js'
+import type { Json } from '@/types/supabase.generated'
 
 const supabaseUrl = import.meta.env.VITE_SUPABASE_URL
 const supabaseKey = import.meta.env.VITE_SUPABASE_ANON_KEY
@@ -75,6 +76,57 @@ export interface GuestbookMessage {
   media_url?: string
   reactions: Record<string, number>
   created_at: string
+}
+
+export type SiteEditorialFeatureSlot =
+  | 'home_newest_standout_upload'
+  | 'home_featured_guestbook_note'
+  | 'home_moment_of_the_week'
+  | 'film_featured_guest_video'
+
+export type SiteEditorialFeatureSourceType =
+  | 'guest_upload'
+  | 'guestbook_message'
+  | 'film_chapter'
+  | 'custom'
+
+export interface SiteEditorialFeature {
+  id: string
+  slot: SiteEditorialFeatureSlot
+  title: string
+  summary?: string | null
+  trail?: string | null
+  source_type: SiteEditorialFeatureSourceType
+  source_id?: string | null
+  source_label?: string | null
+  source_url?: string | null
+  is_active: boolean
+  display_order: number
+  metadata: Record<string, Json | undefined>
+  updated_by_user_id?: string | null
+  updated_by_email?: string | null
+  created_at: string
+  updated_at: string
+}
+
+export interface SiteEditorialFeatureActor {
+  userId?: string | null
+  email?: string | null
+}
+
+export interface UpsertSiteEditorialFeatureInput {
+  slot: SiteEditorialFeatureSlot
+  title: string
+  summary?: string | null
+  trail?: string | null
+  sourceType: SiteEditorialFeatureSourceType
+  sourceId?: string | null
+  sourceLabel?: string | null
+  sourceUrl?: string | null
+  isActive?: boolean
+  displayOrder?: number
+  metadata?: Record<string, Json | undefined>
+  actor?: SiteEditorialFeatureActor | null
 }
 
 export type ModerationAuditEntityType = 'guest_upload' | 'guestbook_message'
@@ -179,4 +231,54 @@ export async function fetchModerationAuditForEntity(
   limit = 10
 ) {
   return await fetchModerationAuditTimeline({ entityType, entityId, limit })
+}
+
+export async function fetchSiteEditorialFeatures(slot?: SiteEditorialFeatureSlot) {
+  let query = supabase
+    .from('site_editorial_features')
+    .select('*')
+    .order('display_order', { ascending: true })
+    .order('updated_at', { ascending: false })
+
+  if (slot) {
+    query = query.eq('slot', slot)
+  }
+
+  return await query.returns<SiteEditorialFeature[]>()
+}
+
+export async function fetchSiteEditorialFeatureBySlot(slot: SiteEditorialFeatureSlot) {
+  return await supabase
+    .from('site_editorial_features')
+    .select('*')
+    .eq('slot', slot)
+    .maybeSingle<SiteEditorialFeature>()
+}
+
+export async function upsertSiteEditorialFeature(input: UpsertSiteEditorialFeatureInput) {
+  return await supabase
+    .from('site_editorial_features')
+    .upsert(
+      {
+        slot: input.slot,
+        title: input.title,
+        summary: input.summary ?? null,
+        trail: input.trail ?? null,
+        source_type: input.sourceType,
+        source_id: input.sourceId ?? null,
+        source_label: input.sourceLabel ?? null,
+        source_url: input.sourceUrl ?? null,
+        is_active: input.isActive ?? true,
+        display_order: input.displayOrder ?? 0,
+        metadata: input.metadata ?? {},
+        updated_by_user_id: input.actor?.userId ?? null,
+        updated_by_email: input.actor?.email ?? null,
+        updated_at: new Date().toISOString(),
+      },
+      {
+        onConflict: 'slot',
+      }
+    )
+    .select('*')
+    .single<SiteEditorialFeature>()
 }

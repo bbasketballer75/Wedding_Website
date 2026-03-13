@@ -1,5 +1,6 @@
 import { useEffect, useRef, useState } from 'react'
 import { AnimatePresence, motion } from 'framer-motion'
+import { useSearchParams } from 'react-router-dom'
 import { Avatar } from '@/components/ui/Avatar'
 import { Badge } from '@/components/ui/Badge'
 import { Button } from '@/components/ui/Button'
@@ -215,10 +216,12 @@ function AudioPlayer({ url }: { url?: string }) {
 
 function MessageCard({
   message,
+  isHighlighted = false,
   onReact,
   onReply,
 }: {
   message: Message
+  isHighlighted?: boolean
   onReact: (id: string, type: ReactionType) => void
   onReply: (id: string, content: string) => void
 }) {
@@ -232,10 +235,14 @@ function MessageCard({
 
   return (
     <motion.article
+      id={`guestbook-message-${message.id}`}
       initial={{ opacity: 0, y: 18 }}
       whileInView={{ opacity: 1, y: 0 }}
       viewport={{ once: true, amount: 0.2 }}
-      className="editorial-card px-5 py-5 sm:px-6 sm:py-6"
+      className={cn(
+        'editorial-card px-5 py-5 transition-all duration-300 sm:px-6 sm:py-6',
+        isHighlighted && 'ring-2 ring-gold-300/80 shadow-[0_24px_60px_-36px_rgba(173,129,49,0.45)]'
+      )}
     >
       <div className="flex items-start justify-between gap-4">
         <div className="flex min-w-0 items-center gap-3">
@@ -371,6 +378,7 @@ function MessageCard({
   )
 }
 export default function Guestbook() {
+  const [searchParams] = useSearchParams()
   const [messages, setMessages] = useState<Message[]>([])
   const [showForm, setShowForm] = useState(false)
   const [formType, setFormType] = useState<'text' | 'voice' | 'video'>('text')
@@ -385,6 +393,7 @@ export default function Guestbook() {
   const [loadError, setLoadError] = useState<string | null>(null)
   const [submitError, setSubmitError] = useState<string | null>(null)
   const [visibleCount, setVisibleCount] = useState(INITIAL_VISIBLE_MESSAGES)
+  const [highlightedMessageId, setHighlightedMessageId] = useState<string | null>(null)
   const composerRef = useRef<HTMLDivElement | null>(null)
   const { addToast } = useToast()
 
@@ -451,6 +460,17 @@ export default function Guestbook() {
   useEffect(() => {
     setVisibleCount(INITIAL_VISIBLE_MESSAGES)
   }, [filter, messages.length])
+
+  useEffect(() => {
+    const requestedMessageId = searchParams.get('message')
+    if (!requestedMessageId) {
+      setHighlightedMessageId(null)
+      return
+    }
+
+    setHighlightedMessageId(requestedMessageId)
+    setFilter('all')
+  }, [searchParams])
 
   useEffect(() => {
     if (showForm && composerRef.current) {
@@ -640,6 +660,25 @@ export default function Guestbook() {
     voice: messages.filter((message) => message.type === 'voice').length,
     video: messages.filter((message) => message.type === 'video').length,
   }
+
+  useEffect(() => {
+    if (!highlightedMessageId) return
+
+    const highlightedIndex = filteredMessages.findIndex((message) => message.id === highlightedMessageId)
+    if (highlightedIndex === -1) return
+
+    if (highlightedIndex >= visibleCount) {
+      setVisibleCount(highlightedIndex + 1)
+      return
+    }
+
+    const timeoutId = window.setTimeout(() => {
+      const element = document.getElementById(`guestbook-message-${highlightedMessageId}`)
+      element?.scrollIntoView({ behavior: 'smooth', block: 'center' })
+    }, 220)
+
+    return () => window.clearTimeout(timeoutId)
+  }, [filteredMessages, highlightedMessageId, visibleCount])
 
   return (
     <div className="min-h-screen bg-cream-50 pb-20 pt-28 sm:pt-32">
@@ -868,7 +907,15 @@ export default function Guestbook() {
             ) : filteredMessages.length > 0 ? (
               <>
                 <div className="grid gap-5 xl:grid-cols-2">
-                  {visibleMessages.map((message) => <MessageCard key={message.id} message={message} onReact={handleReact} onReply={handleReply} />)}
+                  {visibleMessages.map((message) => (
+                    <MessageCard
+                      key={message.id}
+                      message={message}
+                      isHighlighted={highlightedMessageId === message.id}
+                      onReact={handleReact}
+                      onReply={handleReply}
+                    />
+                  ))}
                 </div>
                 {hasMoreMessages && <div className="flex justify-center pt-2"><Button variant="secondary" size="lg" onClick={() => setVisibleCount((current) => current + INITIAL_VISIBLE_MESSAGES)}>Load more messages</Button></div>}
               </>

@@ -163,6 +163,63 @@ export type Database = {
         }
         Relationships: []
       }
+      site_editorial_features: {
+        Row: {
+          created_at: string
+          display_order: number
+          id: string
+          is_active: boolean
+          metadata: Json
+          slot: string
+          source_id: string | null
+          source_label: string | null
+          source_type: string
+          source_url: string | null
+          summary: string | null
+          title: string
+          trail: string | null
+          updated_at: string
+          updated_by_email: string | null
+          updated_by_user_id: string | null
+        }
+        Insert: {
+          created_at?: string
+          display_order?: number
+          id?: string
+          is_active?: boolean
+          metadata?: Json
+          slot: string
+          source_id?: string | null
+          source_label?: string | null
+          source_type: string
+          source_url?: string | null
+          summary?: string | null
+          title: string
+          trail?: string | null
+          updated_at?: string
+          updated_by_email?: string | null
+          updated_by_user_id?: string | null
+        }
+        Update: {
+          created_at?: string
+          display_order?: number
+          id?: string
+          is_active?: boolean
+          metadata?: Json
+          slot?: string
+          source_id?: string | null
+          source_label?: string | null
+          source_type?: string
+          source_url?: string | null
+          summary?: string | null
+          title?: string
+          trail?: string | null
+          updated_at?: string
+          updated_by_email?: string | null
+          updated_by_user_id?: string | null
+        }
+        Relationships: []
+      }
       photos: {
         Row: {
           caption: string | null
