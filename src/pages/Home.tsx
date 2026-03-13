@@ -8,7 +8,7 @@ import Search from '@/components/search/Search'
 import { HomeSEO } from '@/components/seo/SEOHead'
 import { MAIN_FILM_CHAPTERS_FALLBACK, MAIN_FILM_RUNTIME_LABEL, filmWatchPaths, loadMainFilmChapters, slugifyFilmMoment } from '@/data/film'
 import { CURATED_GALLERY_PHOTO_COUNT } from '@/data/gallery'
-import { memoryTrails } from '@/data/memoryTrails'
+import { getMemoryTrailById, memoryTrails } from '@/data/memoryTrails'
 import { fetchSiteEditorialFeatures, supabase, type GuestUpload, type GuestbookMessage, type SiteEditorialFeature, type SiteEditorialFeatureSlot } from '@/lib/supabase'
 import { cn } from '@/lib/utils'
 import { getMediaPath } from '@/utils/media'
@@ -31,6 +31,14 @@ interface HomeReturnCard {
   href: string
   badge: string
   icon: ElementType
+}
+
+function getFeatureTrailLabel(feature: SiteEditorialFeature | null | undefined, fallback: string) {
+  if (feature?.memory_trail) {
+    return getMemoryTrailById(feature.memory_trail)?.label || feature.trail || fallback
+  }
+
+  return feature?.trail || fallback
 }
 
 const DEFAULT_HOME_STATS: HomeStat[] = [
@@ -229,7 +237,7 @@ export default function Home() {
     const uploadCard: HomeReturnCard = uploadFeature?.is_active
       ? {
           id: 'upload-feature',
-          eyebrow: uploadFeature.trail || 'Now unfolding',
+          eyebrow: getFeatureTrailLabel(uploadFeature, 'Now unfolding'),
           title: uploadFeature.title,
           summary:
             uploadFeature.summary ||
@@ -237,7 +245,7 @@ export default function Home() {
           href:
             uploadFeature.source_url ||
             '/gallery?collection=Guest%20Uploads',
-          badge: uploadFeature.source_label || 'Guest upload',
+          badge: uploadFeature.badge_label || uploadFeature.source_label || 'Guest upload',
           icon: Smartphone,
         }
       : {
@@ -256,7 +264,7 @@ export default function Home() {
     const guestbookCard: HomeReturnCard = guestbookFeature?.is_active
       ? {
           id: 'guestbook-feature',
-          eyebrow: guestbookFeature.trail || 'Keepsake note',
+          eyebrow: getFeatureTrailLabel(guestbookFeature, 'Keepsake note'),
           title: guestbookFeature.title,
           summary:
             guestbookFeature.summary ||
@@ -264,7 +272,7 @@ export default function Home() {
           href:
             guestbookFeature.source_url ||
             (guestbookFeature.source_id ? `/guestbook?message=${guestbookFeature.source_id}` : '/guestbook'),
-          badge: guestbookFeature.source_label || 'Featured note',
+          badge: guestbookFeature.badge_label || guestbookFeature.source_label || 'Featured note',
           icon: MessageCircleHeart,
         }
       : {
@@ -283,7 +291,7 @@ export default function Home() {
       momentOfWeekFeature?.is_active && momentOfWeekFeature.source_type === 'film_chapter'
         ? {
             id: 'film-feature',
-            eyebrow: momentOfWeekFeature.trail || 'Featured moment',
+            eyebrow: getFeatureTrailLabel(momentOfWeekFeature, 'Featured moment'),
             title: momentOfWeekFeature.title,
             summary:
               momentOfWeekFeature.summary ||
@@ -293,7 +301,7 @@ export default function Home() {
               `/film?moment=${slugifyFilmMoment(
                 momentOfWeekFeature.source_id || momentOfWeekFeature.source_label || momentOfWeekFeature.title
               )}`,
-            badge: momentOfWeekFeature.source_label || 'Film moment',
+            badge: momentOfWeekFeature.badge_label || momentOfWeekFeature.source_label || 'Film moment',
             icon: Sparkles,
           }
         : {
@@ -316,7 +324,7 @@ export default function Home() {
 
     if (feature?.is_active) {
       return {
-        eyebrow: feature.trail || 'Moment of the week',
+        eyebrow: getFeatureTrailLabel(feature, 'Moment of the week'),
         title: feature.title,
         summary:
           feature.summary ||
@@ -326,7 +334,7 @@ export default function Home() {
           (feature.source_type === 'film_chapter'
             ? `/film?moment=${slugifyFilmMoment(feature.source_id || feature.source_label || feature.title)}`
             : '/film'),
-        badge: feature.source_label || 'Editorial pick',
+        badge: feature.badge_label || feature.source_label || 'Editorial pick',
       }
     }
 

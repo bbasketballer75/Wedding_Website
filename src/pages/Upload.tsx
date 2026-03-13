@@ -380,7 +380,7 @@ export default function UploadPage() {
                 <div className="rounded-[1.35rem] border border-gold-100 bg-white/76 px-4 py-4">
                   <p className="text-[10px] uppercase tracking-[0.28em] text-gold-700">Step 3</p>
                   <p className="mt-3 text-sm font-semibold text-charcoal-900">The approved moments join the archive.</p>
-                  <p className="mt-2 text-sm leading-6 text-charcoal-500">Photos can appear in the live gallery, and approved video clips stay ready for featured guest-highlight lanes.</p>
+                  <p className="mt-2 text-sm leading-6 text-charcoal-500">Photos can appear in the live gallery, and approved video clips can stay private, join the guest-highlight lane, or become a featured moment later.</p>
                 </div>
               </div>
 
@@ -889,7 +889,7 @@ export default function UploadPage() {
                 <p className="text-[10px] uppercase tracking-[0.28em] text-gold-700">What happens next</p>
                 <p className="mt-3 text-sm leading-6 text-charcoal-500">
                   After you send, the upload enters a private review queue. Approved photos can be published into the
-                  live gallery, while approved video clips stay available for guest-highlight features.
+                  live gallery, while approved video clips can be kept private, added to guest highlights, or featured later.
                 </p>
               </div>
 

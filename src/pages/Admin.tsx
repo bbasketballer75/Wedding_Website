@@ -2,8 +2,10 @@ import { useState, useEffect, useCallback, useMemo } from 'react'
 import { Navigate, Routes, Route, Link, useLocation } from 'react-router-dom'
 import { useAuthStore } from '@/stores/authStore'
 import {
+  fetchSiteEditorialFeatureHistory,
   fetchModerationAuditTimeline,
   fetchSiteEditorialFeatures,
+  recordSiteEditorialFeatureHistory,
   recordModerationAudit,
   supabase,
   type GuestUpload,
@@ -12,6 +14,7 @@ import {
   type ModerationAuditLog,
   type RecordModerationAuditInput,
   type SiteEditorialFeature,
+  type SiteEditorialFeatureHistoryEntry,
   type SiteEditorialFeatureSlot,
   type SiteEditorialFeatureSourceType,
   upsertSiteEditorialFeature,
@@ -36,6 +39,7 @@ import { Input } from '@/components/ui/Input'
 import { Label } from '@/components/ui/Label'
 import { Textarea } from '@/components/ui/Textarea'
 import { useToast } from '@/context/ToastContext'
+import { getMemoryTrailById, memoryTrails, type MemoryTrailId } from '@/data/memoryTrails'
 
 // Admin sub-pages
 function Dashboard() {
@@ -171,6 +175,7 @@ function StatCard({
 type ModerationUpload = Omit<GuestUpload, 'message'> & { message?: string | null }
 
 type ModerationCollection = 'Wedding Day' | 'Engagement' | 'Bach+ette' | 'Guest Uploads'
+type GuestVideoVisibility = 'archive_only' | 'guest_highlights' | 'featured'
 
 interface PromotionDraft {
   collection: ModerationCollection
@@ -178,6 +183,11 @@ interface PromotionDraft {
   caption: string
   tags: string
   location: string
+  videoVisibility: GuestVideoVisibility
+  memoryTrail: MemoryTrailId | ''
+  editorialTitle: string
+  editorialSummary: string
+  featuredRank: string
 }
 
 const collectionOptions: Array<{
@@ -225,6 +235,11 @@ const defaultPromotionDraft: PromotionDraft = {
   caption: '',
   tags: 'wedding day',
   location: '',
+  videoVisibility: 'archive_only',
+  memoryTrail: '',
+  editorialTitle: '',
+  editorialSummary: '',
+  featuredRank: '',
 }
 
 type ModerationQueueFilter = 'pending' | 'approved-unpublished' | 'approved-published' | 'rejected'
@@ -257,6 +272,32 @@ function createPromotionDraft(upload: ModerationUpload): PromotionDraft {
     caption: upload.message || '',
     tags: preset.defaultTags.join(', '),
     location: '',
+    videoVisibility: (upload.video_visibility as GuestVideoVisibility | undefined) || (upload.video_urls?.length ? 'guest_highlights' : 'archive_only'),
+    memoryTrail: (upload.memory_trail as MemoryTrailId | null) || '',
+    editorialTitle: upload.editorial_title || '',
+    editorialSummary: upload.editorial_summary || '',
+    featuredRank: upload.featured_rank?.toString() || '',
+  }
+}
+
+function getGuestVideoVisibilityLabel(value: GuestVideoVisibility) {
+  switch (value) {
+    case 'guest_highlights':
+      return 'Guest highlights'
+    case 'featured':
+      return 'Featured'
+    default:
+      return 'Archive only'
+  }
+}
+
+function buildGuestVideoPromotionPatch(draft: PromotionDraft) {
+  return {
+    video_visibility: draft.videoVisibility,
+    memory_trail: draft.memoryTrail || null,
+    editorial_title: draft.editorialTitle.trim() || null,
+    editorial_summary: draft.editorialSummary.trim() || null,
+    featured_rank: draft.featuredRank.trim() ? Number.parseInt(draft.featuredRank.trim(), 10) || 0 : null,
   }
 }
 
@@ -288,40 +329,55 @@ const editorialSlotDefinitions: Array<{
   label: string
   description: string
   defaultTrail: string
+  defaultMemoryTrail?: MemoryTrailId
   defaultSourceType: SiteEditorialFeatureSourceType
   defaultTitle: string
+  defaultBadgeLabel?: string
+  defaultCtaLabel?: string
 }> = [
   {
     slot: 'home_newest_standout_upload',
     label: 'Home: Standout upload',
     description: 'Use this for the first “Now Unfolding” card when you want to spotlight a guest contribution on Home.',
     defaultTrail: 'From your phones',
+    defaultMemoryTrail: 'dance-floor',
     defaultSourceType: 'guest_upload',
     defaultTitle: 'Newest standout upload',
+    defaultBadgeLabel: 'Guest upload',
+    defaultCtaLabel: 'See the moment',
   },
   {
     slot: 'home_featured_guestbook_note',
     label: 'Home: Featured guestbook note',
     description: 'Highlights one especially meaningful note from the guestbook as a keepsake moment on Home.',
     defaultTrail: 'Guestbook keepsake',
+    defaultMemoryTrail: 'family',
     defaultSourceType: 'guestbook_message',
     defaultTitle: 'Featured guestbook note',
+    defaultBadgeLabel: 'Featured note',
+    defaultCtaLabel: 'Open the note',
   },
   {
     slot: 'home_moment_of_the_week',
     label: 'Home: Moment of the week',
     description: 'A curated editorial spotlight for whatever feels worth revisiting this week, whether it comes from the film or a custom story beat.',
     defaultTrail: 'Now unfolding',
+    defaultMemoryTrail: 'ceremony',
     defaultSourceType: 'custom',
     defaultTitle: 'Moment of the week',
+    defaultBadgeLabel: 'Editorial pick',
+    defaultCtaLabel: 'Revisit the moment',
   },
   {
     slot: 'film_featured_guest_video',
     label: 'Film: Featured guest video',
     description: 'Overrides the public guest-video highlight so you can feature the right clip under the main film.',
     defaultTrail: 'From your phones',
+    defaultMemoryTrail: 'dance-floor',
     defaultSourceType: 'guest_upload',
     defaultTitle: 'Featured guest highlight',
+    defaultBadgeLabel: 'Featured guest clip',
+    defaultCtaLabel: 'Play clip',
   },
 ]
 
@@ -349,10 +405,15 @@ interface EditorialDraft {
   title: string
   summary: string
   trail: string
+  memoryTrail: MemoryTrailId | ''
+  badgeLabel: string
+  ctaLabel: string
   sourceType: SiteEditorialFeatureSourceType
   sourceId: string
   sourceLabel: string
   sourceUrl: string
+  startsAt: string
+  endsAt: string
   isActive: boolean
 }
 
@@ -363,12 +424,55 @@ function createEditorialDraft(slot: SiteEditorialFeatureSlot, feature?: SiteEdit
     title: feature?.title || defaults?.defaultTitle || '',
     summary: feature?.summary || '',
     trail: feature?.trail || defaults?.defaultTrail || '',
+    memoryTrail: feature?.memory_trail || defaults?.defaultMemoryTrail || '',
+    badgeLabel: feature?.badge_label || defaults?.defaultBadgeLabel || '',
+    ctaLabel: feature?.cta_label || defaults?.defaultCtaLabel || '',
     sourceType: feature?.source_type || defaults?.defaultSourceType || 'custom',
     sourceId: feature?.source_id || '',
     sourceLabel: feature?.source_label || '',
     sourceUrl: feature?.source_url || '',
+    startsAt: feature?.starts_at ? feature.starts_at.slice(0, 16) : '',
+    endsAt: feature?.ends_at ? feature.ends_at.slice(0, 16) : '',
     isActive: feature?.is_active ?? false,
   }
+}
+
+function formatDatetimeLocalValue(value: string) {
+  if (!value) return null
+  const parsed = new Date(value)
+  if (Number.isNaN(parsed.getTime())) return null
+  return parsed.toLocaleString()
+}
+
+function formatMemoryTrailLabel(trail: MemoryTrailId | '' | null | undefined, fallback?: string | null) {
+  if (trail) {
+    return getMemoryTrailById(trail)?.label || fallback || trail
+  }
+
+  return fallback || 'Editorial lane'
+}
+
+function getQuickActionLabel(slot: SiteEditorialFeatureSlot) {
+  switch (slot) {
+    case 'home_newest_standout_upload':
+      return 'Use newest approved upload'
+    case 'home_featured_guestbook_note':
+      return 'Use newest guestbook note'
+    case 'home_moment_of_the_week':
+      return 'Use current family-film moment'
+    case 'film_featured_guest_video':
+      return 'Use top guest video'
+    default:
+      return 'Use latest source'
+  }
+}
+
+function getSlotPreviewCta(slot: SiteEditorialFeatureSlot, draft: EditorialDraft) {
+  return draft.ctaLabel.trim() || (slot === 'film_featured_guest_video' ? 'Play clip' : 'Open it')
+}
+
+function serializeEditorialFeatureForHistory(feature: SiteEditorialFeature | null | undefined) {
+  return feature ? (JSON.parse(JSON.stringify(feature)) as Record<string, unknown>) : {}
 }
 
 function getAdminAuditActor(user: ReturnType<typeof useAuthStore.getState>['user']): AuditActor {
@@ -512,6 +616,88 @@ function CompactAuditHistory({
   )
 }
 
+function EditorialHistoryList({ entries }: { entries: SiteEditorialFeatureHistoryEntry[] }) {
+  if (entries.length === 0) {
+    return (
+      <div className="rounded-2xl border border-gold-100 bg-white/88 px-4 py-3 text-sm text-charcoal-500">
+        No slot history yet.
+      </div>
+    )
+  }
+
+  return (
+    <div className="space-y-3">
+      {entries.map((entry) => (
+        <div key={entry.id} className="rounded-2xl border border-gold-100 bg-white/88 px-4 py-3">
+          <p className="text-sm font-medium text-charcoal-900">{entry.change_summary}</p>
+          <p className="mt-1 text-xs text-charcoal-400">
+            {entry.actor_name || entry.actor_email || 'Admin'} · {formatAuditTimestamp(entry.created_at)}
+          </p>
+        </div>
+      ))}
+    </div>
+  )
+}
+
+function FeaturedSlotPreviewCard({
+  slot,
+  draft,
+}: {
+  slot: SiteEditorialFeatureSlot
+  draft: EditorialDraft
+}) {
+  const slotDefinition = editorialSlotDefinitions.find((definition) => definition.slot === slot)
+
+  return (
+    <div className="overflow-hidden rounded-[1.5rem] border border-gold-200/70 bg-[linear-gradient(145deg,rgba(255,251,245,0.98),rgba(247,238,226,0.92))] shadow-sm">
+      <div className="border-b border-gold-100 px-4 py-3">
+        <p className="text-[10px] uppercase tracking-[0.28em] text-gold-700">Public preview</p>
+      </div>
+      <div className="space-y-4 px-4 py-4">
+        <div className="flex flex-wrap items-center gap-2">
+          <span className="rounded-full border border-gold-200 bg-white/84 px-3 py-1 text-[10px] uppercase tracking-[0.24em] text-gold-700">
+            {formatMemoryTrailLabel(draft.memoryTrail, draft.trail)}
+          </span>
+          {(draft.badgeLabel.trim() || draft.sourceLabel.trim()) && (
+            <span className="rounded-full border border-white/80 bg-white/84 px-3 py-1 text-[10px] uppercase tracking-[0.24em] text-charcoal-600">
+              {draft.badgeLabel.trim() || draft.sourceLabel.trim()}
+            </span>
+          )}
+        </div>
+
+        <div>
+          <p className="text-2xl font-display text-charcoal-900">
+            {draft.title.trim() || slotDefinition?.defaultTitle}
+          </p>
+          <p className="mt-3 text-sm leading-6 text-charcoal-600">
+            {draft.summary.trim() || 'This preview updates as you refine the public card copy, trail, badge, and timing.'}
+          </p>
+        </div>
+
+        <div className="grid gap-3 sm:grid-cols-2">
+          <div className="rounded-2xl border border-white/80 bg-white/86 px-4 py-3">
+            <p className="text-[10px] uppercase tracking-[0.24em] text-charcoal-400">Source</p>
+            <p className="mt-2 text-sm font-medium text-charcoal-900">{editorialSourceLabels[draft.sourceType]}</p>
+          </div>
+          <div className="rounded-2xl border border-white/80 bg-white/86 px-4 py-3">
+            <p className="text-[10px] uppercase tracking-[0.24em] text-charcoal-400">Call to action</p>
+            <p className="mt-2 text-sm font-medium text-charcoal-900">{getSlotPreviewCta(slot, draft)}</p>
+          </div>
+        </div>
+
+        {(draft.startsAt || draft.endsAt) && (
+          <div className="rounded-2xl border border-gold-100 bg-white/86 px-4 py-3 text-sm text-charcoal-600">
+            <p className="text-[10px] uppercase tracking-[0.24em] text-charcoal-400">Live window</p>
+            <p className="mt-2">
+              {formatDatetimeLocalValue(draft.startsAt) || 'Now'} to {formatDatetimeLocalValue(draft.endsAt) || 'open-ended'}
+            </p>
+          </div>
+        )}
+      </div>
+    </div>
+  )
+}
+
 function PhotoModeration() {
   const [photos, setPhotos] = useState<ModerationUpload[]>([])
   const [drafts, setDrafts] = useState<Record<string, PromotionDraft>>({})
@@ -627,7 +813,10 @@ function PhotoModeration() {
 
     const { error: updateError } = await supabase
       .from('guest_uploads')
-      .update({ status: 'approved' })
+      .update({
+        status: 'approved',
+        ...buildGuestVideoPromotionPatch(draft),
+      })
       .eq('id', upload.id)
 
     if (updateError) {
@@ -648,15 +837,23 @@ function PhotoModeration() {
     const approvalSummary =
       publishedPhotoCount > 0
         ? `Approved and published ${publishedPhotoCount} guest photo${publishedPhotoCount === 1 ? '' : 's'} to ${draft.collection}.`
-        : uploadVideoUrls.length > 0
-          ? `Approved ${upload.guest_name}'s video submission for the guest highlight lane.`
+        : uploadVideoUrls.length > 0 && draft.videoVisibility === 'featured'
+          ? `Approved ${upload.guest_name}'s video submission as a featured guest clip.`
+          : uploadVideoUrls.length > 0 && draft.videoVisibility === 'guest_highlights'
+            ? `Approved ${upload.guest_name}'s video submission for the guest highlight lane.`
+            : uploadVideoUrls.length > 0
+              ? `Approved ${upload.guest_name}'s video submission for the private archive.`
           : `Approved upload from ${upload.guest_name}.`
 
     addToast(
       rowsToInsert.length > 0
         ? `Approved and published ${rowsToInsert.length} guest photo${rowsToInsert.length === 1 ? '' : 's'} to ${draft.collection}.`
-        : uploadVideoUrls.length > 0
-          ? 'Approved the video-only upload. It is now eligible for the guest video highlights lane.'
+        : uploadVideoUrls.length > 0 && draft.videoVisibility === 'featured'
+          ? 'Approved the video-only upload and marked it as a featured guest clip.'
+          : uploadVideoUrls.length > 0 && draft.videoVisibility === 'guest_highlights'
+            ? 'Approved the video-only upload. It is now eligible for the guest video highlights lane.'
+            : uploadVideoUrls.length > 0
+              ? 'Approved the video-only upload. It will stay in the private archive until you promote it later.'
           : 'Approved the upload.',
       'success'
     )
@@ -666,7 +863,15 @@ function PhotoModeration() {
     }
 
     setPhotos(prev =>
-      prev.map(photo => (photo.id === upload.id ? { ...photo, status: 'approved' } : photo))
+      prev.map(photo =>
+        photo.id === upload.id
+          ? {
+              ...photo,
+              status: 'approved',
+              ...buildGuestVideoPromotionPatch(draft),
+            }
+          : photo
+      )
     )
     setSelectedIds(prev => prev.filter(currentId => currentId !== upload.id))
 
@@ -688,6 +893,11 @@ function PhotoModeration() {
         category,
         location: location || null,
         tags,
+        video_visibility: draft.videoVisibility,
+        memory_trail: draft.memoryTrail || null,
+        editorial_title: draft.editorialTitle.trim() || null,
+        editorial_summary: draft.editorialSummary.trim() || null,
+        featured_rank: draft.featuredRank.trim() || null,
       },
     })
 
@@ -697,6 +907,35 @@ function PhotoModeration() {
       setAuditByUploadId(prev => appendAuditEntry(prev, auditEntry))
     }
 
+    setBusyId(null)
+  }
+
+  async function handleSaveVideoPromotion(upload: ModerationUpload) {
+    const draft = drafts[upload.id] || createPromotionDraft(upload)
+    setBusyId(upload.id)
+
+    const { error } = await supabase
+      .from('guest_uploads')
+      .update(buildGuestVideoPromotionPatch(draft))
+      .eq('id', upload.id)
+
+    if (error) {
+      addToast('Could not save the video promotion settings.', 'error')
+      setBusyId(null)
+      return
+    }
+
+    setPhotos((prev) =>
+      prev.map((photo) =>
+        photo.id === upload.id
+          ? {
+              ...photo,
+              ...buildGuestVideoPromotionPatch(draft),
+            }
+          : photo
+      )
+    )
+    addToast('Video promotion settings saved.', 'success')
     setBusyId(null)
   }
 
@@ -1174,6 +1413,85 @@ function PhotoModeration() {
                               Separate tags with commas. The selected story lane will automatically add the right chapter tag.
                             </p>
                           </div>
+
+                          {videoCount > 0 && (
+                            <div className="rounded-2xl border border-gold-100 bg-white/84 p-4">
+                              <p className="text-[10px] uppercase tracking-[0.28em] text-charcoal-500">Guest video promotion</p>
+                              <div className="mt-4 grid gap-4 md:grid-cols-2">
+                                <div>
+                                  <Label htmlFor={`video-visibility-${photo.id}`} className="mb-2 text-xs normal-case tracking-normal text-charcoal-500">
+                                    Public treatment
+                                  </Label>
+                                  <select
+                                    id={`video-visibility-${photo.id}`}
+                                    value={draft.videoVisibility}
+                                    onChange={(event) => updateDraft(photo.id, { videoVisibility: event.target.value as GuestVideoVisibility })}
+                                    className="h-11 w-full rounded-full border border-gold-200/70 bg-white px-4 text-sm text-charcoal-900 outline-none transition focus:border-gold-500 focus:ring-2 focus:ring-gold-500/20"
+                                  >
+                                    <option value="archive_only">Archive only</option>
+                                    <option value="guest_highlights">Guest highlights</option>
+                                    <option value="featured">Featured guest clip</option>
+                                  </select>
+                                </div>
+                                <div>
+                                  <Label htmlFor={`video-trail-${photo.id}`} className="mb-2 text-xs normal-case tracking-normal text-charcoal-500">
+                                    Memory trail
+                                  </Label>
+                                  <select
+                                    id={`video-trail-${photo.id}`}
+                                    value={draft.memoryTrail}
+                                    onChange={(event) => updateDraft(photo.id, { memoryTrail: event.target.value as MemoryTrailId | '' })}
+                                    className="h-11 w-full rounded-full border border-gold-200/70 bg-white px-4 text-sm text-charcoal-900 outline-none transition focus:border-gold-500 focus:ring-2 focus:ring-gold-500/20"
+                                  >
+                                    <option value="">No shared trail</option>
+                                    {memoryTrails.map((trail) => (
+                                      <option key={trail.id} value={trail.id}>
+                                        {trail.label}
+                                      </option>
+                                    ))}
+                                  </select>
+                                </div>
+                              </div>
+
+                              <div className="mt-4 grid gap-4 md:grid-cols-2">
+                                <div>
+                                  <Label htmlFor={`video-title-${photo.id}`} className="mb-2 text-xs normal-case tracking-normal text-charcoal-500">
+                                    Editorial title
+                                  </Label>
+                                  <Input
+                                    id={`video-title-${photo.id}`}
+                                    value={draft.editorialTitle}
+                                    onChange={(event) => updateDraft(photo.id, { editorialTitle: event.target.value })}
+                                    placeholder="Optional public title for the clip"
+                                  />
+                                </div>
+                                <div>
+                                  <Label htmlFor={`video-rank-${photo.id}`} className="mb-2 text-xs normal-case tracking-normal text-charcoal-500">
+                                    Featured rank
+                                  </Label>
+                                  <Input
+                                    id={`video-rank-${photo.id}`}
+                                    value={draft.featuredRank}
+                                    onChange={(event) => updateDraft(photo.id, { featuredRank: event.target.value })}
+                                    placeholder="1 for highest priority"
+                                  />
+                                </div>
+                              </div>
+
+                              <div className="mt-4">
+                                <Label htmlFor={`video-summary-${photo.id}`} className="mb-2 text-xs normal-case tracking-normal text-charcoal-500">
+                                  Editorial summary
+                                </Label>
+                                <Textarea
+                                  id={`video-summary-${photo.id}`}
+                                  value={draft.editorialSummary}
+                                  onChange={(event) => updateDraft(photo.id, { editorialSummary: event.target.value })}
+                                  placeholder="Short copy for the public guest-video lane."
+                                  className="min-h-[88px]"
+                                />
+                              </div>
+                            </div>
+                          )}
                         </div>
                       </div>
 
@@ -1238,10 +1556,35 @@ function PhotoModeration() {
                               <p className="mt-2 text-charcoal-700">{draft.collection}</p>
                             </div>
                           </div>
+
+                          {videoCount > 0 && (
+                            <div className="grid gap-3 sm:grid-cols-2">
+                              <div className="rounded-2xl border border-gold-100 bg-white/88 px-4 py-3">
+                                <p className="text-[10px] uppercase tracking-[0.28em] text-charcoal-400">Video visibility</p>
+                                <p className="mt-2 text-charcoal-700">{getGuestVideoVisibilityLabel(draft.videoVisibility)}</p>
+                              </div>
+                              <div className="rounded-2xl border border-gold-100 bg-white/88 px-4 py-3">
+                                <p className="text-[10px] uppercase tracking-[0.28em] text-charcoal-400">Memory trail</p>
+                                <p className="mt-2 text-charcoal-700">{formatMemoryTrailLabel(draft.memoryTrail, 'No shared trail')}</p>
+                              </div>
+                            </div>
+                          )}
                         </div>
                       </div>
 
                       <div className="flex flex-wrap gap-2">
+                        {videoCount > 0 && (
+                          <Button
+                            size="sm"
+                            variant="secondary"
+                            className="flex-1 min-w-[13rem]"
+                            onClick={() => handleSaveVideoPromotion(photo)}
+                            disabled={busyId === photo.id}
+                          >
+                            <Video className="mr-1 h-4 w-4" />
+                            Save Video Settings
+                          </Button>
+                        )}
                         <Button
                           size="sm"
                           variant="secondary"
@@ -1660,26 +2003,41 @@ function FeaturedContentManager() {
       {} as Record<SiteEditorialFeatureSlot, EditorialDraft>
     )
   )
+  const [historyBySlot, setHistoryBySlot] = useState<Record<SiteEditorialFeatureSlot, SiteEditorialFeatureHistoryEntry[]>>(() =>
+    editorialSlotDefinitions.reduce(
+      (acc, definition) => ({ ...acc, [definition.slot]: [] }),
+      {} as Record<SiteEditorialFeatureSlot, SiteEditorialFeatureHistoryEntry[]>
+    )
+  )
+  const [candidateSearchBySlot, setCandidateSearchBySlot] = useState<Record<SiteEditorialFeatureSlot, string>>(() =>
+    editorialSlotDefinitions.reduce(
+      (acc, definition) => ({ ...acc, [definition.slot]: '' }),
+      {} as Record<SiteEditorialFeatureSlot, string>
+    )
+  )
   const [recentUploads, setRecentUploads] = useState<ModerationUpload[]>([])
   const [recentMessages, setRecentMessages] = useState<GuestbookMessage[]>([])
   const [loading, setLoading] = useState(true)
   const [savingSlot, setSavingSlot] = useState<SiteEditorialFeatureSlot | null>(null)
   const { addToast } = useToast()
   const { user } = useAuthStore()
+  const actor = getAdminAuditActor(user)
 
   const loadEditorialState = useCallback(async () => {
     setLoading(true)
-    const [featuresResult, uploadsResult, messagesResult] = await Promise.all([
+    const [featuresResult, uploadsResult, messagesResult, historyResult] = await Promise.all([
       fetchSiteEditorialFeatures(),
       supabase.from('guest_uploads').select('*').order('created_at', { ascending: false }).limit(20),
       supabase.from('guestbook_messages').select('*').order('created_at', { ascending: false }).limit(20),
+      fetchSiteEditorialFeatureHistory(),
     ])
 
     const featuresError = featuresResult.error
     const uploadsError = uploadsResult.error
     const messagesError = messagesResult.error
+    const historyError = historyResult.error
 
-    if (featuresError || uploadsError || messagesError) {
+    if (featuresError || uploadsError || messagesError || historyError) {
       addToast('Failed to load featured content settings', 'error')
       setLoading(false)
       return
@@ -1697,6 +2055,13 @@ function FeaturedContentManager() {
         acc[definition.slot] = createEditorialDraft(definition.slot, bySlot[definition.slot])
         return acc
       }, {} as Record<SiteEditorialFeatureSlot, EditorialDraft>)
+    )
+    setHistoryBySlot(
+      editorialSlotDefinitions.reduce((acc, definition) => {
+        acc[definition.slot] = ((historyResult.data as SiteEditorialFeatureHistoryEntry[] | null) || [])
+          .filter((entry) => entry.slot === definition.slot)
+        return acc
+      }, {} as Record<SiteEditorialFeatureSlot, SiteEditorialFeatureHistoryEntry[]>)
     )
     setRecentUploads(((uploadsResult.data as ModerationUpload[] | null) || []))
     setRecentMessages(((messagesResult.data as GuestbookMessage[] | null) || []))
@@ -1721,6 +2086,78 @@ function FeaturedContentManager() {
     }))
   }
 
+  function updateCandidateSearch(slot: SiteEditorialFeatureSlot, value: string) {
+    setCandidateSearchBySlot((previous) => ({
+      ...previous,
+      [slot]: value,
+    }))
+  }
+
+  function applyQuickAction(slot: SiteEditorialFeatureSlot) {
+    if (slot === 'home_newest_standout_upload' || slot === 'film_featured_guest_video') {
+      const candidate = recentUploads.find((upload) =>
+        slot === 'film_featured_guest_video'
+          ? upload.status === 'approved' && (upload.video_urls?.length || 0) > 0
+          : upload.status === 'approved'
+      )
+
+      if (!candidate) {
+        addToast('No recent upload matches that quick action yet.', 'warning')
+        return
+      }
+
+      updateDraft(slot, {
+        sourceType: 'guest_upload',
+        sourceId: candidate.id,
+        sourceLabel: candidate.guest_name,
+        sourceUrl: slot === 'film_featured_guest_video' ? '/film' : '/gallery?collection=Guest%20Uploads',
+        title: candidate.message?.trim() || (slot === 'film_featured_guest_video' ? `Featured clip from ${candidate.guest_name}` : `Newest standout upload from ${candidate.guest_name}`),
+        summary:
+          candidate.message?.trim() ||
+          (slot === 'film_featured_guest_video'
+            ? 'A guest-shot angle from the room, ready to lead the highlight lane.'
+            : 'A guest contribution worth surfacing as one of the first things returning visitors see.'),
+        badgeLabel: slot === 'film_featured_guest_video' ? 'Featured guest clip' : 'Guest upload',
+        memoryTrail:
+          slot === 'film_featured_guest_video'
+            ? ((candidate.memory_trail as MemoryTrailId | null) || 'dance-floor')
+            : ((candidate.memory_trail as MemoryTrailId | null) || 'dance-floor'),
+      })
+      return
+    }
+
+    if (slot === 'home_featured_guestbook_note') {
+      const candidate = recentMessages[0]
+      if (!candidate) {
+        addToast('No guestbook note is available for that quick action yet.', 'warning')
+        return
+      }
+
+      updateDraft(slot, {
+        sourceType: 'guestbook_message',
+        sourceId: candidate.id,
+        sourceLabel: candidate.name,
+        sourceUrl: `/guestbook?message=${candidate.id}`,
+        title: `A note from ${candidate.name}`,
+        summary: candidate.content.slice(0, 180),
+        badgeLabel: 'Featured note',
+        memoryTrail: 'family',
+      })
+      return
+    }
+
+    updateDraft(slot, {
+      sourceType: 'film_chapter',
+      sourceId: 'the-ceremony',
+      sourceLabel: 'The Ceremony',
+      sourceUrl: '/film?moment=the-ceremony',
+      title: 'The ceremony, back at the center of the week',
+      summary: 'A one-click way back into the vows, the room holding its breath, and the part of the day that still feels most surreal.',
+      badgeLabel: 'Film moment',
+      memoryTrail: 'ceremony',
+    })
+  }
+
   async function handleSave(slot: SiteEditorialFeatureSlot) {
     const draft = drafts[slot]
     if (!draft.title.trim()) {
@@ -1729,15 +2166,21 @@ function FeaturedContentManager() {
     }
 
     setSavingSlot(slot)
+    const previousFeature = featuresBySlot[slot]
     const result = await upsertSiteEditorialFeature({
       slot,
       title: draft.title.trim(),
       summary: draft.summary.trim() || null,
       trail: draft.trail.trim() || null,
+      memoryTrail: draft.memoryTrail || null,
+      badgeLabel: draft.badgeLabel.trim() || null,
+      ctaLabel: draft.ctaLabel.trim() || null,
       sourceType: draft.sourceType,
       sourceId: draft.sourceId.trim() || null,
       sourceLabel: draft.sourceLabel.trim() || null,
       sourceUrl: draft.sourceUrl.trim() || null,
+      startsAt: draft.startsAt ? new Date(draft.startsAt).toISOString() : null,
+      endsAt: draft.endsAt ? new Date(draft.endsAt).toISOString() : null,
       isActive: draft.isActive,
       displayOrder: editorialSlotDefinitions.findIndex((definition) => definition.slot === slot),
       actor: {
@@ -1763,6 +2206,23 @@ function FeaturedContentManager() {
       ...previous,
       [slot]: createEditorialDraft(slot, result.data as SiteEditorialFeature),
     }))
+    const { data: historyEntry, error: historyError } = await recordSiteEditorialFeatureHistory({
+      slot,
+      featureId: (result.data as SiteEditorialFeature).id,
+      changeSummary: `Updated ${editorialSlotDefinitions.find((definition) => definition.slot === slot)?.label || slot}.`,
+      actor,
+      previousFeature: serializeEditorialFeatureForHistory(previousFeature),
+      nextFeature: serializeEditorialFeatureForHistory(result.data as SiteEditorialFeature),
+    })
+
+    if (historyError) {
+      addToast('Featured slot saved, but the editorial history entry could not be recorded.', 'warning')
+    } else if (historyEntry) {
+      setHistoryBySlot((previous) => ({
+        ...previous,
+        [slot]: [historyEntry, ...(previous[slot] || [])],
+      }))
+    }
     addToast('Featured content slot saved.', 'success')
     setSavingSlot(null)
   }
@@ -1829,6 +2289,20 @@ function FeaturedContentManager() {
               </div>
 
               <div className="mt-5 grid gap-4">
+                <div className="rounded-[1.25rem] border border-gold-100 bg-cream-50/70 p-4">
+                  <div className="flex flex-wrap items-center justify-between gap-3">
+                    <div>
+                      <p className="text-[10px] uppercase tracking-[0.3em] text-charcoal-500">Quick action</p>
+                      <p className="mt-2 text-sm text-charcoal-600">
+                        Start from the newest real content, then refine the public wording and schedule below.
+                      </p>
+                    </div>
+                    <Button variant="secondary" onClick={() => applyQuickAction(definition.slot)} disabled={isSaving}>
+                      {getQuickActionLabel(definition.slot)}
+                    </Button>
+                  </div>
+                </div>
+
                 <div className="grid gap-4 lg:grid-cols-2">
                   <div>
                     <Label htmlFor={`${definition.slot}-title`}>Title</Label>
@@ -1840,13 +2314,20 @@ function FeaturedContentManager() {
                     />
                   </div>
                   <div>
-                    <Label htmlFor={`${definition.slot}-trail`}>Trail label</Label>
-                    <Input
-                      id={`${definition.slot}-trail`}
-                      value={draft.trail}
-                      onChange={(event) => updateDraft(definition.slot, { trail: event.target.value })}
-                      placeholder="Ceremony, Family, From your phones..."
-                    />
+                    <Label htmlFor={`${definition.slot}-memory-trail`}>Memory trail</Label>
+                    <select
+                      id={`${definition.slot}-memory-trail`}
+                      value={draft.memoryTrail}
+                      onChange={(event) => updateDraft(definition.slot, { memoryTrail: event.target.value as MemoryTrailId | '' })}
+                      className="mt-2 h-11 w-full rounded-xl border border-gold-200/70 bg-white px-4 text-sm text-charcoal-900 outline-none transition focus:border-gold-500 focus:ring-2 focus:ring-gold-500/20"
+                    >
+                      <option value="">No shared trail</option>
+                      {memoryTrails.map((trail) => (
+                        <option key={trail.id} value={trail.id}>
+                          {trail.label}
+                        </option>
+                      ))}
+                    </select>
                   </div>
                 </div>
 
@@ -1859,6 +2340,57 @@ function FeaturedContentManager() {
                     rows={3}
                     placeholder="Short editorial summary for the public card."
                   />
+                </div>
+
+                <div className="grid gap-4 lg:grid-cols-3">
+                  <div>
+                    <Label htmlFor={`${definition.slot}-badge-label`}>Badge label</Label>
+                    <Input
+                      id={`${definition.slot}-badge-label`}
+                      value={draft.badgeLabel}
+                      onChange={(event) => updateDraft(definition.slot, { badgeLabel: event.target.value })}
+                      placeholder="Featured note, Guest upload..."
+                    />
+                  </div>
+                  <div>
+                    <Label htmlFor={`${definition.slot}-cta-label`}>CTA label</Label>
+                    <Input
+                      id={`${definition.slot}-cta-label`}
+                      value={draft.ctaLabel}
+                      onChange={(event) => updateDraft(definition.slot, { ctaLabel: event.target.value })}
+                      placeholder="Open it, Play clip..."
+                    />
+                  </div>
+                  <div>
+                    <Label htmlFor={`${definition.slot}-trail-text`}>Eyebrow text</Label>
+                    <Input
+                      id={`${definition.slot}-trail-text`}
+                      value={draft.trail}
+                      onChange={(event) => updateDraft(definition.slot, { trail: event.target.value })}
+                      placeholder="Now unfolding, Keepsake note..."
+                    />
+                  </div>
+                </div>
+
+                <div className="grid gap-4 lg:grid-cols-2">
+                  <div>
+                    <Label htmlFor={`${definition.slot}-starts-at`}>Starts at</Label>
+                    <Input
+                      id={`${definition.slot}-starts-at`}
+                      type="datetime-local"
+                      value={draft.startsAt}
+                      onChange={(event) => updateDraft(definition.slot, { startsAt: event.target.value })}
+                    />
+                  </div>
+                  <div>
+                    <Label htmlFor={`${definition.slot}-ends-at`}>Ends at</Label>
+                    <Input
+                      id={`${definition.slot}-ends-at`}
+                      type="datetime-local"
+                      value={draft.endsAt}
+                      onChange={(event) => updateDraft(definition.slot, { endsAt: event.target.value })}
+                    />
+                  </div>
                 </div>
 
                 <div className="grid gap-4 lg:grid-cols-2">
@@ -1897,6 +2429,13 @@ function FeaturedContentManager() {
 
                 {draft.sourceType === 'guest_upload' && (
                   <div>
+                    <Label htmlFor={`${definition.slot}-upload-search`}>Find a guest upload</Label>
+                    <Input
+                      id={`${definition.slot}-upload-search`}
+                      value={candidateSearchBySlot[definition.slot]}
+                      onChange={(event) => updateCandidateSearch(definition.slot, event.target.value)}
+                      placeholder="Filter uploads by guest name, email, or note"
+                    />
                     <Label htmlFor={`${definition.slot}-source-id-upload`}>Choose a guest upload</Label>
                     <select
                       id={`${definition.slot}-source-id-upload`}
@@ -1905,7 +2444,9 @@ function FeaturedContentManager() {
                       className="mt-2 h-11 w-full rounded-xl border border-gold-200/70 bg-white px-4 text-sm text-charcoal-900 outline-none transition focus:border-gold-500 focus:ring-2 focus:ring-gold-500/20"
                     >
                       <option value="">No linked upload</option>
-                      {uploadOptions.map((option) => (
+                      {uploadOptions
+                        .filter((option) => option.label.toLowerCase().includes(candidateSearchBySlot[definition.slot].trim().toLowerCase()))
+                        .map((option) => (
                         <option key={option.value} value={option.value}>
                           {option.label}
                         </option>
@@ -1916,6 +2457,13 @@ function FeaturedContentManager() {
 
                 {draft.sourceType === 'guestbook_message' && (
                   <div>
+                    <Label htmlFor={`${definition.slot}-message-search`}>Find a guestbook note</Label>
+                    <Input
+                      id={`${definition.slot}-message-search`}
+                      value={candidateSearchBySlot[definition.slot]}
+                      onChange={(event) => updateCandidateSearch(definition.slot, event.target.value)}
+                      placeholder="Filter notes by guest name or message"
+                    />
                     <Label htmlFor={`${definition.slot}-source-id-guestbook`}>Choose a guestbook note</Label>
                     <select
                       id={`${definition.slot}-source-id-guestbook`}
@@ -1924,7 +2472,9 @@ function FeaturedContentManager() {
                       className="mt-2 h-11 w-full rounded-xl border border-gold-200/70 bg-white px-4 text-sm text-charcoal-900 outline-none transition focus:border-gold-500 focus:ring-2 focus:ring-gold-500/20"
                     >
                       <option value="">No linked note</option>
-                      {guestbookOptions.map((option) => (
+                      {guestbookOptions
+                        .filter((option) => option.label.toLowerCase().includes(candidateSearchBySlot[definition.slot].trim().toLowerCase()))
+                        .map((option) => (
                         <option key={option.value} value={option.value}>
                           {option.label}
                         </option>
@@ -1985,19 +2535,30 @@ function FeaturedContentManager() {
                 </label>
               </div>
 
-              {feature && (
-                <div className="mt-5 rounded-2xl border border-gold-100 bg-cream-50/70 px-4 py-4">
-                  <p className="text-[10px] uppercase tracking-[0.28em] text-charcoal-500">Current live row</p>
-                  <p className="mt-2 text-sm font-medium text-charcoal-900">
-                    Updated {formatAuditTimestamp(feature.updated_at)}
-                    {feature.updated_by_email ? ` by ${feature.updated_by_email}` : ''}
-                  </p>
-                  <p className="mt-2 text-sm leading-6 text-charcoal-600">
-                    {feature.title}
-                    {feature.summary ? ` — ${feature.summary}` : ''}
-                  </p>
+              <div className="mt-5 grid gap-4 xl:grid-cols-[minmax(0,1fr)_minmax(0,0.9fr)]">
+                <FeaturedSlotPreviewCard slot={definition.slot} draft={draft} />
+
+                <div className="space-y-4">
+                  {feature && (
+                    <div className="rounded-2xl border border-gold-100 bg-cream-50/70 px-4 py-4">
+                      <p className="text-[10px] uppercase tracking-[0.28em] text-charcoal-500">Current live row</p>
+                      <p className="mt-2 text-sm font-medium text-charcoal-900">
+                        Updated {formatAuditTimestamp(feature.updated_at)}
+                        {feature.updated_by_email ? ` by ${feature.updated_by_email}` : ''}
+                      </p>
+                      <p className="mt-2 text-sm leading-6 text-charcoal-600">
+                        {feature.title}
+                        {feature.summary ? ` — ${feature.summary}` : ''}
+                      </p>
+                    </div>
+                  )}
+
+                  <div className="space-y-3">
+                    <p className="text-[10px] uppercase tracking-[0.28em] text-charcoal-500">Slot history</p>
+                    <EditorialHistoryList entries={historyBySlot[definition.slot] || []} />
+                  </div>
                 </div>
-              )}
+              </div>
 
               <div className="mt-5 flex flex-wrap gap-3">
                 <Button

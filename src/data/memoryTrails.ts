@@ -13,6 +13,14 @@ export interface MemoryTrail {
   cue: string
 }
 
+export const MEMORY_TRAIL_IDS: MemoryTrailId[] = [
+  'ceremony',
+  'family',
+  'dance-floor',
+  'engagement-season',
+  'bach-ette',
+]
+
 export const memoryTrails: MemoryTrail[] = [
   {
     id: 'ceremony',
@@ -50,3 +58,11 @@ export const memoryTrails: MemoryTrail[] = [
     cue: 'For the lead-up and the weekend energy before May 10.',
   },
 ]
+
+export function isMemoryTrailId(value: string | null | undefined): value is MemoryTrailId {
+  return typeof value === 'string' && MEMORY_TRAIL_IDS.includes(value as MemoryTrailId)
+}
+
+export function getMemoryTrailById(id: string | null | undefined) {
+  return memoryTrails.find((trail) => trail.id === id) || null
+}

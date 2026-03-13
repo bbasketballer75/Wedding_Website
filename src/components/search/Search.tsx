@@ -3,11 +3,11 @@ import { useCallback, useEffect, useMemo, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { BookHeart, Images, Link2, Search as SearchIcon, Sparkles, Video, X } from 'lucide-react'
 import { cn } from '@/lib/utils'
-import { supabase } from '@/lib/supabase'
+import { fetchSiteEditorialFeatures, supabase, type SiteEditorialFeature } from '@/lib/supabase'
 import { filmQuotes, filmWatchPaths, MAIN_FILM_CHAPTERS_FALLBACK, slugifyFilmMoment } from '@/data/film'
-import { memoryTrails } from '@/data/memoryTrails'
+import { getMemoryTrailById, memoryTrails } from '@/data/memoryTrails'
 
-type SearchResultType = 'page' | 'film' | 'gallery' | 'guestbook' | 'trail'
+type SearchResultType = 'page' | 'film' | 'gallery' | 'guestbook' | 'trail' | 'feature'
 
 interface SearchResult {
   id: string
@@ -106,6 +106,8 @@ function rankMatch(query: string, haystacks: string[]) {
 
 function getTypeIcon(type: SearchResultType) {
   switch (type) {
+    case 'feature':
+      return <Sparkles className="h-4 w-4 text-gold-600" />
     case 'film':
       return <Video className="h-4 w-4 text-gold-600" />
     case 'gallery':
@@ -132,6 +134,7 @@ function Search({
   const [selectedIndex, setSelectedIndex] = useState(-1)
   const [photos, setPhotos] = useState<SearchablePhoto[]>([])
   const [guestbookMessages, setGuestbookMessages] = useState<SearchableGuestbookMessage[]>([])
+  const [editorialFeatures, setEditorialFeatures] = useState<SiteEditorialFeature[]>([])
   const navigate = useNavigate()
 
   const staticResults = useMemo(() => {
@@ -182,7 +185,7 @@ function Search({
     let isActive = true
 
     async function preloadSearchData() {
-      const [{ data: photoData }, { data: guestbookData }] = await Promise.all([
+      const [{ data: photoData }, { data: guestbookData }, featuresResult] = await Promise.all([
         supabase
           .from('photos')
           .select('id, caption, location, category, tags')
@@ -193,12 +196,14 @@ function Search({
           .select('id, name, content')
           .order('created_at', { ascending: false })
           .limit(120),
+        fetchSiteEditorialFeatures(),
       ])
 
       if (!isActive) return
 
       setPhotos((photoData || []) as SearchablePhoto[])
       setGuestbookMessages((guestbookData || []) as SearchableGuestbookMessage[])
+      setEditorialFeatures(((featuresResult.data as SiteEditorialFeature[] | null) || []).filter((feature) => feature.is_active))
     }
 
     void preloadSearchData()
@@ -256,7 +261,29 @@ function Search({
           } satisfies SearchResult]
         })
 
-      const merged = [...rankedStatic, ...rankedPhotos, ...rankedGuestbook]
+      const rankedFeatures = editorialFeatures.flatMap<SearchResult>((feature) => {
+        const trailLabel = feature.memory_trail ? getMemoryTrailById(feature.memory_trail)?.label || '' : feature.trail || ''
+        const relevance = rankMatch(normalized, [
+          feature.title,
+          feature.summary || '',
+          trailLabel,
+          feature.badge_label || '',
+        ])
+
+        if (relevance === 0) return []
+
+        return [{
+          id: `feature-${feature.slot}`,
+          type: 'feature',
+          title: feature.title,
+          description: feature.summary || `Featured in ${trailLabel || 'the archive'}.`,
+          url: feature.source_url || '/',
+          relevance: relevance + 2,
+          badge: feature.badge_label || 'Featured',
+        } satisfies SearchResult]
+      })
+
+      const merged = [...rankedStatic, ...rankedPhotos, ...rankedGuestbook, ...rankedFeatures]
         .sort((a, b) => b.relevance - a.relevance || a.title.localeCompare(b.title))
         .slice(0, maxResults)
 
@@ -264,7 +291,7 @@ function Search({
       setSelectedIndex(-1)
       setLoading(false)
     },
-    [guestbookMessages, maxResults, photos, staticResults]
+    [editorialFeatures, guestbookMessages, maxResults, photos, staticResults]
   )
 
   useEffect(() => {

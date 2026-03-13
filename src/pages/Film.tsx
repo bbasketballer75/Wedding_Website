@@ -17,7 +17,7 @@ import {
   slugifyFilmMoment,
   type FilmChapter,
 } from '@/data/film'
-import { memoryTrails } from '@/data/memoryTrails'
+import { getMemoryTrailById, memoryTrails } from '@/data/memoryTrails'
 import { getMediaPath } from '@/utils/media'
 import {
   Play,
@@ -495,19 +495,30 @@ export default function Film() {
 
       const highlights = (data as GuestUpload[])
         .filter((upload) => Array.isArray(upload.video_urls) && upload.video_urls.length > 0)
+        .filter((upload) => upload.video_visibility !== 'archive_only')
+        .sort((a, b) => {
+          const visibilityScore = (upload: GuestUpload) =>
+            upload.video_visibility === 'featured' ? 2 : upload.video_visibility === 'guest_highlights' ? 1 : 0
+
+          const rankA = a.featured_rank ?? Number.MAX_SAFE_INTEGER
+          const rankB = b.featured_rank ?? Number.MAX_SAFE_INTEGER
+
+          return visibilityScore(b) - visibilityScore(a) || rankA - rankB
+        })
         .slice(0, 6)
         .map((upload, videoIndex) => ({
           id: `${upload.id}-${videoIndex}`,
           uploadId: upload.id,
           guestName: upload.guest_name,
-          title: upload.message?.trim() || `A guest angle from ${upload.guest_name}`,
+          title: upload.editorial_title?.trim() || upload.message?.trim() || `A guest angle from ${upload.guest_name}`,
           description:
+            upload.editorial_summary?.trim() ||
             upload.message?.trim() ||
             'A little handheld piece of the day, straight from the room and exactly how it felt to be there.',
           videoUrl: upload.video_urls[0],
           createdAt: upload.created_at,
-          badge: 'From your phones',
-          trail: 'Guest point of view',
+          badge: upload.video_visibility === 'featured' ? 'Featured guest clip' : 'From your phones',
+          trail: upload.memory_trail ? getMemoryTrailById(upload.memory_trail)?.label || 'Guest point of view' : 'Guest point of view',
         }))
 
       const orderedHighlights = featuredSlot?.source_id
@@ -524,8 +535,11 @@ export default function Film() {
             ...highlight,
             title: featuredSlot.title || highlight.title,
             description: featuredSlot.summary || highlight.description,
-            badge: featuredSlot.source_label || 'Featured guest clip',
-            trail: featuredSlot.trail || 'Moment of the week',
+            badge: featuredSlot.badge_label || featuredSlot.source_label || 'Featured guest clip',
+            trail:
+              (featuredSlot.memory_trail ? getMemoryTrailById(featuredSlot.memory_trail)?.label : null) ||
+              featuredSlot.trail ||
+              'Moment of the week',
           }
         }
 
@@ -1057,7 +1071,7 @@ export default function Film() {
               {featuredGuestVideo?.is_active && (
                 <div className="mt-5 rounded-[1.25rem] border border-gold-200/70 bg-white/82 px-4 py-3 shadow-sm">
                   <p className="text-[10px] uppercase tracking-[0.28em] text-gold-700">
-                    {featuredGuestVideo.trail || 'Featured guest clip'}
+                    {(featuredGuestVideo.memory_trail ? getMemoryTrailById(featuredGuestVideo.memory_trail)?.label : null) || featuredGuestVideo.trail || 'Featured guest clip'}
                   </p>
                   <p className="mt-2 text-sm font-semibold text-charcoal-900">{featuredGuestVideo.title}</p>
                   {featuredGuestVideo.summary && (

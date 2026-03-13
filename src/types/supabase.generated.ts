@@ -17,33 +17,48 @@ export type Database = {
       guest_uploads: {
         Row: {
           created_at: string | null
+          editorial_summary: string | null
+          editorial_title: string | null
+          featured_rank: number | null
           guest_email: string
           guest_name: string
           id: string
+          memory_trail: string | null
           message: string | null
           photo_urls: string[] | null
           status: string | null
           video_urls: string[] | null
+          video_visibility: string
         }
         Insert: {
           created_at?: string | null
+          editorial_summary?: string | null
+          editorial_title?: string | null
+          featured_rank?: number | null
           guest_email: string
           guest_name: string
           id?: string
+          memory_trail?: string | null
           message?: string | null
           photo_urls?: string[] | null
           status?: string | null
           video_urls?: string[] | null
+          video_visibility?: string
         }
         Update: {
           created_at?: string | null
+          editorial_summary?: string | null
+          editorial_title?: string | null
+          featured_rank?: number | null
           guest_email?: string
           guest_name?: string
           id?: string
+          memory_trail?: string | null
           message?: string | null
           photo_urls?: string[] | null
           status?: string | null
           video_urls?: string[] | null
+          video_visibility?: string
         }
         Relationships: []
       }
@@ -163,63 +178,6 @@ export type Database = {
         }
         Relationships: []
       }
-      site_editorial_features: {
-        Row: {
-          created_at: string
-          display_order: number
-          id: string
-          is_active: boolean
-          metadata: Json
-          slot: string
-          source_id: string | null
-          source_label: string | null
-          source_type: string
-          source_url: string | null
-          summary: string | null
-          title: string
-          trail: string | null
-          updated_at: string
-          updated_by_email: string | null
-          updated_by_user_id: string | null
-        }
-        Insert: {
-          created_at?: string
-          display_order?: number
-          id?: string
-          is_active?: boolean
-          metadata?: Json
-          slot: string
-          source_id?: string | null
-          source_label?: string | null
-          source_type: string
-          source_url?: string | null
-          summary?: string | null
-          title: string
-          trail?: string | null
-          updated_at?: string
-          updated_by_email?: string | null
-          updated_by_user_id?: string | null
-        }
-        Update: {
-          created_at?: string
-          display_order?: number
-          id?: string
-          is_active?: boolean
-          metadata?: Json
-          slot?: string
-          source_id?: string | null
-          source_label?: string | null
-          source_type?: string
-          source_url?: string | null
-          summary?: string | null
-          title?: string
-          trail?: string | null
-          updated_at?: string
-          updated_by_email?: string | null
-          updated_by_user_id?: string | null
-        }
-        Relationships: []
-      }
       photos: {
         Row: {
           caption: string | null
@@ -292,6 +250,117 @@ export type Database = {
           ip_address?: string
           request_count?: number | null
           window_start?: string | null
+        }
+        Relationships: []
+      }
+      site_editorial_feature_history: {
+        Row: {
+          actor_email: string | null
+          actor_name: string | null
+          actor_user_id: string | null
+          change_summary: string
+          created_at: string
+          feature_id: string | null
+          id: string
+          next_feature: Json
+          previous_feature: Json
+          slot: string
+        }
+        Insert: {
+          actor_email?: string | null
+          actor_name?: string | null
+          actor_user_id?: string | null
+          change_summary: string
+          created_at?: string
+          feature_id?: string | null
+          id?: string
+          next_feature?: Json
+          previous_feature?: Json
+          slot: string
+        }
+        Update: {
+          actor_email?: string | null
+          actor_name?: string | null
+          actor_user_id?: string | null
+          change_summary?: string
+          created_at?: string
+          feature_id?: string | null
+          id?: string
+          next_feature?: Json
+          previous_feature?: Json
+          slot?: string
+        }
+        Relationships: []
+      }
+      site_editorial_features: {
+        Row: {
+          badge_label: string | null
+          created_at: string
+          cta_label: string | null
+          display_order: number
+          ends_at: string | null
+          id: string
+          is_active: boolean
+          memory_trail: string | null
+          metadata: Json
+          slot: string
+          source_id: string | null
+          source_label: string | null
+          source_type: string
+          source_url: string | null
+          starts_at: string | null
+          summary: string | null
+          title: string
+          trail: string | null
+          updated_at: string
+          updated_by_email: string | null
+          updated_by_user_id: string | null
+        }
+        Insert: {
+          badge_label?: string | null
+          created_at?: string
+          cta_label?: string | null
+          display_order?: number
+          ends_at?: string | null
+          id?: string
+          is_active?: boolean
+          memory_trail?: string | null
+          metadata?: Json
+          slot: string
+          source_id?: string | null
+          source_label?: string | null
+          source_type: string
+          source_url?: string | null
+          starts_at?: string | null
+          summary?: string | null
+          title: string
+          trail?: string | null
+          updated_at?: string
+          updated_by_email?: string | null
+          updated_by_user_id?: string | null
+        }
+        Update: {
+          badge_label?: string | null
+          created_at?: string
+          cta_label?: string | null
+          display_order?: number
+          ends_at?: string | null
+          id?: string
+          is_active?: boolean
+          memory_trail?: string | null
+          metadata?: Json
+          slot?: string
+          source_id?: string | null
+          source_label?: string | null
+          source_type?: string
+          source_url?: string | null
+          starts_at?: string | null
+          summary?: string | null
+          title?: string
+          trail?: string | null
+          updated_at?: string
+          updated_by_email?: string | null
+          updated_by_user_id?: string | null
         }
         Relationships: []
       }

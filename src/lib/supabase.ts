@@ -1,5 +1,6 @@
 import { createClient } from '@supabase/supabase-js'
 import type { Json } from '@/types/supabase.generated'
+import type { MemoryTrailId } from '@/data/memoryTrails'
 
 const supabaseUrl = import.meta.env.VITE_SUPABASE_URL
 const supabaseKey = import.meta.env.VITE_SUPABASE_ANON_KEY
@@ -64,6 +65,11 @@ export interface GuestUpload {
   photo_urls: string[]
   video_urls: string[]
   status: 'pending' | 'approved' | 'rejected'
+  video_visibility?: 'archive_only' | 'guest_highlights' | 'featured'
+  memory_trail?: MemoryTrailId | null
+  editorial_title?: string | null
+  editorial_summary?: string | null
+  featured_rank?: number | null
   created_at: string
 }
 
@@ -96,6 +102,9 @@ export interface SiteEditorialFeature {
   title: string
   summary?: string | null
   trail?: string | null
+  memory_trail?: MemoryTrailId | null
+  badge_label?: string | null
+  cta_label?: string | null
   source_type: SiteEditorialFeatureSourceType
   source_id?: string | null
   source_label?: string | null
@@ -103,10 +112,25 @@ export interface SiteEditorialFeature {
   is_active: boolean
   display_order: number
   metadata: Record<string, Json | undefined>
+  starts_at?: string | null
+  ends_at?: string | null
   updated_by_user_id?: string | null
   updated_by_email?: string | null
   created_at: string
   updated_at: string
+}
+
+export interface SiteEditorialFeatureHistoryEntry {
+  id: string
+  slot: SiteEditorialFeatureSlot
+  feature_id?: string | null
+  actor_user_id?: string | null
+  actor_email?: string | null
+  actor_name?: string | null
+  change_summary: string
+  previous_feature: Record<string, unknown>
+  next_feature: Record<string, unknown>
+  created_at: string
 }
 
 export interface SiteEditorialFeatureActor {
@@ -119,10 +143,15 @@ export interface UpsertSiteEditorialFeatureInput {
   title: string
   summary?: string | null
   trail?: string | null
+  memoryTrail?: MemoryTrailId | null
+  badgeLabel?: string | null
+  ctaLabel?: string | null
   sourceType: SiteEditorialFeatureSourceType
   sourceId?: string | null
   sourceLabel?: string | null
   sourceUrl?: string | null
+  startsAt?: string | null
+  endsAt?: string | null
   isActive?: boolean
   displayOrder?: number
   metadata?: Record<string, Json | undefined>
@@ -247,12 +276,52 @@ export async function fetchSiteEditorialFeatures(slot?: SiteEditorialFeatureSlot
   return await query.returns<SiteEditorialFeature[]>()
 }
 
+export async function fetchSiteEditorialFeatureHistory(slot?: SiteEditorialFeatureSlot) {
+  let query = supabase
+    .from('site_editorial_feature_history')
+    .select('*')
+    .order('created_at', { ascending: false })
+    .limit(80)
+
+  if (slot) {
+    query = query.eq('slot', slot)
+  }
+
+  return await query.returns<SiteEditorialFeatureHistoryEntry[]>()
+}
+
 export async function fetchSiteEditorialFeatureBySlot(slot: SiteEditorialFeatureSlot) {
   return await supabase
     .from('site_editorial_features')
     .select('*')
     .eq('slot', slot)
     .maybeSingle<SiteEditorialFeature>()
+}
+
+export interface RecordSiteEditorialFeatureHistoryInput {
+  slot: SiteEditorialFeatureSlot
+  featureId?: string | null
+  changeSummary: string
+  previousFeature?: Record<string, unknown>
+  nextFeature?: Record<string, unknown>
+  actor?: ModerationAuditActor | null
+}
+
+export async function recordSiteEditorialFeatureHistory(input: RecordSiteEditorialFeatureHistoryInput) {
+  return await supabase
+    .from('site_editorial_feature_history')
+    .insert({
+      slot: input.slot,
+      feature_id: input.featureId ?? null,
+      actor_user_id: input.actor?.userId ?? null,
+      actor_email: input.actor?.email ?? null,
+      actor_name: input.actor?.name ?? null,
+      change_summary: input.changeSummary,
+      previous_feature: input.previousFeature ?? {},
+      next_feature: input.nextFeature ?? {},
+    })
+    .select('*')
+    .single<SiteEditorialFeatureHistoryEntry>()
 }
 
 export async function upsertSiteEditorialFeature(input: UpsertSiteEditorialFeatureInput) {
@@ -264,6 +333,9 @@ export async function upsertSiteEditorialFeature(input: UpsertSiteEditorialFeatu
         title: input.title,
         summary: input.summary ?? null,
         trail: input.trail ?? null,
+        memory_trail: input.memoryTrail ?? null,
+        badge_label: input.badgeLabel ?? null,
+        cta_label: input.ctaLabel ?? null,
         source_type: input.sourceType,
         source_id: input.sourceId ?? null,
         source_label: input.sourceLabel ?? null,
@@ -271,6 +343,8 @@ export async function upsertSiteEditorialFeature(input: UpsertSiteEditorialFeatu
         is_active: input.isActive ?? true,
         display_order: input.displayOrder ?? 0,
         metadata: input.metadata ?? {},
+        starts_at: input.startsAt ?? null,
+        ends_at: input.endsAt ?? null,
         updated_by_user_id: input.actor?.userId ?? null,
         updated_by_email: input.actor?.email ?? null,
         updated_at: new Date().toISOString(),
