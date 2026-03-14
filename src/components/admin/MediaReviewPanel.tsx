@@ -15,6 +15,7 @@ import { Input } from '@/components/ui/Input'
 import { Textarea } from '@/components/ui/Textarea'
 import { useToast } from '@/context/ToastContext'
 import { cn } from '@/lib/utils'
+import { getMediaPath } from '@/utils/media'
 import {
   createMediaReviewArtifactSignedUrl,
   downloadMediaReviewArtifact,
@@ -95,6 +96,11 @@ const PERSON_GROUP_SAMPLE_LIMIT = 60
 
 function toSiteMediaPath(relativePath: string) {
   return `/media/${relativePath.replace(/^\/+/, '')}`
+}
+
+function resolveReviewMediaPath(path: string | null | undefined) {
+  if (!path) return ''
+  return getMediaPath(path)
 }
 
 function chunkItems<T>(items: T[], size: number) {
@@ -1070,9 +1076,14 @@ export function MediaReviewPanel() {
                               >
                                 <div className="overflow-hidden rounded-lg bg-cream-100">
                                   {photo.thumbnailUrl ? (
-                                    <img src={photo.thumbnailUrl} alt={photo.sourceRelativePath} className="h-18 w-full object-cover" />
+                                    <img
+                                      src={resolveReviewMediaPath(photo.thumbnailUrl)}
+                                      alt={photo.sourceRelativePath}
+                                      className="h-[4.5rem] w-full object-cover"
+                                      loading="lazy"
+                                    />
                                   ) : (
-                                    <div className="flex h-18 items-center justify-center text-xs text-charcoal-400">No preview</div>
+                                    <div className="flex h-[4.5rem] items-center justify-center text-xs text-charcoal-400">No preview</div>
                                   )}
                                 </div>
                                 <div className="min-w-0">
@@ -1123,9 +1134,10 @@ export function MediaReviewPanel() {
                               <div className="relative aspect-[4/3] bg-charcoal-900">
                                 {selectedPhoto.photoUrl ? (
                                   <img
-                                    src={selectedPhoto.photoUrl}
+                                    src={resolveReviewMediaPath(selectedPhoto.photoUrl)}
                                     alt={selectedPhoto.sourceRelativePath}
                                     className="h-full w-full object-contain"
+                                    loading="lazy"
                                   />
                                 ) : null}
 
