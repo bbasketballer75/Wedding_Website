@@ -368,9 +368,19 @@ async function main() {
 
   const human = await loadHuman()
   const detections = []
+  const skippedImages = []
   for (const record of imageRecords) {
     const sourcePath = path.join(absoluteSourceRoot, ...record.relativePath.split('/'))
-    detections.push(...await detectFacesForImage(human, sourcePath, record))
+    try {
+      detections.push(...await detectFacesForImage(human, sourcePath, record))
+    } catch (error) {
+      skippedImages.push({
+        recordId: record.id,
+        relativePath: record.relativePath,
+        reason: error instanceof Error ? error.message : String(error),
+      })
+      console.warn(`Skipping face detection for ${record.relativePath}: ${error instanceof Error ? error.message : String(error)}`)
+    }
   }
 
   const clusters = clusterFaces(detections)
@@ -413,6 +423,7 @@ async function main() {
     '',
     `Detected faces: **${detections.length}**`,
     `Clusters: **${clusterSummary.length}**`,
+    `Skipped images: **${skippedImages.length}**`,
     '',
     '## Review Instructions',
     '',
@@ -440,6 +451,9 @@ async function main() {
   console.log(`Wrote face clusters to ${clustersPath}`)
   console.log(`Wrote review template to ${reviewPath}`)
   console.log(`Wrote annotations to ${annotationsPath}`)
+  if (skippedImages.length > 0) {
+    console.warn(`Skipped face detection for ${skippedImages.length} image${skippedImages.length === 1 ? '' : 's'} due to unsupported or unreadable input.`)
+  }
 }
 
 await main()
