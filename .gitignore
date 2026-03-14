@@ -63,3 +63,9 @@ supabase/.branches/
 
 # Local Netlify folder
 .netlify
+
+# Playwright
+/playwright-report/
+/blob-report/
+/playwright/.cache/
+/playwright/.auth/

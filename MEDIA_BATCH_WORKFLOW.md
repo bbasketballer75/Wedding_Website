@@ -10,6 +10,7 @@ It is intentionally local-first and review-first:
 - exact duplicates and similar shots are surfaced for curation
 - live-photo pairs are grouped
 - face clusters are generated for manual naming
+- external digiKam face tags can replace the local face-cluster stage
 - confirmed names flow into an import-ready manifest
 - publish and review staging happen only when you run the explicit post-prep commands
 
@@ -39,6 +40,8 @@ The working root will be populated with:
 - `optimized/`
 - `publish/`
 
+`media:batch:prepare` still runs the built-in local face detector. If digiKam is your source of truth for people tags, use the manual workflow below so the imported XMP metadata replaces the auto-generated face stage.
+
 ## Stage Commands
 
 Catalog only:
@@ -57,6 +60,12 @@ Generate face clusters and the editable review file:
 
 ```bash
 npm run media:batch:faces -- "C:/path/to/source-root" "C:/path/to/working-root"
+```
+
+Import confirmed face names and regions from digiKam XMP metadata after tagging the `organized/` folder:
+
+```bash
+npm run media:batch:faces:digikam -- "C:/path/to/working-root"
 ```
 
 Copy originals into a review-friendly organized structure:
@@ -115,6 +124,8 @@ npm run media:batch:evaluate -- "C:/path/to/working-root" "C:/path/to/evaluation
 - `face-clusters.md`: readable review summary
 - `crops/<cluster-id>/`: face crop thumbnails grouped by cluster
 
+When you use `media:batch:faces:digikam`, these files are regenerated from digiKam metadata and marked confirmed automatically.
+
 ### `organized/`
 
 - `organization-manifest.json`: copy manifest linking source media to organized outputs
@@ -153,10 +164,37 @@ npm run media:batch:evaluate -- "C:/path/to/working-root" "C:/path/to/evaluation
 11. Open `/admin/review` to confirm names, request splits, merge clusters, sync manifest metadata, and apply confirmed face tags.
 12. Run `media:batch:evaluate` against your labeled fixture when you tune thresholds.
 
+## digiKam Workflow
+
+Use this when you want face detection, grouping, and naming to happen outside the website.
+
+1. Run `npm run media:batch:catalog -- "<source-root>" "<working-root>/catalog"`.
+2. Run `npm run media:batch:analyze -- "<source-root>" "<working-root>/catalog"`.
+3. Run `npm run media:batch:organize -- "<source-root>" "<working-root>"`.
+4. Open digiKam and add `<working-root>/organized` as the collection root.
+5. In digiKam, open `Settings -> Configure digiKam -> Metadata` and enable:
+   - `Image Tags`
+   - `Face Tags (including face areas)`
+6. Run `Tools -> Detect and Recognize Faces`.
+7. Use the `People` view to confirm or rename faces in bulk.
+8. Run `Item -> Write Metadata to Files` or `Album -> Write Metadata to Files`.
+9. Run `npm run media:batch:faces:digikam -- "<working-root>"`.
+10. Run `npm run media:batch:optimize -- "<working-root>/organized" "<working-root>/optimized"`.
+11. Run `npm run media:batch:export -- "<working-root>"`.
+12. Run `npm run media:batch:publish -- "<working-root>"`.
+
+### digiKam Notes
+
+- The importer reads adjacent XMP sidecars first and then falls back to embedded XMP when it can.
+- Exact-duplicate review copies under `organized/Review/Exact Duplicates` are skipped automatically.
+- Imported digiKam names become confirmed `faces` metadata automatically in the publish manifest.
+- Re-run `media:batch:faces:digikam` any time you change names in digiKam and write metadata again.
+
 ## Notes
 
 - Exact duplicates after the first file in each group are copied into `organized/Review/Exact Duplicates`.
 - The face stage uses local model files from `node_modules`, so it does not need a remote model download.
+- The digiKam importer reads MWG/XMP face regions and preserves face boxes alongside hotspot centers in `photos.faces`.
 - `media:batch:publish` uploads optimized outputs to the configured remote media bucket and writes non-engagement photo rows into `photos` using relative `/media/...` paths.
 - `media:batch:review:push` stores crops and review artifacts in the private `media-review-artifacts` bucket plus the admin staging tables.
 - The hardcoded engagement gallery remains the editorial overlay, so publish intentionally skips `Engagement` rows from the batch manifest.

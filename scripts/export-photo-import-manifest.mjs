@@ -139,6 +139,7 @@ async function main() {
             name: confirmedName,
             x: face.x,
             y: face.y,
+            box: face.box ?? null,
           }
         })
         .filter(Boolean)
