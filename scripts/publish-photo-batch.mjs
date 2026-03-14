@@ -57,6 +57,7 @@ const supabase = createClient(PROJECT_URL, SERVICE_ROLE_KEY, {
     autoRefreshToken: false,
   },
 })
+const PHOTO_LOOKUP_CHUNK_SIZE = 40
 
 function chunk(items, size) {
   const chunks = []
@@ -168,7 +169,7 @@ function rowsMatch(a, b) {
 async function fetchExistingPhotos(urls) {
   const existing = []
 
-  for (const urlChunk of chunk(urls, 200)) {
+  for (const urlChunk of chunk(urls, PHOTO_LOOKUP_CHUNK_SIZE)) {
     const { data, error } = await supabase
       .from('photos')
       .select('*')

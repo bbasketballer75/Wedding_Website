@@ -55,9 +55,56 @@ interface ClusterDraft {
 }
 
 interface PhotoRowForReview extends Pick<SupabasePhoto, 'id' | 'url' | 'thumbnail' | 'category' | 'location' | 'date' | 'tags' | 'faces'> {}
+const PHOTO_LOOKUP_CHUNK_SIZE = 40
 
 function toSiteMediaPath(relativePath: string) {
   return `/media/${relativePath.replace(/^\/+/, '')}`
+}
+
+function chunkItems<T>(items: T[], size: number) {
+  const chunks: T[][] = []
+  for (let index = 0; index < items.length; index += size) {
+    chunks.push(items.slice(index, index + size))
+  }
+  return chunks
+}
+
+async function persistPhotoUpdates(
+  updates: Array<Record<string, unknown> & { id: string }>,
+) {
+  for (const update of updates) {
+    const { id, ...fields } = update
+    const { error } = await supabase
+      .from('photos')
+      .update(fields)
+      .eq('id', id)
+
+    if (error) {
+      return { error }
+    }
+  }
+
+  return { error: null }
+}
+
+async function fetchPhotosForReview(urls: string[]) {
+  const photos: PhotoRowForReview[] = []
+
+  for (const urlChunk of chunkItems(urls, PHOTO_LOOKUP_CHUNK_SIZE)) {
+    const { data, error } = await supabase
+      .from('photos')
+      .select('id, url, thumbnail, category, location, date, tags, faces')
+      .in('url', urlChunk)
+      .returns<PhotoRowForReview[]>()
+
+    if (error) {
+      return { data: null, error }
+    }
+
+    photos.push(...(data || []))
+  }
+
+  return { data: photos, error: null }
 }
 
 function normalizeClusterDraft(cluster: MediaReviewCluster): ClusterDraft {
@@ -307,11 +354,7 @@ export function MediaReviewPanel() {
     setSyncingBatchId(batch.id)
 
     const urls = importRows.map((row) => toSiteMediaPath(row.photoRowDraft.url))
-    const { data: photos, error: photoError } = await supabase
-      .from('photos')
-      .select('id, url, thumbnail, category, location, date, tags, faces')
-      .in('url', urls)
-      .returns<PhotoRowForReview[]>()
+    const { data: photos, error: photoError } = await fetchPhotosForReview(urls)
 
     if (photoError) {
       addToast('Could not load the published photos for this batch.', 'error')
@@ -336,9 +379,7 @@ export function MediaReviewPanel() {
     })
 
     if (updates.length > 0) {
-      const { error: updateError } = await supabase
-        .from('photos')
-        .upsert(updates, { onConflict: 'id' })
+      const { error: updateError } = await persistPhotoUpdates(updates)
 
       if (updateError) {
         addToast('Could not sync the manifest metadata back into photos.', 'error')
@@ -372,11 +413,7 @@ export function MediaReviewPanel() {
     )
 
     const urls = importRows.map((row) => toSiteMediaPath(row.photoRowDraft.url))
-    const { data: photos, error: photoError } = await supabase
-      .from('photos')
-      .select('id, url, thumbnail, category, location, date, tags, faces')
-      .in('url', urls)
-      .returns<PhotoRowForReview[]>()
+    const { data: photos, error: photoError } = await fetchPhotosForReview(urls)
 
     if (photoError) {
       addToast('Could not load the published photos for face-tag promotion.', 'error')
@@ -431,9 +468,7 @@ export function MediaReviewPanel() {
     }))
 
     if (updates.length > 0) {
-      const { error: updateError } = await supabase
-        .from('photos')
-        .upsert(updates, { onConflict: 'id' })
+      const { error: updateError } = await persistPhotoUpdates(updates)
 
       if (updateError) {
         addToast('Could not apply the confirmed face tags to the live photos.', 'error')
