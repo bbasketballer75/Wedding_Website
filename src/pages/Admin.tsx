@@ -33,7 +33,9 @@ import {
   Video,
   History,
   Sparkles,
+  Users,
 } from 'lucide-react'
+import { MediaReviewPanel } from '@/components/admin/MediaReviewPanel'
 import { Button } from '@/components/ui/Button'
 import { Input } from '@/components/ui/Input'
 import { Label } from '@/components/ui/Label'
@@ -2883,6 +2885,7 @@ function AdminLayout() {
   const navItems = [
     { path: '/admin', label: 'Dashboard', icon: LayoutDashboard },
     { path: '/admin/photos', label: 'Photos', icon: Image },
+    { path: '/admin/review', label: 'People Review', icon: Users },
     { path: '/admin/guestbook', label: 'Guestbook', icon: MessageSquare },
     { path: '/admin/featured', label: 'Featured', icon: Sparkles },
     { path: '/admin/audit', label: 'Audit Trail', icon: History },
@@ -2943,6 +2946,7 @@ function AdminLayout() {
           <Routes>
             <Route index element={<Dashboard />} />
             <Route path="photos" element={<PhotoModeration />} />
+            <Route path="review" element={<MediaReviewPanel />} />
             <Route path="guestbook" element={<GuestbookModeration />} />
             <Route path="featured" element={<FeaturedContentManager />} />
             <Route path="audit" element={<AuditLogView />} />

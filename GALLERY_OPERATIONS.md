@@ -4,6 +4,8 @@
 
 This is the lightweight operating guide for keeping the live gallery intentional after launch.
 
+For large local media prep before import, use `MEDIA_BATCH_WORKFLOW.md`.
+
 ## Current Gallery Model
 
 The public gallery is organized around these top-level lanes:
@@ -39,6 +41,22 @@ That means:
 4. Approving now publishes the photo URLs directly into the live `photos` table as `source=guest`.
 5. Keep `source=guest` intact so the gallery still labels the item as a guest upload.
 6. Re-check the gallery after approval to make sure the item appears in the expected tabs.
+
+## Batch Publish Workflow
+
+For the wedding master archive and people-tag rollout:
+
+1. Run the local prep stages from `MEDIA_BATCH_WORKFLOW.md`.
+2. Run `npm run media:batch:publish -- "<working-root>"` to upload optimized media and sync non-engagement rows into `photos`.
+3. Run `npm run media:batch:review:push -- "<working-root>"` to stage face-review artifacts for the admin app.
+4. Open `/admin/review` to:
+   - confirm names
+   - ignore uncertain clusters
+   - request splits
+   - merge duplicate people clusters
+   - sync manifest category/tag suggestions
+   - apply confirmed face tags into live `photos.faces`
+5. Keep the engagement seed curated in code; the publish command intentionally skips `Engagement` batch rows so the editorial overlay remains intact.
 
 ## Curation Guidance
 

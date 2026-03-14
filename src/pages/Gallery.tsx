@@ -44,6 +44,8 @@ interface DetectedFace {
   name: string
   photoCount: number
   confidence?: number
+  thumbnail?: string
+  latestMoment?: string
 }
 
 type CollectionTab = 'All' | 'Professional' | 'Guest Uploads' | 'Engagement' | 'Bach+ette' | 'Wedding Day'
@@ -583,11 +585,19 @@ export default function Gallery() {
             const existing = acc.get(face.name)
             if (existing) {
               existing.photoCount += 1
+              if (!existing.thumbnail) {
+                existing.thumbnail = photo.thumbnail || photo.url
+              }
+              if (!existing.latestMoment && photo.caption) {
+                existing.latestMoment = photo.caption
+              }
             } else {
               acc.set(face.name, {
                 id: face.id || face.name.toLowerCase().replace(/\s+/g, '-'),
                 name: face.name,
                 photoCount: 1,
+                thumbnail: photo.thumbnail || photo.url,
+                latestMoment: photo.caption,
               })
             }
           }
