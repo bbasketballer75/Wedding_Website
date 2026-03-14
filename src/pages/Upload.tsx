@@ -84,6 +84,24 @@ function createUploadId() {
     : `${Date.now()}_${Math.random().toString(36).slice(2)}`
 }
 
+async function buildFileFingerprint(file: File) {
+  const fallback = `fallback:${file.name}:${file.size}:${file.lastModified}`
+
+  try {
+    if (!crypto?.subtle) {
+      return fallback
+    }
+
+    const buffer = await file.arrayBuffer()
+    const digest = await crypto.subtle.digest('SHA-256', buffer)
+    const bytes = Array.from(new Uint8Array(digest))
+    const hex = bytes.map((value) => value.toString(16).padStart(2, '0')).join('')
+    return `sha256:${hex}`
+  } catch {
+    return fallback
+  }
+}
+
 export default function UploadPage() {
   const [files, setFiles] = useState<UploadingFile[]>([])
   const [name, setName] = useState('')
@@ -249,13 +267,23 @@ export default function UploadPage() {
     setSubmitError(null)
 
     try {
-      const photoUrls = files
-        .filter(f => f.status === 'complete' && !f.file.type.startsWith('video/'))
+      const completedPhotoFiles = files.filter(
+        (file) => file.status === 'complete' && !file.file.type.startsWith('video/') && file.publicUrl
+      )
+      const completedVideoFiles = files.filter(
+        (file) => file.status === 'complete' && file.file.type.startsWith('video/') && file.publicUrl
+      )
+
+      const [photoFingerprints, videoFingerprints] = await Promise.all([
+        Promise.all(completedPhotoFiles.map((file) => buildFileFingerprint(file.file))),
+        Promise.all(completedVideoFiles.map((file) => buildFileFingerprint(file.file))),
+      ])
+
+      const photoUrls = completedPhotoFiles
         .map(f => f.publicUrl)
         .filter(Boolean) as string[]
 
-      const videoUrls = files
-        .filter(f => f.status === 'complete' && f.file.type.startsWith('video/'))
+      const videoUrls = completedVideoFiles
         .map(f => f.publicUrl)
         .filter(Boolean) as string[]
 
@@ -267,7 +295,9 @@ export default function UploadPage() {
             guest_email: email,
             message: message || null,
             photo_urls: photoUrls,
+            photo_fingerprints: photoFingerprints,
             video_urls: videoUrls,
+            video_fingerprints: videoFingerprints,
             status: 'pending',
           },
         ])

@@ -25,8 +25,10 @@ export type Database = {
           id: string
           memory_trail: string | null
           message: string | null
+          photo_fingerprints: string[]
           photo_urls: string[] | null
           status: string | null
+          video_fingerprints: string[]
           video_urls: string[] | null
           video_visibility: string
         }
@@ -40,8 +42,10 @@ export type Database = {
           id?: string
           memory_trail?: string | null
           message?: string | null
+          photo_fingerprints?: string[]
           photo_urls?: string[] | null
           status?: string | null
+          video_fingerprints?: string[]
           video_urls?: string[] | null
           video_visibility?: string
         }
@@ -55,8 +59,10 @@ export type Database = {
           id?: string
           memory_trail?: string | null
           message?: string | null
+          photo_fingerprints?: string[]
           photo_urls?: string[] | null
           status?: string | null
+          video_fingerprints?: string[]
           video_urls?: string[] | null
           video_visibility?: string
         }
@@ -298,6 +304,83 @@ export type Database = {
             referencedRelation: "media_review_batches"
             referencedColumns: ["id"]
           }
+        ]
+      }
+      media_review_faces: {
+        Row: {
+          batch_id: string
+          box: Json
+          cluster_id: string | null
+          confirmed_name: string | null
+          created_at: string
+          face_id: string
+          id: string
+          metadata: Json
+          notes: string | null
+          person_key: string | null
+          photo_url: string | null
+          quality_score: number | null
+          review_status: string
+          source_record_id: string | null
+          source_relative_path: string | null
+          thumbnail_object_path: string | null
+          thumbnail_url: string | null
+          updated_at: string
+          x: number
+          y: number
+        }
+        Insert: {
+          batch_id: string
+          box?: Json
+          cluster_id?: string | null
+          confirmed_name?: string | null
+          created_at?: string
+          face_id: string
+          id?: string
+          metadata?: Json
+          notes?: string | null
+          person_key?: string | null
+          photo_url?: string | null
+          quality_score?: number | null
+          review_status?: string
+          source_record_id?: string | null
+          source_relative_path?: string | null
+          thumbnail_object_path?: string | null
+          thumbnail_url?: string | null
+          updated_at?: string
+          x?: number
+          y?: number
+        }
+        Update: {
+          batch_id?: string
+          box?: Json
+          cluster_id?: string | null
+          confirmed_name?: string | null
+          created_at?: string
+          face_id?: string
+          id?: string
+          metadata?: Json
+          notes?: string | null
+          person_key?: string | null
+          photo_url?: string | null
+          quality_score?: number | null
+          review_status?: string
+          source_record_id?: string | null
+          source_relative_path?: string | null
+          thumbnail_object_path?: string | null
+          thumbnail_url?: string | null
+          updated_at?: string
+          x?: number
+          y?: number
+        }
+        Relationships: [
+          {
+            foreignKeyName: "media_review_faces_batch_id_fkey"
+            columns: ["batch_id"]
+            isOneToOne: false
+            referencedRelation: "media_review_batches"
+            referencedColumns: ["id"]
+          },
         ]
       }
       photos: {
