@@ -63,7 +63,9 @@ export interface GuestUpload {
   guest_email: string
   message?: string
   photo_urls: string[]
+  photo_fingerprints: string[]
   video_urls: string[]
+  video_fingerprints: string[]
   status: 'pending' | 'approved' | 'rejected'
   video_visibility?: 'archive_only' | 'guest_highlights' | 'featured'
   memory_trail?: MemoryTrailId | null
@@ -211,6 +213,7 @@ export interface ModerationAuditTimelineFilters {
 
 export type MediaReviewBatchStatus = 'pending' | 'in_review' | 'approved' | 'archived'
 export type MediaReviewClusterStatus = 'pending' | 'confirmed' | 'ignored' | 'merged' | 'split_requested'
+export type MediaReviewFaceStatus = 'pending' | 'confirmed' | 'ignored'
 
 export interface MediaReviewBatch {
   id: string
@@ -272,6 +275,36 @@ export interface UpdateMediaReviewClusterInput {
   mergeIntoClusterId?: string | null
   splitRequested?: boolean
   splitNotes?: string | null
+}
+
+export interface MediaReviewFace {
+  id: string
+  batch_id: string
+  face_id: string
+  cluster_id?: string | null
+  source_record_id?: string | null
+  source_relative_path?: string | null
+  photo_url?: string | null
+  thumbnail_url?: string | null
+  thumbnail_object_path?: string | null
+  x: number
+  y: number
+  box: Record<string, Json | undefined>
+  quality_score?: number | null
+  review_status: MediaReviewFaceStatus
+  confirmed_name?: string | null
+  person_key?: string | null
+  notes?: string | null
+  metadata: Record<string, Json | undefined>
+  created_at: string
+  updated_at: string
+}
+
+export interface UpdateMediaReviewFaceInput {
+  reviewStatus?: MediaReviewFaceStatus
+  confirmedName?: string | null
+  personKey?: string | null
+  notes?: string | null
 }
 
 export async function recordModerationAudit(input: RecordModerationAuditInput) {
@@ -344,6 +377,15 @@ export async function fetchMediaReviewClusters(batchId: string) {
     .returns<MediaReviewCluster[]>()
 }
 
+export async function fetchMediaReviewFaces(batchId: string) {
+  return await supabase
+    .from('media_review_faces')
+    .select('*')
+    .eq('batch_id', batchId)
+    .order('updated_at', { ascending: false })
+    .returns<MediaReviewFace[]>()
+}
+
 export async function updateMediaReviewBatchStatus(batchId: string, status: MediaReviewBatchStatus) {
   return await supabase
     .from('media_review_batches')
@@ -370,6 +412,36 @@ export async function updateMediaReviewCluster(clusterId: string, input: UpdateM
     .eq('id', clusterId)
     .select('*')
     .single<MediaReviewCluster>()
+}
+
+export async function updateMediaReviewFace(faceId: string, input: UpdateMediaReviewFaceInput) {
+  return await supabase
+    .from('media_review_faces')
+    .update({
+      review_status: input.reviewStatus,
+      confirmed_name: input.confirmedName,
+      person_key: input.personKey,
+      notes: input.notes,
+      updated_at: new Date().toISOString(),
+    })
+    .eq('id', faceId)
+    .select('*')
+    .single<MediaReviewFace>()
+}
+
+export async function updateManyMediaReviewFaces(faceIds: string[], input: UpdateMediaReviewFaceInput) {
+  return await supabase
+    .from('media_review_faces')
+    .update({
+      review_status: input.reviewStatus,
+      confirmed_name: input.confirmedName,
+      person_key: input.personKey,
+      notes: input.notes,
+      updated_at: new Date().toISOString(),
+    })
+    .in('id', faceIds)
+    .select('*')
+    .returns<MediaReviewFace[]>()
 }
 
 export async function createMediaReviewArtifactSignedUrl(

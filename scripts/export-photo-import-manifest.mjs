@@ -26,6 +26,52 @@ function resolveConfirmedNames(reviewItems) {
   return new Map(reviewItems.map((item) => [item.clusterId, getResolvedName(item.clusterId)]))
 }
 
+function getSourcePriority(source) {
+  switch (source) {
+    case 'professional':
+      return 3
+    case 'bach+ette':
+      return 2
+    case 'guest':
+      return 1
+    default:
+      return 0
+  }
+}
+
+function pickCanonicalDuplicateRecord(records) {
+  return [...records].sort((left, right) => {
+    const sourceDelta = getSourcePriority(right.source) - getSourcePriority(left.source)
+    if (sourceDelta !== 0) return sourceDelta
+
+    const qualityDelta = (right.qualityScore ?? 0) - (left.qualityScore ?? 0)
+    if (qualityDelta !== 0) return qualityDelta
+
+    const dateDelta = String(left.captureDate ?? '').localeCompare(String(right.captureDate ?? ''))
+    if (dateDelta !== 0) return dateDelta
+
+    return left.relativePath.localeCompare(right.relativePath)
+  })[0] ?? null
+}
+
+function buildDuplicateKeepers(inventory) {
+  const groups = new Map()
+
+  for (const record of inventory) {
+    if (!record.duplicateGroupId || record.kind !== 'image') continue
+    const current = groups.get(record.duplicateGroupId) ?? []
+    current.push(record)
+    groups.set(record.duplicateGroupId, current)
+  }
+
+  return new Map(
+    [...groups.entries()].map(([duplicateGroupId, records]) => [
+      duplicateGroupId,
+      pickCanonicalDuplicateRecord(records),
+    ]),
+  )
+}
+
 function buildTags(record) {
   const tags = new Set([
     record.source,
@@ -56,11 +102,33 @@ async function main() {
   const recordById = new Map(inventory.map((record) => [record.id, record]))
   const annotationsByRecordId = new Map(annotationsByPhoto.map((annotation) => [annotation.recordId, annotation.faces]))
   const confirmedNames = resolveConfirmedNames(reviewItems)
+  const duplicateKeepers = buildDuplicateKeepers(inventory)
+  const exclusions = []
 
   const rows = optimizedManifest
     .filter((item) => item.type === 'image' && item.sourceRelativePath)
     .map((item) => {
       const record = [...recordById.values()].find((candidate) => candidate.relativePath === item.sourceRelativePath)
+      const keeper = record?.duplicateGroupId ? duplicateKeepers.get(record.duplicateGroupId) : null
+
+      if (record?.duplicateGroupId && keeper?.id && keeper.id !== record.id) {
+        exclusions.push({
+          reason: 'exact-duplicate-excluded',
+          duplicateGroupId: record.duplicateGroupId,
+          sourceRecordId: record.id,
+          sourceRelativePath: record.relativePath,
+          keptSourceRecordId: keeper.id,
+          keptSourceRelativePath: keeper.relativePath,
+          displayRelativePath: item.displayRelativePath,
+          thumbnailRelativePath: item.thumbRelativePath,
+          source: record.source ?? 'unknown',
+          keptSource: keeper.source ?? 'unknown',
+          qualityScore: record.qualityScore ?? null,
+          keptQualityScore: keeper.qualityScore ?? null,
+        })
+        return null
+      }
+
       const faces = (annotationsByRecordId.get(record?.id) ?? [])
         .map((face, index) => {
           const confirmedName = confirmedNames.get(face.clusterId)
@@ -130,11 +198,15 @@ async function main() {
         },
       }
     })
+    .filter(Boolean)
 
   const manifestPath = path.join(publishRoot, 'wedding-photo-import-manifest.json')
   const markdownPath = path.join(publishRoot, 'wedding-photo-import-manifest.md')
+  const exclusionsPath = path.join(publishRoot, 'wedding-photo-import-exclusions.json')
+  const exclusionsMarkdownPath = path.join(publishRoot, 'wedding-photo-import-exclusions.md')
 
   await writeJson(manifestPath, rows)
+  await writeJson(exclusionsPath, exclusions)
   await writeMarkdown(markdownPath, [
     '# Wedding Photo Import Manifest',
     '',
@@ -142,6 +214,7 @@ async function main() {
     '',
     `Rows: **${rows.length}**`,
     `Rows with confirmed faces: **${rows.filter((row) => row.faces.length > 0).length}**`,
+    `Exact duplicates excluded: **${exclusions.length}**`,
     '',
     buildMarkdownTable(
       rows.slice(0, 30).map((row) => ({
@@ -154,9 +227,29 @@ async function main() {
       ['Source', 'Display', 'Collection', 'StoryLane', 'Faces'],
     ),
   ])
+  await writeMarkdown(exclusionsMarkdownPath, [
+    '# Wedding Photo Import Exclusions',
+    '',
+    `Working root: \`${absoluteWorkingRoot}\``,
+    '',
+    `Excluded exact duplicates: **${exclusions.length}**`,
+    '',
+    exclusions.length === 0
+      ? 'No exact duplicate rows were excluded.'
+      : buildMarkdownTable(
+          exclusions.slice(0, 50).map((row) => ({
+            Source: row.sourceRelativePath,
+            Kept: row.keptSourceRelativePath,
+            Group: row.duplicateGroupId,
+            SourceType: row.keptSource,
+          })),
+          ['Source', 'Kept', 'Group', 'SourceType'],
+        ),
+  ])
 
   console.log(`Wrote import manifest to ${manifestPath}`)
   console.log(`Wrote markdown summary to ${markdownPath}`)
+  console.log(`Wrote exclusions to ${exclusionsPath}`)
 }
 
 await main()

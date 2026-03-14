@@ -7,6 +7,8 @@ import {
   assertExists,
   createStableId,
   readJson,
+  slugify,
+  toSiteMediaPath,
   toPosix,
   writeJson,
   writeMarkdown,
@@ -116,6 +118,30 @@ function buildArtifactPaths(prefix) {
   }
 }
 
+function resolveConfirmedNames(reviewItems) {
+  const byClusterId = new Map(reviewItems.map((item) => [item.clusterId, item]))
+
+  function getResolvedName(clusterId, seen = new Set()) {
+    if (!clusterId || seen.has(clusterId)) return null
+    seen.add(clusterId)
+
+    const item = byClusterId.get(clusterId)
+    if (!item) return null
+    if (item.confirmedName?.trim()) return item.confirmedName.trim()
+    if (item.mergeIntoClusterId) return getResolvedName(item.mergeIntoClusterId, seen)
+    return null
+  }
+
+  return new Map(reviewItems.map((item) => [item.clusterId, getResolvedName(item.clusterId)]))
+}
+
+function resolveClusterStatus(review) {
+  if (!review) return 'pending'
+  if (review.reviewStatus === 'confirmed') return 'confirmed'
+  if (review.reviewStatus === 'ignored') return 'ignored'
+  return 'pending'
+}
+
 async function main() {
   const absoluteWorkingRoot = path.resolve(workingRoot)
   const facesRoot = path.join(absoluteWorkingRoot, 'faces')
@@ -139,10 +165,11 @@ async function main() {
     assertExists(importManifestPath, 'photo import manifest'),
   ])
 
-  const [detections, clusters, reviewItems] = await Promise.all([
+  const [detections, clusters, reviewItems, importManifest] = await Promise.all([
     readJson(detectionsPath),
     readJson(clustersPath),
     readJson(reviewPath),
+    readJson(importManifestPath),
   ])
 
   const batchKey = createStableId(
@@ -216,6 +243,22 @@ async function main() {
   }
 
   const reviewByClusterId = new Map(reviewItems.map((item) => [item.clusterId, item]))
+  const resolvedNames = resolveConfirmedNames(reviewItems)
+  const clusterByFaceId = new Map()
+  const clusterById = new Map(clusters.map((cluster) => [cluster.clusterId, cluster]))
+  const importManifestByRecordId = new Map(
+    importManifest
+      .filter((row) => row.sourceRecordId)
+      .map((row) => [row.sourceRecordId, row]),
+  )
+
+  for (const cluster of clusters) {
+    for (const member of cluster.members) {
+      if (member.faceId) {
+        clusterByFaceId.set(member.faceId, cluster)
+      }
+    }
+  }
 
   const { error: deleteClustersError } = await supabase
     .from('media_review_clusters')
@@ -224,6 +267,15 @@ async function main() {
 
   if (deleteClustersError) {
     throw deleteClustersError
+  }
+
+  const { error: deleteFacesError } = await supabase
+    .from('media_review_faces')
+    .delete()
+    .eq('batch_id', batchRow.id)
+
+  if (deleteFacesError) {
+    throw deleteFacesError
   }
 
   const clusterRows = clusters.map((cluster) => {
@@ -276,6 +328,66 @@ async function main() {
     }
   }
 
+  const faceRows = detections
+    .map((detection) => {
+      const manifestRow = importManifestByRecordId.get(detection.sourceRecordId)
+      if (!manifestRow) {
+        return null
+      }
+
+      const cluster = clusterByFaceId.get(detection.faceId) ?? clusterById.get(detection.clusterId)
+      const clusterId = cluster?.clusterId ?? detection.clusterId ?? null
+      const review = clusterId ? reviewByClusterId.get(clusterId) : null
+      const confirmedName = clusterId ? resolvedNames.get(clusterId) : null
+      const reviewStatus = resolveClusterStatus(review)
+
+      return {
+        batch_id: batchRow.id,
+        face_id: detection.faceId,
+        cluster_id: clusterId,
+        source_record_id: detection.sourceRecordId ?? null,
+        source_relative_path: detection.sourceRelativePath ?? manifestRow.sourceRelativePath ?? null,
+        photo_url: toSiteMediaPath(manifestRow.photoRowDraft.url),
+        thumbnail_url: toSiteMediaPath(manifestRow.photoRowDraft.thumbnail),
+        thumbnail_object_path: detection.thumbnailPath
+          ? `${artifactPrefix}/faces/${toPosix(detection.thumbnailPath)}`
+          : null,
+        x: detection.x ?? 0,
+        y: detection.y ?? 0,
+        box: detection.box ?? {},
+        quality_score: detection.qualityScore ?? cluster?.averageQualityScore ?? null,
+        review_status: reviewStatus,
+        confirmed_name: confirmedName ?? null,
+        person_key: confirmedName ? slugify(confirmedName) : null,
+        notes: review?.notes?.trim() || null,
+        metadata: {
+          collection: detection.collection ?? manifestRow.collection ?? null,
+          storyLaneSuggestion: detection.storyLaneSuggestion ?? manifestRow.storyLaneSuggestion ?? null,
+          suggestedLabel: review?.suggestedLabel ?? null,
+          crop: detection.crop ?? null,
+          boxScore: detection.boxScore ?? null,
+          faceScore: detection.faceScore ?? null,
+          captureDate: detection.captureDate ?? manifestRow.captureDate ?? null,
+          detectionDimensions: detection.detectionDimensions ?? null,
+          coverCandidateRank: manifestRow.coverCandidateRank ?? null,
+          duplicateGroupId: manifestRow.duplicateGroupId ?? null,
+          similarGroupId: manifestRow.similarGroupId ?? null,
+          livePhotoGroupId: manifestRow.livePhotoGroupId ?? null,
+        },
+      }
+    })
+    .filter(Boolean)
+
+  if (faceRows.length > 0) {
+    const { error: insertFacesError } = await supabase
+      .from('media_review_faces')
+      .insert(faceRows)
+
+    if (insertFacesError) {
+      throw insertFacesError
+    }
+  }
+
   const report = {
     batchKey,
     batchId: batchRow.id,
@@ -285,6 +397,7 @@ async function main() {
     uploadedArtifacts: uploadTargets.map(([, objectPath]) => objectPath),
     clusterCount: clusters.length,
     detectionCount: detections.length,
+    faceRowCount: faceRows.length,
     generatedAt: new Date().toISOString(),
   }
 
@@ -302,10 +415,11 @@ async function main() {
     `- Uploaded artifacts: **${uploadTargets.length}**`,
     `- Clusters pushed: **${clusters.length}**`,
     `- Face detections represented: **${detections.length}**`,
+    `- Face review rows staged: **${faceRows.length}**`,
     '',
     '## Notes',
     '- Batch review artifacts are stored in a private admin-only bucket.',
-    '- Cluster review state is now available in the admin review interface.',
+    '- Photo-first face review data is now available in the admin review interface.',
   ])
 
   console.log(`Pushed review batch ${batchKey} to ${BUCKET_NAME}`)
