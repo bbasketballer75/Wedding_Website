@@ -209,6 +209,71 @@ export interface ModerationAuditTimelineFilters {
   limit?: number
 }
 
+export type MediaReviewBatchStatus = 'pending' | 'in_review' | 'approved' | 'archived'
+export type MediaReviewClusterStatus = 'pending' | 'confirmed' | 'ignored' | 'merged' | 'split_requested'
+
+export interface MediaReviewBatch {
+  id: string
+  batch_key: string
+  label: string
+  status: MediaReviewBatchStatus
+  source_root?: string | null
+  working_root?: string | null
+  artifact_bucket: string
+  artifact_prefix: string
+  artifact_paths: Record<string, Json | undefined>
+  notes?: string | null
+  cluster_count: number
+  detection_count: number
+  pushed_by_user_id?: string | null
+  pushed_by_email?: string | null
+  created_at: string
+  updated_at: string
+}
+
+export interface MediaReviewClusterMember {
+  faceId?: string
+  sourceRecordId?: string | null
+  sourceRelativePath?: string
+  thumbnailPath?: string | null
+  thumbnailObjectPath?: string | null
+  x?: number
+  y?: number
+  box?: {
+    x: number
+    y: number
+    width: number
+    height: number
+  }
+}
+
+export interface MediaReviewCluster {
+  id: string
+  batch_id: string
+  cluster_id: string
+  review_status: MediaReviewClusterStatus
+  confirmed_name?: string | null
+  merge_into_cluster_id?: string | null
+  split_requested: boolean
+  split_notes?: string | null
+  sample_thumbnail_path?: string | null
+  member_count: number
+  average_quality_score?: number | null
+  source_record_ids: string[]
+  members: MediaReviewClusterMember[]
+  metadata: Record<string, Json | undefined>
+  created_at: string
+  updated_at: string
+}
+
+export interface UpdateMediaReviewClusterInput {
+  reviewStatus?: MediaReviewClusterStatus
+  confirmedName?: string | null
+  mergeIntoClusterId?: string | null
+  splitRequested?: boolean
+  splitNotes?: string | null
+}
+
 export async function recordModerationAudit(input: RecordModerationAuditInput) {
   return await supabase
     .from('moderation_audit_log')
@@ -260,6 +325,67 @@ export async function fetchModerationAuditForEntity(
   limit = 10
 ) {
   return await fetchModerationAuditTimeline({ entityType, entityId, limit })
+}
+
+export async function fetchMediaReviewBatches() {
+  return await supabase
+    .from('media_review_batches')
+    .select('*')
+    .order('updated_at', { ascending: false })
+    .returns<MediaReviewBatch[]>()
+}
+
+export async function fetchMediaReviewClusters(batchId: string) {
+  return await supabase
+    .from('media_review_clusters')
+    .select('*')
+    .eq('batch_id', batchId)
+    .order('updated_at', { ascending: false })
+    .returns<MediaReviewCluster[]>()
+}
+
+export async function updateMediaReviewBatchStatus(batchId: string, status: MediaReviewBatchStatus) {
+  return await supabase
+    .from('media_review_batches')
+    .update({
+      status,
+      updated_at: new Date().toISOString(),
+    })
+    .eq('id', batchId)
+    .select('*')
+    .single<MediaReviewBatch>()
+}
+
+export async function updateMediaReviewCluster(clusterId: string, input: UpdateMediaReviewClusterInput) {
+  return await supabase
+    .from('media_review_clusters')
+    .update({
+      review_status: input.reviewStatus,
+      confirmed_name: input.confirmedName,
+      merge_into_cluster_id: input.mergeIntoClusterId,
+      split_requested: input.splitRequested,
+      split_notes: input.splitNotes,
+      updated_at: new Date().toISOString(),
+    })
+    .eq('id', clusterId)
+    .select('*')
+    .single<MediaReviewCluster>()
+}
+
+export async function createMediaReviewArtifactSignedUrl(
+  bucket: string,
+  objectPath: string,
+  expiresInSeconds = 60 * 60
+) {
+  return await supabase.storage
+    .from(bucket)
+    .createSignedUrl(objectPath, expiresInSeconds)
+}
+
+export async function downloadMediaReviewArtifact(bucket: string, objectPath: string) {
+  return await supabase.storage
+    .from(bucket)
+    .download(objectPath)
 }
 
 export async function fetchSiteEditorialFeatures(slot?: SiteEditorialFeatureSlot) {

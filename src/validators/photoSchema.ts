@@ -36,8 +36,8 @@ export const photoSchema = z
         z.object({
           id: z.string(),
           name: z.string(),
-          x: z.number().min(0).max(1),
-          y: z.number().min(0).max(1),
+          x: z.number().min(0).max(100),
+          y: z.number().min(0).max(100),
         })
       )
       .optional(),

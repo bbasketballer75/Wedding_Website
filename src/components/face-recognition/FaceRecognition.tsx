@@ -1,8 +1,9 @@
-import { useState, useRef } from 'react'
-import { motion, AnimatePresence } from 'framer-motion'
-import { Button } from '@/components/ui/Button'
+import { useMemo, useState } from 'react'
+import { AnimatePresence, motion } from 'framer-motion'
 import { Avatar } from '@/components/ui/Avatar'
-import { Camera, X, UserPlus, Sparkles, ChevronRight } from 'lucide-react'
+import { Button } from '@/components/ui/Button'
+import { Input } from '@/components/ui/Input'
+import { Users, Search, X, ArrowRight, Tags } from 'lucide-react'
 import { cn } from '@/lib/utils'
 
 interface DetectedFace {
@@ -10,7 +11,7 @@ interface DetectedFace {
   name: string
   photoCount: number
   thumbnail?: string
-  confidence?: number
+  latestMoment?: string
 }
 
 interface FaceRecognitionProps {
@@ -25,70 +26,36 @@ export function FaceRecognition({
   detectedFaces = [],
 }: FaceRecognitionProps) {
   const [isOpen, setIsOpen] = useState(false)
-  const [selectedFace, setSelectedFace] = useState<string | null>(null)
-  const [searchMode, setSearchMode] = useState<'camera' | 'manual'>('manual')
-  const videoRef = useRef<HTMLVideoElement>(null)
-  const [capturedImage, setCapturedImage] = useState<string | null>(null)
-  const [isAnalyzing, setIsAnalyzing] = useState(false)
-  const [analysisResult, setAnalysisResult] = useState<DetectedFace | null>(null)
+  const [query, setQuery] = useState('')
+  const [selectedFaceId, setSelectedFaceId] = useState<string | null>(null)
 
-  const closeModal = () => {
-    resetCamera()
-    setIsOpen(false)
-  }
+  const filteredFaces = useMemo(() => {
+    const normalized = query.trim().toLowerCase()
+    if (!normalized) return detectedFaces
 
-  const handleFaceClick = (face: DetectedFace) => {
-    setSelectedFace(face.id)
+    return detectedFaces.filter((face) => {
+      return (
+        face.name.toLowerCase().includes(normalized) ||
+        face.latestMoment?.toLowerCase().includes(normalized)
+      )
+    })
+  }, [detectedFaces, query])
+
+  const handleSelect = (face: DetectedFace) => {
+    setSelectedFaceId(face.id)
     onFaceSelect?.(face.id, face.name)
     onPhotoFilter?.(face.name)
-    setTimeout(closeModal, 500)
+    window.setTimeout(() => {
+      setIsOpen(false)
+      setSelectedFaceId(null)
+      setQuery('')
+    }, 180)
   }
 
-  const startCamera = async () => {
-    setSearchMode('camera')
-    try {
-      const stream = await navigator.mediaDevices.getUserMedia({ video: true })
-      if (videoRef.current) {
-        videoRef.current.srcObject = stream
-      }
-    } catch (err) {
-      console.error('Camera access denied:', err)
-      setSearchMode('manual')
-    }
-  }
-
-  const capturePhoto = () => {
-    if (videoRef.current) {
-      const canvas = document.createElement('canvas')
-      canvas.width = videoRef.current.videoWidth
-      canvas.height = videoRef.current.videoHeight
-      const ctx = canvas.getContext('2d')
-      ctx?.drawImage(videoRef.current, 0, 0)
-      setCapturedImage(canvas.toDataURL('image/jpeg'))
-      analyzeFace()
-    }
-  }
-
-  const analyzeFace = () => {
-    setIsAnalyzing(true)
-    setTimeout(() => {
-      setIsAnalyzing(false)
-      setAnalysisResult(
-        detectedFaces.length > 0
-          ? detectedFaces[Math.floor(Math.random() * detectedFaces.length)]
-          : null
-      )
-    }, 2000)
-  }
-
-  const resetCamera = () => {
-    setCapturedImage(null)
-    setAnalysisResult(null)
-    setSearchMode('manual')
-    if (videoRef.current?.srcObject) {
-      const stream = videoRef.current.srcObject as MediaStream
-      stream.getTracks().forEach(track => track.stop())
-    }
+  const close = () => {
+    setIsOpen(false)
+    setSelectedFaceId(null)
+    setQuery('')
   }
 
   return (
@@ -96,12 +63,12 @@ export function FaceRecognition({
       <Button
         variant="glass"
         size="sm"
-        onClick={() => setIsOpen(true)}
         type="button"
+        onClick={() => setIsOpen(true)}
         className="group"
       >
-        <Sparkles className="w-4 h-4 mr-2 text-gold-400" />
-        Find Me in Photos
+        <Users className="mr-2 h-4 w-4 text-gold-500 transition-transform duration-300 group-hover:scale-105" />
+        Browse People
       </Button>
 
       <AnimatePresence>
@@ -110,174 +77,112 @@ export function FaceRecognition({
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
-            className="fixed inset-0 z-50 bg-black/80 backdrop-blur-sm flex items-center justify-center p-4"
-            onClick={closeModal}
+            className="fixed inset-0 z-50 flex items-center justify-center bg-black/75 px-4 py-6 backdrop-blur-sm"
+            onClick={close}
           >
             <motion.div
-              initial={{ scale: 0.95, opacity: 0 }}
-              animate={{ scale: 1, opacity: 1 }}
-              exit={{ scale: 0.95, opacity: 0 }}
-              className="bg-white rounded-2xl w-full max-w-2xl max-h-[90vh] overflow-hidden"
-              onClick={e => e.stopPropagation()}
+              initial={{ opacity: 0, y: 18, scale: 0.97 }}
+              animate={{ opacity: 1, y: 0, scale: 1 }}
+              exit={{ opacity: 0, y: 18, scale: 0.97 }}
+              transition={{ duration: 0.22 }}
+              className="w-full max-w-3xl overflow-hidden rounded-[2rem] border border-white/80 bg-[linear-gradient(180deg,rgba(255,251,245,0.98),rgba(248,241,231,0.98))] shadow-[0_38px_100px_-45px_rgba(46,33,13,0.58)]"
+              onClick={(event) => event.stopPropagation()}
             >
-              <div className="flex items-center justify-between p-6 border-b border-gold-100">
-                <div>
-                  <h2 className="font-display text-2xl text-charcoal-900 flex items-center gap-2">
-                    <Sparkles className="w-5 h-5 text-gold-500" />
-                    Find Me in Photos
-                  </h2>
-                  <p className="text-charcoal-500 text-sm mt-1">
-                    AI-powered face recognition to find your photos
-                  </p>
+              <div className="border-b border-gold-100/80 px-6 py-5 sm:px-8">
+                <div className="flex items-start justify-between gap-4">
+                  <div>
+                    <p className="text-[10px] uppercase tracking-[0.32em] text-gold-700">
+                      Tagged people
+                    </p>
+                    <h2 className="mt-2 font-display text-3xl text-charcoal-900">
+                      Browse the faces we have already confirmed
+                    </h2>
+                    <p className="mt-2 max-w-2xl text-sm leading-6 text-charcoal-500">
+                      This view filters the gallery by real face tags from the archive. It is review-backed metadata,
+                      not a live selfie matcher.
+                    </p>
+                  </div>
+                  <button
+                    type="button"
+                    onClick={close}
+                    aria-label="Close people browser"
+                    className="flex h-11 w-11 items-center justify-center rounded-full bg-white/85 text-charcoal-500 transition-colors hover:text-charcoal-700"
+                  >
+                    <X className="h-5 w-5" />
+                  </button>
                 </div>
-                <button
-                  onClick={closeModal}
-                  type="button"
-                  aria-label="Close face search"
-                  className="p-2 text-charcoal-400 hover:text-charcoal-600 rounded-full hover:bg-cream-100 transition-colors"
-                >
-                  <X className="w-5 h-5" />
-                </button>
+
+                <div className="mt-5 grid gap-3 lg:grid-cols-[minmax(0,1fr)_auto] lg:items-center">
+                  <div className="relative">
+                    <Search className="pointer-events-none absolute left-4 top-1/2 h-4 w-4 -translate-y-1/2 text-charcoal-400" />
+                    <Input
+                      value={query}
+                      onChange={(event) => setQuery(event.target.value)}
+                      placeholder="Search a name or moment"
+                      className="h-12 rounded-full border-gold-200/80 bg-white/88 pl-11 pr-4"
+                    />
+                  </div>
+                  <div className="inline-flex items-center gap-2 rounded-full bg-white/80 px-4 py-2 text-sm text-charcoal-500">
+                    <Tags className="h-4 w-4 text-gold-500" />
+                    {detectedFaces.length} confirmed people
+                  </div>
+                </div>
               </div>
 
-              <div className="p-6">
-                {searchMode === 'manual' ? (
-                  <>
-                    <div className="mb-8">
-                      <button
-                        onClick={startCamera}
-                        type="button"
-                        className="w-full p-6 border-2 border-dashed border-gold-200 rounded-xl hover:border-gold-400 hover:bg-gold-50/30 transition-all text-center group"
-                      >
-                        <div className="w-14 h-14 bg-gold-100 rounded-full flex items-center justify-center mx-auto mb-3 group-hover:scale-110 transition-transform">
-                          <Camera className="w-7 h-7 text-gold-600" />
-                        </div>
-                        <p className="font-medium text-charcoal-700">Take a selfie to find yourself</p>
-                        <p className="text-sm text-charcoal-400 mt-1">
-                          We will scan the gallery for matching faces
-                        </p>
-                      </button>
+              <div className="max-h-[70vh] overflow-y-auto px-6 py-6 sm:px-8">
+                {filteredFaces.length === 0 ? (
+                  <div className="flex min-h-[16rem] flex-col items-center justify-center rounded-[1.8rem] border border-dashed border-gold-200/80 bg-white/65 px-6 text-center">
+                    <div className="flex h-16 w-16 items-center justify-center rounded-full bg-gold-100 text-gold-600">
+                      <Search className="h-7 w-7" />
                     </div>
-
-                    <div className="flex items-center gap-4 mb-8">
-                      <div className="flex-1 h-px bg-gold-100" />
-                      <span className="text-charcoal-400 text-sm">or select a person</span>
-                      <div className="flex-1 h-px bg-gold-100" />
-                    </div>
-
-                    <div className="grid grid-cols-3 sm:grid-cols-5 gap-4">
-                      {detectedFaces.map((face) => (
-                        <button
-                          key={face.id}
-                          onClick={() => handleFaceClick(face)}
-                          type="button"
-                          className={cn(
-                            "flex flex-col items-center p-3 rounded-xl transition-all",
-                            selectedFace === face.id
-                              ? "bg-gold-100 ring-2 ring-gold-500"
-                              : "hover:bg-cream-50"
-                          )}
-                        >
-                          <Avatar
-                            fallback={face.name}
-                            size="lg"
-                            className={cn(
-                              "mb-2",
-                              selectedFace === face.id && "ring-2 ring-gold-500"
-                            )}
-                          />
-                          <span className="font-medium text-charcoal-700 text-sm">
-                            {face.name}
-                          </span>
-                          <span className="text-xs text-charcoal-400">
-                            {face.photoCount} photos
-                          </span>
-                        </button>
-                      ))}
-                      
-                      <button
-                        type="button"
-                        className="flex flex-col items-center p-3 rounded-xl border-2 border-dashed border-gold-200 hover:border-gold-400 hover:bg-gold-50/30 transition-all"
-                      >
-                        <div className="w-12 h-12 rounded-full bg-cream-100 flex items-center justify-center mb-2">
-                          <UserPlus className="w-5 h-5 text-charcoal-400" />
-                        </div>
-                        <span className="text-charcoal-400 text-sm">Add Name</span>
-                      </button>
-                    </div>
-                  </>
+                    <p className="mt-5 font-display text-2xl text-charcoal-900">
+                      No tagged person matches that search
+                    </p>
+                    <p className="mt-2 max-w-md text-sm leading-6 text-charcoal-500">
+                      Try a broader name, or clear the search to browse everyone we have confirmed so far.
+                    </p>
+                  </div>
                 ) : (
-                  <div className="text-center">
-                    {!capturedImage ? (
-                      <>
-                        <div className="relative aspect-[4/3] bg-charcoal-900 rounded-xl overflow-hidden mb-4">
-                          <video
-                            ref={videoRef}
-                            autoPlay
-                            playsInline
-                            muted
-                            aria-label="Live camera preview for face search"
-                            className="w-full h-full object-cover"
-                          >
-                            <track
-                              kind="captions"
-                              src="data:text/vtt,WEBVTT"
-                              srcLang="en"
-                              label="Live camera preview"
-                              default
-                            />
-                          </video>
-                          <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
-                            <div className="w-48 h-48 border-2 border-white/50 rounded-full" />
+                  <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-3">
+                    {filteredFaces.map((face) => (
+                      <button
+                        key={face.id}
+                        type="button"
+                        onClick={() => handleSelect(face)}
+                        className={cn(
+                          'group rounded-[1.7rem] border border-white/80 bg-white/86 p-4 text-left shadow-[0_24px_60px_-42px_rgba(46,33,13,0.28)] transition-all duration-300 hover:-translate-y-1 hover:shadow-[0_28px_70px_-42px_rgba(46,33,13,0.38)]',
+                          selectedFaceId === face.id && 'border-gold-300/90 bg-gold-50/90',
+                        )}
+                      >
+                        <div className="flex items-start gap-4">
+                          <Avatar
+                            src={face.thumbnail}
+                            alt={face.name}
+                            fallback={face.name}
+                            size="xl"
+                            className="shrink-0 ring-2 ring-white"
+                          />
+                          <div className="min-w-0 flex-1">
+                            <p className="font-display text-2xl text-charcoal-900">
+                              {face.name}
+                            </p>
+                            <p className="mt-1 text-sm text-charcoal-500">
+                              {face.photoCount} tagged {face.photoCount === 1 ? 'photo' : 'photos'}
+                            </p>
+                            {face.latestMoment && (
+                              <p className="mt-3 line-clamp-2 text-sm leading-6 text-charcoal-500">
+                                {face.latestMoment}
+                              </p>
+                            )}
                           </div>
                         </div>
-                        <div className="flex justify-center gap-4">
-                          <Button variant="secondary" onClick={resetCamera}>
-                            Cancel
-                          </Button>
-                          <Button type="button" onClick={capturePhoto}>
-                            <Camera className="w-4 h-4 mr-2" />
-                            Capture
-                          </Button>
+
+                        <div className="mt-4 inline-flex items-center gap-2 text-sm text-gold-700 transition-transform duration-300 group-hover:translate-x-0.5">
+                          Filter gallery
+                          <ArrowRight className="h-4 w-4" />
                         </div>
-                      </>
-                    ) : isAnalyzing ? (
-                      <div className="py-12">
-                        <div className="w-20 h-20 bg-gold-100 rounded-full flex items-center justify-center mx-auto mb-4 animate-pulse">
-                          <Sparkles className="w-10 h-10 text-gold-600" />
-                        </div>
-                        <p className="text-charcoal-700 font-medium">Analyzing your face...</p>
-                        <p className="text-charcoal-400 text-sm mt-1">
-                          Comparing with 247 wedding photos
-                        </p>
-                      </div>
-                    ) : analysisResult ? (
-                      <div className="py-8">
-                        <p className="text-charcoal-500 mb-6">We found you! You are in these photos:</p>
-                        <div className="bg-gold-50 rounded-xl p-6 mb-6">
-                          <Avatar
-                            fallback={analysisResult.name}
-                            size="xl"
-                            className="mx-auto mb-4"
-                          />
-                          <p className="font-display text-2xl text-charcoal-900">
-                            {analysisResult.photoCount} Photos Found
-                          </p>
-                          <p className="text-charcoal-500 mt-1">
-                            {analysisResult.confidence}% match confidence
-                          </p>
-                        </div>
-                        <div className="flex justify-center gap-4">
-                          <Button variant="secondary" onClick={resetCamera}>
-                            Try Again
-                          </Button>
-                          <Button type="button" onClick={() => handleFaceClick(analysisResult)}>
-                            View My Photos
-                            <ChevronRight className="w-4 h-4 ml-2" />
-                          </Button>
-                        </div>
-                      </div>
-                    ) : null}
+                      </button>
+                    ))}
                   </div>
                 )}
               </div>

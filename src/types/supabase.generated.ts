@@ -178,6 +178,128 @@ export type Database = {
         }
         Relationships: []
       }
+      media_review_batches: {
+        Row: {
+          artifact_bucket: string
+          artifact_paths: Json
+          artifact_prefix: string
+          batch_key: string
+          cluster_count: number
+          created_at: string
+          detection_count: number
+          id: string
+          label: string
+          notes: string | null
+          pushed_by_email: string | null
+          pushed_by_user_id: string | null
+          source_root: string | null
+          status: string
+          updated_at: string
+          working_root: string | null
+        }
+        Insert: {
+          artifact_bucket?: string
+          artifact_paths?: Json
+          artifact_prefix: string
+          batch_key: string
+          cluster_count?: number
+          created_at?: string
+          detection_count?: number
+          id?: string
+          label: string
+          notes?: string | null
+          pushed_by_email?: string | null
+          pushed_by_user_id?: string | null
+          source_root?: string | null
+          status?: string
+          updated_at?: string
+          working_root?: string | null
+        }
+        Update: {
+          artifact_bucket?: string
+          artifact_paths?: Json
+          artifact_prefix?: string
+          batch_key?: string
+          cluster_count?: number
+          created_at?: string
+          detection_count?: number
+          id?: string
+          label?: string
+          notes?: string | null
+          pushed_by_email?: string | null
+          pushed_by_user_id?: string | null
+          source_root?: string | null
+          status?: string
+          updated_at?: string
+          working_root?: string | null
+        }
+        Relationships: []
+      }
+      media_review_clusters: {
+        Row: {
+          average_quality_score: number | null
+          batch_id: string
+          cluster_id: string
+          confirmed_name: string | null
+          created_at: string
+          id: string
+          members: Json
+          member_count: number
+          merge_into_cluster_id: string | null
+          metadata: Json
+          review_status: string
+          sample_thumbnail_path: string | null
+          source_record_ids: string[]
+          split_notes: string | null
+          split_requested: boolean
+          updated_at: string
+        }
+        Insert: {
+          average_quality_score?: number | null
+          batch_id: string
+          cluster_id: string
+          confirmed_name?: string | null
+          created_at?: string
+          id?: string
+          members?: Json
+          member_count?: number
+          merge_into_cluster_id?: string | null
+          metadata?: Json
+          review_status?: string
+          sample_thumbnail_path?: string | null
+          source_record_ids?: string[]
+          split_notes?: string | null
+          split_requested?: boolean
+          updated_at?: string
+        }
+        Update: {
+          average_quality_score?: number | null
+          batch_id?: string
+          cluster_id?: string
+          confirmed_name?: string | null
+          created_at?: string
+          id?: string
+          members?: Json
+          member_count?: number
+          merge_into_cluster_id?: string | null
+          metadata?: Json
+          review_status?: string
+          sample_thumbnail_path?: string | null
+          source_record_ids?: string[]
+          split_notes?: string | null
+          split_requested?: boolean
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "media_review_clusters_batch_id_fkey"
+            columns: ["batch_id"]
+            isOneToOne: false
+            referencedRelation: "media_review_batches"
+            referencedColumns: ["id"]
+          }
+        ]
+      }
       photos: {
         Row: {
           caption: string | null

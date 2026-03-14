@@ -1,0 +1,37 @@
+{
+  "exactDuplicateGroups": [
+    [
+      "Wedding Day/portraits/austin-jordyn-001.jpg",
+      "Wedding Day/portraits/austin-jordyn-001-copy.jpg"
+    ]
+  ],
+  "similarShotGroups": [
+    [
+      "Wedding Day/ceremony/processional-014.jpg",
+      "Wedding Day/ceremony/processional-015.jpg"
+    ]
+  ],
+  "livePhotoPairs": [
+    {
+      "clip": "Guest Uploads/table-12/live-photo-001.mov",
+      "stills": [
+        "Guest Uploads/table-12/live-photo-001.heic"
+      ]
+    }
+  ],
+  "coverCandidates": {
+    "Wedding Day::wedding-day": [
+      "Wedding Day/portraits/austin-jordyn-hero-001.jpg",
+      "Wedding Day/reception/first-dance-004.jpg"
+    ]
+  },
+  "faceClusters": [
+    {
+      "label": "Austin",
+      "members": [
+        "Wedding Day/portraits/austin-jordyn-hero-001.jpg",
+        "Wedding Day/reception/toast-021.jpg"
+      ]
+    }
+  ]
+}
