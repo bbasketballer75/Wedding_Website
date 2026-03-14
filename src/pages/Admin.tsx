@@ -3038,15 +3038,17 @@ function AdminLayout() {
     <div className="min-h-screen bg-cream-50">
       {/* Admin Header */}
       <header className="bg-white border-b border-gold-100 sticky top-0 z-30">
-        <div className="max-w-7xl mx-auto px-4 py-4 flex items-center justify-between">
+        <div className="max-w-7xl mx-auto flex flex-col gap-3 px-4 py-4 sm:flex-row sm:items-center sm:justify-between">
           <div className="flex items-center gap-4">
             <Link to="/" className="font-display text-xl text-charcoal-900">
               <span className="text-gold-500">A</span>&<span className="text-gold-500">J</span>
               <span className="text-sm font-normal text-charcoal-500 ml-2">Admin</span>
             </Link>
           </div>
-          <div className="flex items-center gap-4">
-            <span className="text-sm text-charcoal-500">{user?.email}</span>
+          <div className="flex flex-wrap items-center gap-3 sm:justify-end">
+            <span className="max-w-full break-all text-sm text-charcoal-500 sm:max-w-[18rem] sm:truncate sm:break-normal">
+              {user?.email}
+            </span>
             <Button size="sm" variant="secondary" onClick={handleSignOut}>
               <LogOut className="w-4 h-4 mr-2" />
               Sign Out
@@ -3055,10 +3057,10 @@ function AdminLayout() {
         </div>
       </header>
 
-      <div className="max-w-7xl mx-auto px-4 py-8 flex gap-8">
+      <div className="max-w-7xl mx-auto flex flex-col gap-6 px-4 py-6 xl:flex-row xl:gap-8 xl:py-8">
         {/* Sidebar */}
-        <nav className="w-64 flex-shrink-0" aria-label="Admin navigation">
-          <div className="bg-white rounded-xl border border-gold-100 overflow-hidden">
+        <nav className="w-full xl:w-64 xl:flex-shrink-0" aria-label="Admin navigation">
+          <div className="overflow-hidden rounded-xl border border-gold-100 bg-white xl:sticky xl:top-24">
             {navItems.map((item) => {
               const Icon = item.icon
               const isActive = location.pathname === item.path
