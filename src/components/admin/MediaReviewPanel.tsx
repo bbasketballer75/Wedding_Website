@@ -50,7 +50,18 @@ interface ReviewImportManifestRow {
     photographer?: string | null
     is_professional?: boolean
     tags: string[]
-    faces: Array<{ id: string; name: string; x: number; y: number }>
+    faces: Array<{
+      id: string
+      name: string
+      x: number
+      y: number
+      box?: {
+        left: number
+        top: number
+        width: number
+        height: number
+      } | null
+    }>
   }
 }
 
@@ -825,6 +836,14 @@ export function MediaReviewPanel() {
         name: face.confirmed_name || 'Unknown',
         x: face.x,
         y: face.y,
+        box: face.box
+          ? {
+              left: Number(face.box.left ?? 0),
+              top: Number(face.box.top ?? 0),
+              width: Number(face.box.width ?? 0),
+              height: Number(face.box.height ?? 0),
+            }
+          : null,
       }))
       const mergedTags = Array.from(
         new Set([
