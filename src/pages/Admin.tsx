@@ -307,6 +307,110 @@ function getPublishedPhotoCount(upload: ModerationUpload, publishedPhotoUrls: Se
   return (upload.photo_urls || []).filter((url) => publishedPhotoUrls.has(url)).length
 }
 
+interface GuestUploadMediaEntry {
+  url: string
+  fingerprint: string | null
+}
+
+interface GuestUploadDuplicateInsight {
+  publishableEntries: GuestUploadMediaEntry[]
+  publishableCount: number
+  withinUploadCount: number
+  approvedDuplicateCount: number
+  pendingOverlapCount: number
+}
+
+function buildGuestUploadMediaEntries(upload: ModerationUpload) {
+  const photoUrls = upload.photo_urls || []
+  const photoFingerprints = upload.photo_fingerprints || []
+
+  return photoUrls.map((url, index) => ({
+    url,
+    fingerprint: photoFingerprints[index] || null,
+  }))
+}
+
+function buildApprovedFingerprintSet(uploads: ModerationUpload[], excludedUploadId?: string) {
+  const fingerprints = new Set<string>()
+
+  for (const upload of uploads) {
+    if (upload.id === excludedUploadId || upload.status !== 'approved') continue
+
+    for (const fingerprint of upload.photo_fingerprints || []) {
+      if (fingerprint) {
+        fingerprints.add(fingerprint)
+      }
+    }
+  }
+
+  return fingerprints
+}
+
+function buildPendingFingerprintSet(uploads: ModerationUpload[], excludedUploadId?: string) {
+  const fingerprints = new Set<string>()
+
+  for (const upload of uploads) {
+    if (upload.id === excludedUploadId || upload.status !== 'pending') continue
+
+    for (const fingerprint of upload.photo_fingerprints || []) {
+      if (fingerprint) {
+        fingerprints.add(fingerprint)
+      }
+    }
+  }
+
+  return fingerprints
+}
+
+function getGuestUploadDuplicateInsight(
+  upload: ModerationUpload,
+  uploads: ModerationUpload[],
+  publishedPhotoUrls: Set<string>,
+): GuestUploadDuplicateInsight {
+  const approvedFingerprints = buildApprovedFingerprintSet(uploads, upload.id)
+  const pendingFingerprints = buildPendingFingerprintSet(uploads, upload.id)
+  const seenKeys = new Set<string>()
+  const publishableEntries: GuestUploadMediaEntry[] = []
+
+  let withinUploadCount = 0
+  let approvedDuplicateCount = 0
+  let pendingOverlapCount = 0
+
+  for (const entry of buildGuestUploadMediaEntries(upload)) {
+    const entryKey = entry.fingerprint || `url:${entry.url}`
+
+    if (seenKeys.has(entryKey)) {
+      withinUploadCount += 1
+      continue
+    }
+
+    seenKeys.add(entryKey)
+
+    const alreadyApproved =
+      publishedPhotoUrls.has(entry.url) ||
+      (entry.fingerprint ? approvedFingerprints.has(entry.fingerprint) : false)
+
+    if (alreadyApproved) {
+      approvedDuplicateCount += 1
+      continue
+    }
+
+    if (entry.fingerprint && pendingFingerprints.has(entry.fingerprint)) {
+      pendingOverlapCount += 1
+    }
+
+    publishableEntries.push(entry)
+  }
+
+  return {
+    publishableEntries,
+    publishableCount: publishableEntries.length,
+    withinUploadCount,
+    approvedDuplicateCount,
+    pendingOverlapCount,
+  }
+}
+
 function getModerationState(upload: ModerationUpload, publishedPhotoUrls: Set<string>): ModerationQueueFilter {
   if (upload.status === 'pending') return 'pending'
   if (upload.status === 'rejected') return 'rejected'
@@ -776,6 +880,7 @@ function PhotoModeration() {
 
   async function handleApprove(upload: ModerationUpload) {
     const draft = drafts[upload.id] || createPromotionDraft(upload)
+    const duplicateInsight = getGuestUploadDuplicateInsight(upload, photos, publishedPhotoUrls)
     const uploadPhotoUrls = upload.photo_urls || []
     const uploadVideoUrls = upload.video_urls || []
     const tags = Array.from(new Set([...guestTagByCollection[draft.collection], ...normalizeTags(draft.tags)]))
@@ -785,9 +890,7 @@ function PhotoModeration() {
 
     setBusyId(upload.id)
 
-    const rowsToInsert = uploadPhotoUrls
-      .filter(photoUrl => !publishedPhotoUrls.has(photoUrl))
-      .map(photoUrl => ({
+    const rowsToInsert = duplicateInsight.publishableEntries.map(({ url: photoUrl }) => ({
       url: photoUrl,
       thumbnail: photoUrl,
       caption,
@@ -835,10 +938,13 @@ function PhotoModeration() {
     }
 
     const publishedPhotoCount = rowsToInsert.length
+    const skippedDuplicatePhotoCount =
+      duplicateInsight.withinUploadCount +
+      duplicateInsight.approvedDuplicateCount
     const nextModerationState = publishedPhotoCount > 0 ? 'approved-published' : 'approved-unpublished'
     const approvalSummary =
       publishedPhotoCount > 0
-        ? `Approved and published ${publishedPhotoCount} guest photo${publishedPhotoCount === 1 ? '' : 's'} to ${draft.collection}.`
+        ? `Approved and published ${publishedPhotoCount} guest photo${publishedPhotoCount === 1 ? '' : 's'} to ${draft.collection}.${skippedDuplicatePhotoCount > 0 ? ` Skipped ${skippedDuplicatePhotoCount} duplicate photo${skippedDuplicatePhotoCount === 1 ? '' : 's'}.` : ''}`
         : uploadVideoUrls.length > 0 && draft.videoVisibility === 'featured'
           ? `Approved ${upload.guest_name}'s video submission as a featured guest clip.`
           : uploadVideoUrls.length > 0 && draft.videoVisibility === 'guest_highlights'
@@ -849,7 +955,7 @@ function PhotoModeration() {
 
     addToast(
       rowsToInsert.length > 0
-        ? `Approved and published ${rowsToInsert.length} guest photo${rowsToInsert.length === 1 ? '' : 's'} to ${draft.collection}.`
+        ? `Approved and published ${rowsToInsert.length} guest photo${rowsToInsert.length === 1 ? '' : 's'} to ${draft.collection}.${skippedDuplicatePhotoCount > 0 ? ` Skipped ${skippedDuplicatePhotoCount} duplicate photo${skippedDuplicatePhotoCount === 1 ? '' : 's'}.` : ''}`
         : uploadVideoUrls.length > 0 && draft.videoVisibility === 'featured'
           ? 'Approved the video-only upload and marked it as a featured guest clip.'
           : uploadVideoUrls.length > 0 && draft.videoVisibility === 'guest_highlights'
@@ -891,6 +997,8 @@ function PhotoModeration() {
         photo_count: uploadPhotoUrls.length,
         video_count: uploadVideoUrls.length,
         published_photo_count: publishedPhotoCount,
+        skipped_duplicate_photo_count: skippedDuplicatePhotoCount,
+        pending_overlap_photo_count: duplicateInsight.pendingOverlapCount,
         collection: draft.collection,
         category,
         location: location || null,
@@ -1210,6 +1318,11 @@ function PhotoModeration() {
             const draft = drafts[photo.id] || createPromotionDraft(photo)
             const auditEntries = auditByUploadId[photo.id] || []
             const shouldShowAuditHistory = !isPending || auditEntries.length > 0
+            const duplicateInsight = getGuestUploadDuplicateInsight(photo, photos, publishedPhotoUrls)
+            const hasDuplicateWarning =
+              duplicateInsight.withinUploadCount > 0 ||
+              duplicateInsight.approvedDuplicateCount > 0 ||
+              duplicateInsight.pendingOverlapCount > 0
 
             return (
             <div key={photo.id} className="overflow-hidden rounded-[1.5rem] border border-gold-100 bg-white shadow-sm">
@@ -1287,6 +1400,32 @@ function PhotoModeration() {
                       <p className="rounded-2xl border border-gold-100 bg-cream-50/70 px-4 py-3 text-sm leading-6 text-charcoal-600">
                         “{photo.message}”
                       </p>
+                    )}
+
+                    {isPending && hasDuplicateWarning && (
+                      <div className="rounded-2xl border border-amber-200 bg-amber-50/80 px-4 py-3 text-sm leading-6 text-amber-800">
+                        <p className="font-medium text-amber-900">Duplicate cleanup</p>
+                        <p className="mt-1">
+                          {duplicateInsight.publishableCount} of {photoCount} photo{photoCount === 1 ? '' : 's'} will publish from this upload after duplicate checks.
+                        </p>
+                        <div className="mt-2 flex flex-wrap gap-2 text-xs">
+                          {duplicateInsight.withinUploadCount > 0 && (
+                            <span className="rounded-full border border-amber-200 bg-white/80 px-3 py-1">
+                              {duplicateInsight.withinUploadCount} repeated in this upload
+                            </span>
+                          )}
+                          {duplicateInsight.approvedDuplicateCount > 0 && (
+                            <span className="rounded-full border border-amber-200 bg-white/80 px-3 py-1">
+                              {duplicateInsight.approvedDuplicateCount} already approved elsewhere
+                            </span>
+                          )}
+                          {duplicateInsight.pendingOverlapCount > 0 && (
+                            <span className="rounded-full border border-amber-200 bg-white/80 px-3 py-1">
+                              {duplicateInsight.pendingOverlapCount} also appear in another pending upload
+                            </span>
+                          )}
+                        </div>
+                      </div>
                     )}
                   </div>
 
@@ -1506,7 +1645,9 @@ function PhotoModeration() {
                           isLoading={busyId === photo.id}
                         >
                           <CheckCircle className="mr-1 h-4 w-4" />
-                          Approve + Publish
+                          {duplicateInsight.publishableCount === photoCount
+                            ? 'Approve + Publish'
+                            : `Approve ${duplicateInsight.publishableCount} Unique`}
                         </Button>
                         <Button
                           size="sm"
