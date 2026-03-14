@@ -185,6 +185,26 @@ async function fetchExistingPhotos(urls) {
   return new Map(existing.map((row) => [row.url, row]))
 }
 
+async function deletePhotoRowsByUrls(urls) {
+  let deletedCount = 0
+
+  for (const urlChunk of chunk(urls, PHOTO_LOOKUP_CHUNK_SIZE)) {
+    const { data, error } = await supabase
+      .from('photos')
+      .delete()
+      .in('url', urlChunk)
+      .select('id')
+
+    if (error) {
+      throw error
+    }
+
+    deletedCount += (data || []).length
+  }
+
+  return deletedCount
+}
+
 async function syncPhotoRows(rows) {
   const existingByUrl = await fetchExistingPhotos(rows.map((row) => toSiteMediaPath(row.photoRowDraft.url)))
   const inserts = []
@@ -260,6 +280,7 @@ async function main() {
   const manifestPath = manifestArg
     ? path.resolve(manifestArg)
     : path.join(publishRoot, 'wedding-photo-import-manifest.json')
+  const exclusionsPath = path.join(publishRoot, 'wedding-photo-import-exclusions.json')
   const optimizedRoot = optimizedRootArg
     ? path.resolve(optimizedRootArg)
     : path.join(absoluteWorkingRoot, 'optimized')
@@ -270,11 +291,41 @@ async function main() {
 
   const manifestRows = await readJson(manifestPath)
   const optimizedManifest = await readJson(optimizedManifestPath)
+  let exclusions = []
+
+  try {
+    exclusions = await readJson(exclusionsPath)
+  } catch {
+    exclusions = []
+  }
 
   await ensureBucket()
 
+  const skippedRows = []
+  const publishableRows = manifestRows.filter((row) => {
+    if (row.collection === 'Engagement') {
+      skippedRows.push({
+        sourceRelativePath: row.sourceRelativePath,
+        reason: 'engagement-editorial-overlay',
+      })
+      return false
+    }
+
+    return true
+  })
+
+  const publishableSourcePaths = new Set(
+    publishableRows
+      .map((row) => row.sourceRelativePath)
+      .filter(Boolean),
+  )
+
   const uploadTargets = optimizedManifest.flatMap((item) => {
     if (item.type === 'image') {
+      if (!item.sourceRelativePath || !publishableSourcePaths.has(item.sourceRelativePath)) {
+        return []
+      }
+
       return [
         {
           localPath: path.join(optimizedRoot, item.displayRelativePath),
@@ -307,20 +358,13 @@ async function main() {
     })
   }
 
-  const skippedRows = []
-  const publishableRows = manifestRows.filter((row) => {
-    if (row.collection === 'Engagement') {
-      skippedRows.push({
-        sourceRelativePath: row.sourceRelativePath,
-        reason: 'engagement-editorial-overlay',
-      })
-      return false
-    }
-
-    return true
-  })
-
   const syncResults = await syncPhotoRows(publishableRows)
+  const duplicateUrlsToDelete = exclusions
+    .filter((row) => row.reason === 'exact-duplicate-excluded' && row.displayRelativePath)
+    .map((row) => toSiteMediaPath(row.displayRelativePath))
+  const deletedDuplicatePhotoRows = duplicateUrlsToDelete.length > 0
+    ? await deletePhotoRowsByUrls(duplicateUrlsToDelete)
+    : 0
 
   const report = {
     workingRoot: absoluteWorkingRoot,
@@ -332,6 +376,7 @@ async function main() {
     insertedPhotoRows: syncResults.insertedCount,
     updatedPhotoRows: syncResults.updatedCount,
     unchangedPhotoRows: syncResults.skipped.length,
+    deletedDuplicatePhotoRows,
     skippedRows,
     unchangedRows: syncResults.skipped,
     generatedAt: new Date().toISOString(),
@@ -353,11 +398,13 @@ async function main() {
     `- Inserted photo rows: **${syncResults.insertedCount}**`,
     `- Updated photo rows: **${syncResults.updatedCount}**`,
     `- Unchanged photo rows: **${syncResults.skipped.length}**`,
+    `- Deleted duplicate photo rows: **${deletedDuplicatePhotoRows}**`,
     `- Engagement rows skipped: **${skippedRows.length}**`,
     '',
     '## Notes',
     '- Uploaded media is stored under deterministic `media/...` object keys in the remote bucket.',
     '- Photo rows are stored with relative `/media/...` URLs so the runtime continues to resolve them through `VITE_MEDIA_BASE_URL`.',
+    '- Exact-duplicate rows excluded from the import manifest are removed from the live `photos` table during publish reruns.',
     '- Engagement rows are skipped intentionally because the hardcoded engagement gallery remains the editorial overlay.',
   ])
 
