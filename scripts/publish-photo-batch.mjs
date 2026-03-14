@@ -70,6 +70,17 @@ function getContentType(filePath) {
   return CONTENT_TYPES.get(path.extname(filePath).toLowerCase()) || 'application/octet-stream'
 }
 
+function normalizeDateValue(value) {
+  if (!value) return null
+
+  const parsed = new Date(value)
+  if (Number.isNaN(parsed.getTime())) {
+    return value
+  }
+
+  return parsed.toISOString()
+}
+
 async function ensureBucket() {
   const { data: existingBucket, error: getBucketError } = await supabase.storage.getBucket(BUCKET_NAME)
 
@@ -127,7 +138,7 @@ function normalizePhotoDraft(row) {
     caption: row.photoRowDraft.caption ?? null,
     category: row.photoRowDraft.category ?? row.collection ?? 'Uncategorized',
     location: row.photoRowDraft.location ?? null,
-    date: row.photoRowDraft.date ?? null,
+    date: normalizeDateValue(row.photoRowDraft.date),
     photographer: row.photoRowDraft.photographer ?? null,
     is_professional: Boolean(row.photoRowDraft.is_professional),
     tags: row.photoRowDraft.tags ?? [],
@@ -142,7 +153,7 @@ function normalizeExistingPhoto(row) {
     caption: row.caption ?? null,
     category: row.category ?? null,
     location: row.location ?? null,
-    date: row.date ?? null,
+    date: normalizeDateValue(row.date),
     photographer: row.photographer ?? null,
     is_professional: Boolean(row.is_professional),
     tags: row.tags ?? [],
