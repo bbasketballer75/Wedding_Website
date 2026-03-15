@@ -57,6 +57,9 @@ interface DetectedFace {
   confidence?: number
   thumbnail?: string
   latestMoment?: string
+  collections?: string[]
+  professionalCount?: number
+  guestCount?: number
 }
 
 type CollectionTab = 'All' | 'Professional' | 'Guest Uploads' | 'Engagement' | 'Bach+ette' | 'Wedding Day'
@@ -544,6 +547,7 @@ export default function Gallery() {
         photo.photographer,
         photo.collection,
         photo.source,
+        ...(photo.faces || []).map((face) => face.name),
         ...(photo.tags || []),
       ]
         .filter(Boolean)
@@ -602,6 +606,14 @@ export default function Gallery() {
               if (!existing.latestMoment && photo.caption) {
                 existing.latestMoment = photo.caption
               }
+              if (!existing.collections?.includes(photo.collection)) {
+                existing.collections = [...(existing.collections || []), photo.collection]
+              }
+              if (photo.source === 'professional') {
+                existing.professionalCount = (existing.professionalCount || 0) + 1
+              } else {
+                existing.guestCount = (existing.guestCount || 0) + 1
+              }
             } else {
               acc.set(face.name, {
                 id: face.id || face.name.toLowerCase().replace(/\s+/g, '-'),
@@ -609,6 +621,9 @@ export default function Gallery() {
                 photoCount: 1,
                 thumbnail: photo.thumbnail || photo.url,
                 latestMoment: photo.caption,
+                collections: [photo.collection],
+                professionalCount: photo.source === 'professional' ? 1 : 0,
+                guestCount: photo.source === 'guest' ? 1 : 0,
               })
             }
           }
@@ -617,6 +632,11 @@ export default function Gallery() {
         }, new Map()).values()
       ).sort((a, b) => b.photoCount - a.photoCount || a.name.localeCompare(b.name)),
     [photos]
+  )
+  const topDetectedFaces = useMemo(() => detectedFaces.slice(0, 6), [detectedFaces])
+  const selectedFaceSummary = useMemo(
+    () => detectedFaces.find((face) => face.name === faceFilter) || null,
+    [detectedFaces, faceFilter],
   )
 
   const categoryCounts = useMemo(() => {
@@ -843,6 +863,78 @@ export default function Gallery() {
             </div>
 
             <div className="mt-8 border-t border-charcoal-900/8 pt-6">
+              {topDetectedFaces.length > 0 && (
+                <div className="mb-5 rounded-[1.45rem] border border-gold-200/70 bg-white/72 p-4 shadow-sm">
+                  <div className="flex flex-col gap-3 lg:flex-row lg:items-center lg:justify-between">
+                    <div>
+                      <p className="text-[10px] uppercase tracking-[0.32em] text-gold-700">
+                        People to start with
+                      </p>
+                      <p className="mt-2 text-sm leading-6 text-charcoal-500">
+                        Jump into the faces that appear most across the archive, or open the full people browser for everyone we have confirmed.
+                      </p>
+                    </div>
+                    <div className="flex flex-wrap gap-2">
+                      {topDetectedFaces.map((face) => (
+                        <button
+                          key={face.id}
+                          type="button"
+                          onClick={() => handleFaceFilter(face.name)}
+                          className={cn(
+                            'rounded-full border px-4 py-2 text-sm transition-colors',
+                            faceFilter === face.name
+                              ? 'border-gold-500 bg-gold-500 text-white'
+                              : 'border-gold-200 bg-white text-charcoal-600 hover:bg-gold-50',
+                          )}
+                        >
+                          {face.name} · {face.photoCount}
+                        </button>
+                      ))}
+                    </div>
+                  </div>
+                </div>
+              )}
+
+              {selectedFaceSummary && (
+                <div className="mb-5 rounded-[1.45rem] border border-gold-300/80 bg-[linear-gradient(135deg,rgba(255,250,242,0.95),rgba(250,242,229,0.92))] p-5 shadow-sm">
+                  <div className="flex flex-col gap-4 lg:flex-row lg:items-center lg:justify-between">
+                    <div className="flex items-start gap-4">
+                      <img
+                        src={selectedFaceSummary.thumbnail || currentPhoto?.thumbnail || currentPhoto?.url || '/images/og-image.webp'}
+                        alt={selectedFaceSummary.name}
+                        className="h-16 w-16 rounded-full object-cover ring-2 ring-white"
+                      />
+                      <div>
+                        <p className="text-[10px] uppercase tracking-[0.32em] text-gold-700">
+                          Person filter
+                        </p>
+                        <h3 className="mt-2 font-display text-3xl text-charcoal-900">
+                          {selectedFaceSummary.name}
+                        </h3>
+                        <p className="mt-2 text-sm leading-6 text-charcoal-600">
+                          {selectedFaceSummary.photoCount} tagged {selectedFaceSummary.photoCount === 1 ? 'photo' : 'photos'}
+                          {selectedFaceSummary.collections && selectedFaceSummary.collections.length > 0
+                            ? ` across ${selectedFaceSummary.collections.join(', ')}.`
+                            : '.'}
+                        </p>
+                      </div>
+                    </div>
+                    <div className="flex flex-wrap gap-2">
+                      <span className="rounded-full border border-gold-200 bg-white px-4 py-2 text-xs uppercase tracking-[0.22em] text-charcoal-500">
+                        {selectedFaceSummary.professionalCount || 0} professional
+                      </span>
+                      <span className="rounded-full border border-gold-200 bg-white px-4 py-2 text-xs uppercase tracking-[0.22em] text-charcoal-500">
+                        {selectedFaceSummary.guestCount || 0} guest
+                      </span>
+                      <Button type="button" variant="secondary" size="sm" onClick={clearFaceFilter}>
+                        <X className="h-4 w-4" />
+                        Clear person filter
+                      </Button>
+                    </div>
+                  </div>
+                </div>
+              )}
+
               <div className="mb-4 overflow-hidden rounded-[1.6rem] border border-gold-200/65 bg-[linear-gradient(135deg,rgba(255,252,247,0.9),rgba(248,242,233,0.95)_52%,rgba(243,234,221,0.88))] shadow-[0_22px_58px_-46px_rgba(46,33,13,0.3)]">
                 <div className="grid gap-0 lg:grid-cols-[minmax(0,1.15fr)_minmax(18rem,0.85fr)]">
                   <div className="p-5 sm:p-6">

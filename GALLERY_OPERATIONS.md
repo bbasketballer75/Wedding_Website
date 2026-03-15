@@ -47,13 +47,12 @@ That means:
 When you want face tags on approved guest uploads:
 
 1. Open `/admin/photos`.
-2. Use the `Guest Face Tagging` panel to copy the local export, digiKam import, and sync commands.
-3. Run `media:guest:tag:export` in your local project terminal.
-4. Tag the exported files in digiKam and run `Write Metadata to Files`.
-5. Run `media:batch:faces:digikam` against that guest tagging root.
-6. Run `media:guest:tag:sync` to update the live guest `photos.faces` entries.
+2. Use the `Guest Face Tagging` panel to download a zipped guest tagging batch from the live gallery.
+3. Extract that batch locally and tag the files in digiKam.
+4. Run digiKam's `Write Metadata to Files`.
+5. Back in `/admin/photos`, choose the extracted tagged batch files and run the browser-side sync.
 
-This keeps browser moderation lightweight while making digiKam the real face-tagging workspace.
+This keeps browser moderation lightweight while making digiKam the real face-tagging workspace. The local terminal commands remain available as a fallback, but the primary flow is now browser-driven.
 
 ## Batch Publish Workflow
 

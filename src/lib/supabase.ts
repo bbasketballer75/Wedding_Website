@@ -220,6 +220,7 @@ export interface ModerationAuditTimelineFilters {
 export type MediaReviewBatchStatus = 'pending' | 'in_review' | 'approved' | 'archived'
 export type MediaReviewClusterStatus = 'pending' | 'confirmed' | 'ignored' | 'merged' | 'split_requested'
 export type MediaReviewFaceStatus = 'pending' | 'confirmed' | 'ignored'
+export type GuestFaceTaggingBatchStatus = 'prepared' | 'synced' | 'failed'
 
 export interface MediaReviewBatch {
   id: string
@@ -306,6 +307,27 @@ export interface MediaReviewFace {
   updated_at: string
 }
 
+export interface GuestFaceTaggingBatch {
+  id: string
+  batch_key: string
+  label: string
+  status: GuestFaceTaggingBatchStatus
+  exportable_upload_count: number
+  exportable_photo_count: number
+  synced_photo_count: number
+  skipped_photo_count: number
+  last_error?: string | null
+  notes?: string | null
+  metadata: Record<string, Json | undefined>
+  created_by_user_id?: string | null
+  created_by_email?: string | null
+  synced_by_user_id?: string | null
+  synced_by_email?: string | null
+  last_synced_at?: string | null
+  created_at: string
+  updated_at: string
+}
+
 export interface UpdateMediaReviewFaceInput {
   reviewStatus?: MediaReviewFaceStatus
   confirmedName?: string | null
@@ -372,6 +394,14 @@ export async function fetchMediaReviewBatches() {
     .select('*')
     .order('updated_at', { ascending: false })
     .returns<MediaReviewBatch[]>()
+}
+
+export async function fetchGuestFaceTaggingBatches() {
+  return await supabase
+    .from('guest_face_tagging_batches')
+    .select('*')
+    .order('updated_at', { ascending: false })
+    .returns<GuestFaceTaggingBatch[]>()
 }
 
 export async function fetchMediaReviewClusters(batchId: string) {
