@@ -101,6 +101,9 @@ async function main() {
 
   const recordById = new Map(inventory.map((record) => [record.id, record]))
   const annotationsByRecordId = new Map(annotationsByPhoto.map((annotation) => [annotation.recordId, annotation.faces]))
+  const annotationsByRelativePath = new Map(
+    annotationsByPhoto.map((annotation) => [annotation.relativePath, annotation.faces]),
+  )
   const confirmedNames = resolveConfirmedNames(reviewItems)
   const duplicateKeepers = buildDuplicateKeepers(inventory)
   const exclusions = []
@@ -129,7 +132,11 @@ async function main() {
         return null
       }
 
-      const faces = (annotationsByRecordId.get(record?.id) ?? [])
+      const faces = (
+        annotationsByRecordId.get(record?.id)
+        ?? annotationsByRelativePath.get(record?.relativePath)
+        ?? []
+      )
         .map((face, index) => {
           const confirmedName = confirmedNames.get(face.clusterId)
           if (!confirmedName) return null
@@ -139,6 +146,7 @@ async function main() {
             name: confirmedName,
             x: face.x,
             y: face.y,
+            box: face.box ?? null,
           }
         })
         .filter(Boolean)

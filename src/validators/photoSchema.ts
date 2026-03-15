@@ -38,6 +38,15 @@ export const photoSchema = z
           name: z.string(),
           x: z.number().min(0).max(100),
           y: z.number().min(0).max(100),
+          box: z
+            .object({
+              left: z.number().min(0),
+              top: z.number().min(0),
+              width: z.number().positive(),
+              height: z.number().positive(),
+            })
+            .nullable()
+            .optional(),
         })
       )
       .optional(),

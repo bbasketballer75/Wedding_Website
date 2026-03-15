@@ -28,7 +28,18 @@ interface Photo {
   aspectRatio: number
   time?: string
   photographer?: string
-  faces?: Array<{ id: string; name: string; x: number; y: number }>
+  faces?: Array<{
+    id: string
+    name: string
+    x: number
+    y: number
+    box?: {
+      left: number
+      top: number
+      width: number
+      height: number
+    } | null
+  }>
   tags?: string[]
   location?: string
   date?: string
