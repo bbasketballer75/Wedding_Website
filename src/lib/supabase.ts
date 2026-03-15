@@ -39,6 +39,12 @@ export interface PhotoFace {
   name: string
   x: number
   y: number
+  box?: {
+    left: number
+    top: number
+    width: number
+    height: number
+  } | null
 }
 
 export interface Photo {
