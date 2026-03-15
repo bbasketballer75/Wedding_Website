@@ -1,105 +1,93 @@
 # Pre-Launch Checklist
 
-## Source of Truth
+This checklist now reflects the current state of the site:
 
-- Launch runbook: `LAUNCH_RUNBOOK.md`
-- Staging URL: `https://austin-jordyn-wedding.netlify.app`
-- Public launch URL: `https://www.theporadas.com`
+- Production app is already live at `https://www.theporadas.com`
+- `https://wedding.theporadas.com` remains the stable Netlify origin and redirect host
+- The remaining work is a phased private-live rehearsal before you actively invite guest traffic
 
-## Release Control
+Source of truth:
 
-- [ ] Working tree reviewed and reconciled into an intentional launch commit
-- [ ] Final launch commit pushed to `origin/main`
-- [ ] Netlify production confirmed to build from `main`
-- [ ] Final deploy ID and commit SHA recorded
+- launch runbook: `LAUNCH_RUNBOOK.md`
+- live operations guide: `DEPLOYMENT_CHECKLIST.md`
+- gallery ops: `GALLERY_OPERATIONS.md`
 
-## Environment
+## Phase 1: Production Baseline
 
-- [ ] `VITE_SUPABASE_URL` configured in Netlify
-- [ ] `VITE_SUPABASE_ANON_KEY` configured in Netlify
-- [ ] `VITE_SITE_URL` set to staging URL before cutover
-- [ ] `VITE_SENTRY_DSN` configured
-- [ ] `VITE_GA_ID` configured
-- [ ] `VITE_APP_VERSION` configured for launch
+Completed on `2026-03-15`.
 
-## Automated Verification
+- [x] `main` merged and deployed to Netlify production
+- [x] `guest-face-tagging-admin` Supabase Edge Function deployed
+- [x] `node scripts/verify-deployed-site.js` passed on `https://www.theporadas.com`
+- [x] Homepage responds on the public domain
+- [x] Gallery responds and hydrates on the public domain
+- [x] Upload page responds and hydrates on the public domain
+- [x] Guestbook responds and hydrates on the public domain
+- [x] `/admin/login` responds and hydrates on the public domain
+- [x] Gallery people experience shows quick-start person chips and collection-aware summaries
+- [x] Guest face-tagging workflow is visible in `/admin/photos` after deploy
 
-- [ ] `npm run verify:release`
-- [ ] `npm run verify:launch`
-- [ ] `npm run verify:deployed` against staging URL
+## Phase 2: Signed-In Admin QA
 
-## Staging Manual Verification
+Requires an actual admin login on production.
 
-- [ ] Guestbook submit works
-- [ ] Guestbook reply works
-- [ ] Guestbook reaction works
-- [ ] Photo upload works
-- [ ] Video upload works
-- [ ] Admin login works
-- [ ] Admin approval flow works
-- [ ] Approved content appears where expected
-- [ ] No fake launch-check/test content remains visible
+- [ ] Sign in at `/admin/login`
+- [ ] Open `/admin/photos`
+- [ ] Confirm pending, approved-not-public, and approved-public counts look sane
+- [ ] Confirm the `Guest Face Tagging` panel shows:
+  - [ ] ready-for-tagging photo count
+  - [ ] waiting-on-publication count
+  - [ ] last sync status
+  - [ ] download button
+  - [ ] tagged-batch sync button
+- [ ] Open `/admin/review`
+- [ ] Confirm the staged wedding review batch loads
+- [ ] Confirm photo-first review is usable on real archive data
+- [ ] Open `/admin/guestbook`
+- [ ] Confirm moderation controls render correctly
+- [ ] Open `/admin/featured`
+- [ ] Confirm featured-slot editing still loads with live data
 
-## Browser and Device Coverage
+## Phase 3: People and Gallery Curation
 
-- [ ] Desktop Chrome or Edge
-- [ ] Desktop Firefox
-- [ ] iPhone Safari
-- [ ] Android Chrome
-- [ ] Fresh-cache/private-window pass completed
-- [ ] Service worker freshness checked after a new deploy
+Use this phase to tighten the face-driven browsing experience before launch traffic arrives.
 
-## Content Review
+- [ ] Open `/gallery`
+- [ ] Click several `People to start with` chips and confirm filtering feels intentional
+- [ ] Confirm person counts roughly match expectations for key people
+- [ ] Spot-check at least 10 people-filter results for obvious bad matches
+- [ ] Note any high-value people who still need more digiKam tagging coverage
+- [ ] Re-run the digiKam import/export flow if names or face coverage need correction
+- [ ] Verify guest uploads remain visibly labeled as guest content in mixed views
 
-- [ ] Names are correct
-- [ ] Date is correct
-- [ ] Venue copy is final
-- [ ] Event times are final
-- [ ] Contact/registry/directions copy is final if present
-- [ ] Hero and film poster assets are final
-- [ ] No placeholder or inaccurate copy remains
+## Phase 4: Guest Upload Rehearsal
 
-## Monitoring
+Do one deliberate rehearsal before you publicize the upload workflow.
 
-- [ ] Sentry event received from staging
-- [ ] Sentry release/version is correct
-- [ ] GA pageviews verified on public routes
-- [ ] Uptime monitor configured for staging
+- [ ] Submit one clearly labeled rehearsal upload from `/upload`
+- [ ] Confirm the upload success state completes without errors
+- [ ] Sign in to `/admin/photos`
+- [ ] Confirm the rehearsal upload appears in the pending moderation queue
+- [ ] Approve it into the live gallery
+- [ ] Confirm it moves into the correct moderation state
+- [ ] If you want face tags on it, use the browser-first guest tagging flow:
+  - [ ] download guest tagging zip
+  - [ ] tag the exported files in digiKam
+  - [ ] upload the tagged batch files back through `/admin/photos`
+  - [ ] confirm last sync status updates
+- [ ] Confirm the approved rehearsal photo appears in `/gallery`
+- [ ] Remove or reject the rehearsal content afterward unless you intentionally want to keep it
 
-## SEO and Sharing
+## Phase 5: Final Launch Readiness
 
-- [ ] Root canonical uses staging URL
-- [ ] Root `og:url` uses staging URL
-- [ ] Root `twitter:url` uses staging URL
-- [ ] `robots.txt` points to staging sitemap
-- [ ] `sitemap.xml` uses staging URLs
-- [ ] Homepage preview verified on at least one share surface
-- [ ] SPA deep-link preview limitation documented and accepted
-
-## Launch Day Domain Cutover
-
-- [ ] Custom domain added in Netlify
-- [ ] DNS records added for `www.theporadas.com`
-- [ ] TLS certificate active
-- [ ] `VITE_SITE_URL` changed to `https://www.theporadas.com`
-- [ ] Final deploy published after domain/env update
-- [ ] `npm run verify:deployed` passes on custom domain
-
-## Public Launch Validation
-
-- [ ] Homepage works on custom domain
-- [ ] Film page works on custom domain
-- [ ] Gallery page works on custom domain
-- [ ] Guestbook page works on custom domain
-- [ ] Upload page works on custom domain
-- [ ] Admin login still works on custom domain
-- [ ] No mixed content warnings
-- [ ] Share metadata points to custom domain
-- [ ] Uptime monitor updated to custom domain
-
-## Rollback Preparedness
-
-- [ ] Known-good pre-cutover deploy ID recorded
-- [ ] Known-good Git commit recorded
-- [ ] Rollback owner identified
-- [ ] Domain will not be publicized until post-cutover checks pass
+- [ ] Desktop Chrome or Edge pass
+- [ ] Desktop Firefox pass
+- [ ] iPhone Safari pass
+- [ ] Android Chrome pass
+- [ ] Fresh-cache/private-window pass
+- [ ] Service worker freshness check after latest deploy
+- [ ] Sentry receiving production events
+- [ ] Google Analytics receiving production pageviews
+- [ ] Final commit SHA recorded
+- [ ] Final Netlify deploy ID recorded
+- [ ] Manual sign-off recorded in `LAUNCH_RUNBOOK.md`
