@@ -4,6 +4,7 @@ import { useAuthStore } from '@/stores/authStore'
 import {
   fetchSiteEditorialFeatureHistory,
   fetchGuestFaceTaggingBatches,
+  fetchMediaReviewBatches,
   fetchModerationAuditTimeline,
   fetchSiteEditorialFeatures,
   recordSiteEditorialFeatureHistory,
@@ -40,6 +41,9 @@ import {
   Sparkles,
   UploadCloud,
   Users,
+  ArrowRight,
+  ShieldCheck,
+  FolderOpen,
 } from 'lucide-react'
 import { MediaReviewPanel } from '@/components/admin/MediaReviewPanel'
 import { Button } from '@/components/ui/Button'
@@ -54,6 +58,103 @@ import {
   type GuestTaggingManifest,
 } from '@/utils/guestTagging'
 
+type AdminNavItem = {
+  path: string
+  label: string
+  icon: React.ElementType
+  description: string
+}
+
+type AdminNavSection = {
+  title: string
+  description: string
+  items: AdminNavItem[]
+}
+
+const adminNavSections: AdminNavSection[] = [
+  {
+    title: 'Run the day-to-day',
+    description: 'The pages you will open most often when new content arrives.',
+    items: [
+      { path: '/admin', label: 'Dashboard', icon: LayoutDashboard, description: 'See what needs attention next.' },
+      { path: '/admin/photos', label: 'Photos', icon: Image, description: 'Moderate uploads, publish photos, and run guest tagging.' },
+      { path: '/admin/review', label: 'People Review', icon: Users, description: 'Work through face review and named people.' },
+      { path: '/admin/guestbook', label: 'Guestbook', icon: MessageSquare, description: 'Moderate notes, voice, and video messages.' },
+    ],
+  },
+  {
+    title: 'Shape the public site',
+    description: 'Editorial tools for keeping the wedding site intentional.',
+    items: [
+      { path: '/admin/featured', label: 'Featured', icon: Sparkles, description: 'Control what Home and Film spotlight next.' },
+      { path: '/admin/audit', label: 'Audit Trail', icon: History, description: 'See who changed moderation state and when.' },
+      { path: '/admin/analytics', label: 'Analytics', icon: BarChart3, description: 'Track verified database activity inside the app.' },
+      { path: '/admin/settings', label: 'Settings', icon: SettingsIcon, description: 'Reference the live setup and operating notes.' },
+    ],
+  },
+]
+
+const adminRouteMeta: Record<string, { eyebrow: string; title: string; description: string }> = {
+  '/admin': {
+    eyebrow: 'Control room',
+    title: 'Keep the whole wedding archive moving smoothly.',
+    description:
+      'Start here to see what needs attention now, then jump straight into the next task for photos, people, guestbook, or featured content.',
+  },
+  '/admin/photos': {
+    eyebrow: 'Photos workflow',
+    title: 'Moderate uploads, publish moments, and keep guest tagging moving.',
+    description:
+      'This is the operational heart of the site: review incoming uploads, decide what goes live, and run the browser-first digiKam loop when guest face tags are worth adding.',
+  },
+  '/admin/review': {
+    eyebrow: 'People workflow',
+    title: 'Turn face detections into a browsable people archive.',
+    description:
+      'Use photo-first review for accuracy, then clean up recurring people in bulk so the public gallery stays useful instead of noisy.',
+  },
+  '/admin/guestbook': {
+    eyebrow: 'Guestbook workflow',
+    title: 'Keep the softer side of the archive tidy and welcoming.',
+    description:
+      'Review notes and media only when needed, without losing the warmth of the messages that make the site feel lived in.',
+  },
+  '/admin/featured': {
+    eyebrow: 'Editorial workflow',
+    title: 'Choose what the public site should spotlight next.',
+    description:
+      'Set the standout upload, guestbook note, or featured clip so the homepage and film page feel curated instead of accidental.',
+  },
+  '/admin/audit': {
+    eyebrow: 'History',
+    title: 'See the moderation and editorial paper trail.',
+    description:
+      'Use this whenever you want to confirm what changed, who changed it, and whether a workflow is behaving the way you expect.',
+  },
+  '/admin/analytics': {
+    eyebrow: 'Verified activity',
+    title: 'Read the database-backed pulse of the site.',
+    description:
+      'This screen is intentionally narrow: it reflects confirmed app activity, while Google Analytics and Sentry remain the source of truth for audience traffic and errors.',
+  },
+  '/admin/settings': {
+    eyebrow: 'Operations notes',
+    title: 'Reference the live setup without pretending these are editable settings.',
+    description:
+      'Use this page as the working notes for how the site is configured, what is intentionally live, and where the real controls live outside this UI.',
+  },
+}
+
+function getAdminRouteMeta(pathname: string) {
+  if (pathname === '/admin') return adminRouteMeta['/admin']
+
+  const match = Object.entries(adminRouteMeta)
+    .filter(([path]) => path !== '/admin' && pathname.startsWith(path))
+    .sort((left, right) => right[0].length - left[0].length)[0]
+
+  return match ? match[1] : adminRouteMeta['/admin']
+}
+
 // Admin sub-pages
 function Dashboard() {
   const [stats, setStats] = useState({
@@ -61,6 +162,9 @@ function Dashboard() {
     pendingPhotos: 0,
     totalMessages: 0,
     approvedUploads: 0,
+    peopleBatchesInFlight: 0,
+    activeFeaturedSlots: 0,
+    lastGuestTaggingSyncLabel: 'No guest sync yet',
   })
 
   useEffect(() => {
@@ -70,74 +174,281 @@ function Dashboard() {
         { count: pendingCount },
         { count: messageCount },
         { count: approvedUploadCount },
+        { data: mediaReviewBatches },
+        { data: guestTaggingBatches },
+        { data: featuredRows },
       ] = await Promise.all([
         supabase.from('photos').select('*', { count: 'exact', head: true }),
         supabase.from('guest_uploads').select('*', { count: 'exact', head: true }).eq('status', 'pending'),
         supabase.from('guestbook_messages').select('*', { count: 'exact', head: true }),
         supabase.from('guest_uploads').select('*', { count: 'exact', head: true }).eq('status', 'approved'),
+        fetchMediaReviewBatches(),
+        fetchGuestFaceTaggingBatches(),
+        fetchSiteEditorialFeatures(),
       ])
+
+      const latestGuestTaggingBatch = guestTaggingBatches?.[0] || null
+      const peopleBatchesInFlight =
+        (mediaReviewBatches || []).filter((batch) => batch.status === 'pending' || batch.status === 'in_review').length
+      const activeFeaturedSlots = (featuredRows || []).filter((row) => row.is_active).length
 
       setStats({
         totalPhotos: photoCount || 0,
         pendingPhotos: pendingCount || 0,
         totalMessages: messageCount || 0,
         approvedUploads: approvedUploadCount || 0,
+        peopleBatchesInFlight,
+        activeFeaturedSlots,
+        lastGuestTaggingSyncLabel: latestGuestTaggingBatch?.last_synced_at
+          ? new Date(latestGuestTaggingBatch.last_synced_at).toLocaleString()
+          : 'No guest sync yet',
       })
     }
 
-    fetchStats()
+    void fetchStats()
   }, [])
 
   return (
-    <div className="space-y-6">
-      <h2 className="text-2xl font-display text-charcoal-900">Dashboard</h2>
-      
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
-        <StatCard 
-          title="Total Photos" 
-          value={stats.totalPhotos} 
-          icon={Image} 
-          color="blue" 
+    <div className="space-y-8">
+      <section className="overflow-hidden rounded-[1.75rem] border border-gold-100 bg-white shadow-[0_20px_60px_rgba(22,18,14,0.06)]">
+        <div className="grid gap-0 xl:grid-cols-[minmax(0,1.25fr)_minmax(20rem,0.95fr)]">
+          <div className="bg-gradient-to-br from-white via-cream-50 to-gold-50/80 px-6 py-8 sm:px-8">
+            <p className="text-[11px] uppercase tracking-[0.32em] text-charcoal-500">Austin + Jordyn control room</p>
+            <h2 className="mt-3 max-w-2xl font-display text-3xl leading-tight text-charcoal-900 sm:text-4xl">
+              One place to keep the wedding site polished, current, and easy to manage together.
+            </h2>
+            <p className="mt-4 max-w-2xl text-sm leading-7 text-charcoal-600 sm:text-[15px]">
+              Treat this dashboard like a morning brief: see what is waiting, jump into the right workflow, and keep
+              the public experience feeling intentional without having to remember where every tool lives.
+            </p>
+
+            <div className="mt-6 grid gap-3 sm:grid-cols-2">
+              <QuickActionCard
+                to="/admin/photos"
+                title="Review photo submissions"
+                description="Moderate uploads, publish the best moments, and prep guest-tagging batches."
+                icon={Image}
+              />
+              <QuickActionCard
+                to="/admin/review"
+                title="Clean up people tags"
+                description="Work through the wedding face-review queue and improve public people browsing."
+                icon={Users}
+              />
+              <QuickActionCard
+                to="/admin/featured"
+                title="Refresh featured content"
+                description="Decide what Home and Film should highlight next."
+                icon={Sparkles}
+              />
+              <QuickActionCard
+                to="/admin/guestbook"
+                title="Check the guestbook"
+                description="Keep notes, voice messages, and video posts tidy when needed."
+                icon={MessageSquare}
+              />
+            </div>
+          </div>
+
+          <div className="border-t border-gold-100 bg-charcoal-900 px-6 py-8 text-cream-50 xl:border-l xl:border-t-0">
+            <p className="text-[11px] uppercase tracking-[0.32em] text-gold-200/80">What needs attention</p>
+            <div className="mt-5 space-y-4">
+              <AdminSignalRow
+                label="Pending uploads"
+                value={stats.pendingPhotos.toString()}
+                tone={stats.pendingPhotos > 0 ? 'alert' : 'calm'}
+                detail={stats.pendingPhotos > 0 ? 'Photos are waiting in review.' : 'The photo queue is currently clear.'}
+              />
+              <AdminSignalRow
+                label="People batches in flight"
+                value={stats.peopleBatchesInFlight.toString()}
+                tone={stats.peopleBatchesInFlight > 0 ? 'alert' : 'calm'}
+                detail={
+                  stats.peopleBatchesInFlight > 0
+                    ? 'There is still face-review work waiting in /admin/review.'
+                    : 'No active people-review batches need attention right now.'
+                }
+              />
+              <AdminSignalRow
+                label="Guest tagging sync"
+                value={stats.lastGuestTaggingSyncLabel}
+                tone="neutral"
+                detail="This reflects the latest browser or terminal guest-tagging sync back into the live gallery."
+              />
+              <AdminSignalRow
+                label="Featured slots live"
+                value={stats.activeFeaturedSlots.toString()}
+                tone="neutral"
+                detail="Use Featured whenever the homepage or film page needs a fresher editorial story."
+              />
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <div className="grid grid-cols-1 gap-4 md:grid-cols-2 xl:grid-cols-4">
+        <StatCard
+          title="Live gallery photos"
+          value={stats.totalPhotos}
+          icon={Image}
+          color="blue"
         />
-        <StatCard 
-          title="Pending Approval" 
-          value={stats.pendingPhotos} 
-          icon={Eye} 
+        <StatCard
+          title="Pending review"
+          value={stats.pendingPhotos}
+          icon={Eye}
           color="amber"
           alert={stats.pendingPhotos > 0}
         />
-        <StatCard 
-          title="Guestbook Messages" 
-          value={stats.totalMessages} 
-          icon={MessageSquare} 
-          color="green" 
+        <StatCard
+          title="Guestbook entries"
+          value={stats.totalMessages}
+          icon={MessageSquare}
+          color="green"
         />
-        <StatCard 
-          title="Approved Uploads"
+        <StatCard
+          title="Approved uploads"
           value={stats.approvedUploads}
           icon={CheckCircle}
-          color="purple" 
+          color="purple"
         />
       </div>
 
-      <div className="rounded-xl border border-blue-200 bg-blue-50 p-4">
-        <p className="font-medium text-blue-900">Dashboard cards now show only verified site activity.</p>
-        <p className="mt-1 text-sm text-blue-700">
-          Traffic and audience behavior are intentionally kept out of this screen. Use Google Analytics and Sentry for
-          real visit data, and use admin for moderation and database-backed counts only.
-        </p>
-      </div>
+      <div className="grid gap-4 xl:grid-cols-[minmax(0,1.15fr)_minmax(20rem,0.85fr)]">
+        <div className="rounded-[1.5rem] border border-gold-100 bg-white p-6 shadow-sm">
+          <div className="flex items-start justify-between gap-4">
+            <div>
+              <p className="text-[11px] uppercase tracking-[0.32em] text-charcoal-500">Recommended rhythm</p>
+              <h3 className="mt-2 text-xl font-display text-charcoal-900">A simpler way to use admin every week</h3>
+            </div>
+            <ShieldCheck className="h-5 w-5 text-gold-500" />
+          </div>
+          <div className="mt-5 grid gap-3">
+            <WorkflowStep
+              step="1"
+              title="Clear the photo queue"
+              description="Start with /admin/photos so uploads either move forward or stop blocking the rest of the system."
+            />
+            <WorkflowStep
+              step="2"
+              title="Tighten face coverage"
+              description="Use /admin/review when the public people browser needs cleaner names or better grouping."
+            />
+            <WorkflowStep
+              step="3"
+              title="Refresh what guests notice first"
+              description="Open /admin/featured after moderation so Home and Film highlight the strongest new material."
+            />
+          </div>
+        </div>
 
-      {/* Quick Actions */}
-      <div className="bg-white rounded-xl p-6 shadow-sm border border-gold-100">
-        <h3 className="text-lg font-medium text-charcoal-900 mb-4">Quick Actions</h3>
-        <div className="flex flex-wrap gap-3">
-          <Button asChild>
-            <Link to="/admin/photos">Review Photos</Link>
-          </Button>
-          <Button variant="secondary" asChild>
-            <Link to="/admin/guestbook">Moderate Guestbook</Link>
-          </Button>
+        <div className="rounded-[1.5rem] border border-gold-100 bg-white p-6 shadow-sm">
+          <div className="flex items-start justify-between gap-4">
+            <div>
+              <p className="text-[11px] uppercase tracking-[0.32em] text-charcoal-500">Ground rules</p>
+              <h3 className="mt-2 text-xl font-display text-charcoal-900">What this dashboard is and is not</h3>
+            </div>
+            <FolderOpen className="h-5 w-5 text-gold-500" />
+          </div>
+          <div className="mt-5 space-y-4 text-sm leading-6 text-charcoal-600">
+            <p>
+              This admin area is for operational truth: moderation state, people review, editorial choices, and
+              database-backed activity.
+            </p>
+            <p>
+              Traffic and production errors still belong in Google Analytics and Sentry. That keeps this space focused
+              on decisions you and Jordyn can actually make here.
+            </p>
+            <Button variant="secondary" asChild>
+              <Link to="/admin/settings">
+                Review operating notes
+                <ArrowRight className="h-4 w-4" />
+              </Link>
+            </Button>
+          </div>
+        </div>
+      </div>
+    </div>
+  )
+}
+
+function QuickActionCard({
+  to,
+  title,
+  description,
+  icon: Icon,
+}: {
+  to: string
+  title: string
+  description: string
+  icon: React.ElementType
+}) {
+  return (
+    <Link
+      to={to}
+      className="group rounded-[1.25rem] border border-gold-100 bg-white/80 p-4 transition-all hover:-translate-y-0.5 hover:border-gold-300 hover:shadow-[0_18px_40px_rgba(22,18,14,0.08)]"
+    >
+      <div className="flex items-start justify-between gap-3">
+        <div className="rounded-xl bg-gold-50 p-2 text-gold-700">
+          <Icon className="h-5 w-5" />
+        </div>
+        <ArrowRight className="h-4 w-4 text-charcoal-300 transition-colors group-hover:text-gold-600" />
+      </div>
+      <p className="mt-4 font-medium text-charcoal-900">{title}</p>
+      <p className="mt-2 text-sm leading-6 text-charcoal-500">{description}</p>
+    </Link>
+  )
+}
+
+function AdminSignalRow({
+  label,
+  value,
+  detail,
+  tone,
+}: {
+  label: string
+  value: string
+  detail: string
+  tone: 'alert' | 'calm' | 'neutral'
+}) {
+  const toneClasses =
+    tone === 'alert'
+      ? 'border-amber-400/40 bg-amber-500/10'
+      : tone === 'calm'
+        ? 'border-emerald-400/30 bg-emerald-500/10'
+        : 'border-white/10 bg-white/5'
+
+  return (
+    <div className={`rounded-2xl border px-4 py-4 ${toneClasses}`}>
+      <div className="flex items-start justify-between gap-4">
+        <div>
+          <p className="text-[11px] uppercase tracking-[0.28em] text-gold-100/70">{label}</p>
+          <p className="mt-2 text-lg font-medium text-white break-words">{value}</p>
+        </div>
+      </div>
+      <p className="mt-2 text-sm leading-6 text-cream-100/75">{detail}</p>
+    </div>
+  )
+}
+
+function WorkflowStep({
+  step,
+  title,
+  description,
+}: {
+  step: string
+  title: string
+  description: string
+}) {
+  return (
+    <div className="rounded-2xl border border-gold-100 bg-cream-50/70 px-4 py-4">
+      <div className="flex items-start gap-4">
+        <div className="flex h-9 w-9 flex-shrink-0 items-center justify-center rounded-full bg-gold-500 text-sm font-semibold text-white">
+          {step}
+        </div>
+        <div>
+          <p className="font-medium text-charcoal-900">{title}</p>
+          <p className="mt-1 text-sm leading-6 text-charcoal-500">{description}</p>
         </div>
       </div>
     </div>
@@ -3352,86 +3663,148 @@ function AdminLayout() {
   const location = useLocation()
   const { signOut, user } = useAuthStore()
   const { addToast } = useToast()
+  const currentPage = getAdminRouteMeta(location.pathname)
 
   const handleSignOut = async () => {
     await signOut()
     addToast('Signed out successfully', 'success')
   }
 
-  const navItems = [
-    { path: '/admin', label: 'Dashboard', icon: LayoutDashboard },
-    { path: '/admin/photos', label: 'Photos', icon: Image },
-    { path: '/admin/review', label: 'People Review', icon: Users },
-    { path: '/admin/guestbook', label: 'Guestbook', icon: MessageSquare },
-    { path: '/admin/featured', label: 'Featured', icon: Sparkles },
-    { path: '/admin/audit', label: 'Audit Trail', icon: History },
-    { path: '/admin/analytics', label: 'Analytics', icon: BarChart3 },
-    { path: '/admin/settings', label: 'Settings', icon: SettingsIcon },
-  ]
-
   return (
-    <div className="min-h-screen bg-cream-50">
+    <div className="min-h-screen bg-[radial-gradient(circle_at_top,_rgba(219,180,92,0.14),_transparent_38%),linear-gradient(180deg,#fffdf9_0%,#f8f2ea_100%)]">
       {/* Admin Header */}
-      <header className="bg-white border-b border-gold-100 sticky top-0 z-30">
-        <div className="max-w-7xl mx-auto flex flex-col gap-3 px-4 py-4 sm:flex-row sm:items-center sm:justify-between">
-          <div className="flex items-center gap-4">
+      <header className="sticky top-0 z-30 border-b border-gold-100/80 bg-white/90 backdrop-blur">
+        <div className="mx-auto flex max-w-7xl flex-col gap-4 px-4 py-4 sm:flex-row sm:items-center sm:justify-between">
+          <div className="min-w-0">
             <Link to="/" className="font-display text-xl text-charcoal-900">
               <span className="text-gold-500">A</span>&<span className="text-gold-500">J</span>
-              <span className="text-sm font-normal text-charcoal-500 ml-2">Admin</span>
+              <span className="ml-2 text-sm font-normal text-charcoal-500">Admin</span>
             </Link>
+            <p className="mt-1 text-sm text-charcoal-500">
+              A calmer workspace for moderation, people review, and editorial decisions.
+            </p>
           </div>
           <div className="flex flex-wrap items-center gap-3 sm:justify-end">
-            <span className="max-w-full break-all text-sm text-charcoal-500 sm:max-w-[18rem] sm:truncate sm:break-normal">
-              {user?.email}
-            </span>
+            <div className="rounded-full border border-gold-100 bg-cream-50/80 px-4 py-2 text-sm text-charcoal-600">
+              Signed in as{' '}
+              <span className="font-medium text-charcoal-900">
+                {user?.email || 'admin'}
+              </span>
+            </div>
             <Button size="sm" variant="secondary" onClick={handleSignOut}>
-              <LogOut className="w-4 h-4 mr-2" />
+              <LogOut className="mr-2 h-4 w-4" />
               Sign Out
             </Button>
           </div>
         </div>
       </header>
 
-      <div className="max-w-7xl mx-auto flex flex-col gap-6 px-4 py-6 xl:flex-row xl:gap-8 xl:py-8">
-        {/* Sidebar */}
-        <nav className="w-full xl:w-64 xl:flex-shrink-0" aria-label="Admin navigation">
-          <div className="overflow-hidden rounded-xl border border-gold-100 bg-white xl:sticky xl:top-24">
-            {navItems.map((item) => {
-              const Icon = item.icon
-              const isActive = location.pathname === item.path
-              
-              return (
-                <Link
-                  key={item.path}
-                  to={item.path}
-                  className={`flex items-center gap-3 px-4 py-3 text-sm font-medium transition-colors ${
-                    isActive 
-                      ? 'bg-gold-50 text-gold-700 border-r-2 border-gold-500' 
-                      : 'text-charcoal-600 hover:bg-gray-50'
-                  }`}
-                  aria-current={isActive ? 'page' : undefined}
-                >
-                  <Icon className="w-5 h-5" />
-                  {item.label}
-                </Link>
-              )
-            })}
+      <div className="mx-auto max-w-7xl px-4 py-6 xl:py-8">
+        <section className="mb-6 rounded-[1.75rem] border border-gold-100 bg-white/92 px-6 py-6 shadow-[0_16px_50px_rgba(22,18,14,0.06)] sm:px-8">
+          <div className="flex flex-col gap-4 xl:flex-row xl:items-end xl:justify-between">
+            <div className="max-w-3xl">
+              <p className="text-[11px] uppercase tracking-[0.32em] text-charcoal-500">{currentPage.eyebrow}</p>
+              <h1 className="mt-2 font-display text-3xl leading-tight text-charcoal-900 sm:text-[2.2rem]">
+                {currentPage.title}
+              </h1>
+              <p className="mt-3 text-sm leading-7 text-charcoal-500 sm:text-[15px]">
+                {currentPage.description}
+              </p>
+            </div>
+            <div className="flex flex-wrap gap-2">
+              <Button variant={location.pathname === '/admin/photos' ? 'primary' : 'secondary'} size="sm" asChild>
+                <Link to="/admin/photos">Photos</Link>
+              </Button>
+              <Button variant={location.pathname === '/admin/review' ? 'primary' : 'secondary'} size="sm" asChild>
+                <Link to="/admin/review">People Review</Link>
+              </Button>
+              <Button variant={location.pathname === '/admin/featured' ? 'primary' : 'secondary'} size="sm" asChild>
+                <Link to="/admin/featured">Featured</Link>
+              </Button>
+            </div>
           </div>
-        </nav>
+        </section>
 
-        {/* Main Content */}
-        <main className="flex-1 min-w-0">
-          <Routes>
-            <Route index element={<Dashboard />} />
-            <Route path="photos" element={<PhotoModeration />} />
-            <Route path="review" element={<MediaReviewPanel />} />
-            <Route path="guestbook" element={<GuestbookModeration />} />
-            <Route path="featured" element={<FeaturedContentManager />} />
-            <Route path="audit" element={<AuditLogView />} />
-            <Route path="analytics" element={<Analytics />} />
-            <Route path="settings" element={<Settings />} />
-          </Routes>
-        </main>
+        <div className="mb-5 flex gap-2 overflow-x-auto pb-1 xl:hidden">
+          {adminNavSections.flatMap((section) => section.items).map((item) => {
+            const isActive = location.pathname === item.path
+
+            return (
+              <Button key={item.path} variant={isActive ? 'primary' : 'secondary'} size="sm" asChild>
+                <Link to={item.path}>{item.label}</Link>
+              </Button>
+            )
+          })}
+        </div>
+
+        <div className="flex flex-col gap-6 xl:flex-row xl:gap-8">
+        {/* Sidebar */}
+          <nav className="hidden w-full xl:block xl:w-80 xl:flex-shrink-0" aria-label="Admin navigation">
+            <div className="overflow-hidden rounded-[1.75rem] border border-gold-100 bg-white/95 shadow-sm xl:sticky xl:top-28">
+              <div className="border-b border-gold-100 px-5 py-5">
+                <p className="text-[11px] uppercase tracking-[0.32em] text-charcoal-500">Workspace map</p>
+                <p className="mt-2 text-sm leading-6 text-charcoal-500">
+                  Start with the workflow that matches the kind of content you are trying to move forward.
+                </p>
+              </div>
+              <div className="space-y-6 px-4 py-5">
+                {adminNavSections.map((section) => (
+                  <div key={section.title}>
+                    <div className="px-2 pb-2">
+                      <p className="text-[11px] uppercase tracking-[0.28em] text-charcoal-400">{section.title}</p>
+                      <p className="mt-1 text-xs leading-5 text-charcoal-500">{section.description}</p>
+                    </div>
+                    <div className="space-y-2">
+                      {section.items.map((item) => {
+                        const Icon = item.icon
+                        const isActive = location.pathname === item.path
+
+                        return (
+                          <Link
+                            key={item.path}
+                            to={item.path}
+                            className={`block rounded-2xl border px-4 py-4 transition-all ${
+                              isActive
+                                ? 'border-gold-300 bg-gold-50 text-gold-800 shadow-[0_14px_32px_rgba(219,180,92,0.18)]'
+                                : 'border-gold-100 bg-white text-charcoal-700 hover:border-gold-200 hover:bg-cream-50/80'
+                            }`}
+                            aria-current={isActive ? 'page' : undefined}
+                          >
+                            <div className="flex items-start gap-3">
+                              <div className={`rounded-xl p-2 ${isActive ? 'bg-white text-gold-700' : 'bg-cream-50 text-charcoal-500'}`}>
+                                <Icon className="h-5 w-5" />
+                              </div>
+                              <div className="min-w-0">
+                                <p className="font-medium">{item.label}</p>
+                                <p className={`mt-1 text-sm leading-6 ${isActive ? 'text-gold-700/90' : 'text-charcoal-500'}`}>
+                                  {item.description}
+                                </p>
+                              </div>
+                            </div>
+                          </Link>
+                        )
+                      })}
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </div>
+          </nav>
+
+          {/* Main Content */}
+          <main className="min-w-0 flex-1">
+            <Routes>
+              <Route index element={<Dashboard />} />
+              <Route path="photos" element={<PhotoModeration />} />
+              <Route path="review" element={<MediaReviewPanel />} />
+              <Route path="guestbook" element={<GuestbookModeration />} />
+              <Route path="featured" element={<FeaturedContentManager />} />
+              <Route path="audit" element={<AuditLogView />} />
+              <Route path="analytics" element={<Analytics />} />
+              <Route path="settings" element={<Settings />} />
+            </Routes>
+          </main>
+        </div>
       </div>
     </div>
   )
