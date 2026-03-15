@@ -86,10 +86,22 @@ Export the import-ready manifest after review:
 npm run media:batch:export -- "C:/path/to/working-root"
 ```
 
+Export currently published guest-upload photos into a local digiKam tagging root:
+
+```bash
+npm run media:guest:tag:export -- "C:/path/to/guest-tagging-root"
+```
+
 Publish optimized media plus import rows into the live archive:
 
 ```bash
 npm run media:batch:publish -- "C:/path/to/working-root"
+```
+
+Sync confirmed guest face tags from a digiKam guest-tagging root back into the live gallery rows:
+
+```bash
+npm run media:guest:tag:sync -- "C:/path/to/guest-tagging-root"
 ```
 
 Push the private face-review bundle into admin staging:
@@ -148,6 +160,10 @@ When you use `media:batch:faces:digikam`, these files are regenerated from digiK
 - `wedding-photo-review-push-report.md`: readable staging summary
 - `wedding-photo-evaluation-report.json`: regression-style scoring report
 - `wedding-photo-evaluation-report.md`: readable evaluation summary
+- `guest-photo-tagging-export-report.json`: guest-photo export report for digiKam tagging
+- `guest-photo-tagging-export-report.md`: readable guest-photo export summary
+- `guest-photo-face-sync-report.json`: metadata-only guest face sync report
+- `guest-photo-face-sync-report.md`: readable metadata-only guest face sync summary
 
 ## Review Workflow
 
@@ -189,6 +205,35 @@ Use this when you want face detection, grouping, and naming to happen outside th
 - Exact-duplicate review copies under `organized/Review/Exact Duplicates` are skipped automatically.
 - Imported digiKam names become confirmed `faces` metadata automatically in the publish manifest.
 - Re-run `media:batch:faces:digikam` any time you change names in digiKam and write metadata again.
+
+## Guest Upload Tagging Loop
+
+Use this when you want approved guest-upload photos to go through the same digiKam face-tagging workflow and then sync back into the live gallery without re-uploading all media.
+
+1. Approve guest uploads into the gallery from `/admin/photos`.
+2. Run:
+
+```bash
+npm run media:guest:tag:export -- "C:/path/to/guest-tagging-root"
+```
+
+3. Open `<guest-tagging-root>/organized` in digiKam.
+4. Detect and recognize faces, confirm names in `People`, and run `Album -> Write Metadata to Files`.
+5. Run:
+
+```bash
+npm run media:batch:faces:digikam -- "C:/path/to/guest-tagging-root"
+npm run media:guest:tag:sync -- "C:/path/to/guest-tagging-root"
+```
+
+6. Reload the gallery or `/admin/review` to verify the updated face tags.
+
+### Guest Loop Notes
+
+- `media:guest:tag:export` downloads photos from approved `guest_uploads`, not the full wedding archive.
+- The export cross-references the live `photos` table by URL when those guest uploads are already published, so Bach+ette and professional imports stay out of this queue.
+- `media:guest:tag:sync` updates only the `faces` field on existing guest `photos` rows.
+- This loop is metadata-only; it does not re-upload optimized media objects.
 
 ## Notes
 

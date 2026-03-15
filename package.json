@@ -49,6 +49,8 @@
     "media:batch:review:push": "node scripts/push-photo-review-batch.mjs",
     "media:batch:evaluate": "node scripts/evaluate-photo-batch.mjs",
     "media:batch:prepare": "node scripts/prepare-photo-batch.mjs",
+    "media:guest:tag:export": "node scripts/export-approved-guest-photos-for-digikam.mjs",
+    "media:guest:tag:sync": "node scripts/sync-guest-photo-face-metadata.mjs",
     "inspect:guestbook": "node scripts/inspect_guestbook.cjs",
     "test": "vitest",
     "test:ui": "vitest --ui",
