@@ -2,158 +2,151 @@
 
 ## Purpose
 
-This is the source of truth for taking the wedding site from private staging on Netlify to a public custom-domain launch on `www.theporadas.com`.
+This runbook is the operating guide for taking the wedding site from "production is live, but still privately rehearsed" to "safe to actively share with guests."
 
-## Current Strategy
+Current live setup:
 
-- Staging and QA URL: `https://austin-jordyn-wedding.netlify.app`
-- Public launch URL: `https://www.theporadas.com`
-- Do not attach the custom domain until the site is fully approved.
-- Deep-link crawler previews may fall back to the homepage metadata for this launch because the site is a client-rendered SPA.
+- public site: `https://www.theporadas.com`
+- redirect host: `https://wedding.theporadas.com`
+- media host: `https://media.wedding.theporadas.com`
+- frontend: Netlify
+- backend: Supabase
 
-## Launch Preconditions
+## Current Baseline
 
-Before cutover, all of the following must be true:
+Verified on `2026-03-15`:
 
-- GitHub `main` matches the intended production build.
-- Netlify production is successfully deploying from `main`.
-- `npm run verify:release` passes from a clean shell.
-- `npm run verify:launch` passes from a clean shell once launch envs are present.
-- Manual staging QA is complete for:
-  - guestbook submit, reply, reaction
-  - photo upload and video upload
-  - admin login and moderation approval
-  - desktop Chrome/Edge
-  - desktop Firefox
-  - iPhone Safari
-  - Android Chrome
-  - fresh-cache or private-window pass
-- Monitoring is configured and verified:
-  - Sentry DSN
-  - Google Analytics ID
-  - uptime monitor
+- production deploy is live from `main`
+- `guest-face-tagging-admin` Edge Function is deployed
+- `node scripts/verify-deployed-site.js` passes
+- `/`, `/gallery`, `/upload`, `/guestbook`, and `/admin/login` all respond and hydrate on production
+- gallery people browsing is live with quick-start chips and richer face summaries
+- `/admin/photos` includes the browser-first guest digiKam sync workflow
 
-## Required Environment Variables
+This means the remaining launch work is mostly manual sign-off and one deliberate rehearsal with real content.
 
-### Required before staging sign-off
+## Phased Plan
 
-- `VITE_SUPABASE_URL`
-- `VITE_SUPABASE_ANON_KEY`
-- `VITE_SITE_URL=https://austin-jordyn-wedding.netlify.app`
-- `VITE_SENTRY_DSN`
-- `VITE_GA_ID`
+### Phase 1: Production Baseline
 
-### Recommended before launch
+Already complete.
 
-- `VITE_APP_VERSION`
+Reference:
 
-### Optional
+- `PRE_LAUNCH_CHECKLIST.md`
+- `DEPLOYMENT_CHECKLIST.md`
 
-- `VITE_MEDIA_BASE_URL`
+### Phase 2: Signed-In Admin QA
+
+Run this as an authenticated admin on production:
+
+1. Sign in at `/admin/login`.
+2. Open `/admin/photos`.
+3. Verify the moderation counts and guest tagging panel.
+4. Open `/admin/review`.
+5. Verify the people-review workflow still handles the staged wedding batch.
+6. Open `/admin/guestbook`.
+7. Open `/admin/featured`.
+
+Acceptance:
+
+- no layout breaks
+- no auth loops
+- moderation data loads quickly enough to use
+- guest tagging panel shows counts and actions correctly
+
+### Phase 3: People Curation
+
+Use the now-live face metadata to make sure the public people experience feels intentional:
+
+1. Open `/gallery`.
+2. Click the `People to start with` chips.
+3. Search by person name.
+4. Spot-check mixed professional and guest results.
+5. Note any missing or mis-grouped people.
+6. If needed, correct tags in digiKam and rerun:
+
+```powershell
+npm run media:batch:faces:digikam -- "C:\Users\bbask\Pictures\Wedding Master - Enriched Working"
+npm run media:batch:export -- "C:\Users\bbask\Pictures\Wedding Master - Enriched Working"
+npm run media:batch:publish -- "C:\Users\bbask\Pictures\Wedding Master - Enriched Working"
+```
+
+Acceptance:
+
+- key people are easy to find
+- face-based browsing feels helpful, not noisy
+- guest uploads remain visibly marked as guest content
+
+### Phase 4: Guest Upload Rehearsal
+
+Run one intentional rehearsal before the site is actively shared:
+
+1. Submit one clearly labeled test upload through `/upload`.
+2. Confirm the success state on the public page.
+3. Sign in to `/admin/photos`.
+4. Approve the upload into the live gallery.
+5. Confirm the upload changes state as expected.
+6. If face tags are wanted, use the guest digiKam flow:
+   - click `Download guest tagging zip`
+   - tag locally in digiKam
+   - upload the tagged batch files back through `/admin/photos`
+7. Confirm the last-sync status updates and the photo appears correctly in `/gallery`.
+8. Remove or reject the rehearsal content afterward unless it is real content you want to keep.
+
+Acceptance:
+
+- public upload succeeds
+- admin moderation succeeds
+- guest tagging batch export/sync succeeds
+- published rehearsal content appears correctly in the gallery
+
+### Phase 5: Final Readiness
+
+Before you actively share the site:
+
+1. Run one fresh-cache pass on desktop.
+2. Run one fresh-cache pass on mobile.
+3. Confirm Sentry and GA are receiving production traffic.
+4. Record the release details below.
+5. Only then distribute the site widely.
 
 ## Verification Commands
 
-Run these from a clean shell before any final deploy:
+Use these before any major launch-day announcement:
 
 ```powershell
 npm run verify:env
-npm run verify:secrets
-npm run verify:supabase
-npm run lint
 npx tsc --noEmit
-npm run test:run
 npm run build
-npm run test:e2e:public
-npm run verify:release
+node scripts/verify-deployed-site.js
 ```
 
-Launch-specific checks:
+## Guest Tagging Workflow
 
-```powershell
-npm run verify:launch
-npm run verify:deployed
-```
+The guest-upload face-tagging loop is now browser-first:
 
-`verify:launch` validates launch-only env requirements and built fallback metadata.
+1. Approve guest uploads into the live gallery from `/admin/photos`.
+2. In `Guest Face Tagging`, click `Download guest tagging zip`.
+3. Extract the zip locally and tag the images in digiKam.
+4. In digiKam, run `Write Metadata to Files`.
+5. Back in `/admin/photos`, choose the tagged batch files and run the sync.
+6. Verify the latest sync status updates in the panel.
 
-`verify:deployed` validates the live URL in `VITE_SITE_URL` by fetching the deployed HTML, `robots.txt`, `sitemap.xml`, and `/admin/login`.
+Fallback terminal commands remain documented in:
 
-## Staging Validation
+- `MEDIA_BATCH_WORKFLOW.md`
+- `GALLERY_OPERATIONS.md`
 
-Use only the Netlify staging URL until launch day.
+## Manual Sign-Off Record
 
-- Confirm public flows:
-  - guestbook text submission
-  - reply and reaction behavior
-  - photo upload
-  - video upload
-- Confirm admin flows:
-  - sign in at `/admin/login`
-  - moderate one upload
-  - verify approved content appears where expected
-- Clean up any test-only content that should not remain visible.
-- Confirm homepage share preview on the staging URL if internal reviewers need it.
+Record these values when you decide the site is ready for active guest traffic:
 
-## Launch Day Cutover
-
-Execute in this order:
-
-1. Freeze content and code changes.
-2. Re-run `npm run verify:release`.
-3. Confirm the final launch commit is pushed to `main`.
-4. Confirm Netlify production has deployed that commit.
-5. Keep `wedding.theporadas.com` as the stable Netlify origin and present `www.theporadas.com` as the public domain.
-6. Add the required DNS records at the domain host.
-7. Wait for Netlify to verify the domain and provision TLS.
-8. Confirm `https://www.theporadas.com` loads successfully.
-9. Update Netlify env:
-   - `VITE_SITE_URL=https://www.theporadas.com`
-   - set `VITE_APP_VERSION` to the launch release label if needed
-10. Commit the static fallback metadata/domain updates if not already parameterized by env.
-11. Trigger the final post-cutover production deploy from `main`.
-12. Run `npm run verify:deployed` against the custom domain.
-13. Manually verify the homepage preview on the custom domain.
-14. Only then share the custom domain publicly.
-
-## Post-Cutover Validation
-
-Check these live on `https://www.theporadas.com`:
-
-- homepage
-- film
-- gallery
-- guestbook
-- upload
-- admin login
-- SSL padlock
-- no mixed content
-- correct canonical/share metadata
-- Sentry event delivery
-- GA pageview delivery
-- uptime monitor green
-
-Perform one real guest action after cutover:
-
-- either one guestbook entry
-- or one real upload flow
-
-## Rollback
-
-- If DNS or TLS is not healthy, do not publicize the domain and keep using the Netlify URL privately.
-- If the custom-domain deploy breaks metadata or runtime behavior:
-  - revert to the last known-good Git commit
-  - redeploy on Netlify
-  - re-verify before retrying the cutover
-- If GA or Sentry fails, launch proceeds only if the failure is explicitly accepted and documented.
-
-## Release Record
-
-Record these values at final launch:
-
-- final Git commit SHA
-- Netlify deploy ID
-- Netlify deploy URL
-- custom domain go-live time
-- `VITE_SITE_URL` value
-- `VITE_APP_VERSION` value
-- who completed the manual sign-off
+- final Git commit SHA:
+- final Netlify deploy ID:
+- final Netlify deploy URL:
+- latest Supabase function deploy confirmation:
+- people curation sign-off:
+- guest upload rehearsal sign-off:
+- final manual reviewer:
+- go-live date and time:
