@@ -12,6 +12,9 @@ interface DetectedFace {
   photoCount: number
   thumbnail?: string
   latestMoment?: string
+  collections?: string[]
+  professionalCount?: number
+  guestCount?: number
 }
 
 interface FaceRecognitionProps {
@@ -169,6 +172,26 @@ export function FaceRecognition({
                             <p className="mt-1 text-sm text-charcoal-500">
                               {face.photoCount} tagged {face.photoCount === 1 ? 'photo' : 'photos'}
                             </p>
+                            <div className="mt-3 flex flex-wrap gap-2">
+                              {typeof face.professionalCount === 'number' && face.professionalCount > 0 && (
+                                <span className="rounded-full border border-gold-200 bg-gold-50/80 px-3 py-1 text-[11px] uppercase tracking-[0.18em] text-gold-700">
+                                  {face.professionalCount} professional
+                                </span>
+                              )}
+                              {typeof face.guestCount === 'number' && face.guestCount > 0 && (
+                                <span className="rounded-full border border-gold-200 bg-white px-3 py-1 text-[11px] uppercase tracking-[0.18em] text-charcoal-500">
+                                  {face.guestCount} guest
+                                </span>
+                              )}
+                              {(face.collections || []).slice(0, 2).map((collection) => (
+                                <span
+                                  key={`${face.id}-${collection}`}
+                                  className="rounded-full border border-gold-200 bg-white px-3 py-1 text-[11px] uppercase tracking-[0.18em] text-charcoal-500"
+                                >
+                                  {collection}
+                                </span>
+                              ))}
+                            </div>
                             {face.latestMoment && (
                               <p className="mt-3 line-clamp-2 text-sm leading-6 text-charcoal-500">
                                 {face.latestMoment}

@@ -1,13 +1,15 @@
-import { useState, useEffect, useCallback, useMemo } from 'react'
+import { useState, useEffect, useCallback, useMemo, useRef } from 'react'
 import { Navigate, Routes, Route, Link, useLocation } from 'react-router-dom'
 import { useAuthStore } from '@/stores/authStore'
 import {
   fetchSiteEditorialFeatureHistory,
+  fetchGuestFaceTaggingBatches,
   fetchModerationAuditTimeline,
   fetchSiteEditorialFeatures,
   recordSiteEditorialFeatureHistory,
   recordModerationAudit,
   supabase,
+  type GuestFaceTaggingBatch,
   type GuestUpload,
   type GuestbookMessage,
   type ModerationAuditAction,
@@ -25,6 +27,7 @@ import {
   MessageSquare, 
   Settings as SettingsIcon,
   Copy,
+  Download,
   LogOut,
   CheckCircle,
   XCircle,
@@ -33,7 +36,9 @@ import {
   BarChart3,
   Video,
   History,
+  RefreshCw,
   Sparkles,
+  UploadCloud,
   Users,
 } from 'lucide-react'
 import { MediaReviewPanel } from '@/components/admin/MediaReviewPanel'
@@ -43,6 +48,11 @@ import { Label } from '@/components/ui/Label'
 import { Textarea } from '@/components/ui/Textarea'
 import { useToast } from '@/context/ToastContext'
 import { getMemoryTrailById, memoryTrails, type MemoryTrailId } from '@/data/memoryTrails'
+import {
+  buildGuestTaggingSyncPayloadFromFiles,
+  downloadGuestTaggingBatchZip,
+  type GuestTaggingManifest,
+} from '@/utils/guestTagging'
 
 // Admin sub-pages
 function Dashboard() {
@@ -826,9 +836,14 @@ function PhotoModeration() {
   const [searchQuery, setSearchQuery] = useState('')
   const [guestTaggingRoot, setGuestTaggingRoot] = useState(DEFAULT_GUEST_TAGGING_ROOT)
   const [copiedCommandKey, setCopiedCommandKey] = useState<string | null>(null)
+  const [guestTaggingBatches, setGuestTaggingBatches] = useState<GuestFaceTaggingBatch[]>([])
+  const [isPreparingGuestTaggingBatch, setIsPreparingGuestTaggingBatch] = useState(false)
+  const [isSyncingGuestTaggingBatch, setIsSyncingGuestTaggingBatch] = useState(false)
+  const [guestTaggingDownloadProgress, setGuestTaggingDownloadProgress] = useState<{ completed: number; total: number } | null>(null)
   const [selectedIds, setSelectedIds] = useState<string[]>([])
   const [publishedPhotoUrls, setPublishedPhotoUrls] = useState<Set<string>>(new Set())
   const [auditByUploadId, setAuditByUploadId] = useState<AuditEntriesByEntityId>({})
+  const guestTaggingFileInputRef = useRef<HTMLInputElement | null>(null)
   const { user } = useAuthStore()
   const { addToast } = useToast()
 
@@ -836,7 +851,12 @@ function PhotoModeration() {
 
   const fetchPendingPhotos = useCallback(async () => {
     setLoading(true)
-    const [{ data, error }, { data: publishedGuestPhotos, error: photosError }, { data: auditRows, error: auditError }] = await Promise.all([
+    const [
+      { data, error },
+      { data: publishedGuestPhotos, error: photosError },
+      { data: auditRows, error: auditError },
+      { data: guestTaggingBatchRows, error: guestTaggingBatchError },
+    ] = await Promise.all([
       supabase
         .from('guest_uploads')
         .select('*')
@@ -846,15 +866,17 @@ function PhotoModeration() {
         .select('url')
         .eq('is_professional', false),
       fetchModerationAuditTimeline({ entityType: 'guest_upload', limit: 500 }),
+      fetchGuestFaceTaggingBatches(),
     ])
 
-    if (error || photosError || auditError) {
+    if (error || photosError || auditError || guestTaggingBatchError) {
       addToast('Failed to load photos', 'error')
     } else {
       const uploads = (data as ModerationUpload[] | null) || []
       setPhotos(uploads)
       setPublishedPhotoUrls(new Set((publishedGuestPhotos || []).map((photo) => photo.url)))
       setAuditByUploadId(groupAuditEntries(auditRows || []))
+      setGuestTaggingBatches(guestTaggingBatchRows || [])
       setDrafts(prev => {
         const next: Record<string, PromotionDraft> = {}
 
@@ -1236,6 +1258,23 @@ function PhotoModeration() {
   })
 
   const guestTaggingCommands = useMemo(() => buildGuestTaggingCommands(guestTaggingRoot), [guestTaggingRoot])
+  const latestGuestTaggingBatch = guestTaggingBatches[0] ?? null
+  const readyGuestTaggingUploads = useMemo(
+    () => photos.filter((upload) => getModerationState(upload, publishedPhotoUrls) === 'approved-published'),
+    [photos, publishedPhotoUrls],
+  )
+  const readyGuestTaggingUploadCount = readyGuestTaggingUploads.length
+  const readyGuestTaggingPhotoCount = useMemo(
+    () => readyGuestTaggingUploads.reduce((sum, upload) => sum + getPublishedPhotoCount(upload, publishedPhotoUrls), 0),
+    [readyGuestTaggingUploads, publishedPhotoUrls],
+  )
+  const pendingGuestTaggingPhotoCount = useMemo(
+    () =>
+      photos
+        .filter((upload) => getModerationState(upload, publishedPhotoUrls) === 'approved-unpublished')
+        .reduce((sum, upload) => sum + (upload.photo_urls?.length || 0), 0),
+    [photos, publishedPhotoUrls],
+  )
 
   const handleCopyGuestTaggingCommand = useCallback(async (command: string, commandKey: string) => {
     try {
@@ -1249,6 +1288,94 @@ function PhotoModeration() {
       addToast('Could not copy the command. Please copy it manually.', 'error')
     }
   }, [addToast])
+
+  const refreshGuestTaggingBatches = useCallback(async () => {
+    const { data, error } = await fetchGuestFaceTaggingBatches()
+    if (error) {
+      addToast('Could not refresh guest tagging status.', 'error')
+      return
+    }
+
+    setGuestTaggingBatches(data || [])
+  }, [addToast])
+
+  const handlePrepareGuestTaggingBatch = useCallback(async () => {
+    setIsPreparingGuestTaggingBatch(true)
+    setGuestTaggingDownloadProgress(null)
+
+    try {
+      const { data, error } = await supabase.functions.invoke('guest-face-tagging-admin', {
+        body: {
+          action: 'prepare_export',
+        },
+      })
+
+      if (error) {
+        throw error
+      }
+
+      const manifest = data?.manifest as GuestTaggingManifest | undefined
+      if (!manifest) {
+        throw new Error('The guest tagging manifest could not be created.')
+      }
+
+      await downloadGuestTaggingBatchZip(manifest, (completed, total) => {
+        setGuestTaggingDownloadProgress({ completed, total })
+      })
+
+      addToast(
+        manifest.exportablePhotoCount > 0
+          ? `Downloaded a guest tagging batch with ${manifest.exportablePhotoCount} photo${manifest.exportablePhotoCount === 1 ? '' : 's'}.`
+          : 'No approved guest photos are ready for tagging yet.',
+        manifest.exportablePhotoCount > 0 ? 'success' : 'warning',
+      )
+      await refreshGuestTaggingBatches()
+    } catch (error) {
+      addToast(error instanceof Error ? error.message : 'Could not prepare the guest tagging batch.', 'error')
+    } finally {
+      setIsPreparingGuestTaggingBatch(false)
+      setGuestTaggingDownloadProgress(null)
+    }
+  }, [addToast, refreshGuestTaggingBatches])
+
+  const handleGuestTaggingFileSelection = useCallback(async (event: React.ChangeEvent<HTMLInputElement>) => {
+    const selectedFiles = event.target.files
+    if (!selectedFiles || selectedFiles.length === 0) {
+      return
+    }
+
+    setIsSyncingGuestTaggingBatch(true)
+
+    try {
+      const payload = await buildGuestTaggingSyncPayloadFromFiles(selectedFiles)
+      if (payload.updates.length === 0) {
+        throw new Error('No digiKam face metadata was found in the selected files.')
+      }
+
+      const { data, error } = await supabase.functions.invoke('guest-face-tagging-admin', {
+        body: {
+          action: 'sync_tagged_batch',
+          ...payload,
+        },
+      })
+
+      if (error) {
+        throw error
+      }
+
+      addToast(
+        `Synced face metadata for ${data?.syncedPhotoCount ?? payload.updates.length} guest photo${(data?.syncedPhotoCount ?? payload.updates.length) === 1 ? '' : 's'}.`,
+        'success',
+      )
+      await refreshGuestTaggingBatches()
+      await fetchPendingPhotos()
+    } catch (error) {
+      addToast(error instanceof Error ? error.message : 'Could not sync the tagged guest batch.', 'error')
+    } finally {
+      setIsSyncingGuestTaggingBatch(false)
+      event.target.value = ''
+    }
+  }, [addToast, fetchPendingPhotos, refreshGuestTaggingBatches])
 
   if (loading) {
     return <div className="text-center py-12">Loading...</div>
@@ -1335,86 +1462,165 @@ function PhotoModeration() {
             </p>
             <div className="grid gap-3 sm:grid-cols-2 xl:grid-cols-3">
               <div className="rounded-2xl border border-gold-100 bg-white/88 p-4">
-                <p className="text-[10px] uppercase tracking-[0.28em] text-charcoal-500">Ready to export</p>
-                <p className="mt-2 text-3xl font-display text-charcoal-900">{queueCounts['approved-published']}</p>
+                <p className="text-[10px] uppercase tracking-[0.28em] text-charcoal-500">Ready for tagging</p>
+                <p className="mt-2 text-3xl font-display text-charcoal-900">{readyGuestTaggingPhotoCount}</p>
                 <p className="mt-2 text-xs leading-5 text-charcoal-500">
-                  Approved uploads with live guest photo rows that the export command can download into a digiKam batch.
+                  Live guest photos across {readyGuestTaggingUploadCount} approved upload{readyGuestTaggingUploadCount === 1 ? '' : 's'} that can go straight into the digiKam batch.
                 </p>
               </div>
               <div className="rounded-2xl border border-gold-100 bg-white/88 p-4">
-                <p className="text-[10px] uppercase tracking-[0.28em] text-charcoal-500">Not exportable yet</p>
-                <p className="mt-2 text-3xl font-display text-charcoal-900">{queueCounts['approved-unpublished']}</p>
+                <p className="text-[10px] uppercase tracking-[0.28em] text-charcoal-500">Waiting on publication</p>
+                <p className="mt-2 text-3xl font-display text-charcoal-900">{pendingGuestTaggingPhotoCount}</p>
                 <p className="mt-2 text-xs leading-5 text-charcoal-500">
-                  Approved uploads with no live guest photo row yet, usually duplicate-only or video-only submissions.
+                  Approved guest photos that are not exportable yet, usually because they were duplicate-only or not published into the live gallery.
                 </p>
               </div>
               <div className="rounded-2xl border border-gold-100 bg-white/88 p-4">
-                <p className="text-[10px] uppercase tracking-[0.28em] text-charcoal-500">Reference doc</p>
-                <p className="mt-2 text-sm font-medium text-charcoal-900">`MEDIA_BATCH_WORKFLOW.md`</p>
+                <p className="text-[10px] uppercase tracking-[0.28em] text-charcoal-500">Last sync</p>
+                <p className="mt-2 text-sm font-medium text-charcoal-900">
+                  {latestGuestTaggingBatch?.last_synced_at
+                    ? new Date(latestGuestTaggingBatch.last_synced_at).toLocaleString()
+                    : 'No guest sync yet'}
+                </p>
                 <p className="mt-2 text-xs leading-5 text-charcoal-500">
-                  Keep this open in the repo while you work through export, digiKam tagging, and the final sync step.
+                  {latestGuestTaggingBatch
+                    ? `${latestGuestTaggingBatch.synced_photo_count} photo${latestGuestTaggingBatch.synced_photo_count === 1 ? '' : 's'} synced · status ${latestGuestTaggingBatch.status}`
+                    : 'Once a guest batch is synced, the latest result will show up here.'}
                 </p>
               </div>
             </div>
           </div>
 
           <div className="w-full max-w-xl rounded-[1.25rem] border border-gold-100 bg-white/92 p-4">
-            <Label htmlFor="guest-tagging-root" className="mb-2 block text-xs normal-case tracking-normal text-charcoal-500">
-              Local guest tagging working root
-            </Label>
-            <Input
-              id="guest-tagging-root"
-              value={guestTaggingRoot}
-              onChange={(event) => setGuestTaggingRoot(event.target.value)}
-              placeholder={DEFAULT_GUEST_TAGGING_ROOT}
-            />
-            <p className="mt-2 text-xs leading-5 text-charcoal-500">
-              This should be a local folder outside the repo where the guest export can download approved photos for
-              digiKam. The sync step must be run from a terminal session that already has `SUPABASE_SERVICE_ROLE_KEY`.
-            </p>
+            <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+              <div>
+                <p className="font-medium text-charcoal-900">Terminal-free guest tagging workflow</p>
+                <p className="mt-1 text-xs leading-5 text-charcoal-500">
+                  Download a zipped digiKam batch here, then upload the tagged batch files back for a metadata-only sync.
+                </p>
+              </div>
+              <Button
+                type="button"
+                variant="secondary"
+                size="sm"
+                onClick={() => void refreshGuestTaggingBatches()}
+                disabled={isPreparingGuestTaggingBatch || isSyncingGuestTaggingBatch}
+              >
+                <RefreshCw className="h-4 w-4" />
+                Refresh status
+              </Button>
+            </div>
 
             <div className="mt-4 space-y-3">
-              {[
-                {
-                  key: 'export',
-                  title: '1. Export approved guest photos',
-                  description: 'Downloads approved guest photo rows that are already live into a local digiKam-ready organized folder.',
-                  command: guestTaggingCommands.export,
-                },
-                {
-                  key: 'import',
-                  title: '2. After tagging in digiKam, import the face metadata',
-                  description: 'Reads digiKam face names and regions from the exported photos and regenerates the standard faces artifacts.',
-                  command: guestTaggingCommands.import,
-                },
-                {
-                  key: 'sync',
-                  title: '3. Sync confirmed guest faces back into the gallery',
-                  description: 'Updates the matching live guest photo rows in `photos.faces` without re-uploading the media files.',
-                  command: guestTaggingCommands.sync,
-                },
-              ].map((step) => (
-                <div key={step.key} className="rounded-2xl border border-gold-100 bg-cream-50/70 p-4">
-                  <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
-                    <div className="space-y-1">
-                      <p className="font-medium text-charcoal-900">{step.title}</p>
-                      <p className="text-xs leading-5 text-charcoal-500">{step.description}</p>
-                    </div>
+              <div className="rounded-2xl border border-gold-100 bg-cream-50/70 p-4">
+                <div className="space-y-4">
+                  <div className="space-y-1">
+                    <p className="font-medium text-charcoal-900">1. Download a fresh guest tagging batch</p>
+                    <p className="text-xs leading-5 text-charcoal-500">
+                      This creates a manifest from the live approved guest gallery, packages the photos into a single zip, and records the batch for later sync status.
+                    </p>
+                  </div>
+                  <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
                     <Button
                       type="button"
-                      variant={copiedCommandKey === step.key ? 'primary' : 'secondary'}
                       size="sm"
-                      onClick={() => void handleCopyGuestTaggingCommand(step.command, step.key)}
+                      onClick={() => void handlePrepareGuestTaggingBatch()}
+                      disabled={isPreparingGuestTaggingBatch || readyGuestTaggingPhotoCount === 0}
+                      isLoading={isPreparingGuestTaggingBatch}
                     >
-                      <Copy className="h-4 w-4" />
-                      {copiedCommandKey === step.key ? 'Copied' : 'Copy command'}
+                      <Download className="h-4 w-4" />
+                      Download guest tagging zip
                     </Button>
+                    {guestTaggingDownloadProgress && (
+                      <p className="text-xs leading-5 text-charcoal-500">
+                        Downloading {guestTaggingDownloadProgress.completed} of {guestTaggingDownloadProgress.total} photo{guestTaggingDownloadProgress.total === 1 ? '' : 's'}.
+                      </p>
+                    )}
                   </div>
-                  <pre className="mt-3 overflow-x-auto rounded-2xl bg-charcoal-900 px-4 py-3 text-xs leading-6 text-cream-50">
-                    <code>{step.command}</code>
-                  </pre>
                 </div>
-              ))}
+              </div>
+
+              <div className="rounded-2xl border border-gold-100 bg-cream-50/70 p-4">
+                <div className="space-y-4">
+                  <div className="space-y-1">
+                    <p className="font-medium text-charcoal-900">2. After tagging in digiKam, upload the tagged batch files</p>
+                    <p className="text-xs leading-5 text-charcoal-500">
+                      Select the extracted batch contents, including `guest-tagging-manifest.json` and the tagged image files. The browser reads the digiKam face metadata locally and only sends compact face updates back to Supabase.
+                    </p>
+                  </div>
+                  <input
+                    ref={guestTaggingFileInputRef}
+                    type="file"
+                    multiple
+                    accept=".json,.xmp,.jpg,.jpeg,.png,.webp,.heic,.heif"
+                    onChange={(event) => void handleGuestTaggingFileSelection(event)}
+                    className="hidden"
+                  />
+                  <Button
+                    type="button"
+                    size="sm"
+                    variant="secondary"
+                    onClick={() => guestTaggingFileInputRef.current?.click()}
+                    disabled={isPreparingGuestTaggingBatch || isSyncingGuestTaggingBatch}
+                    isLoading={isSyncingGuestTaggingBatch}
+                  >
+                    <UploadCloud className="h-4 w-4" />
+                    Sync tagged batch
+                  </Button>
+                </div>
+              </div>
+
+              <details className="rounded-2xl border border-gold-100 bg-white/88 p-4">
+                <summary className="cursor-pointer font-medium text-charcoal-900">
+                  Local terminal fallback
+                </summary>
+                <div className="mt-4 space-y-3">
+                  <Label htmlFor="guest-tagging-root" className="mb-2 block text-xs normal-case tracking-normal text-charcoal-500">
+                    Local guest tagging working root
+                  </Label>
+                  <Input
+                    id="guest-tagging-root"
+                    value={guestTaggingRoot}
+                    onChange={(event) => setGuestTaggingRoot(event.target.value)}
+                    placeholder={DEFAULT_GUEST_TAGGING_ROOT}
+                  />
+                  {[
+                    {
+                      key: 'export',
+                      title: 'Export approved guest photos',
+                      command: guestTaggingCommands.export,
+                    },
+                    {
+                      key: 'import',
+                      title: 'Import digiKam metadata',
+                      command: guestTaggingCommands.import,
+                    },
+                    {
+                      key: 'sync',
+                      title: 'Sync guest face metadata',
+                      command: guestTaggingCommands.sync,
+                    },
+                  ].map((step) => (
+                    <div key={step.key} className="rounded-2xl border border-gold-100 bg-cream-50/70 p-4">
+                      <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
+                        <p className="font-medium text-charcoal-900">{step.title}</p>
+                        <Button
+                          type="button"
+                          variant={copiedCommandKey === step.key ? 'primary' : 'secondary'}
+                          size="sm"
+                          onClick={() => void handleCopyGuestTaggingCommand(step.command, step.key)}
+                        >
+                          <Copy className="h-4 w-4" />
+                          {copiedCommandKey === step.key ? 'Copied' : 'Copy command'}
+                        </Button>
+                      </div>
+                      <pre className="mt-3 overflow-x-auto rounded-2xl bg-charcoal-900 px-4 py-3 text-xs leading-6 text-cream-50">
+                        <code>{step.command}</code>
+                      </pre>
+                    </div>
+                  ))}
+                </div>
+              </details>
             </div>
           </div>
         </div>
