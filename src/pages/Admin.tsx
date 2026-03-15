@@ -24,6 +24,7 @@ import {
   Image, 
   MessageSquare, 
   Settings as SettingsIcon,
+  Copy,
   LogOut,
   CheckCircle,
   XCircle,
@@ -223,6 +224,18 @@ const collectionOptions: Array<{
     defaultTags: ['guest upload'],
   },
 ]
+
+const DEFAULT_GUEST_TAGGING_ROOT = 'C:/Users/bbask/Pictures/Guest Upload Tagging'
+
+function buildGuestTaggingCommands(workingRoot: string) {
+  const cleanRoot = workingRoot.trim() || DEFAULT_GUEST_TAGGING_ROOT
+
+  return {
+    export: `npm run media:guest:tag:export -- "${cleanRoot}"`,
+    import: `npm run media:batch:faces:digikam -- "${cleanRoot}"`,
+    sync: `npm run media:guest:tag:sync -- "${cleanRoot}"`,
+  }
+}
 
 const guestTagByCollection: Record<ModerationCollection, string[]> = {
   'Wedding Day': ['wedding day'],
@@ -811,6 +824,8 @@ function PhotoModeration() {
   const [loading, setLoading] = useState(true)
   const [queueFilter, setQueueFilter] = useState<ModerationQueueFilter>('pending')
   const [searchQuery, setSearchQuery] = useState('')
+  const [guestTaggingRoot, setGuestTaggingRoot] = useState(DEFAULT_GUEST_TAGGING_ROOT)
+  const [copiedCommandKey, setCopiedCommandKey] = useState<string | null>(null)
   const [selectedIds, setSelectedIds] = useState<string[]>([])
   const [publishedPhotoUrls, setPublishedPhotoUrls] = useState<Set<string>>(new Set())
   const [auditByUploadId, setAuditByUploadId] = useState<AuditEntriesByEntityId>({})
@@ -1220,6 +1235,21 @@ function PhotoModeration() {
     return !searchQuery.trim() || haystack.includes(searchQuery.trim().toLowerCase())
   })
 
+  const guestTaggingCommands = useMemo(() => buildGuestTaggingCommands(guestTaggingRoot), [guestTaggingRoot])
+
+  const handleCopyGuestTaggingCommand = useCallback(async (command: string, commandKey: string) => {
+    try {
+      await navigator.clipboard.writeText(command)
+      setCopiedCommandKey(commandKey)
+      addToast('Command copied. Run it from your local project terminal.', 'success')
+      window.setTimeout(() => {
+        setCopiedCommandKey((current) => (current === commandKey ? null : current))
+      }, 1800)
+    } catch {
+      addToast('Could not copy the command. Please copy it manually.', 'error')
+    }
+  }, [addToast])
+
   if (loading) {
     return <div className="text-center py-12">Loading...</div>
   }
@@ -1287,6 +1317,105 @@ function PhotoModeration() {
                 Reject selected ({selectedIds.length})
               </Button>
             )}
+          </div>
+        </div>
+      </div>
+
+      <div className="rounded-[1.5rem] border border-gold-100 bg-[linear-gradient(145deg,rgba(250,245,236,0.9),rgba(255,252,248,0.98))] p-5 shadow-sm">
+        <div className="flex flex-col gap-5 xl:flex-row xl:items-start xl:justify-between">
+          <div className="max-w-3xl space-y-3">
+            <div className="space-y-1">
+              <p className="text-[10px] uppercase tracking-[0.3em] text-charcoal-500">Guest Face Tagging</p>
+              <h3 className="text-xl font-display text-charcoal-900">Run approved guest photos through digiKam, then sync faces back into the gallery</h3>
+            </div>
+            <p className="text-sm leading-6 text-charcoal-600">
+              This admin screen helps you launch the local workflow, but the actual face tagging happens in digiKam on
+              your machine. Exact duplicates are already filtered before guest photos go public, so this export focuses
+              on approved guest images that already exist in the live gallery.
+            </p>
+            <div className="grid gap-3 sm:grid-cols-2 xl:grid-cols-3">
+              <div className="rounded-2xl border border-gold-100 bg-white/88 p-4">
+                <p className="text-[10px] uppercase tracking-[0.28em] text-charcoal-500">Ready to export</p>
+                <p className="mt-2 text-3xl font-display text-charcoal-900">{queueCounts['approved-published']}</p>
+                <p className="mt-2 text-xs leading-5 text-charcoal-500">
+                  Approved uploads with live guest photo rows that the export command can download into a digiKam batch.
+                </p>
+              </div>
+              <div className="rounded-2xl border border-gold-100 bg-white/88 p-4">
+                <p className="text-[10px] uppercase tracking-[0.28em] text-charcoal-500">Not exportable yet</p>
+                <p className="mt-2 text-3xl font-display text-charcoal-900">{queueCounts['approved-unpublished']}</p>
+                <p className="mt-2 text-xs leading-5 text-charcoal-500">
+                  Approved uploads with no live guest photo row yet, usually duplicate-only or video-only submissions.
+                </p>
+              </div>
+              <div className="rounded-2xl border border-gold-100 bg-white/88 p-4">
+                <p className="text-[10px] uppercase tracking-[0.28em] text-charcoal-500">Reference doc</p>
+                <p className="mt-2 text-sm font-medium text-charcoal-900">`MEDIA_BATCH_WORKFLOW.md`</p>
+                <p className="mt-2 text-xs leading-5 text-charcoal-500">
+                  Keep this open in the repo while you work through export, digiKam tagging, and the final sync step.
+                </p>
+              </div>
+            </div>
+          </div>
+
+          <div className="w-full max-w-xl rounded-[1.25rem] border border-gold-100 bg-white/92 p-4">
+            <Label htmlFor="guest-tagging-root" className="mb-2 block text-xs normal-case tracking-normal text-charcoal-500">
+              Local guest tagging working root
+            </Label>
+            <Input
+              id="guest-tagging-root"
+              value={guestTaggingRoot}
+              onChange={(event) => setGuestTaggingRoot(event.target.value)}
+              placeholder={DEFAULT_GUEST_TAGGING_ROOT}
+            />
+            <p className="mt-2 text-xs leading-5 text-charcoal-500">
+              This should be a local folder outside the repo where the guest export can download approved photos for
+              digiKam. The sync step must be run from a terminal session that already has `SUPABASE_SERVICE_ROLE_KEY`.
+            </p>
+
+            <div className="mt-4 space-y-3">
+              {[
+                {
+                  key: 'export',
+                  title: '1. Export approved guest photos',
+                  description: 'Downloads approved guest photo rows that are already live into a local digiKam-ready organized folder.',
+                  command: guestTaggingCommands.export,
+                },
+                {
+                  key: 'import',
+                  title: '2. After tagging in digiKam, import the face metadata',
+                  description: 'Reads digiKam face names and regions from the exported photos and regenerates the standard faces artifacts.',
+                  command: guestTaggingCommands.import,
+                },
+                {
+                  key: 'sync',
+                  title: '3. Sync confirmed guest faces back into the gallery',
+                  description: 'Updates the matching live guest photo rows in `photos.faces` without re-uploading the media files.',
+                  command: guestTaggingCommands.sync,
+                },
+              ].map((step) => (
+                <div key={step.key} className="rounded-2xl border border-gold-100 bg-cream-50/70 p-4">
+                  <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
+                    <div className="space-y-1">
+                      <p className="font-medium text-charcoal-900">{step.title}</p>
+                      <p className="text-xs leading-5 text-charcoal-500">{step.description}</p>
+                    </div>
+                    <Button
+                      type="button"
+                      variant={copiedCommandKey === step.key ? 'primary' : 'secondary'}
+                      size="sm"
+                      onClick={() => void handleCopyGuestTaggingCommand(step.command, step.key)}
+                    >
+                      <Copy className="h-4 w-4" />
+                      {copiedCommandKey === step.key ? 'Copied' : 'Copy command'}
+                    </Button>
+                  </div>
+                  <pre className="mt-3 overflow-x-auto rounded-2xl bg-charcoal-900 px-4 py-3 text-xs leading-6 text-cream-50">
+                    <code>{step.command}</code>
+                  </pre>
+                </div>
+              ))}
+            </div>
           </div>
         </div>
       </div>

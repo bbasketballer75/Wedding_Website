@@ -208,30 +208,32 @@ Use this when you want face detection, grouping, and naming to happen outside th
 
 ## Guest Upload Tagging Loop
 
-Use this when you want approved guest-upload photos to go through the same digiKam face-tagging workflow and then sync back into the live gallery without re-uploading all media.
+Use this when approved guest-upload photos should go through the same digiKam workflow and sync back into the live gallery without re-uploading media.
 
 1. Approve guest uploads into the gallery from `/admin/photos`.
-2. Run:
+2. Use the `Guest Face Tagging` panel in `/admin/photos` to copy the export, digiKam import, and sync commands.
+3. Run:
 
 ```bash
 npm run media:guest:tag:export -- "C:/path/to/guest-tagging-root"
 ```
 
-3. Open `<guest-tagging-root>/organized` in digiKam.
-4. Detect and recognize faces, confirm names in `People`, and run `Album -> Write Metadata to Files`.
-5. Run:
+4. Open `<guest-tagging-root>/organized` in digiKam.
+5. Detect and recognize faces, confirm names in `People`, and run `Album -> Write Metadata to Files`.
+6. Run:
 
 ```bash
 npm run media:batch:faces:digikam -- "C:/path/to/guest-tagging-root"
 npm run media:guest:tag:sync -- "C:/path/to/guest-tagging-root"
 ```
 
-6. Reload the gallery or `/admin/review` to verify the updated face tags.
+7. Reload the gallery to verify the updated guest face tags and people filters.
 
 ### Guest Loop Notes
 
 - `media:guest:tag:export` downloads photos from approved `guest_uploads`, not the full wedding archive.
-- The export cross-references the live `photos` table by URL when those guest uploads are already published, so Bach+ette and professional imports stay out of this queue.
+- The export cross-references the live `photos` table by URL when those guest uploads are already published, so professional imports stay out of this queue.
+- duplicate-only and video-only approvals are skipped automatically.
 - `media:guest:tag:sync` updates only the `faces` field on existing guest `photos` rows.
 - This loop is metadata-only; it does not re-upload optimized media objects.
 

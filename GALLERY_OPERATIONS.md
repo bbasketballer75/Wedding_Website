@@ -42,26 +42,18 @@ That means:
 5. Keep `source=guest` intact so the gallery still labels the item as a guest upload.
 6. Re-check the gallery after approval to make sure the item appears in the expected tabs.
 
-## Guest Face Tagging Loop
+## Guest Face Tagging
 
-Once guest uploads are approved and live, you can run them through the external digiKam face-tagging loop:
+When you want face tags on approved guest uploads:
 
-1. Export the current published guest photos into a local tagging root:
+1. Open `/admin/photos`.
+2. Use the `Guest Face Tagging` panel to copy the local export, digiKam import, and sync commands.
+3. Run `media:guest:tag:export` in your local project terminal.
+4. Tag the exported files in digiKam and run `Write Metadata to Files`.
+5. Run `media:batch:faces:digikam` against that guest tagging root.
+6. Run `media:guest:tag:sync` to update the live guest `photos.faces` entries.
 
-```bash
-npm run media:guest:tag:export -- "C:/path/to/guest-tagging-root"
-```
-
-2. Open `<guest-tagging-root>/organized` in digiKam.
-3. Detect and recognize faces, confirm names in `People`, and run `Album -> Write Metadata to Files`.
-4. Re-import those face tags and sync them back into the live gallery:
-
-```bash
-npm run media:batch:faces:digikam -- "C:/path/to/guest-tagging-root"
-npm run media:guest:tag:sync -- "C:/path/to/guest-tagging-root"
-```
-
-5. Reload `/gallery` to verify the new guest face tags and people filters.
+This keeps browser moderation lightweight while making digiKam the real face-tagging workspace.
 
 ## Batch Publish Workflow
 
