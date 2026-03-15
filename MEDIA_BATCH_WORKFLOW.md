@@ -211,31 +211,20 @@ Use this when you want face detection, grouping, and naming to happen outside th
 Use this when approved guest-upload photos should go through the same digiKam workflow and sync back into the live gallery without re-uploading media.
 
 1. Approve guest uploads into the gallery from `/admin/photos`.
-2. Use the `Guest Face Tagging` panel in `/admin/photos` to copy the export, digiKam import, and sync commands.
-3. Run:
-
-```bash
-npm run media:guest:tag:export -- "C:/path/to/guest-tagging-root"
-```
-
-4. Open `<guest-tagging-root>/organized` in digiKam.
-5. Detect and recognize faces, confirm names in `People`, and run `Album -> Write Metadata to Files`.
-6. Run:
-
-```bash
-npm run media:batch:faces:digikam -- "C:/path/to/guest-tagging-root"
-npm run media:guest:tag:sync -- "C:/path/to/guest-tagging-root"
-```
-
-7. Reload the gallery to verify the updated guest face tags and people filters.
+2. Use the `Guest Face Tagging` panel in `/admin/photos` to download a zipped guest tagging batch from the live gallery.
+3. Extract that zip locally and open the `organized/` folder in digiKam.
+4. Detect and recognize faces, confirm names in `People`, and run `Album -> Write Metadata to Files`.
+5. Back in `/admin/photos`, choose the extracted batch files and run the browser-side sync.
+6. Reload the gallery to verify the updated guest face tags and people filters.
 
 ### Guest Loop Notes
 
-- `media:guest:tag:export` downloads photos from approved `guest_uploads`, not the full wedding archive.
-- The export cross-references the live `photos` table by URL when those guest uploads are already published, so professional imports stay out of this queue.
+- the browser export downloads photos from approved `guest_uploads`, not the full wedding archive.
+- the export cross-references the live `photos` table by URL when those guest uploads are already published, so professional imports stay out of this queue.
 - duplicate-only and video-only approvals are skipped automatically.
-- `media:guest:tag:sync` updates only the `faces` field on existing guest `photos` rows.
-- This loop is metadata-only; it does not re-upload optimized media objects.
+- the browser sync updates only the `faces` field on existing guest `photos` rows.
+- this loop is metadata-only; it does not re-upload optimized media objects.
+- the local `media:guest:tag:export`, `media:batch:faces:digikam`, and `media:guest:tag:sync` commands still exist as a fallback path if you ever need them.
 
 ## Notes
 
