@@ -2,6 +2,7 @@ import { useState, useEffect, useCallback, useMemo, useRef } from 'react'
 import { Navigate, Routes, Route, Link, useLocation } from 'react-router-dom'
 import { useAuthStore } from '@/stores/authStore'
 import {
+  deleteGalleryPhotos,
   fetchGuestFaceTaggingBatches,
   fetchNextAlbumSortOrder,
   fetchMediaReviewBatches,
@@ -692,6 +693,7 @@ const auditActionLabels: Record<ModerationAuditAction, string> = {
   upload_moved_to_pending: 'Moved to pending review',
   upload_approved_unpublished: 'Approved, not public',
   upload_approved_published: 'Approved + published',
+  upload_removed_from_gallery: 'Removed from gallery',
   upload_rejected: 'Rejected',
   upload_bulk_rejected: 'Bulk rejected',
   guestbook_message_deleted: 'Deleted message',
@@ -1108,6 +1110,73 @@ function PhotoModeration() {
       )
     )
     addToast('Guest video settings saved.', 'success')
+    setBusyId(null)
+  }
+
+  async function handleRemoveFromGallery(upload: ModerationUpload) {
+    const livePhotoUrls = (upload.photo_urls || []).filter((url) => publishedPhotoUrls.has(url))
+    if (livePhotoUrls.length === 0) {
+      addToast('There are no live gallery photos to remove for this upload.', 'warning')
+      return
+    }
+
+    const confirmed = window.confirm(
+      `Remove ${livePhotoUrls.length} photo${livePhotoUrls.length === 1 ? '' : 's'} from the live gallery? This keeps the original upload and files, but removes the public photo rows plus any likes/comments tied to them.`,
+    )
+
+    if (!confirmed) {
+      return
+    }
+
+    setBusyId(upload.id)
+
+    const { data, error } = await deleteGalleryPhotos({
+      photoUrls: livePhotoUrls,
+    })
+
+    if (error) {
+      addToast('Could not remove those photos from the live gallery.', 'error')
+      setBusyId(null)
+      return
+    }
+
+    const deletedKeys = new Set(data?.deleted_photo_keys || livePhotoUrls)
+
+    setPublishedPhotoUrls((prev) => {
+      const next = new Set(prev)
+      for (const photoUrl of deletedKeys) {
+        next.delete(photoUrl)
+      }
+      return next
+    })
+
+    addToast(
+      `Removed ${data?.deleted_count || livePhotoUrls.length} live photo${(data?.deleted_count || livePhotoUrls.length) === 1 ? '' : 's'} from the gallery.`,
+      'success',
+    )
+
+    const { data: auditEntry, error: auditError } = await recordModerationAudit({
+      entityType: 'guest_upload',
+      entityId: upload.id,
+      action: 'upload_removed_from_gallery',
+      actor,
+      fromStatus: 'approved-published',
+      toStatus: 'approved-unpublished',
+      summary: `Removed ${data?.deleted_count || livePhotoUrls.length} live gallery photo${(data?.deleted_count || livePhotoUrls.length) === 1 ? '' : 's'} from ${upload.guest_name}'s upload.`,
+      metadata: {
+        guest_name: upload.guest_name,
+        guest_email: upload.guest_email,
+        deleted_live_photo_count: data?.deleted_count || livePhotoUrls.length,
+        deleted_photo_urls: Array.from(deletedKeys),
+      },
+    })
+
+    if (auditError) {
+      addToast('Removed the live photos, but the moderation history could not be recorded.', 'warning')
+    } else if (auditEntry) {
+      setAuditByUploadId((prev) => appendAuditEntry(prev, auditEntry))
+    }
+
     setBusyId(null)
   }
 
@@ -2034,6 +2103,18 @@ function PhotoModeration() {
                       </div>
 
                       <div className="flex flex-wrap gap-2">
+                        {isApprovedPublished && (
+                          <Button
+                            size="sm"
+                            variant="danger"
+                            className="flex-1 min-w-[13rem]"
+                            onClick={() => handleRemoveFromGallery(photo)}
+                            disabled={busyId === photo.id}
+                          >
+                            <Trash2 className="mr-1 h-4 w-4" />
+                            Remove From Gallery
+                          </Button>
+                        )}
                         {videoCount > 0 && (
                           <Button
                             size="sm"

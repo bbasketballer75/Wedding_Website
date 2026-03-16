@@ -733,10 +733,31 @@ export type Database = {
         }
         Returns: undefined
       }
+      delete_gallery_photos_v1: {
+        Args: { p_photo_ids?: string[]; p_photo_urls?: string[] }
+        Returns: {
+          deleted_count: number
+          deleted_photo_keys: string[]
+        }[]
+      }
       save_album_organization_v1: {
         Args: { p_album: string; p_moves?: Json; p_ordered_photo_ids: string[] }
         Returns: {
           current_album_count: number
+          moved_count: number
+          saved_album: string
+        }[]
+      }
+      save_album_organization_v2: {
+        Args: {
+          p_album: string
+          p_delete_photo_ids?: string[]
+          p_moves?: Json
+          p_ordered_photo_ids: string[]
+        }
+        Returns: {
+          current_album_count: number
+          deleted_count: number
           moved_count: number
           saved_album: string
         }[]

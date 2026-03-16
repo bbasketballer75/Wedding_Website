@@ -174,6 +174,7 @@ export type ModerationAuditAction =
   | 'upload_moved_to_pending'
   | 'upload_approved_unpublished'
   | 'upload_approved_published'
+  | 'upload_removed_from_gallery'
   | 'upload_rejected'
   | 'upload_bulk_rejected'
   | 'guestbook_message_deleted'
@@ -355,6 +356,12 @@ export interface SaveAlbumOrganizationResult {
   saved_album: PhotoAlbum
   current_album_count: number
   moved_count: number
+  deleted_count: number
+}
+
+export interface DeleteGalleryPhotosResult {
+  deleted_count: number
+  deleted_photo_keys: string[]
 }
 
 export interface PhotoLikeStatus {
@@ -542,18 +549,35 @@ export async function fetchNextAlbumSortOrder(album: PhotoAlbum) {
 export async function saveAlbumOrganization(
   album: PhotoAlbum,
   orderedPhotoIds: string[],
-  moves: AlbumOrganizerMoveInput[]
+  moves: AlbumOrganizerMoveInput[],
+  deletePhotoIds: string[] = [],
 ) {
   return await supabase
-    .rpc('save_album_organization_v1', {
+    .rpc('save_album_organization_v2', {
       p_album: album,
       p_ordered_photo_ids: orderedPhotoIds,
       p_moves: moves.map((move) => ({
         photoId: move.photoId,
         targetAlbum: move.targetAlbum,
       })),
+      p_delete_photo_ids: deletePhotoIds,
     })
     .single<SaveAlbumOrganizationResult>()
+}
+
+export async function deleteGalleryPhotos({
+  photoIds = [],
+  photoUrls = [],
+}: {
+  photoIds?: string[]
+  photoUrls?: string[]
+}) {
+  return await supabase
+    .rpc('delete_gallery_photos_v1', {
+      p_photo_ids: photoIds,
+      p_photo_urls: photoUrls,
+    })
+    .single<DeleteGalleryPhotosResult>()
 }
 
 export async function fetchMediaReviewClusters(batchId: string) {

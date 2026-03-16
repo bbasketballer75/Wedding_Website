@@ -30,7 +30,7 @@ import { Button } from '@/components/ui/Button'
 import { Input } from '@/components/ui/Input'
 import { cn } from '@/lib/utils'
 import { getMediaPath } from '@/utils/media'
-import { GripVertical, Images, Loader2, RotateCcw, Save, Search, ArrowRightLeft } from 'lucide-react'
+import { GripVertical, Images, Loader2, RotateCcw, Save, Search, ArrowRightLeft, Trash2 } from 'lucide-react'
 
 type OrganizerPhoto = AlbumOrganizerPhoto & {
   resolvedThumbnail: string
@@ -43,8 +43,13 @@ type PendingAlbumMove = {
   targetAlbum: PhotoAlbum
 }
 
+type PendingAlbumDeletion = {
+  photo: OrganizerPhoto
+}
+
 const EMPTY_ORGANIZER_PHOTOS: OrganizerPhoto[] = []
 const EMPTY_PENDING_MOVES: PendingAlbumMove[] = []
+const EMPTY_PENDING_DELETIONS: PendingAlbumDeletion[] = []
 
 const moveSelectOptions = (currentAlbum: PhotoAlbum) => PHOTO_ALBUMS.filter((album) => album !== currentAlbum)
 
@@ -76,11 +81,13 @@ function SortablePhotoCard({
   photo,
   canDrag,
   onMove,
+  onDelete,
 }: {
   album: PhotoAlbum
   photo: OrganizerPhoto
   canDrag: boolean
   onMove: (photoId: string, targetAlbum: PhotoAlbum) => void
+  onDelete: (photoId: string) => void
 }) {
   const { attributes, listeners, setNodeRef, transform, transition, isDragging } = useSortable({
     id: photo.id,
@@ -125,7 +132,15 @@ function SortablePhotoCard({
           >
             <GripVertical className="h-4 w-4" />
           </button>
+        </div>
+      </div>
 
+      <div className="space-y-3 px-3 py-3">
+        <p className="line-clamp-2 text-sm font-medium text-charcoal-800">{photo.displayLabel}</p>
+        <p className="text-xs text-charcoal-500">
+          {new Date(photo.created_at).toLocaleDateString()} · order {photo.album_sort_order}
+        </p>
+        <div className="flex items-center gap-2">
           <select
             aria-label={`Move ${photo.displayLabel} to another album`}
             value=""
@@ -135,23 +150,24 @@ function SortablePhotoCard({
                 onMove(photo.id, nextAlbum)
               }
             }}
-            className="h-8 rounded-full border border-white/45 bg-black/30 px-3 text-[11px] text-white outline-none backdrop-blur-sm transition-colors hover:bg-black/40"
+            className="h-9 min-w-0 flex-1 rounded-full border border-gold-200 bg-white px-3 text-[11px] text-charcoal-700 outline-none transition-colors hover:border-gold-300 focus:border-gold-400"
           >
-            <option value="">Move</option>
+            <option value="">Move to…</option>
             {moveSelectOptions(album).map((targetAlbum) => (
-              <option key={targetAlbum} value={targetAlbum} className="text-charcoal-900">
+              <option key={targetAlbum} value={targetAlbum}>
                 {targetAlbum}
               </option>
             ))}
           </select>
+          <button
+            type="button"
+            onClick={() => onDelete(photo.id)}
+            className="flex h-9 w-9 items-center justify-center rounded-full border border-rose-200 bg-rose-50 text-rose-600 transition-colors hover:bg-rose-100"
+            aria-label={`Stage ${photo.displayLabel} for deletion`}
+          >
+            <Trash2 className="h-4 w-4" />
+          </button>
         </div>
-      </div>
-
-      <div className="space-y-1 px-3 py-3">
-        <p className="line-clamp-2 text-sm font-medium text-charcoal-800">{photo.displayLabel}</p>
-        <p className="text-xs text-charcoal-500">
-          {new Date(photo.created_at).toLocaleDateString()} · order {photo.album_sort_order}
-        </p>
       </div>
     </article>
   )
@@ -163,6 +179,9 @@ export function AlbumOrganizer() {
   const [savedByAlbum, setSavedByAlbum] = useState<Partial<Record<PhotoAlbum, OrganizerPhoto[]>>>({})
   const [draftByAlbum, setDraftByAlbum] = useState<Partial<Record<PhotoAlbum, OrganizerPhoto[]>>>({})
   const [pendingMovesByAlbum, setPendingMovesByAlbum] = useState<Partial<Record<PhotoAlbum, PendingAlbumMove[]>>>({})
+  const [pendingDeletesByAlbum, setPendingDeletesByAlbum] = useState<
+    Partial<Record<PhotoAlbum, PendingAlbumDeletion[]>>
+  >({})
   const [countsByAlbum, setCountsByAlbum] = useState<Record<PhotoAlbum, number>>({
     Engagement: 0,
     'Bach+ette': 0,
@@ -218,6 +237,10 @@ export function AlbumOrganizer() {
       ...prev,
       [album]: [],
     }))
+    setPendingDeletesByAlbum((prev) => ({
+      ...prev,
+      [album]: [],
+    }))
     setLoadingAlbum(null)
   }
 
@@ -236,7 +259,9 @@ export function AlbumOrganizer() {
   const currentSaved = savedByAlbum[selectedAlbum] ?? EMPTY_ORGANIZER_PHOTOS
   const currentDraft = draftByAlbum[selectedAlbum] ?? EMPTY_ORGANIZER_PHOTOS
   const pendingMoves = pendingMovesByAlbum[selectedAlbum] ?? EMPTY_PENDING_MOVES
-  const hasUnsavedChanges = pendingMoves.length > 0 || !photosHaveSameOrder(currentSaved, currentDraft)
+  const pendingDeletes = pendingDeletesByAlbum[selectedAlbum] ?? EMPTY_PENDING_DELETIONS
+  const hasUnsavedChanges =
+    pendingMoves.length > 0 || pendingDeletes.length > 0 || !photosHaveSameOrder(currentSaved, currentDraft)
   const canDrag = searchQuery.trim().length === 0
 
   const filteredDraft = useMemo(() => {
@@ -321,6 +346,42 @@ export function AlbumOrganizer() {
       ...prev,
       [selectedAlbum]: [],
     }))
+    setPendingDeletesByAlbum((prev) => ({
+      ...prev,
+      [selectedAlbum]: [],
+    }))
+  }
+
+  const handleDeletePhoto = (photoId: string) => {
+    const photoToDelete = currentDraft.find((photo) => photo.id === photoId)
+    if (!photoToDelete) {
+      return
+    }
+
+    setDraftByAlbum((prev) => ({
+      ...prev,
+      [selectedAlbum]: currentDraft.filter((photo) => photo.id !== photoId),
+    }))
+    setPendingDeletesByAlbum((prev) => ({
+      ...prev,
+      [selectedAlbum]: [...(prev[selectedAlbum] || []), { photo: photoToDelete }],
+    }))
+  }
+
+  const handleUndoDelete = (photoId: string) => {
+    const deletionToUndo = pendingDeletes.find((deletion) => deletion.photo.id === photoId)
+    if (!deletionToUndo) {
+      return
+    }
+
+    setPendingDeletesByAlbum((prev) => ({
+      ...prev,
+      [selectedAlbum]: (prev[selectedAlbum] || []).filter((deletion) => deletion.photo.id !== photoId),
+    }))
+    setDraftByAlbum((prev) => ({
+      ...prev,
+      [selectedAlbum]: [...(prev[selectedAlbum] || []), deletionToUndo.photo],
+    }))
   }
 
   const handleSave = async () => {
@@ -338,6 +399,7 @@ export function AlbumOrganizer() {
       selectedAlbum,
       currentDraft.map((photo) => photo.id),
       movesPayload,
+      pendingDeletes.map((deletion) => deletion.photo.id),
     )
 
     if (error) {
@@ -347,7 +409,9 @@ export function AlbumOrganizer() {
     }
 
     const nowLabel = new Date().toLocaleString()
-    setLastSavedSummary(`Saved ${selectedAlbum} on ${nowLabel}.`)
+    setLastSavedSummary(
+      `Saved ${selectedAlbum} on ${nowLabel}.${data?.deleted_count ? ` Deleted ${data.deleted_count} photo${data.deleted_count === 1 ? '' : 's'}.` : ''}`,
+    )
 
     const touchedTargets = Array.from(new Set(movesPayload.map((move) => move.targetAlbum)))
 
@@ -409,6 +473,10 @@ export function AlbumOrganizer() {
       ...prev,
       [selectedAlbum]: [],
     }))
+    setPendingDeletesByAlbum((prev) => ({
+      ...prev,
+      [selectedAlbum]: [],
+    }))
 
     if (touchedTargets.length > 0) {
       await Promise.all(touchedTargets.map((album) => loadAlbum(album, true)))
@@ -419,7 +487,7 @@ export function AlbumOrganizer() {
 
     addToast(
       data
-        ? `Saved ${selectedAlbum}. ${data.moved_count} photo${data.moved_count === 1 ? '' : 's'} moved.`
+        ? `Saved ${selectedAlbum}.${data.moved_count > 0 ? ` ${data.moved_count} photo${data.moved_count === 1 ? '' : 's'} moved.` : ''}${data.deleted_count > 0 ? ` ${data.deleted_count} photo${data.deleted_count === 1 ? '' : 's'} deleted.` : ''}`
         : `Saved ${selectedAlbum}.`,
       'success'
     )
@@ -521,6 +589,28 @@ export function AlbumOrganizer() {
             </div>
           </div>
         )}
+
+        {pendingDeletes.length > 0 && (
+          <div className="mt-4 rounded-[1.15rem] border border-rose-200 bg-rose-50/80 p-4">
+            <div className="flex items-center gap-2 text-sm font-medium text-rose-800">
+              <Trash2 className="h-4 w-4 text-rose-600" />
+              {pendingDeletes.length} photo{pendingDeletes.length === 1 ? '' : 's'} will be removed from the live gallery when you save
+            </div>
+            <div className="mt-3 flex flex-wrap gap-2">
+              {pendingDeletes.map((deletion) => (
+                <button
+                  key={deletion.photo.id}
+                  type="button"
+                  onClick={() => handleUndoDelete(deletion.photo.id)}
+                  className="inline-flex items-center gap-2 rounded-full border border-rose-200 bg-white px-3 py-1.5 text-xs text-rose-700 transition-colors hover:bg-rose-100"
+                >
+                  <span className="max-w-[14rem] truncate">{deletion.photo.displayLabel}</span>
+                  <span>Undo</span>
+                </button>
+              ))}
+            </div>
+          </div>
+        )}
       </section>
 
       <section className="rounded-[1.45rem] border border-gold-100 bg-white/95 p-4 shadow-sm">
@@ -549,6 +639,7 @@ export function AlbumOrganizer() {
                         photo={photo}
                         canDrag={canDrag}
                         onMove={handleMovePhoto}
+                        onDelete={handleDeletePhoto}
                       />
                     ))}
                   </div>
@@ -563,6 +654,7 @@ export function AlbumOrganizer() {
                     photo={photo}
                     canDrag={false}
                     onMove={handleMovePhoto}
+                    onDelete={handleDeletePhoto}
                   />
                 ))}
               </div>
