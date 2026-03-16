@@ -19,6 +19,7 @@ import { CSS } from '@dnd-kit/utilities'
 import {
   fetchAlbumPhotos,
   fetchPhotoAlbumCounts,
+  fetchPhotoEngagementSummary,
   saveAlbumOrganization,
   type AlbumOrganizerMoveInput,
   type AlbumOrganizerPhoto,
@@ -30,12 +31,30 @@ import { Button } from '@/components/ui/Button'
 import { Input } from '@/components/ui/Input'
 import { cn } from '@/lib/utils'
 import { getMediaPath } from '@/utils/media'
-import { GripVertical, Images, Loader2, RotateCcw, Save, Search, ArrowRightLeft, Trash2 } from 'lucide-react'
+import {
+  ArrowDownToLine,
+  ArrowRightLeft,
+  ArrowUpToLine,
+  CheckSquare,
+  GripVertical,
+  Heart,
+  Images,
+  Loader2,
+  MessageCircle,
+  RotateCcw,
+  Save,
+  Search,
+  Square,
+  Trash2,
+} from 'lucide-react'
 
 type OrganizerPhoto = AlbumOrganizerPhoto & {
   resolvedThumbnail: string
   resolvedUrl: string
   displayLabel: string
+  likeCount: number
+  commentCount: number
+  hiddenCommentCount: number
 }
 
 type PendingAlbumMove = {
@@ -50,6 +69,7 @@ type PendingAlbumDeletion = {
 const EMPTY_ORGANIZER_PHOTOS: OrganizerPhoto[] = []
 const EMPTY_PENDING_MOVES: PendingAlbumMove[] = []
 const EMPTY_PENDING_DELETIONS: PendingAlbumDeletion[] = []
+const EMPTY_SELECTED_IDS: string[] = []
 
 const moveSelectOptions = (currentAlbum: PhotoAlbum) => PHOTO_ALBUMS.filter((album) => album !== currentAlbum)
 
@@ -65,7 +85,34 @@ function normalizeOrganizerPhoto(photo: AlbumOrganizerPhoto): OrganizerPhoto {
     resolvedThumbnail: getMediaPath(photo.thumbnail || photo.url),
     resolvedUrl: getMediaPath(photo.url),
     displayLabel: getPhotoLabel(photo),
+    likeCount: 0,
+    commentCount: 0,
+    hiddenCommentCount: 0,
   }
+}
+
+function hydratePhotoEngagement(
+  photos: OrganizerPhoto[],
+  summaryRows: Array<{
+    photo_key: string
+    likes_count: number
+    comments_count: number
+    hidden_comments_count: number
+  }> = [],
+) {
+  const summaryByKey = new Map(summaryRows.map((row) => [row.photo_key, row] as const))
+
+  return photos.map((photo) => {
+    const summary = summaryByKey.get(photo.id)
+    return summary
+      ? {
+          ...photo,
+          likeCount: summary.likes_count,
+          commentCount: summary.comments_count,
+          hiddenCommentCount: summary.hidden_comments_count,
+        }
+      : photo
+  })
 }
 
 function photosHaveSameOrder(left: OrganizerPhoto[], right: OrganizerPhoto[]) {
@@ -76,16 +123,33 @@ function photosHaveSameOrder(left: OrganizerPhoto[], right: OrganizerPhoto[]) {
   return left.every((photo, index) => right[index]?.id === photo.id)
 }
 
+function countReorderedPositions(left: OrganizerPhoto[], right: OrganizerPhoto[]) {
+  const longestLength = Math.max(left.length, right.length)
+  let mismatches = 0
+
+  for (let index = 0; index < longestLength; index += 1) {
+    if (left[index]?.id !== right[index]?.id) {
+      mismatches += 1
+    }
+  }
+
+  return mismatches
+}
+
 function SortablePhotoCard({
   album,
   photo,
   canDrag,
+  selected,
+  onToggleSelect,
   onMove,
   onDelete,
 }: {
   album: PhotoAlbum
   photo: OrganizerPhoto
   canDrag: boolean
+  selected: boolean
+  onToggleSelect: (photoId: string) => void
   onMove: (photoId: string, targetAlbum: PhotoAlbum) => void
   onDelete: (photoId: string) => void
 }) {
@@ -104,7 +168,8 @@ function SortablePhotoCard({
       ref={setNodeRef}
       style={style}
       className={cn(
-        'group overflow-hidden rounded-[1.25rem] border border-gold-100 bg-white shadow-sm transition-shadow',
+        'group overflow-hidden rounded-[1.1rem] border bg-white shadow-sm transition-all',
+        selected ? 'border-gold-300 ring-2 ring-gold-200/70' : 'border-gold-100',
         isDragging && 'shadow-[0_24px_54px_-26px_rgba(46,33,13,0.34)] ring-2 ring-gold-300/60'
       )}
     >
@@ -132,14 +197,43 @@ function SortablePhotoCard({
           >
             <GripVertical className="h-4 w-4" />
           </button>
+
+          <button
+            type="button"
+            aria-label={selected ? `Unselect ${photo.displayLabel}` : `Select ${photo.displayLabel}`}
+            onClick={() => onToggleSelect(photo.id)}
+            className={cn(
+              'flex h-8 w-8 items-center justify-center rounded-full border backdrop-blur-sm transition-colors',
+              selected
+                ? 'border-gold-300 bg-gold-500 text-white'
+                : 'border-white/40 bg-white/88 text-charcoal-700 hover:border-gold-200 hover:bg-white'
+            )}
+          >
+            {selected ? <CheckSquare className="h-4 w-4" /> : <Square className="h-4 w-4" />}
+          </button>
         </div>
       </div>
 
-      <div className="space-y-3 px-3 py-3">
-        <p className="line-clamp-2 text-sm font-medium text-charcoal-800">{photo.displayLabel}</p>
-        <p className="text-xs text-charcoal-500">
-          {new Date(photo.created_at).toLocaleDateString()} · order {photo.album_sort_order}
-        </p>
+      <div className="space-y-2.5 px-3 py-3">
+        <p className="line-clamp-2 text-sm font-medium leading-5 text-charcoal-800">{photo.displayLabel}</p>
+
+        <div className="flex flex-wrap items-center gap-2 text-[11px] text-charcoal-500">
+          <span>{new Date(photo.created_at).toLocaleDateString()}</span>
+          <span className="inline-flex items-center gap-1 rounded-full bg-cream-50 px-2 py-1">
+            <Heart className="h-3 w-3 text-gold-600" />
+            {photo.likeCount}
+          </span>
+          <span className="inline-flex items-center gap-1 rounded-full bg-cream-50 px-2 py-1">
+            <MessageCircle className="h-3 w-3 text-gold-600" />
+            {photo.commentCount}
+          </span>
+          {photo.hiddenCommentCount > 0 && (
+            <span className="inline-flex items-center gap-1 rounded-full bg-amber-50 px-2 py-1 text-amber-700">
+              hidden {photo.hiddenCommentCount}
+            </span>
+          )}
+        </div>
+
         <div className="flex items-center gap-2">
           <select
             aria-label={`Move ${photo.displayLabel} to another album`}
@@ -152,7 +246,7 @@ function SortablePhotoCard({
             }}
             className="h-9 min-w-0 flex-1 rounded-full border border-gold-200 bg-white px-3 text-[11px] text-charcoal-700 outline-none transition-colors hover:border-gold-300 focus:border-gold-400"
           >
-            <option value="">Move to…</option>
+            <option value="">Move to...</option>
             {moveSelectOptions(album).map((targetAlbum) => (
               <option key={targetAlbum} value={targetAlbum}>
                 {targetAlbum}
@@ -179,9 +273,10 @@ export function AlbumOrganizer() {
   const [savedByAlbum, setSavedByAlbum] = useState<Partial<Record<PhotoAlbum, OrganizerPhoto[]>>>({})
   const [draftByAlbum, setDraftByAlbum] = useState<Partial<Record<PhotoAlbum, OrganizerPhoto[]>>>({})
   const [pendingMovesByAlbum, setPendingMovesByAlbum] = useState<Partial<Record<PhotoAlbum, PendingAlbumMove[]>>>({})
-  const [pendingDeletesByAlbum, setPendingDeletesByAlbum] = useState<
-    Partial<Record<PhotoAlbum, PendingAlbumDeletion[]>>
-  >({})
+  const [pendingDeletesByAlbum, setPendingDeletesByAlbum] = useState<Partial<Record<PhotoAlbum, PendingAlbumDeletion[]>>>({})
+  const [selectedPhotoIdsByAlbum, setSelectedPhotoIdsByAlbum] = useState<Partial<Record<PhotoAlbum, string[]>>>({})
+  const [bulkMoveAlbum, setBulkMoveAlbum] = useState<PhotoAlbum | ''>('')
+  const [bulkAfterTargetId, setBulkAfterTargetId] = useState('')
   const [countsByAlbum, setCountsByAlbum] = useState<Record<PhotoAlbum, number>>({
     Engagement: 0,
     'Bach+ette': 0,
@@ -191,13 +286,11 @@ export function AlbumOrganizer() {
   const [searchQuery, setSearchQuery] = useState('')
   const [loadingAlbum, setLoadingAlbum] = useState<PhotoAlbum | null>(null)
   const [savingAlbum, setSavingAlbum] = useState<PhotoAlbum | null>(null)
-  const [lastSavedSummary, setLastSavedSummary] = useState<string>('No organizer changes saved yet.')
+  const [lastSavedSummary, setLastSavedSummary] = useState('No organizer changes saved yet.')
 
   const sensors = useSensors(
     useSensor(PointerSensor, {
-      activationConstraint: {
-        distance: 6,
-      },
+      activationConstraint: { distance: 6 },
     }),
     useSensor(KeyboardSensor, {
       coordinateGetter: sortableKeyboardCoordinates,
@@ -224,20 +317,33 @@ export function AlbumOrganizer() {
     }
 
     const normalizedPhotos = (data || []).map(normalizeOrganizerPhoto)
+    const { data: summaryRows } =
+      normalizedPhotos.length > 0
+        ? await fetchPhotoEngagementSummary(normalizedPhotos.map((photo) => photo.id))
+        : { data: [] }
+
+    const hydratedPhotos = hydratePhotoEngagement(
+      normalizedPhotos,
+      Array.isArray(summaryRows) ? summaryRows : [],
+    )
 
     setSavedByAlbum((prev) => ({
       ...prev,
-      [album]: normalizedPhotos,
+      [album]: hydratedPhotos,
     }))
     setDraftByAlbum((prev) => ({
       ...prev,
-      [album]: normalizedPhotos,
+      [album]: hydratedPhotos,
     }))
     setPendingMovesByAlbum((prev) => ({
       ...prev,
       [album]: [],
     }))
     setPendingDeletesByAlbum((prev) => ({
+      ...prev,
+      [album]: [],
+    }))
+    setSelectedPhotoIdsByAlbum((prev) => ({
       ...prev,
       [album]: [],
     }))
@@ -253,6 +359,8 @@ export function AlbumOrganizer() {
   useEffect(() => {
     void loadAlbum(selectedAlbum)
     setSearchQuery('')
+    setBulkMoveAlbum('')
+    setBulkAfterTargetId('')
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [selectedAlbum])
 
@@ -260,9 +368,12 @@ export function AlbumOrganizer() {
   const currentDraft = draftByAlbum[selectedAlbum] ?? EMPTY_ORGANIZER_PHOTOS
   const pendingMoves = pendingMovesByAlbum[selectedAlbum] ?? EMPTY_PENDING_MOVES
   const pendingDeletes = pendingDeletesByAlbum[selectedAlbum] ?? EMPTY_PENDING_DELETIONS
+  const selectedPhotoIds = selectedPhotoIdsByAlbum[selectedAlbum] ?? EMPTY_SELECTED_IDS
+  const selectedPhotoIdSet = useMemo(() => new Set(selectedPhotoIds), [selectedPhotoIds])
   const hasUnsavedChanges =
     pendingMoves.length > 0 || pendingDeletes.length > 0 || !photosHaveSameOrder(currentSaved, currentDraft)
   const canDrag = searchQuery.trim().length === 0
+  const reorderCount = countReorderedPositions(currentSaved, currentDraft)
 
   const filteredDraft = useMemo(() => {
     const normalizedQuery = searchQuery.trim().toLowerCase()
@@ -285,6 +396,41 @@ export function AlbumOrganizer() {
       return haystack.includes(normalizedQuery)
     })
   }, [currentDraft, searchQuery])
+
+  const selectedPhotos = useMemo(
+    () => currentDraft.filter((photo) => selectedPhotoIdSet.has(photo.id)),
+    [currentDraft, selectedPhotoIdSet],
+  )
+
+  const moveAfterOptions = useMemo(
+    () => currentDraft.filter((photo) => !selectedPhotoIdSet.has(photo.id)),
+    [currentDraft, selectedPhotoIdSet],
+  )
+
+  const setSelectedPhotoIds = (nextIds: string[]) => {
+    setSelectedPhotoIdsByAlbum((prev) => ({
+      ...prev,
+      [selectedAlbum]: nextIds,
+    }))
+  }
+
+  const handleToggleSelected = (photoId: string) => {
+    setSelectedPhotoIds(
+      selectedPhotoIds.includes(photoId)
+        ? selectedPhotoIds.filter((currentId) => currentId !== photoId)
+        : [...selectedPhotoIds, photoId],
+    )
+  }
+
+  const handleSelectVisible = () => {
+    setSelectedPhotoIds(filteredDraft.map((photo) => photo.id))
+  }
+
+  const handleClearSelection = () => {
+    setSelectedPhotoIds([])
+    setBulkMoveAlbum('')
+    setBulkAfterTargetId('')
+  }
 
   const handleDragEnd = (event: DragEndEvent) => {
     const { active, over } = event
@@ -319,6 +465,28 @@ export function AlbumOrganizer() {
       ...prev,
       [selectedAlbum]: [...(prev[selectedAlbum] || []), { photo: photoToMove, targetAlbum }],
     }))
+    setSelectedPhotoIds(selectedPhotoIds.filter((currentId) => currentId !== photoId))
+  }
+
+  const handleBulkMove = (targetAlbum: PhotoAlbum) => {
+    if (selectedPhotos.length === 0) {
+      return
+    }
+
+    const selectedIds = new Set(selectedPhotos.map((photo) => photo.id))
+
+    setDraftByAlbum((prev) => ({
+      ...prev,
+      [selectedAlbum]: currentDraft.filter((photo) => !selectedIds.has(photo.id)),
+    }))
+    setPendingMovesByAlbum((prev) => ({
+      ...prev,
+      [selectedAlbum]: [
+        ...(prev[selectedAlbum] || []),
+        ...selectedPhotos.map((photo) => ({ photo, targetAlbum })),
+      ],
+    }))
+    handleClearSelection()
   }
 
   const handleUndoMove = (photoId: string) => {
@@ -337,21 +505,6 @@ export function AlbumOrganizer() {
     }))
   }
 
-  const handleReset = () => {
-    setDraftByAlbum((prev) => ({
-      ...prev,
-      [selectedAlbum]: currentSaved,
-    }))
-    setPendingMovesByAlbum((prev) => ({
-      ...prev,
-      [selectedAlbum]: [],
-    }))
-    setPendingDeletesByAlbum((prev) => ({
-      ...prev,
-      [selectedAlbum]: [],
-    }))
-  }
-
   const handleDeletePhoto = (photoId: string) => {
     const photoToDelete = currentDraft.find((photo) => photo.id === photoId)
     if (!photoToDelete) {
@@ -366,6 +519,28 @@ export function AlbumOrganizer() {
       ...prev,
       [selectedAlbum]: [...(prev[selectedAlbum] || []), { photo: photoToDelete }],
     }))
+    setSelectedPhotoIds(selectedPhotoIds.filter((currentId) => currentId !== photoId))
+  }
+
+  const handleBulkDelete = () => {
+    if (selectedPhotos.length === 0) {
+      return
+    }
+
+    const selectedIds = new Set(selectedPhotos.map((photo) => photo.id))
+
+    setDraftByAlbum((prev) => ({
+      ...prev,
+      [selectedAlbum]: currentDraft.filter((photo) => !selectedIds.has(photo.id)),
+    }))
+    setPendingDeletesByAlbum((prev) => ({
+      ...prev,
+      [selectedAlbum]: [
+        ...(prev[selectedAlbum] || []),
+        ...selectedPhotos.map((photo) => ({ photo })),
+      ],
+    }))
+    handleClearSelection()
   }
 
   const handleUndoDelete = (photoId: string) => {
@@ -382,6 +557,66 @@ export function AlbumOrganizer() {
       ...prev,
       [selectedAlbum]: [...(prev[selectedAlbum] || []), deletionToUndo.photo],
     }))
+  }
+
+  const handleMoveSelectedToBoundary = (placement: 'top' | 'bottom') => {
+    if (selectedPhotos.length === 0) {
+      return
+    }
+
+    const selectedIds = new Set(selectedPhotos.map((photo) => photo.id))
+    const remainingPhotos = currentDraft.filter((photo) => !selectedIds.has(photo.id))
+    const nextDraft =
+      placement === 'top'
+        ? [...selectedPhotos, ...remainingPhotos]
+        : [...remainingPhotos, ...selectedPhotos]
+
+    setDraftByAlbum((prev) => ({
+      ...prev,
+      [selectedAlbum]: nextDraft,
+    }))
+  }
+
+  const handleMoveSelectedAfter = (anchorPhotoId: string) => {
+    if (selectedPhotos.length === 0 || !anchorPhotoId) {
+      return
+    }
+
+    const selectedIds = new Set(selectedPhotos.map((photo) => photo.id))
+    const remainingPhotos = currentDraft.filter((photo) => !selectedIds.has(photo.id))
+    const anchorIndex = remainingPhotos.findIndex((photo) => photo.id === anchorPhotoId)
+
+    if (anchorIndex < 0) {
+      return
+    }
+
+    const nextDraft = [
+      ...remainingPhotos.slice(0, anchorIndex + 1),
+      ...selectedPhotos,
+      ...remainingPhotos.slice(anchorIndex + 1),
+    ]
+
+    setDraftByAlbum((prev) => ({
+      ...prev,
+      [selectedAlbum]: nextDraft,
+    }))
+    setBulkAfterTargetId('')
+  }
+
+  const handleReset = () => {
+    setDraftByAlbum((prev) => ({
+      ...prev,
+      [selectedAlbum]: currentSaved,
+    }))
+    setPendingMovesByAlbum((prev) => ({
+      ...prev,
+      [selectedAlbum]: [],
+    }))
+    setPendingDeletesByAlbum((prev) => ({
+      ...prev,
+      [selectedAlbum]: [],
+    }))
+    handleClearSelection()
   }
 
   const handleSave = async () => {
@@ -477,6 +712,10 @@ export function AlbumOrganizer() {
       ...prev,
       [selectedAlbum]: [],
     }))
+    setSelectedPhotoIdsByAlbum((prev) => ({
+      ...prev,
+      [selectedAlbum]: [],
+    }))
 
     if (touchedTargets.length > 0) {
       await Promise.all(touchedTargets.map((album) => loadAlbum(album, true)))
@@ -489,20 +728,20 @@ export function AlbumOrganizer() {
       data
         ? `Saved ${selectedAlbum}.${data.moved_count > 0 ? ` ${data.moved_count} photo${data.moved_count === 1 ? '' : 's'} moved.` : ''}${data.deleted_count > 0 ? ` ${data.deleted_count} photo${data.deleted_count === 1 ? '' : 's'} deleted.` : ''}`
         : `Saved ${selectedAlbum}.`,
-      'success'
+      'success',
     )
     setSavingAlbum(null)
   }
 
   return (
-    <div className="space-y-5">
-      <section className="rounded-[1.35rem] border border-gold-100 bg-white/95 p-5 shadow-sm">
-        <div className="flex flex-col gap-4 lg:flex-row lg:items-end lg:justify-between">
+    <div className="space-y-4">
+      <section className="rounded-[1.2rem] border border-gold-100 bg-white/95 p-4 shadow-sm">
+        <div className="flex flex-col gap-4 xl:flex-row xl:items-end xl:justify-between">
           <div>
             <p className="text-[10px] uppercase tracking-[0.32em] text-charcoal-500">Album organizer</p>
-            <h2 className="mt-2 font-display text-2xl text-charcoal-900">Arrange the live gallery albums.</h2>
-            <p className="mt-2 max-w-2xl text-sm leading-6 text-charcoal-500">
-              Drag photos into the sequence you want, move misfiled images between albums, then save the live order.
+            <h2 className="mt-1 font-display text-[1.7rem] text-charcoal-900">Arrange the live gallery albums.</h2>
+            <p className="mt-1 text-sm leading-6 text-charcoal-500">
+              Drag for fine ordering, use bulk actions for cleanup, and save only when the album feels right.
             </p>
           </div>
 
@@ -520,9 +759,16 @@ export function AlbumOrganizer() {
             </Button>
           </div>
         </div>
+
+        <div className="mt-4 flex flex-wrap gap-2 text-xs text-charcoal-600">
+          <span className="rounded-full border border-gold-100 bg-cream-50 px-3 py-1.5">reorder {reorderCount}</span>
+          <span className="rounded-full border border-gold-100 bg-cream-50 px-3 py-1.5">moves {pendingMoves.length}</span>
+          <span className="rounded-full border border-gold-100 bg-cream-50 px-3 py-1.5">deletes {pendingDeletes.length}</span>
+          <span className="rounded-full border border-gold-100 bg-cream-50 px-3 py-1.5">selected {selectedPhotoIds.length}</span>
+        </div>
       </section>
 
-      <section className="rounded-[1.35rem] border border-gold-100 bg-white/95 p-4 shadow-sm">
+      <section className="rounded-[1.2rem] border border-gold-100 bg-white/95 p-4 shadow-sm">
         <div className="flex flex-wrap gap-2">
           {PHOTO_ALBUMS.map((album) => (
             <button
@@ -551,7 +797,7 @@ export function AlbumOrganizer() {
               value={searchQuery}
               onChange={(event) => setSearchQuery(event.target.value)}
               placeholder={`Find a photo in ${selectedAlbum}`}
-              className="h-12 rounded-full border-gold-200/70 bg-cream-50/85 pl-11 shadow-none"
+              className="h-11 rounded-full border-gold-200/70 bg-cream-50/85 pl-11 shadow-none"
             />
           </div>
 
@@ -567,8 +813,96 @@ export function AlbumOrganizer() {
           )}
         </div>
 
+        {selectedPhotoIds.length > 0 && (
+          <div className="mt-4 rounded-[1rem] border border-gold-200 bg-cream-50/80 p-4">
+            <div className="flex flex-col gap-3 xl:flex-row xl:items-center xl:justify-between">
+              <div>
+                <p className="text-sm font-medium text-charcoal-900">
+                  {selectedPhotoIds.length} photo{selectedPhotoIds.length === 1 ? '' : 's'} selected
+                </p>
+                <p className="text-xs text-charcoal-500">Use bulk tools for cleanup, then save once.</p>
+              </div>
+
+              <div className="flex flex-wrap gap-2">
+                <Button size="sm" variant="secondary" onClick={handleSelectVisible}>
+                  Select visible
+                </Button>
+                <Button size="sm" variant="secondary" onClick={handleClearSelection}>
+                  Clear selection
+                </Button>
+                <Button size="sm" variant="secondary" onClick={() => handleMoveSelectedToBoundary('top')}>
+                  <ArrowUpToLine className="mr-2 h-4 w-4" />
+                  Move to top
+                </Button>
+                <Button size="sm" variant="secondary" onClick={() => handleMoveSelectedToBoundary('bottom')}>
+                  <ArrowDownToLine className="mr-2 h-4 w-4" />
+                  Move to bottom
+                </Button>
+              </div>
+            </div>
+
+            <div className="mt-3 grid gap-3 xl:grid-cols-[minmax(0,14rem)_minmax(0,1fr)_auto_auto] xl:items-center">
+              <select
+                value={bulkMoveAlbum}
+                onChange={(event) => setBulkMoveAlbum(event.target.value as PhotoAlbum | '')}
+                className="h-10 rounded-full border border-gold-200 bg-white px-3 text-sm text-charcoal-700 outline-none transition-colors hover:border-gold-300 focus:border-gold-400"
+              >
+                <option value="">Bulk move to album...</option>
+                {moveSelectOptions(selectedAlbum).map((album) => (
+                  <option key={album} value={album}>
+                    {album}
+                  </option>
+                ))}
+              </select>
+
+              <select
+                value={bulkAfterTargetId}
+                onChange={(event) => setBulkAfterTargetId(event.target.value)}
+                className="h-10 rounded-full border border-gold-200 bg-white px-3 text-sm text-charcoal-700 outline-none transition-colors hover:border-gold-300 focus:border-gold-400"
+              >
+                <option value="">Place after...</option>
+                {moveAfterOptions.map((photo) => (
+                  <option key={photo.id} value={photo.id}>
+                    {photo.displayLabel}
+                  </option>
+                ))}
+              </select>
+
+              <Button
+                size="sm"
+                variant="secondary"
+                onClick={() => {
+                  if (bulkMoveAlbum) {
+                    handleBulkMove(bulkMoveAlbum)
+                  }
+                }}
+                disabled={!bulkMoveAlbum}
+              >
+                <ArrowRightLeft className="mr-2 h-4 w-4" />
+                Move selected
+              </Button>
+
+              <Button size="sm" variant="danger" onClick={handleBulkDelete}>
+                <Trash2 className="mr-2 h-4 w-4" />
+                Remove selected
+              </Button>
+            </div>
+
+            <div className="mt-3 flex flex-wrap gap-2">
+              <Button
+                size="sm"
+                variant="secondary"
+                onClick={() => handleMoveSelectedAfter(bulkAfterTargetId)}
+                disabled={!bulkAfterTargetId}
+              >
+                Place after selected photo
+              </Button>
+            </div>
+          </div>
+        )}
+
         {pendingMoves.length > 0 && (
-          <div className="mt-4 rounded-[1.15rem] border border-gold-100 bg-cream-50/80 p-4">
+          <div className="mt-4 rounded-[1rem] border border-gold-100 bg-cream-50/80 p-4">
             <div className="flex items-center gap-2 text-sm font-medium text-charcoal-800">
               <ArrowRightLeft className="h-4 w-4 text-gold-600" />
               {pendingMoves.length} photo{pendingMoves.length === 1 ? '' : 's'} will move when you save
@@ -582,7 +916,7 @@ export function AlbumOrganizer() {
                   className="inline-flex items-center gap-2 rounded-full border border-gold-200 bg-white px-3 py-1.5 text-xs text-charcoal-600 transition-colors hover:border-gold-300 hover:bg-gold-50"
                 >
                   <span className="max-w-[14rem] truncate">{move.photo.displayLabel}</span>
-                  <span className="text-charcoal-400">→ {move.targetAlbum}</span>
+                  <span className="text-charcoal-400">to {move.targetAlbum}</span>
                   <span className="text-gold-700">Undo</span>
                 </button>
               ))}
@@ -591,7 +925,7 @@ export function AlbumOrganizer() {
         )}
 
         {pendingDeletes.length > 0 && (
-          <div className="mt-4 rounded-[1.15rem] border border-rose-200 bg-rose-50/80 p-4">
+          <div className="mt-4 rounded-[1rem] border border-rose-200 bg-rose-50/80 p-4">
             <div className="flex items-center gap-2 text-sm font-medium text-rose-800">
               <Trash2 className="h-4 w-4 text-rose-600" />
               {pendingDeletes.length} photo{pendingDeletes.length === 1 ? '' : 's'} will be removed from the live gallery when you save
@@ -613,11 +947,11 @@ export function AlbumOrganizer() {
         )}
       </section>
 
-      <section className="rounded-[1.45rem] border border-gold-100 bg-white/95 p-4 shadow-sm">
+      <section className="rounded-[1.25rem] border border-gold-100 bg-white/95 p-4 shadow-sm">
         {loadingAlbum === selectedAlbum && !savedByAlbum[selectedAlbum] ? (
           <div className="flex min-h-[22rem] flex-col items-center justify-center text-center">
             <Loader2 className="h-8 w-8 animate-spin text-gold-500" />
-            <p className="mt-4 text-charcoal-600">Loading the {selectedAlbum} album…</p>
+            <p className="mt-4 text-charcoal-600">Loading the {selectedAlbum} album...</p>
           </div>
         ) : filteredDraft.length === 0 ? (
           <div className="flex min-h-[22rem] flex-col items-center justify-center text-center">
@@ -631,13 +965,15 @@ export function AlbumOrganizer() {
             {canDrag ? (
               <DndContext sensors={sensors} collisionDetection={closestCenter} onDragEnd={handleDragEnd}>
                 <SortableContext items={currentDraft.map((photo) => photo.id)} strategy={rectSortingStrategy}>
-                  <div className="grid grid-cols-2 gap-3 md:grid-cols-3 xl:grid-cols-4 2xl:grid-cols-5">
+                  <div className="grid grid-cols-2 gap-3 md:grid-cols-4 xl:grid-cols-5 2xl:grid-cols-6">
                     {currentDraft.map((photo) => (
                       <SortablePhotoCard
                         key={photo.id}
                         album={selectedAlbum}
                         photo={photo}
                         canDrag={canDrag}
+                        selected={selectedPhotoIdSet.has(photo.id)}
+                        onToggleSelect={handleToggleSelected}
                         onMove={handleMovePhoto}
                         onDelete={handleDeletePhoto}
                       />
@@ -646,13 +982,15 @@ export function AlbumOrganizer() {
                 </SortableContext>
               </DndContext>
             ) : (
-              <div className="grid grid-cols-2 gap-3 md:grid-cols-3 xl:grid-cols-4 2xl:grid-cols-5">
+              <div className="grid grid-cols-2 gap-3 md:grid-cols-4 xl:grid-cols-5 2xl:grid-cols-6">
                 {filteredDraft.map((photo) => (
                   <SortablePhotoCard
                     key={photo.id}
                     album={selectedAlbum}
                     photo={photo}
                     canDrag={false}
+                    selected={selectedPhotoIdSet.has(photo.id)}
+                    onToggleSelect={handleToggleSelected}
                     onMove={handleMovePhoto}
                     onDelete={handleDeletePhoto}
                   />

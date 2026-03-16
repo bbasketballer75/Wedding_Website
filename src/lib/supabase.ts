@@ -337,6 +337,25 @@ export interface PhotoCommentRecord {
   author: string
   content: string
   created_at: string
+  session_id?: string | null
+  is_hidden?: boolean
+  hidden_at?: string | null
+  hidden_by_user_id?: string | null
+  hidden_reason?: string | null
+}
+
+export interface AdminPhotoCommentRecord extends PhotoCommentRecord {
+  album?: string | null
+  caption?: string | null
+  thumbnail?: string | null
+  url?: string | null
+}
+
+export interface PhotoEngagementSummary {
+  photo_key: string
+  likes_count: number
+  comments_count: number
+  hidden_comments_count: number
 }
 
 export const PHOTO_ALBUMS = ['Engagement', 'Bach+ette', 'Wedding Day', 'Guest Uploads'] as const
@@ -362,6 +381,7 @@ export interface SaveAlbumOrganizationResult {
 export interface DeleteGalleryPhotosResult {
   deleted_count: number
   deleted_photo_keys: string[]
+  deleted_photo_urls: string[]
 }
 
 export interface PhotoLikeStatus {
@@ -455,6 +475,14 @@ export async function fetchPhotoLikeStatuses(photoKeys: string[], sessionId: str
     .returns<PhotoLikeStatus[]>()
 }
 
+export async function fetchPhotoEngagementSummary(photoKeys: string[]) {
+  return await supabase
+    .rpc('get_photo_engagement_summary_v1', {
+      p_photo_keys: photoKeys,
+    })
+    .returns<PhotoEngagementSummary[]>()
+}
+
 export async function togglePhotoLike(photoKey: string, sessionId: string) {
   const response = await supabase
     .rpc('toggle_photo_like_v2', {
@@ -486,20 +514,51 @@ export async function fetchPhotoComments(photoKey: string) {
     .from('photo_comments')
     .select('*')
     .eq('photo_key', photoKey)
+    .eq('is_hidden', false)
     .order('created_at', { ascending: true })
     .returns<PhotoCommentRecord[]>()
 }
 
-export async function addPhotoComment(photoKey: string, content: string, author = 'Guest') {
+export async function addPhotoComment(
+  photoKey: string,
+  content: string,
+  author = 'Guest',
+  sessionId: string,
+) {
   return await supabase
-    .from('photo_comments')
-    .insert({
-      photo_key: photoKey,
-      author,
-      content,
+    .rpc('create_photo_comment_v1', {
+      p_photo_key: photoKey,
+      p_author: author,
+      p_content: content,
+      p_session_id: sessionId,
     })
-    .select('*')
     .single<PhotoCommentRecord>()
+}
+
+export async function fetchRecentPhotoComments(limit = 40) {
+  return await supabase
+    .rpc('get_recent_photo_comments_v1', {
+      p_limit: limit,
+    })
+    .returns<AdminPhotoCommentRecord[]>()
+}
+
+export async function hidePhotoComment(commentId: string, hidden = true, reason?: string) {
+  return await supabase
+    .rpc('hide_photo_comment_v1', {
+      p_comment_id: commentId,
+      p_hidden: hidden,
+      p_reason: reason ?? null,
+    })
+    .single<Pick<PhotoCommentRecord, 'id' | 'photo_key' | 'is_hidden'>>()
+}
+
+export async function deletePhotoComment(commentId: string) {
+  return await supabase
+    .rpc('delete_photo_comment_v1', {
+      p_comment_id: commentId,
+    })
+    .single<{ deleted_id: string; photo_key: string }>()
 }
 
 export async function fetchAlbumPhotos(album: PhotoAlbum) {
