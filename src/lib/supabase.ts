@@ -52,6 +52,7 @@ export interface Photo {
   url: string
   thumbnail: string
   album?: string
+  album_sort_order?: number | null
   caption?: string
   category?: string
   location?: string
@@ -337,6 +338,25 @@ export interface PhotoCommentRecord {
   created_at: string
 }
 
+export const PHOTO_ALBUMS = ['Engagement', 'Bach+ette', 'Wedding Day', 'Guest Uploads'] as const
+export type PhotoAlbum = (typeof PHOTO_ALBUMS)[number]
+
+export interface AlbumOrganizerPhoto extends Photo {
+  album: PhotoAlbum
+  album_sort_order: number
+}
+
+export interface AlbumOrganizerMoveInput {
+  photoId: string
+  targetAlbum: PhotoAlbum
+}
+
+export interface SaveAlbumOrganizationResult {
+  saved_album: PhotoAlbum
+  current_album_count: number
+  moved_count: number
+}
+
 export interface PhotoLikeStatus {
   photo_key: string
   likes_count: number
@@ -473,6 +493,67 @@ export async function addPhotoComment(photoKey: string, content: string, author 
     })
     .select('*')
     .single<PhotoCommentRecord>()
+}
+
+export async function fetchAlbumPhotos(album: PhotoAlbum) {
+  return await supabase
+    .from('photos')
+    .select('*')
+    .eq('album', album)
+    .order('album_sort_order', { ascending: true })
+    .order('created_at', { ascending: false })
+    .returns<AlbumOrganizerPhoto[]>()
+}
+
+export async function fetchPhotoAlbumCounts() {
+  const results = await Promise.all(
+    PHOTO_ALBUMS.map(async (album) => {
+      const response = await supabase
+        .from('photos')
+        .select('*', { count: 'exact', head: true })
+        .eq('album', album)
+
+      return [album, response.count || 0] as const
+    })
+  )
+
+  return Object.fromEntries(results) as Record<PhotoAlbum, number>
+}
+
+export async function fetchNextAlbumSortOrder(album: PhotoAlbum) {
+  const { data, error } = await supabase
+    .from('photos')
+    .select('album_sort_order')
+    .eq('album', album)
+    .order('album_sort_order', { ascending: false })
+    .limit(1)
+    .maybeSingle<{ album_sort_order: number | null }>()
+
+  if (error) {
+    return { data: 1, error }
+  }
+
+  return {
+    data: Number(data?.album_sort_order || 0) + 1,
+    error: null,
+  }
+}
+
+export async function saveAlbumOrganization(
+  album: PhotoAlbum,
+  orderedPhotoIds: string[],
+  moves: AlbumOrganizerMoveInput[]
+) {
+  return await supabase
+    .rpc('save_album_organization_v1', {
+      p_album: album,
+      p_ordered_photo_ids: orderedPhotoIds,
+      p_moves: moves.map((move) => ({
+        photoId: move.photoId,
+        targetAlbum: move.targetAlbum,
+      })),
+    })
+    .single<SaveAlbumOrganizationResult>()
 }
 
 export async function fetchMediaReviewClusters(batchId: string) {

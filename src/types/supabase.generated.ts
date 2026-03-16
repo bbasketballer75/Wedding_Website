@@ -14,6 +14,69 @@ export type Database = {
   }
   public: {
     Tables: {
+      guest_face_tagging_batches: {
+        Row: {
+          batch_key: string
+          created_at: string
+          created_by_email: string | null
+          created_by_user_id: string | null
+          exportable_photo_count: number
+          exportable_upload_count: number
+          id: string
+          label: string
+          last_error: string | null
+          last_synced_at: string | null
+          metadata: Json
+          notes: string | null
+          skipped_photo_count: number
+          status: string
+          synced_by_email: string | null
+          synced_by_user_id: string | null
+          synced_photo_count: number
+          updated_at: string
+        }
+        Insert: {
+          batch_key: string
+          created_at?: string
+          created_by_email?: string | null
+          created_by_user_id?: string | null
+          exportable_photo_count?: number
+          exportable_upload_count?: number
+          id?: string
+          label: string
+          last_error?: string | null
+          last_synced_at?: string | null
+          metadata?: Json
+          notes?: string | null
+          skipped_photo_count?: number
+          status?: string
+          synced_by_email?: string | null
+          synced_by_user_id?: string | null
+          synced_photo_count?: number
+          updated_at?: string
+        }
+        Update: {
+          batch_key?: string
+          created_at?: string
+          created_by_email?: string | null
+          created_by_user_id?: string | null
+          exportable_photo_count?: number
+          exportable_upload_count?: number
+          id?: string
+          label?: string
+          last_error?: string | null
+          last_synced_at?: string | null
+          metadata?: Json
+          notes?: string | null
+          skipped_photo_count?: number
+          status?: string
+          synced_by_email?: string | null
+          synced_by_user_id?: string | null
+          synced_photo_count?: number
+          updated_at?: string
+        }
+        Relationships: []
+      }
       guest_uploads: {
         Row: {
           created_at: string | null
@@ -139,51 +202,6 @@ export type Database = {
         }
         Relationships: []
       }
-      moderation_audit_log: {
-        Row: {
-          action: string
-          actor_email: string | null
-          actor_name: string | null
-          actor_user_id: string | null
-          created_at: string
-          entity_id: string
-          entity_type: string
-          from_status: string | null
-          id: string
-          metadata: Json
-          summary: string
-          to_status: string | null
-        }
-        Insert: {
-          action: string
-          actor_email?: string | null
-          actor_name?: string | null
-          actor_user_id?: string | null
-          created_at?: string
-          entity_id: string
-          entity_type: string
-          from_status?: string | null
-          id?: string
-          metadata?: Json
-          summary: string
-          to_status?: string | null
-        }
-        Update: {
-          action?: string
-          actor_email?: string | null
-          actor_name?: string | null
-          actor_user_id?: string | null
-          created_at?: string
-          entity_id?: string
-          entity_type?: string
-          from_status?: string | null
-          id?: string
-          metadata?: Json
-          summary?: string
-          to_status?: string | null
-        }
-        Relationships: []
-      }
       media_review_batches: {
         Row: {
           artifact_bucket: string
@@ -249,8 +267,8 @@ export type Database = {
           confirmed_name: string | null
           created_at: string
           id: string
-          members: Json
           member_count: number
+          members: Json
           merge_into_cluster_id: string | null
           metadata: Json
           review_status: string
@@ -267,8 +285,8 @@ export type Database = {
           confirmed_name?: string | null
           created_at?: string
           id?: string
-          members?: Json
           member_count?: number
+          members?: Json
           merge_into_cluster_id?: string | null
           metadata?: Json
           review_status?: string
@@ -285,8 +303,8 @@ export type Database = {
           confirmed_name?: string | null
           created_at?: string
           id?: string
-          members?: Json
           member_count?: number
+          members?: Json
           merge_into_cluster_id?: string | null
           metadata?: Json
           review_status?: string
@@ -303,7 +321,7 @@ export type Database = {
             isOneToOne: false
             referencedRelation: "media_review_batches"
             referencedColumns: ["id"]
-          }
+          },
         ]
       }
       media_review_faces: {
@@ -383,6 +401,51 @@ export type Database = {
           },
         ]
       }
+      moderation_audit_log: {
+        Row: {
+          action: string
+          actor_email: string | null
+          actor_name: string | null
+          actor_user_id: string | null
+          created_at: string
+          entity_id: string
+          entity_type: string
+          from_status: string | null
+          id: string
+          metadata: Json
+          summary: string
+          to_status: string | null
+        }
+        Insert: {
+          action: string
+          actor_email?: string | null
+          actor_name?: string | null
+          actor_user_id?: string | null
+          created_at?: string
+          entity_id: string
+          entity_type: string
+          from_status?: string | null
+          id?: string
+          metadata?: Json
+          summary: string
+          to_status?: string | null
+        }
+        Update: {
+          action?: string
+          actor_email?: string | null
+          actor_name?: string | null
+          actor_user_id?: string | null
+          created_at?: string
+          entity_id?: string
+          entity_type?: string
+          from_status?: string | null
+          id?: string
+          metadata?: Json
+          summary?: string
+          to_status?: string | null
+        }
+        Relationships: []
+      }
       photo_comments: {
         Row: {
           author: string
@@ -431,6 +494,7 @@ export type Database = {
       photos: {
         Row: {
           album: string | null
+          album_sort_order: number
           caption: string | null
           category: string | null
           created_at: string | null
@@ -447,6 +511,7 @@ export type Database = {
         }
         Insert: {
           album?: string | null
+          album_sort_order?: number
           caption?: string | null
           category?: string | null
           created_at?: string | null
@@ -463,6 +528,7 @@ export type Database = {
         }
         Update: {
           album?: string | null
+          album_sort_order?: number
           caption?: string | null
           category?: string | null
           created_at?: string | null
@@ -652,10 +718,7 @@ export type Database = {
         }[]
       }
       get_photo_like_statuses: {
-        Args: {
-          p_photo_keys: string[]
-          p_session_id: string
-        }
+        Args: { p_photo_keys: string[]; p_session_id: string }
         Returns: {
           liked: boolean
           likes_count: number
@@ -669,6 +732,14 @@ export type Database = {
           p_window_minutes?: number
         }
         Returns: undefined
+      }
+      save_album_organization_v1: {
+        Args: { p_album: string; p_moves?: Json; p_ordered_photo_ids: string[] }
+        Returns: {
+          current_album_count: number
+          moved_count: number
+          saved_album: string
+        }[]
       }
       submit_guestbook_message_with_rate_limit: {
         Args: {
@@ -689,10 +760,7 @@ export type Database = {
         }[]
       }
       toggle_photo_like: {
-        Args: {
-          p_photo_key: string
-          p_session_id: string
-        }
+        Args: { p_photo_key: string; p_session_id: string }
         Returns: {
           liked: boolean
           likes_count: number
@@ -700,10 +768,7 @@ export type Database = {
         }[]
       }
       toggle_photo_like_v2: {
-        Args: {
-          p_photo_key: string
-          p_session_id: string
-        }
+        Args: { p_photo_key: string; p_session_id: string }
         Returns: {
           result_liked: boolean
           result_likes_count: number

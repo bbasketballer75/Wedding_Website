@@ -27,6 +27,7 @@ interface Photo {
   url: string
   thumbnail: string
   album?: string
+  albumSortOrder?: number
   caption?: string
   category: string
   likes: number
@@ -118,7 +119,7 @@ const collectionMeta: Record<
   },
 }
 
-const curatedPhotos: Photo[] = [
+const curatedPhotos = ([
   { 
     id: 'curated-1', 
     url: '/images/engagement/PoradaProposal-29.webp', 
@@ -293,7 +294,10 @@ const curatedPhotos: Photo[] = [
     source: 'professional',
     collection: 'Engagement',
   },
-]
+ ] satisfies Array<Omit<Photo, 'albumSortOrder'>>).map((photo, index): Photo => ({
+  ...photo,
+  albumSortOrder: index + 1,
+}))
 
 const viewOptions = [
   {
@@ -449,6 +453,7 @@ const mapSupabasePhoto = (photo: SupabasePhoto): Photo => normalizeGalleryPhoto(
   thumbnail: photo.thumbnail,
   caption: photo.caption,
   album: photo.album,
+  albumSortOrder: photo.album_sort_order ?? undefined,
   category: photo.category || 'Uncategorized',
   likes: photo.likes,
   aspectRatio: 1, // Default, could be calculated from image dimensions
@@ -568,8 +573,23 @@ export default function Gallery() {
     }
   }, [photos, searchParams])
 
-  const sortedPhotos = useMemo(
+  const newestFirstPhotos = useMemo(
     () => [...photos].sort((a, b) => new Date(b.createdAt || 0).getTime() - new Date(a.createdAt || 0).getTime()),
+    [photos],
+  )
+
+  const albumOrderedPhotos = useMemo(
+    () =>
+      [...photos].sort((a, b) => {
+        const leftOrder = Number.isFinite(a.albumSortOrder) ? Number(a.albumSortOrder) : Number.MAX_SAFE_INTEGER
+        const rightOrder = Number.isFinite(b.albumSortOrder) ? Number(b.albumSortOrder) : Number.MAX_SAFE_INTEGER
+
+        if (leftOrder !== rightOrder) {
+          return leftOrder - rightOrder
+        }
+
+        return new Date(b.createdAt || 0).getTime() - new Date(a.createdAt || 0).getTime()
+      }),
     [photos],
   )
 
@@ -579,11 +599,11 @@ export default function Gallery() {
       case 'Engagement':
       case 'Bach+ette':
       case 'Wedding Day':
-        return sortedPhotos.filter(photo => photo.collection === selectedCollection)
+        return albumOrderedPhotos.filter(photo => photo.collection === selectedCollection)
       default:
-        return sortedPhotos
+        return newestFirstPhotos
     }
-  }, [selectedCollection, sortedPhotos])
+  }, [albumOrderedPhotos, newestFirstPhotos, selectedCollection])
 
   const filteredPhotos = useMemo(() => {
     const normalizedQuery = deferredSearchQuery.trim().toLowerCase()

@@ -3,6 +3,7 @@ import { Navigate, Routes, Route, Link, useLocation } from 'react-router-dom'
 import { useAuthStore } from '@/stores/authStore'
 import {
   fetchGuestFaceTaggingBatches,
+  fetchNextAlbumSortOrder,
   fetchMediaReviewBatches,
   fetchModerationAuditTimeline,
   recordModerationAudit,
@@ -37,6 +38,7 @@ import {
   FolderOpen,
 } from 'lucide-react'
 import { MediaReviewPanel } from '@/components/admin/MediaReviewPanel'
+import { AlbumOrganizer } from '@/components/admin/AlbumOrganizer'
 import { Button } from '@/components/ui/Button'
 import { Input } from '@/components/ui/Input'
 import { Label } from '@/components/ui/Label'
@@ -69,6 +71,7 @@ const adminNavSections: AdminNavSection[] = [
     items: [
       { path: '/admin', label: 'Dashboard', icon: LayoutDashboard, description: 'See what needs attention next.' },
       { path: '/admin/photos', label: 'Photos', icon: Image, description: 'Moderate uploads, publish photos, and run guest tagging.' },
+      { path: '/admin/albums', label: 'Albums', icon: FolderOpen, description: 'Arrange the live order inside each public album.' },
       { path: '/admin/review', label: 'People Review', icon: Users, description: 'Work through face review and named people.' },
       { path: '/admin/guestbook', label: 'Guestbook', icon: MessageSquare, description: 'Moderate notes, voice, and video messages.' },
     ],
@@ -102,6 +105,12 @@ const adminRouteMeta: Record<string, { eyebrow: string; title: string; descripti
     title: 'Turn face detections into a browsable people archive.',
     description:
       'Use photo-first review for accuracy, then clean up recurring people in bulk so the public gallery stays useful instead of noisy.',
+  },
+  '/admin/albums': {
+    eyebrow: 'Album workflow',
+    title: 'Arrange the live album order exactly how you want it.',
+    description:
+      'This is the place for sequencing, not moderation: drag photos into order, fix misfiled images, and save the public arrangement album by album.',
   },
   '/admin/guestbook': {
     eyebrow: 'Guestbook workflow',
@@ -205,6 +214,9 @@ function Dashboard() {
           <div className="grid gap-2 sm:grid-cols-2 xl:w-[24rem]">
             <Button variant="secondary" size="sm" asChild>
               <Link to="/admin/photos">Photos</Link>
+            </Button>
+            <Button variant="secondary" size="sm" asChild>
+              <Link to="/admin/albums">Albums</Link>
             </Button>
             <Button variant="secondary" size="sm" asChild>
               <Link to="/admin/review">People Review</Link>
@@ -929,17 +941,29 @@ function PhotoModeration() {
     const uploadPhotoUrls = upload.photo_urls || []
     const uploadVideoUrls = upload.video_urls || []
     const tags = Array.from(new Set([...guestTagByCollection[draft.collection], ...normalizeTags(draft.tags)]))
-    const category = draft.category.trim() || collectionOptions.find(option => option.value === draft.collection)?.defaultCategory || 'Wedding Day'
+    const targetAlbum = draft.collection as 'Engagement' | 'Bach+ette' | 'Wedding Day' | 'Guest Uploads'
+    const category = targetAlbum
     const caption = draft.caption.trim() || upload.message?.trim() || undefined
     const location = draft.location.trim() || undefined
 
     setBusyId(upload.id)
 
-    const rowsToInsert = duplicateInsight.publishableEntries.map(({ url: photoUrl }) => ({
+    const { data: nextAlbumSortOrder, error: albumSortOrderError } = await fetchNextAlbumSortOrder(targetAlbum)
+
+    if (albumSortOrderError) {
+      addToast('Could not prepare the album order for this approval.', 'error')
+      setBusyId(null)
+      return
+    }
+
+    const startingAlbumSortOrder = nextAlbumSortOrder || 1
+    const rowsToInsert = duplicateInsight.publishableEntries.map(({ url: photoUrl }, index) => ({
       url: photoUrl,
       thumbnail: photoUrl,
+      album: targetAlbum,
+      album_sort_order: startingAlbumSortOrder + index,
       caption,
-      category,
+      category: targetAlbum,
       location,
       date: upload.created_at,
       likes: 0,
@@ -1810,20 +1834,13 @@ function PhotoModeration() {
                             </p>
                           </div>
 
-                          <div className="grid gap-4 md:grid-cols-2">
-                            <div>
-                              <Label
-                                htmlFor={`category-${photo.id}`}
-                                className="mb-2 text-xs normal-case tracking-normal text-charcoal-500"
-                              >
-                                Category
-                              </Label>
-                              <Input
-                                id={`category-${photo.id}`}
-                                value={draft.category}
-                                onChange={(event) => updateDraft(photo.id, { category: event.target.value })}
-                                placeholder="Wedding Day, Ceremony, Reception..."
-                              />
+                          <div className="grid gap-4 md:grid-cols-[minmax(0,1fr)_minmax(0,1.2fr)]">
+                            <div className="rounded-2xl border border-gold-100 bg-cream-50/80 px-4 py-3">
+                              <p className="text-[10px] uppercase tracking-[0.28em] text-charcoal-400">Public album</p>
+                              <p className="mt-2 text-sm text-charcoal-700">{draft.collection}</p>
+                              <p className="mt-2 text-xs leading-5 text-charcoal-500">
+                                Album placement now follows the collection you choose above.
+                              </p>
                             </div>
 
                             <div>
@@ -3568,6 +3585,7 @@ function AdminLayout() {
             <Routes>
               <Route index element={<Dashboard />} />
               <Route path="photos" element={<PhotoModeration />} />
+              <Route path="albums" element={<AlbumOrganizer />} />
               <Route path="review" element={<MediaReviewPanel />} />
               <Route path="guestbook" element={<GuestbookModeration />} />
               <Route path="featured" element={<FeaturedContentManager />} />
