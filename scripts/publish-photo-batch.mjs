@@ -196,6 +196,23 @@ async function fetchExistingPhotos(urls) {
   return new Map(existing.map((row) => [row.url, row]))
 }
 
+async function fetchAlbumSortTracker() {
+  const { data, error } = await supabase
+    .from('photos')
+    .select('album, category, album_sort_order')
+
+  if (error) {
+    throw error
+  }
+
+  return (data || []).reduce((acc, row) => {
+    const album = normalizeAlbum(row.album) ?? normalizeAlbum(row.category) ?? 'Wedding Day'
+    const currentValue = Number(row.album_sort_order || 0)
+    acc[album] = Math.max(acc[album] || 0, currentValue)
+    return acc
+  }, Object.create(null))
+}
+
 async function deletePhotoRowsByUrls(urls) {
   let deletedCount = 0
 
@@ -218,9 +235,15 @@ async function deletePhotoRowsByUrls(urls) {
 
 async function syncPhotoRows(rows) {
   const existingByUrl = await fetchExistingPhotos(rows.map((row) => toSiteMediaPath(row.photoRowDraft.url)))
+  const nextSortByAlbum = await fetchAlbumSortTracker()
   const inserts = []
   const updates = []
   const skipped = []
+
+  const reserveSortOrder = (album) => {
+    nextSortByAlbum[album] = (nextSortByAlbum[album] || 0) + 1
+    return nextSortByAlbum[album]
+  }
 
   for (const row of rows) {
     const normalizedDraft = normalizePhotoDraft(row)
@@ -229,13 +252,18 @@ async function syncPhotoRows(rows) {
     if (!existing) {
       inserts.push({
         ...normalizedDraft,
+        album_sort_order: reserveSortOrder(normalizedDraft.album),
         likes: 0,
       })
       continue
     }
 
     const comparableExisting = normalizeExistingPhoto(existing)
-    if (rowsMatch(normalizedDraft, comparableExisting)) {
+    const existingAlbum = normalizeAlbum(existing.album ?? existing.category)
+    const existingSortOrder = Number(existing.album_sort_order || 0)
+    const needsSortRepair = existingSortOrder <= 0
+
+    if (rowsMatch(normalizedDraft, comparableExisting) && !needsSortRepair) {
       skipped.push({
         url: normalizedDraft.url,
         reason: 'already-matches',
@@ -243,9 +271,15 @@ async function syncPhotoRows(rows) {
       continue
     }
 
+    const nextSortOrder =
+      existingAlbum === normalizedDraft.album && existingSortOrder > 0
+        ? existingSortOrder
+        : reserveSortOrder(normalizedDraft.album)
+
     updates.push({
       id: existing.id,
       ...normalizedDraft,
+      album_sort_order: nextSortOrder,
       likes: existing.likes ?? 0,
       caption: normalizedDraft.caption ?? existing.caption ?? null,
     })

@@ -53,7 +53,7 @@ async function fetchPhotosByUrls(urls) {
   for (const urlChunk of chunk(urls, PHOTO_LOOKUP_CHUNK_SIZE)) {
     const { data, error } = await supabase
       .from('photos')
-      .select('id, url, album, category, is_professional')
+      .select('id, url, album, category, is_professional, album_sort_order')
       .in('url', urlChunk)
 
     if (error) {
@@ -69,7 +69,7 @@ async function fetchPhotosByUrls(urls) {
 async function fetchAllPhotos() {
   const { data, error } = await supabase
     .from('photos')
-    .select('id, url, album, category, is_professional')
+    .select('id, url, album, category, is_professional, album_sort_order, created_at')
 
   if (error) {
     throw error
@@ -88,6 +88,23 @@ async function upsertAlbumUpdates(updates) {
       throw error
     }
   }
+}
+
+function createNextSortTracker(rows) {
+  return rows.reduce((acc, row) => {
+    const album =
+      normalizeAlbum(row.album)
+      ?? normalizeAlbum(row.category)
+      ?? (row.is_professional ? 'Wedding Day' : 'Guest Uploads')
+
+    if (!album) {
+      return acc
+    }
+
+    const currentValue = Number(row.album_sort_order || 0)
+    acc[album] = Math.max(acc[album] || 0, currentValue)
+    return acc
+  }, Object.create(null))
 }
 
 async function main() {
@@ -128,6 +145,12 @@ async function main() {
   const unchanged = []
   const exceptions = []
   const fallbackUpdates = []
+  const nextSortByAlbum = createNextSortTracker(allLiveRows)
+
+  const reserveSortOrder = (album) => {
+    nextSortByAlbum[album] = (nextSortByAlbum[album] || 0) + 1
+    return nextSortByAlbum[album]
+  }
 
   for (const manifestEntry of manifestEntries) {
     const existing = matchedLiveByUrl.get(manifestEntry.url)
@@ -146,7 +169,8 @@ async function main() {
     }
 
     const currentAlbum = normalizeAlbum(existing.album ?? existing.category)
-    if (currentAlbum === manifestEntry.album && existing.category === manifestEntry.album) {
+    const hasSortOrder = Number(existing.album_sort_order || 0) > 0
+    if (currentAlbum === manifestEntry.album && existing.category === manifestEntry.album && hasSortOrder) {
       unchanged.push({
         id: existing.id,
         url: existing.url,
@@ -159,6 +183,10 @@ async function main() {
       id: existing.id,
       album: manifestEntry.album,
       category: manifestEntry.album,
+      album_sort_order:
+        currentAlbum === manifestEntry.album && hasSortOrder
+          ? existing.album_sort_order
+          : reserveSortOrder(manifestEntry.album),
     })
   }
 
@@ -183,7 +211,9 @@ async function main() {
       continue
     }
 
-    if (normalizeAlbum(liveRow.album) === fallbackAlbum && liveRow.category === fallbackAlbum) {
+    const hasSortOrder = Number(liveRow.album_sort_order || 0) > 0
+
+    if (normalizeAlbum(liveRow.album) === fallbackAlbum && liveRow.category === fallbackAlbum && hasSortOrder) {
       continue
     }
 
@@ -191,6 +221,10 @@ async function main() {
       id: liveRow.id,
       album: fallbackAlbum,
       category: fallbackAlbum,
+      album_sort_order:
+        normalizeAlbum(liveRow.album) === fallbackAlbum && hasSortOrder
+          ? liveRow.album_sort_order
+          : reserveSortOrder(fallbackAlbum),
     })
   }
 

@@ -1,13 +1,12 @@
 import { Routes, Route, useLocation } from 'react-router-dom'
 import { AnimatePresence, motion } from 'framer-motion'
-import { Suspense, lazy } from 'react'
+import { Suspense, lazy, useEffect } from 'react'
 import { Header } from '@/components/layout/Header'
 import { Footer } from '@/components/layout/Footer'
 import { PageLoader } from '@/components/ui/PageLoader'
 import { SkipLink } from '@/components/accessibility/SkipLink'
 import { AccessibilityProvider, useAccessibility } from '@/accessibility/AccessibilityProvider'
 import { trackPageView } from '@/services/AnalyticsService'
-import { useEffect } from 'react'
 
 // Lazy load pages for code splitting
 const Home = lazy(() => import('@/pages/Home'))
@@ -36,12 +35,15 @@ function PageTransition({ children }: { children: React.ReactNode }) {
 // Wrapper component that combines Suspense with PageTransition
 function LazyPage({ children, title }: { children: React.ReactNode; title?: string }) {
   const { announce } = useAccessibility()
-  
-  // Announce page change to screen readers
-  if (title) {
+
+  useEffect(() => {
+    if (!title) {
+      return
+    }
+
     announce(`Navigated to ${title}`, 'polite')
-  }
-  
+  }, [announce, title])
+
   return (
     <Suspense fallback={<PageLoader />}>
       <PageTransition>{children}</PageTransition>
