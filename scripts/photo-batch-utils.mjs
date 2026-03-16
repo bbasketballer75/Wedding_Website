@@ -11,6 +11,7 @@ const execFileAsync = promisify(execFile)
 export const IMAGE_EXTENSIONS = new Set(['.jpg', '.jpeg', '.png', '.webp', '.heic', '.heif'])
 export const VIDEO_EXTENSIONS = new Set(['.mp4', '.mov', '.m4v'])
 export const IMAGE_TOOL_LONG_EDGE = 1800
+export const CANONICAL_ALBUMS = ['Engagement', 'Bach+ette', 'Wedding Day', 'Guest Uploads']
 
 const TOP_LEVEL_RULES = [
   {
@@ -184,6 +185,62 @@ export function inferSourceInfo(topLevelFolder) {
     storyLaneSuggestion: 'review',
     memoryTrailSuggestion: null,
   }
+}
+
+export function normalizeAlbum(value) {
+  const normalized = String(value ?? '').trim().toLowerCase()
+
+  if (normalized === 'engagement') return 'Engagement'
+
+  if (
+    normalized === 'bach+ette' ||
+    normalized === 'bach' ||
+    normalized === 'bachelorette' ||
+    normalized === 'bachelor'
+  ) {
+    return 'Bach+ette'
+  }
+
+  if (
+    normalized === 'wedding day' ||
+    normalized === 'wedding-day'
+  ) {
+    return 'Wedding Day'
+  }
+
+  if (
+    normalized === 'guest uploads' ||
+    normalized === 'guest-upload' ||
+    normalized === 'guest uploads/wedding day' ||
+    normalized === 'guest'
+  ) {
+    return 'Guest Uploads'
+  }
+
+  return null
+}
+
+export function inferCanonicalAlbum(topLevelFolder, relativePath = '') {
+  const sourceInfo = inferSourceInfo(topLevelFolder)
+  const haystack = `${topLevelFolder} ${relativePath}`.toLowerCase()
+
+  if (sourceInfo.source === 'guest') {
+    return 'Guest Uploads'
+  }
+
+  if (sourceInfo.source === 'bach+ette') {
+    return 'Bach+ette'
+  }
+
+  if (sourceInfo.source === 'professional') {
+    if (haystack.includes('engagement') || haystack.includes('proposal')) {
+      return 'Engagement'
+    }
+
+    return 'Wedding Day'
+  }
+
+  return normalizeAlbum(relativePath)
 }
 
 function inferOrientation(width, height) {

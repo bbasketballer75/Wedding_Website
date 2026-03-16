@@ -383,8 +383,54 @@ export type Database = {
           },
         ]
       }
+      photo_comments: {
+        Row: {
+          author: string
+          content: string
+          created_at: string | null
+          id: string
+          photo_key: string
+        }
+        Insert: {
+          author?: string
+          content: string
+          created_at?: string | null
+          id?: string
+          photo_key: string
+        }
+        Update: {
+          author?: string
+          content?: string
+          created_at?: string | null
+          id?: string
+          photo_key?: string
+        }
+        Relationships: []
+      }
+      photo_likes: {
+        Row: {
+          created_at: string | null
+          id: string
+          photo_key: string
+          session_id: string
+        }
+        Insert: {
+          created_at?: string | null
+          id?: string
+          photo_key: string
+          session_id: string
+        }
+        Update: {
+          created_at?: string | null
+          id?: string
+          photo_key?: string
+          session_id?: string
+        }
+        Relationships: []
+      }
       photos: {
         Row: {
+          album: string | null
           caption: string | null
           category: string | null
           created_at: string | null
@@ -400,6 +446,7 @@ export type Database = {
           url: string
         }
         Insert: {
+          album?: string | null
           caption?: string | null
           category?: string | null
           created_at?: string | null
@@ -415,6 +462,7 @@ export type Database = {
           url: string
         }
         Update: {
+          album?: string | null
           caption?: string | null
           category?: string | null
           created_at?: string | null
@@ -603,6 +651,17 @@ export type Database = {
           type: string
         }[]
       }
+      get_photo_like_statuses: {
+        Args: {
+          p_photo_keys: string[]
+          p_session_id: string
+        }
+        Returns: {
+          liked: boolean
+          likes_count: number
+          photo_key: string
+        }[]
+      }
       increment_rate_limit: {
         Args: {
           p_action: string
@@ -627,6 +686,28 @@ export type Database = {
           rate_limit_remaining: number
           rate_limit_reset_after: number
           success: boolean
+        }[]
+      }
+      toggle_photo_like: {
+        Args: {
+          p_photo_key: string
+          p_session_id: string
+        }
+        Returns: {
+          liked: boolean
+          likes_count: number
+          photo_key: string
+        }[]
+      }
+      toggle_photo_like_v2: {
+        Args: {
+          p_photo_key: string
+          p_session_id: string
+        }
+        Returns: {
+          result_liked: boolean
+          result_likes_count: number
+          result_photo_key: string
         }[]
       }
     }

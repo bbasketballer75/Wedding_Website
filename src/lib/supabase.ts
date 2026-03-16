@@ -51,6 +51,7 @@ export interface Photo {
   id: string
   url: string
   thumbnail: string
+  album?: string
   caption?: string
   category?: string
   location?: string
@@ -328,6 +329,20 @@ export interface GuestFaceTaggingBatch {
   updated_at: string
 }
 
+export interface PhotoCommentRecord {
+  id: string
+  photo_key: string
+  author: string
+  content: string
+  created_at: string
+}
+
+export interface PhotoLikeStatus {
+  photo_key: string
+  likes_count: number
+  liked: boolean
+}
+
 export interface UpdateMediaReviewFaceInput {
   reviewStatus?: MediaReviewFaceStatus
   confirmedName?: string | null
@@ -402,6 +417,62 @@ export async function fetchGuestFaceTaggingBatches() {
     .select('*')
     .order('updated_at', { ascending: false })
     .returns<GuestFaceTaggingBatch[]>()
+}
+
+export async function fetchPhotoLikeStatuses(photoKeys: string[], sessionId: string) {
+  return await supabase
+    .rpc('get_photo_like_statuses', {
+      p_photo_keys: photoKeys,
+      p_session_id: sessionId,
+    })
+    .returns<PhotoLikeStatus[]>()
+}
+
+export async function togglePhotoLike(photoKey: string, sessionId: string) {
+  const response = await supabase
+    .rpc('toggle_photo_like_v2', {
+      p_photo_key: photoKey,
+      p_session_id: sessionId,
+    })
+
+  if (response.error || !Array.isArray(response.data) || response.data.length === 0) {
+    return {
+      ...response,
+      data: null,
+    }
+  }
+
+  const status = response.data[0]
+
+  return {
+    ...response,
+    data: {
+      photo_key: status.result_photo_key,
+      likes_count: status.result_likes_count,
+      liked: status.result_liked,
+    } satisfies PhotoLikeStatus,
+  }
+}
+
+export async function fetchPhotoComments(photoKey: string) {
+  return await supabase
+    .from('photo_comments')
+    .select('*')
+    .eq('photo_key', photoKey)
+    .order('created_at', { ascending: true })
+    .returns<PhotoCommentRecord[]>()
+}
+
+export async function addPhotoComment(photoKey: string, content: string, author = 'Guest') {
+  return await supabase
+    .from('photo_comments')
+    .insert({
+      photo_key: photoKey,
+      author,
+      content,
+    })
+    .select('*')
+    .single<PhotoCommentRecord>()
 }
 
 export async function fetchMediaReviewClusters(batchId: string) {

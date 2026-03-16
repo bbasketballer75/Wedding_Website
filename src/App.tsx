@@ -52,6 +52,7 @@ function LazyPage({ children, title }: { children: React.ReactNode; title?: stri
 function AppContent() {
   const location = useLocation()
   const isHome = location.pathname === '/'
+  const isAdminRoute = location.pathname === '/admin/login' || location.pathname.startsWith('/admin/')
 
   // Page titles for screen reader announcements
   const getPageTitle = (path: string): string | undefined => {
@@ -86,7 +87,7 @@ function AppContent() {
       <SkipLink />
       
       {/* Header with navigation role */}
-      {!isHome && (
+      {!isHome && !isAdminRoute && (
         <Header />
       )}
       
@@ -169,7 +170,7 @@ function AppContent() {
       </main>
 
       {/* Footer with contentinfo role */}
-      <Footer />
+      {!isAdminRoute && <Footer />}
     </div>
   )
 }

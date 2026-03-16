@@ -1,5 +1,12 @@
 import path from 'node:path'
-import { buildMarkdownTable, readJson, writeJson, writeMarkdown } from './photo-batch-utils.mjs'
+import {
+  buildMarkdownTable,
+  inferCanonicalAlbum,
+  normalizeAlbum,
+  readJson,
+  writeJson,
+  writeMarkdown,
+} from './photo-batch-utils.mjs'
 
 const workingRoot = process.argv[2]
 const reviewPathArg = process.argv[3]
@@ -107,6 +114,7 @@ async function main() {
   const confirmedNames = resolveConfirmedNames(reviewItems)
   const duplicateKeepers = buildDuplicateKeepers(inventory)
   const exclusions = []
+  const albumExceptions = []
 
   const rows = optimizedManifest
     .filter((item) => item.type === 'image' && item.sourceRelativePath)
@@ -151,14 +159,32 @@ async function main() {
         })
         .filter(Boolean)
 
+      const topLevelFolder = record?.topLevelFolder ?? String(item.sourceRelativePath || '').split('/')[0] ?? ''
+      const album =
+        inferCanonicalAlbum(topLevelFolder, record?.relativePath ?? item.sourceRelativePath ?? '')
+        ?? normalizeAlbum(item.collection ?? record?.collection)
+
+      if (!album) {
+        albumExceptions.push({
+          sourceRecordId: record?.id ?? null,
+          sourceRelativePath: item.sourceRelativePath,
+          topLevelFolder: record?.topLevelFolder ?? null,
+          source: record?.source ?? 'unknown',
+          rawCollection: item.collection ?? record?.collection ?? null,
+          reason: 'unmapped-album',
+        })
+        return null
+      }
+
       return {
         sourceRecordId: record?.id ?? null,
         sourceRelativePath: item.sourceRelativePath,
         displayRelativePath: item.displayRelativePath,
         thumbnailRelativePath: item.thumbRelativePath,
         source: record?.source ?? 'unknown',
-        collection: item.collection ?? record?.collection ?? 'Uncategorized',
-        category: item.collection ?? record?.collection ?? 'Uncategorized',
+        album,
+        collection: album,
+        category: album,
         storyLaneSuggestion: item.storyLaneSuggestion ?? record?.storyLaneSuggestion ?? 'review',
         memoryTrailSuggestion: record?.memoryTrailSuggestion ?? null,
         captureDate: record?.captureDate ?? null,
@@ -173,7 +199,7 @@ async function main() {
         livePhotoGroupId: item.livePhotoGroupId ?? record?.livePhotoGroupId ?? null,
         tags: buildTags({
           source: record?.source,
-          collection: item.collection ?? record?.collection,
+          collection: album,
           storyLaneSuggestion: item.storyLaneSuggestion ?? record?.storyLaneSuggestion,
           coverCandidateRank: item.coverCandidateRank ?? record?.coverCandidateRank,
           duplicateGroupId: item.duplicateGroupId ?? record?.duplicateGroupId,
@@ -185,7 +211,8 @@ async function main() {
           url: item.displayRelativePath,
           thumbnail: item.thumbRelativePath,
           caption: null,
-          category: item.collection ?? record?.collection ?? 'Uncategorized',
+          album,
+          category: album,
           location:
             typeof record?.latitude === 'number' && typeof record?.longitude === 'number'
               ? `${record.latitude}, ${record.longitude}`
@@ -195,7 +222,7 @@ async function main() {
           is_professional: record?.source === 'professional',
           tags: buildTags({
             source: record?.source,
-            collection: item.collection ?? record?.collection,
+            collection: album,
             storyLaneSuggestion: item.storyLaneSuggestion ?? record?.storyLaneSuggestion,
             coverCandidateRank: item.coverCandidateRank ?? record?.coverCandidateRank,
             duplicateGroupId: item.duplicateGroupId ?? record?.duplicateGroupId,
@@ -212,9 +239,12 @@ async function main() {
   const markdownPath = path.join(publishRoot, 'wedding-photo-import-manifest.md')
   const exclusionsPath = path.join(publishRoot, 'wedding-photo-import-exclusions.json')
   const exclusionsMarkdownPath = path.join(publishRoot, 'wedding-photo-import-exclusions.md')
+  const albumExceptionsPath = path.join(publishRoot, 'wedding-photo-album-exceptions.json')
+  const albumExceptionsMarkdownPath = path.join(publishRoot, 'wedding-photo-album-exceptions.md')
 
   await writeJson(manifestPath, rows)
   await writeJson(exclusionsPath, exclusions)
+  await writeJson(albumExceptionsPath, albumExceptions)
   await writeMarkdown(markdownPath, [
     '# Wedding Photo Import Manifest',
     '',
@@ -223,16 +253,17 @@ async function main() {
     `Rows: **${rows.length}**`,
     `Rows with confirmed faces: **${rows.filter((row) => row.faces.length > 0).length}**`,
     `Exact duplicates excluded: **${exclusions.length}**`,
+    `Album mapping exceptions: **${albumExceptions.length}**`,
     '',
     buildMarkdownTable(
       rows.slice(0, 30).map((row) => ({
         Source: row.sourceRelativePath,
         Display: row.displayRelativePath,
-        Collection: row.collection,
+        Album: row.album,
         StoryLane: row.storyLaneSuggestion,
         Faces: row.faces.length,
       })),
-      ['Source', 'Display', 'Collection', 'StoryLane', 'Faces'],
+      ['Source', 'Display', 'Album', 'StoryLane', 'Faces'],
     ),
   ])
   await writeMarkdown(exclusionsMarkdownPath, [
@@ -254,10 +285,30 @@ async function main() {
           ['Source', 'Kept', 'Group', 'SourceType'],
         ),
   ])
+  await writeMarkdown(albumExceptionsMarkdownPath, [
+    '# Wedding Photo Album Exceptions',
+    '',
+    `Working root: \`${absoluteWorkingRoot}\``,
+    '',
+    `Album mapping exceptions: **${albumExceptions.length}**`,
+    '',
+    albumExceptions.length === 0
+      ? 'All rows mapped cleanly into the canonical album list.'
+      : buildMarkdownTable(
+          albumExceptions.slice(0, 50).map((row) => ({
+            Source: row.sourceRelativePath,
+            Folder: row.topLevelFolder,
+            RawCollection: row.rawCollection,
+            Reason: row.reason,
+          })),
+          ['Source', 'Folder', 'RawCollection', 'Reason'],
+        ),
+  ])
 
   console.log(`Wrote import manifest to ${manifestPath}`)
   console.log(`Wrote markdown summary to ${markdownPath}`)
   console.log(`Wrote exclusions to ${exclusionsPath}`)
+  console.log(`Wrote album exceptions to ${albumExceptionsPath}`)
 }
 
 await main()

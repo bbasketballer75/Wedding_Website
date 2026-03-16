@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
-import { ArrowUpRight, Download, Heart, Images, MessageCircle, Share2 } from 'lucide-react'
+import { Download, Heart, Images, Share2 } from 'lucide-react'
 import { cn } from '@/lib/utils'
 
 interface Photo {
@@ -10,15 +10,16 @@ interface Photo {
   caption?: string
   photographer?: string
   likes?: number
-  comments?: number
   aspectRatio?: number
   source?: 'professional' | 'guest'
   collection?: string
+  liked?: boolean
 }
 
 interface PhotoGridProps {
   photos: Photo[]
   onPhotoClick?: (photo: Photo, index: number) => void
+  onLike?: (photoId: string) => void
   className?: string
 }
 
@@ -28,69 +29,34 @@ const getMasonryColumns = (width: number) => {
   return 2
 }
 
-function PhotoStats({ photo, invert = false }: { photo: Photo; invert?: boolean }) {
-  const textTone = invert ? 'text-white/82' : 'text-charcoal-500'
-  const iconTone = invert ? 'text-gold-200' : 'text-gold-500'
-
-  if (photo.likes === undefined && photo.comments === undefined) {
-    return (
-      <span className={cn('text-xs uppercase tracking-[0.24em]', textTone)}>
-        Tap to open
-      </span>
-    )
-  }
-
+function PhotoLikeButton({
+  photo,
+  onLike,
+}: {
+  photo: Photo
+  onLike?: (photoId: string) => void
+}) {
   return (
-    <div className={cn('flex flex-wrap items-center gap-3 text-xs', textTone)}>
-      {photo.likes !== undefined && (
-        <span className="inline-flex items-center gap-1.5">
-          <Heart className={cn('h-3.5 w-3.5', iconTone)} />
-          {photo.likes}
-        </span>
-      )}
-      {photo.comments !== undefined && (
-        <span className="inline-flex items-center gap-1.5">
-          <MessageCircle className={cn('h-3.5 w-3.5', iconTone)} />
-          {photo.comments}
-        </span>
-      )}
-    </div>
-  )
-}
-
-function SourceBadge({ photo, invert = false }: { photo: Photo; invert?: boolean }) {
-  const isGuest = photo.source === 'guest'
-
-  if (invert) {
-    return (
-      <span
-        className={cn(
-          'inline-flex items-center gap-2 rounded-full border px-3 py-1.5 text-[10px] uppercase tracking-[0.28em] backdrop-blur-sm',
-          isGuest
-            ? 'border-blush-200/40 bg-blush-200/18 text-blush-100'
-            : 'border-gold-200/28 bg-white/10 text-gold-100'
-        )}
-      >
-        {isGuest ? 'Guest upload' : 'Professional'}
-      </span>
-    )
-  }
-
-  return (
-    <span
+    <button
+      type="button"
+      onClick={(event) => {
+        event.stopPropagation()
+        onLike?.(photo.id)
+      }}
+      aria-label={photo.liked ? 'Unlike photo' : 'Like photo'}
       className={cn(
-        'inline-flex items-center gap-2 rounded-full border px-3 py-1.5 text-[10px] uppercase tracking-[0.28em]',
-        isGuest
-          ? 'border-blush-200/80 bg-blush-50 text-rose-700'
-          : 'border-gold-200/80 bg-white/80 text-charcoal-600'
+        'absolute bottom-3 left-3 z-10 flex h-10 w-10 items-center justify-center rounded-full border backdrop-blur-md transition-all',
+        photo.liked
+          ? 'border-rose-300/80 bg-rose-500 text-white shadow-[0_14px_35px_-20px_rgba(244,63,94,0.9)]'
+          : 'border-white/35 bg-black/28 text-white/92 hover:bg-black/42'
       )}
     >
-      {isGuest ? 'Guest upload' : 'Professional'}
-    </span>
+      <Heart className={cn('h-4 w-4', photo.liked && 'fill-current')} />
+    </button>
   )
 }
 
-function MasonryGrid({ photos, onPhotoClick }: PhotoGridProps) {
+function MasonryGrid({ photos, onPhotoClick, onLike }: PhotoGridProps) {
   const [columnCount, setColumnCount] = useState(() =>
     typeof window === 'undefined' ? 2 : getMasonryColumns(window.innerWidth)
   )
@@ -127,14 +93,21 @@ function MasonryGrid({ photos, onPhotoClick }: PhotoGridProps) {
       {columns.map((column, colIndex) => (
         <div key={colIndex} className="flex flex-col gap-4 md:gap-5">
           {column.map((photo, photoIndex) => (
-            <motion.button
+            <motion.div
               key={photo.id}
-              type="button"
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ duration: 0.5, delay: colIndex * 0.08 + photoIndex * 0.04 }}
-              className="group relative overflow-hidden rounded-[1.8rem] border border-white/80 bg-[linear-gradient(180deg,rgba(255,255,255,0.84),rgba(247,241,232,0.96))] p-1 text-left shadow-[0_26px_60px_-42px_rgba(46,33,13,0.42)] transition-all duration-300 hover:-translate-y-1 hover:shadow-[0_34px_80px_-46px_rgba(46,33,13,0.5)]"
+              className="group relative overflow-hidden rounded-[1.8rem] border border-white/80 bg-white p-1 text-left shadow-[0_26px_60px_-42px_rgba(46,33,13,0.24)] transition-all duration-300 hover:-translate-y-1 hover:shadow-[0_34px_80px_-46px_rgba(46,33,13,0.34)]"
               onClick={() => onPhotoClick?.(photo, photos.indexOf(photo))}
+              onKeyDown={(event) => {
+                if (event.key === 'Enter' || event.key === ' ') {
+                  event.preventDefault()
+                  onPhotoClick?.(photo, photos.indexOf(photo))
+                }
+              }}
+              role="button"
+              tabIndex={0}
               aria-label={photo.caption ? `Open photo: ${photo.caption}` : 'Open photo'}
             >
               <div className="relative overflow-hidden rounded-[1.45rem] bg-charcoal-200">
@@ -144,40 +117,9 @@ function MasonryGrid({ photos, onPhotoClick }: PhotoGridProps) {
                   className="w-full h-auto object-cover transition-transform duration-700 group-hover:scale-[1.04]"
                   loading="lazy"
                 />
-
-                <div className="pointer-events-none absolute inset-0 bg-[linear-gradient(180deg,rgba(31,24,17,0.05),rgba(31,24,17,0.14)_38%,rgba(22,17,12,0.78))]" />
-
-                <div className="absolute inset-x-0 top-0 flex items-start justify-between p-3">
-                  <div className="flex flex-wrap gap-2">
-                    <SourceBadge photo={photo} invert />
-                    <div className="cinematic-overlay-pill inline-flex items-center gap-2 px-3 py-1.5 text-[10px] uppercase tracking-[0.3em]">
-                      {photo.photographer || (photo.source === 'guest' ? 'From our guests' : 'Gallery moment')}
-                    </div>
-                  </div>
-
-                  <span className="cinematic-overlay-button inline-flex h-9 w-9 items-center justify-center opacity-0 transition-opacity duration-300 group-hover:opacity-100">
-                    <ArrowUpRight className="h-4 w-4" />
-                  </span>
-                </div>
-
-                <div className="absolute inset-x-0 bottom-0 p-4">
-                  <div className="rounded-[1.25rem] border border-gold-200/12 bg-[linear-gradient(145deg,rgba(44,32,25,0.78),rgba(58,42,33,0.9)_52%,rgba(77,58,44,0.86))] p-3 shadow-[0_20px_45px_-28px_rgba(21,20,19,0.8)] backdrop-blur-md">
-                    <p className="text-[10px] uppercase tracking-[0.32em] text-gold-200/92">
-                      Editorial pick
-                    </p>
-                    <p className="text-cinematic-primary mt-2 line-clamp-2 text-sm leading-6">
-                      {photo.caption || 'A quiet frame from the celebration.'}
-                    </p>
-                    <div className="mt-3 flex items-center justify-between gap-3">
-                      <PhotoStats photo={photo} invert />
-                      <span className="text-xs uppercase tracking-[0.24em] text-cinematic-muted">
-                        Open
-                      </span>
-                    </div>
-                  </div>
-                </div>
+                <PhotoLikeButton photo={photo} onLike={onLike} />
               </div>
-            </motion.button>
+            </motion.div>
           ))}
         </div>
       ))}
@@ -185,18 +127,25 @@ function MasonryGrid({ photos, onPhotoClick }: PhotoGridProps) {
   )
 }
 
-function StandardGrid({ photos, onPhotoClick }: PhotoGridProps) {
+function StandardGrid({ photos, onPhotoClick, onLike }: PhotoGridProps) {
   return (
     <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 xl:grid-cols-4">
       {photos.map((photo, index) => (
-        <motion.button
+        <motion.div
           key={photo.id}
-          type="button"
           initial={{ opacity: 0, scale: 0.96 }}
           animate={{ opacity: 1, scale: 1 }}
           transition={{ duration: 0.4, delay: index * 0.03 }}
-          className="group overflow-hidden rounded-[1.8rem] border border-white/80 bg-[linear-gradient(180deg,rgba(255,255,255,0.88),rgba(247,241,232,0.96))] p-2 text-left shadow-[0_22px_58px_-44px_rgba(46,33,13,0.38)] transition-all duration-300 hover:-translate-y-1 hover:shadow-[0_32px_75px_-44px_rgba(46,33,13,0.48)]"
+          className="group overflow-hidden rounded-[1.8rem] border border-white/80 bg-white p-2 text-left shadow-[0_22px_58px_-44px_rgba(46,33,13,0.22)] transition-all duration-300 hover:-translate-y-1 hover:shadow-[0_32px_75px_-44px_rgba(46,33,13,0.32)]"
           onClick={() => onPhotoClick?.(photo, index)}
+          onKeyDown={(event) => {
+            if (event.key === 'Enter' || event.key === ' ') {
+              event.preventDefault()
+              onPhotoClick?.(photo, index)
+            }
+          }}
+          role="button"
+          tabIndex={0}
           aria-label={photo.caption ? `Open photo: ${photo.caption}` : 'Open photo'}
         >
           <div className="relative aspect-square overflow-hidden rounded-[1.35rem] bg-charcoal-200">
@@ -206,36 +155,9 @@ function StandardGrid({ photos, onPhotoClick }: PhotoGridProps) {
               className="h-full w-full object-cover transition-transform duration-500 group-hover:scale-[1.06]"
               loading="lazy"
             />
-
-            <div className="pointer-events-none absolute inset-0 bg-[linear-gradient(180deg,rgba(27,22,16,0.02),rgba(27,22,16,0.1)_40%,rgba(27,22,16,0.5))]" />
-
-            <div className="absolute left-3 top-3 flex flex-wrap gap-2">
-              <SourceBadge photo={photo} />
-              <div className="inline-flex items-center gap-2 rounded-full border border-white/55 bg-white/82 px-3 py-1.5 text-[10px] uppercase tracking-[0.3em] text-charcoal-600 shadow-sm">
-                {photo.photographer || (photo.source === 'guest' ? 'From our guests' : 'Gallery')}
-              </div>
-            </div>
-
-            <div className="absolute right-3 top-3 flex h-9 w-9 items-center justify-center rounded-full border border-white/40 bg-white/20 text-white backdrop-blur-sm transition-transform duration-300 group-hover:scale-105">
-              <ArrowUpRight className="h-4 w-4" />
-            </div>
+            <PhotoLikeButton photo={photo} onLike={onLike} />
           </div>
-
-          <div className="px-1 pb-1 pt-4">
-            <p className="text-[10px] uppercase tracking-[0.32em] text-gold-700">
-              Featured frame
-            </p>
-            <p className="mt-2 line-clamp-2 text-base leading-7 text-charcoal-900">
-              {photo.caption || 'A candid from the celebration.'}
-            </p>
-            <div className="mt-3 flex items-center justify-between gap-3">
-              <PhotoStats photo={photo} />
-              <span className="text-xs uppercase tracking-[0.24em] text-charcoal-400">
-                View
-              </span>
-            </div>
-          </div>
-        </motion.button>
+        </motion.div>
       ))}
     </div>
   )
@@ -244,6 +166,7 @@ function StandardGrid({ photos, onPhotoClick }: PhotoGridProps) {
 export function PhotoGrid({
   photos,
   onPhotoClick,
+  onLike,
   className,
   viewMode = 'masonry',
 }: PhotoGridProps & { viewMode?: 'masonry' | 'grid' }) {
@@ -266,9 +189,9 @@ export function PhotoGrid({
   return (
     <div className={cn('w-full', className)}>
       {viewMode === 'masonry' ? (
-        <MasonryGrid photos={photos} onPhotoClick={onPhotoClick} />
+        <MasonryGrid photos={photos} onPhotoClick={onPhotoClick} onLike={onLike} />
       ) : (
-        <StandardGrid photos={photos} onPhotoClick={onPhotoClick} />
+        <StandardGrid photos={photos} onPhotoClick={onPhotoClick} onLike={onLike} />
       )}
     </div>
   )

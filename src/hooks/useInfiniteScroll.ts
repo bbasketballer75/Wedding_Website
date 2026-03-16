@@ -4,6 +4,7 @@ interface UseInfiniteScrollOptions<T> {
   items: T[]
   itemsPerPage?: number
   threshold?: number
+  rootRef?: React.RefObject<Element | null>
 }
 
 interface UseInfiniteScrollReturn<T> {
@@ -23,6 +24,7 @@ export function useInfiniteScroll<T>({
   items,
   itemsPerPage = 12,
   threshold = 100,
+  rootRef,
 }: UseInfiniteScrollOptions<T>): UseInfiniteScrollReturn<T> {
   const [displayedItems, setDisplayedItems] = useState<T[]>([])
   const [page, setPage] = useState(1)
@@ -158,7 +160,10 @@ export function useInfiniteScroll<T>({
           loadMore()
         }
       },
-      { rootMargin: `${threshold}px` }
+      {
+        root: rootRef?.current ?? null,
+        rootMargin: `${threshold}px`,
+      }
     )
 
     const currentRef = observerRef.current
@@ -172,7 +177,7 @@ export function useInfiniteScroll<T>({
       }
       observer.disconnect()
     }
-  }, [loadMore, hasMore, isLoading, threshold])
+  }, [loadMore, hasMore, isLoading, threshold, rootRef])
 
   return {
     displayedItems,

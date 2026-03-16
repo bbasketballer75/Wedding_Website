@@ -6,6 +6,8 @@ import tus from 'tus-js-client'
 import { createClient } from '@supabase/supabase-js'
 import {
   assertExists,
+  inferCanonicalAlbum,
+  normalizeAlbum,
   readJson,
   toRemoteMediaObjectPath,
   toSiteMediaPath,
@@ -134,11 +136,18 @@ async function uploadFile(filePath, objectName, contentType) {
 }
 
 function normalizePhotoDraft(row) {
+  const topLevelFolder = String(row.sourceRelativePath || '').split('/')[0] || ''
+  const album =
+    inferCanonicalAlbum(topLevelFolder, row.sourceRelativePath ?? '')
+    ?? normalizeAlbum(row.photoRowDraft.album ?? row.album ?? row.collection ?? row.photoRowDraft.category)
+    ?? 'Wedding Day'
+
   return {
     url: toSiteMediaPath(row.photoRowDraft.url),
     thumbnail: toSiteMediaPath(row.photoRowDraft.thumbnail),
     caption: row.photoRowDraft.caption ?? null,
-    category: row.photoRowDraft.category ?? row.collection ?? 'Uncategorized',
+    album,
+    category: album,
     location: row.photoRowDraft.location ?? null,
     date: normalizeDateValue(row.photoRowDraft.date),
     photographer: row.photoRowDraft.photographer ?? null,
@@ -153,6 +162,7 @@ function normalizeExistingPhoto(row) {
     url: row.url,
     thumbnail: row.thumbnail,
     caption: row.caption ?? null,
+    album: normalizeAlbum(row.album),
     category: row.category ?? null,
     location: row.location ?? null,
     date: normalizeDateValue(row.date),
@@ -304,7 +314,12 @@ async function main() {
 
   const skippedRows = []
   const publishableRows = manifestRows.filter((row) => {
-    if (row.collection === 'Engagement') {
+    const topLevelFolder = String(row.sourceRelativePath || '').split('/')[0] || ''
+    const canonicalAlbum =
+      inferCanonicalAlbum(topLevelFolder, row.sourceRelativePath ?? '')
+      ?? normalizeAlbum(row.album ?? row.collection)
+
+    if (canonicalAlbum === 'Engagement') {
       skippedRows.push({
         sourceRelativePath: row.sourceRelativePath,
         reason: 'engagement-editorial-overlay',

@@ -46,6 +46,7 @@
     "media:batch:optimize": "node scripts/optimize-photo-batch.mjs",
     "media:batch:export": "node scripts/export-photo-import-manifest.mjs",
     "media:batch:publish": "node scripts/publish-photo-batch.mjs",
+    "media:batch:albums:backfill": "node scripts/backfill-photo-albums.mjs",
     "media:batch:review:push": "node scripts/push-photo-review-batch.mjs",
     "media:batch:evaluate": "node scripts/evaluate-photo-batch.mjs",
     "media:batch:prepare": "node scripts/prepare-photo-batch.mjs",
