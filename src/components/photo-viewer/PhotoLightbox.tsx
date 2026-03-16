@@ -45,6 +45,7 @@ interface Photo {
   likeCount?: number
   likes?: number
   comments?: Comment[]
+  commentCount?: number
 }
 
 interface PhotoLightboxProps {
@@ -56,8 +57,9 @@ interface PhotoLightboxProps {
   onLike?: (photoId: string) => void
   onShare?: (photoId: string) => void
   onDownload?: (photoId: string) => void
-  onAddComment?: (photoId: string, comment: string) => void
+  onAddComment?: (photoId: string, payload: { author: string; content: string }) => Promise<boolean> | boolean
   isDownloading?: boolean
+  isSubmittingComment?: boolean
   highlightedFaceName?: string | null
 }
 
@@ -72,11 +74,19 @@ export function PhotoLightbox({
   onDownload,
   onAddComment,
   isDownloading = false,
+  isSubmittingComment = false,
   highlightedFaceName = null,
 }: PhotoLightboxProps) {
   const [showInfo, setShowInfo] = useState(true)
   const [showFaces, setShowFaces] = useState(true)
   const [zoom, setZoom] = useState(1)
+  const [commentAuthor, setCommentAuthor] = useState(() => {
+    if (typeof window === 'undefined') {
+      return ''
+    }
+
+    return window.localStorage.getItem('wedding-gallery-comment-author') || ''
+  })
   const [newComment, setNewComment] = useState('')
   const [activeTab, setActiveTab] = useState<'info' | 'comments'>('info')
   const [selectedFace, setSelectedFace] = useState<string | null>(null)
@@ -136,11 +146,20 @@ export function PhotoLightbox({
     return () => window.removeEventListener('keydown', handleKeyDown)
   }, [handleKeyDown])
 
-  const handleSubmitComment = (e: React.FormEvent) => {
+  const handleSubmitComment = async (e: React.FormEvent) => {
     e.preventDefault()
     if (newComment.trim() && currentPhoto) {
-      onAddComment?.(currentPhoto.id, newComment)
-      setNewComment('')
+      const didCreate = await onAddComment?.(currentPhoto.id, {
+        author: commentAuthor,
+        content: newComment,
+      })
+
+      if (didCreate !== false) {
+        if (typeof window !== 'undefined' && commentAuthor.trim()) {
+          window.localStorage.setItem('wedding-gallery-comment-author', commentAuthor.trim())
+        }
+        setNewComment('')
+      }
     }
   }
 
@@ -337,7 +356,7 @@ export function PhotoLightbox({
                     )}
                   >
                     <MessageCircle className="w-5 h-5" />
-                    <span>{currentPhoto.comments?.length || 0}</span>
+                    <span>{currentPhoto.commentCount ?? currentPhoto.comments?.length ?? 0}</span>
                   </button>
                 </div>
               </div>
@@ -373,7 +392,7 @@ export function PhotoLightbox({
                         activeTab === 'comments' ? "text-gold-400 border-b-2 border-gold-400" : "text-charcoal-400 hover:text-white"
                       )}
                     >
-                      Comments ({currentPhoto.comments?.length || 0})
+                      Comments ({currentPhoto.commentCount ?? currentPhoto.comments?.length ?? 0})
                     </button>
                   </div>
 
@@ -466,16 +485,24 @@ export function PhotoLightbox({
                         ))}
 
                         {/* Add Comment */}
-                        <form onSubmit={handleSubmitComment} className="mt-4">
+                        <form onSubmit={handleSubmitComment} className="mt-4 space-y-3">
+                          <Input
+                            value={commentAuthor}
+                            onChange={(e) => setCommentAuthor(e.target.value)}
+                            placeholder="Your name"
+                            maxLength={60}
+                            className="bg-charcoal-800 border-charcoal-700 text-white placeholder:text-charcoal-500"
+                          />
                           <div className="flex gap-2">
                             <Input
                               value={newComment}
                               onChange={(e) => setNewComment(e.target.value)}
                               placeholder="Add a comment..."
                               className="flex-1 bg-charcoal-800 border-charcoal-700 text-white placeholder:text-charcoal-500"
+                              maxLength={1000}
                             />
-                            <Button type="submit" size="sm" disabled={!newComment.trim()}>
-                              <Send className="w-4 h-4" />
+                            <Button type="submit" size="sm" disabled={!newComment.trim() || isSubmittingComment}>
+                              {isSubmittingComment ? <Loader2 className="w-4 h-4 animate-spin" /> : <Send className="w-4 h-4" />}
                             </Button>
                           </div>
                         </form>

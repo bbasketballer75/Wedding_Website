@@ -14,12 +14,14 @@ import { Search, Grid3X3, LayoutGrid, Filter, Loader2, Images, X } from 'lucide-
 import { cn } from '@/lib/utils'
 import {
   addPhotoComment,
+  fetchPhotoEngagementSummary,
   fetchPhotoComments,
   fetchPhotoLikeStatuses,
   supabase,
   togglePhotoLike,
   Photo as SupabasePhoto,
 } from '@/lib/supabase'
+import { useToast } from '@/context/ToastContext'
 
 // Extended photo type with faces and comments
 interface Photo {
@@ -50,8 +52,10 @@ interface Photo {
   location?: string
   date?: string
   comments?: Array<{ id: string; author: string; content: string; timestamp: string }>
+  commentCount?: number
   createdAt?: string
   liked?: boolean
+  likeCount?: number
   source: 'professional' | 'guest'
   collection: 'Engagement' | 'Bach+ette' | 'Wedding Day' | 'Guest Uploads'
 }
@@ -327,6 +331,7 @@ const normalizeGalleryPhoto = (photo: Photo): Photo => ({
 })
 
 const PHOTO_ENGAGEMENT_SESSION_KEY = 'wedding-gallery-engagement-session'
+const PHOTO_COMMENT_AUTHOR_KEY = 'wedding-gallery-comment-author'
 
 const getPhotoEngagementSessionId = () => {
   if (typeof window === 'undefined') {
@@ -400,11 +405,11 @@ const deriveCollection = (
     return normalizedCategory
   }
 
-  const haystack = [
-    photo.album,
-    photo.category,
-    photo.caption,
-    photo.location,
+  if (!photo.is_professional) {
+    return 'Guest Uploads'
+  }
+
+  const pathAndTags = [
     photo.url,
     photo.thumbnail,
     ...(photo.tags || []),
@@ -413,35 +418,17 @@ const deriveCollection = (
     .join(' ')
     .toLowerCase()
 
-  if (haystack.includes('engagement') || haystack.includes('proposal')) {
+  if (pathAndTags.includes('engagement') || pathAndTags.includes('proposal')) {
     return 'Engagement'
   }
 
   if (
-    haystack.includes('bach') ||
-    haystack.includes('bachelorette') ||
-    haystack.includes('bachelor') ||
-    haystack.includes('ette')
+    pathAndTags.includes('bach') ||
+    pathAndTags.includes('bachelorette') ||
+    pathAndTags.includes('bachelor') ||
+    pathAndTags.includes('ette')
   ) {
     return 'Bach+ette'
-  }
-
-  if (
-    haystack.includes('wedding day') ||
-    haystack.includes('wedding-day') ||
-    haystack.includes('wedding') ||
-    haystack.includes('ceremony') ||
-    haystack.includes('reception') ||
-    haystack.includes('first dance') ||
-    haystack.includes('dance floor') ||
-    haystack.includes('portraits') ||
-    haystack.includes('celebration')
-  ) {
-    return 'Wedding Day'
-  }
-
-  if (!photo.is_professional) {
-    return 'Guest Uploads'
   }
 
   return 'Wedding Day'
@@ -469,6 +456,7 @@ const mapSupabasePhoto = (photo: SupabasePhoto): Photo => normalizeGalleryPhoto(
 })
 
 export default function Gallery() {
+  const { addToast } = useToast()
   const [searchParams] = useSearchParams()
   const [searchQuery, setSearchQuery] = useState('')
   const [selectedCollection, setSelectedCollection] = useState<CollectionTab>('All')
@@ -480,6 +468,7 @@ export default function Gallery() {
   const [isLoading, setIsLoading] = useState(true)
   const [loadError, setLoadError] = useState<string | null>(null)
   const [engagementSessionId] = useState(getPhotoEngagementSessionId)
+  const [submittingCommentPhotoId, setSubmittingCommentPhotoId] = useState<string | null>(null)
   const deferredSearchQuery = useDeferredValue(searchQuery)
   const galleryScrollRef = useRef<HTMLDivElement>(null)
 
@@ -520,27 +509,37 @@ export default function Gallery() {
           return acc
         }, [])
 
-        const { data: likeStatusResponse } = await fetchPhotoLikeStatuses(
-          mergedPhotos.map((photo) => photo.id),
-          engagementSessionId
-        )
+        const [likeStatusResult, engagementSummaryResult] = await Promise.all([
+          fetchPhotoLikeStatuses(
+            mergedPhotos.map((photo) => photo.id),
+            engagementSessionId
+          ),
+          fetchPhotoEngagementSummary(mergedPhotos.map((photo) => photo.id)),
+        ])
+
+        const likeStatusResponse = likeStatusResult.data
         const likeStatuses = Array.isArray(likeStatusResponse) ? likeStatusResponse : []
+        const engagementSummaries = Array.isArray(engagementSummaryResult.data) ? engagementSummaryResult.data : []
 
         const likeStatusByPhotoId = new Map(
           likeStatuses.map((status) => [status.photo_key, status] as const)
+        )
+        const engagementSummaryByPhotoId = new Map(
+          engagementSummaries.map((summary) => [summary.photo_key, summary] as const)
         )
 
         setPhotos(
           mergedPhotos.map((photo) => {
             const likeStatus = likeStatusByPhotoId.get(photo.id)
+            const engagementSummary = engagementSummaryByPhotoId.get(photo.id)
 
-            return likeStatus
-              ? {
-                  ...photo,
-                  likes: likeStatus.likes_count,
-                  liked: likeStatus.liked,
-                }
-              : photo
+            return {
+              ...photo,
+              likes: likeStatus?.likes_count ?? engagementSummary?.likes_count ?? photo.likes,
+              likeCount: likeStatus?.likes_count ?? engagementSummary?.likes_count ?? photo.likes,
+              liked: likeStatus?.liked ?? photo.liked,
+              commentCount: engagementSummary?.comments_count ?? photo.comments?.length ?? 0,
+            }
           })
         )
       } catch {
@@ -739,6 +738,7 @@ export default function Gallery() {
                 ...photo,
                 liked: data.liked,
                 likes: data.likes_count,
+                likeCount: data.likes_count,
               }
             : photo
         )
@@ -760,36 +760,78 @@ export default function Gallery() {
     setDownloadingId(null)
   }
 
-  const handleAddComment = (photoId: string, content: string) => {
-    void (async () => {
-      const normalizedContent = content.trim()
-      if (!normalizedContent) {
-        return
-      }
+  const handleAddComment = async (photoId: string, payload: { author: string; content: string }) => {
+    const normalizedContent = payload.content.trim()
+    const normalizedAuthor = payload.author.trim() || 'Guest'
 
-      const { data } = await addPhotoComment(photoId, normalizedContent)
-      if (!data) {
-        return
-      }
+    if (!normalizedContent) {
+      return false
+    }
 
-      const newComment = {
-        id: data.id,
-        author: data.author,
-        content: data.content,
-        timestamp: formatPhotoCommentTimestamp(data.created_at),
-      }
+    if (typeof window !== 'undefined') {
+      window.localStorage.setItem(PHOTO_COMMENT_AUTHOR_KEY, normalizedAuthor)
+    }
 
+    const optimisticComment = {
+      id: `pending-${Date.now()}`,
+      author: normalizedAuthor,
+      content: normalizedContent,
+      timestamp: 'Sending...',
+    }
+
+    setSubmittingCommentPhotoId(photoId)
+    setPhotos((prev) =>
+      prev.map((photo) =>
+        photo.id === photoId
+          ? {
+              ...photo,
+              comments: [...(photo.comments || []), optimisticComment],
+              commentCount: (photo.commentCount ?? photo.comments?.length ?? 0) + 1,
+            }
+          : photo
+      )
+    )
+
+    const { data, error } = await addPhotoComment(photoId, normalizedContent, normalizedAuthor, engagementSessionId)
+
+    if (error || !data) {
       setPhotos((prev) =>
         prev.map((photo) =>
           photo.id === photoId
             ? {
                 ...photo,
-                comments: [...(photo.comments || []), newComment],
+                comments: (photo.comments || []).filter((comment) => comment.id !== optimisticComment.id),
+                commentCount: Math.max((photo.commentCount ?? photo.comments?.length ?? 1) - 1, 0),
               }
             : photo
         )
       )
-    })()
+      setSubmittingCommentPhotoId((current) => (current === photoId ? null : current))
+      addToast('Could not post that comment right now.', 'error')
+      return false
+    }
+
+    const newComment = {
+      id: data.id,
+      author: data.author,
+      content: data.content,
+      timestamp: formatPhotoCommentTimestamp(data.created_at),
+    }
+
+    setPhotos((prev) =>
+      prev.map((photo) =>
+        photo.id === photoId
+          ? {
+              ...photo,
+              comments: (photo.comments || []).map((comment) =>
+                comment.id === optimisticComment.id ? newComment : comment
+              ),
+            }
+          : photo
+      )
+    )
+    setSubmittingCommentPhotoId((current) => (current === photoId ? null : current))
+    return true
   }
 
   const handleFaceFilter = (faceName: string) => {
@@ -852,6 +894,7 @@ export default function Gallery() {
             ? {
                 ...photo,
                 comments: mappedComments,
+                commentCount: mappedComments.length,
               }
             : photo
         )
@@ -1115,6 +1158,7 @@ export default function Gallery() {
         onDownload={handleDownload}
         isDownloading={downloadingId !== null}
         onAddComment={handleAddComment}
+        isSubmittingComment={submittingCommentPhotoId === filteredPhotos[lightboxIndex ?? 0]?.id}
         highlightedFaceName={faceFilter}
       />
     </div>

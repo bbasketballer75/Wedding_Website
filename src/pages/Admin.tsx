@@ -2,13 +2,17 @@ import { useState, useEffect, useCallback, useMemo, useRef } from 'react'
 import { Navigate, Routes, Route, Link, useLocation } from 'react-router-dom'
 import { useAuthStore } from '@/stores/authStore'
 import {
+  deletePhotoComment,
   deleteGalleryPhotos,
+  fetchRecentPhotoComments,
   fetchGuestFaceTaggingBatches,
   fetchNextAlbumSortOrder,
   fetchMediaReviewBatches,
   fetchModerationAuditTimeline,
+  hidePhotoComment,
   recordModerationAudit,
   supabase,
+  type AdminPhotoCommentRecord,
   type GuestFaceTaggingBatch,
   type GuestUpload,
   type GuestbookMessage,
@@ -16,6 +20,7 @@ import {
   type ModerationAuditLog,
   type RecordModerationAuditInput,
 } from '@/lib/supabase'
+import { getMediaPath } from '@/utils/media'
 import { 
   LayoutDashboard, 
   Image, 
@@ -37,6 +42,7 @@ import {
   ArrowRight,
   ShieldCheck,
   FolderOpen,
+  EyeOff,
 } from 'lucide-react'
 import { MediaReviewPanel } from '@/components/admin/MediaReviewPanel'
 import { AlbumOrganizer } from '@/components/admin/AlbumOrganizer'
@@ -865,6 +871,8 @@ function PhotoModeration() {
   const [selectedIds, setSelectedIds] = useState<string[]>([])
   const [publishedPhotoUrls, setPublishedPhotoUrls] = useState<Set<string>>(new Set())
   const [auditByUploadId, setAuditByUploadId] = useState<AuditEntriesByEntityId>({})
+  const [recentPhotoComments, setRecentPhotoComments] = useState<AdminPhotoCommentRecord[]>([])
+  const [commentActionId, setCommentActionId] = useState<string | null>(null)
   const guestTaggingFileInputRef = useRef<HTMLInputElement | null>(null)
   const { user } = useAuthStore()
   const { addToast } = useToast()
@@ -878,6 +886,7 @@ function PhotoModeration() {
       { data: publishedGuestPhotos, error: photosError },
       { data: auditRows, error: auditError },
       { data: guestTaggingBatchRows, error: guestTaggingBatchError },
+      { data: recentCommentRows, error: recentCommentsError },
     ] = await Promise.all([
       supabase
         .from('guest_uploads')
@@ -889,9 +898,10 @@ function PhotoModeration() {
         .eq('is_professional', false),
       fetchModerationAuditTimeline({ entityType: 'guest_upload', limit: 500 }),
       fetchGuestFaceTaggingBatches(),
+      fetchRecentPhotoComments(20),
     ])
 
-    if (error || photosError || auditError || guestTaggingBatchError) {
+    if (error || photosError || auditError || guestTaggingBatchError || recentCommentsError) {
       addToast('Failed to load photos', 'error')
     } else {
       const uploads = (data as ModerationUpload[] | null) || []
@@ -899,6 +909,7 @@ function PhotoModeration() {
       setPublishedPhotoUrls(new Set((publishedGuestPhotos || []).map((photo) => photo.url)))
       setAuditByUploadId(groupAuditEntries(auditRows || []))
       setGuestTaggingBatches(guestTaggingBatchRows || [])
+      setRecentPhotoComments(Array.isArray(recentCommentRows) ? recentCommentRows : [])
       setDrafts(prev => {
         const next: Record<string, PromotionDraft> = {}
 
@@ -1140,11 +1151,11 @@ function PhotoModeration() {
       return
     }
 
-    const deletedKeys = new Set(data?.deleted_photo_keys || livePhotoUrls)
+    const deletedPhotoUrls = new Set(data?.deleted_photo_urls || livePhotoUrls)
 
     setPublishedPhotoUrls((prev) => {
       const next = new Set(prev)
-      for (const photoUrl of deletedKeys) {
+      for (const photoUrl of deletedPhotoUrls) {
         next.delete(photoUrl)
       }
       return next
@@ -1167,7 +1178,7 @@ function PhotoModeration() {
         guest_name: upload.guest_name,
         guest_email: upload.guest_email,
         deleted_live_photo_count: data?.deleted_count || livePhotoUrls.length,
-        deleted_photo_urls: Array.from(deletedKeys),
+        deleted_photo_urls: Array.from(deletedPhotoUrls),
       },
     })
 
@@ -1178,6 +1189,55 @@ function PhotoModeration() {
     }
 
     setBusyId(null)
+  }
+
+  async function handleTogglePhotoCommentVisibility(comment: AdminPhotoCommentRecord) {
+    setCommentActionId(comment.id)
+    const nextHidden = !comment.is_hidden
+    const { data, error } = await hidePhotoComment(
+      comment.id,
+      nextHidden,
+      nextHidden ? 'Hidden from admin photo moderation.' : undefined,
+    )
+
+    if (error || !data) {
+      addToast('Could not update that photo comment.', 'error')
+      setCommentActionId(null)
+      return
+    }
+
+    setRecentPhotoComments((prev) =>
+      prev.map((entry) =>
+        entry.id === comment.id
+          ? {
+              ...entry,
+              is_hidden: nextHidden,
+            }
+          : entry,
+      ),
+    )
+    addToast(nextHidden ? 'Comment hidden from guests.' : 'Comment restored to the gallery.', 'success')
+    setCommentActionId(null)
+  }
+
+  async function handleDeletePhotoComment(comment: AdminPhotoCommentRecord) {
+    const confirmed = window.confirm(`Delete ${comment.author}'s comment from this photo?`)
+    if (!confirmed) {
+      return
+    }
+
+    setCommentActionId(comment.id)
+    const { error } = await deletePhotoComment(comment.id)
+
+    if (error) {
+      addToast('Could not delete that photo comment.', 'error')
+      setCommentActionId(null)
+      return
+    }
+
+    setRecentPhotoComments((prev) => prev.filter((entry) => entry.id !== comment.id))
+    addToast('Photo comment deleted.', 'success')
+    setCommentActionId(null)
   }
 
   async function handleReject(id: string) {
@@ -1719,6 +1779,88 @@ function PhotoModeration() {
           </div>
         </div>
       </div>
+
+      <section className="rounded-[1.3rem] border border-gold-100 bg-white p-5 shadow-sm">
+        <div className="flex flex-col gap-3 md:flex-row md:items-end md:justify-between">
+          <div>
+            <p className="text-[10px] uppercase tracking-[0.28em] text-charcoal-500">Photo comments</p>
+            <h3 className="mt-1 text-xl font-display text-charcoal-900">Recent gallery conversation</h3>
+            <p className="mt-1 text-sm leading-6 text-charcoal-500">
+              Comments go live immediately, so this is the cleanup backstop if something needs to be hidden or deleted.
+            </p>
+          </div>
+          <span className="rounded-full border border-gold-100 bg-cream-50 px-3 py-1.5 text-xs text-charcoal-600">
+            {recentPhotoComments.length} recent comment{recentPhotoComments.length === 1 ? '' : 's'}
+          </span>
+        </div>
+
+        {recentPhotoComments.length === 0 ? (
+          <div className="mt-4 rounded-2xl border border-dashed border-gold-200 bg-cream-50/60 px-4 py-8 text-center text-sm text-charcoal-500">
+            No public photo comments yet.
+          </div>
+        ) : (
+          <div className="mt-4 grid gap-3 lg:grid-cols-2">
+            {recentPhotoComments.map((comment) => (
+              <article key={comment.id} className="rounded-2xl border border-gold-100 bg-cream-50/60 p-4">
+                <div className="flex gap-4">
+                  <div className="h-20 w-20 shrink-0 overflow-hidden rounded-2xl bg-charcoal-100">
+                    {comment.thumbnail || comment.url ? (
+                      <img
+                        src={getMediaPath(comment.thumbnail || comment.url || '')}
+                        alt={comment.caption || 'Commented photo'}
+                        className="h-full w-full object-cover"
+                      />
+                    ) : null}
+                  </div>
+
+                  <div className="min-w-0 flex-1">
+                    <div className="flex flex-wrap items-center gap-2 text-xs text-charcoal-500">
+                      <span className="font-medium text-charcoal-800">{comment.author}</span>
+                      <span>{new Date(comment.created_at).toLocaleString()}</span>
+                      {comment.album && (
+                        <span className="rounded-full border border-gold-200 bg-white px-2 py-1 text-[10px] uppercase tracking-[0.22em] text-charcoal-600">
+                          {comment.album}
+                        </span>
+                      )}
+                      {comment.is_hidden && (
+                        <span className="rounded-full border border-amber-200 bg-amber-50 px-2 py-1 text-[10px] uppercase tracking-[0.22em] text-amber-700">
+                          Hidden
+                        </span>
+                      )}
+                    </div>
+
+                    <p className="mt-2 text-sm leading-6 text-charcoal-700">{comment.content}</p>
+                    {comment.caption && (
+                      <p className="mt-2 line-clamp-1 text-xs text-charcoal-500">{comment.caption}</p>
+                    )}
+
+                    <div className="mt-3 flex flex-wrap gap-2">
+                      <Button
+                        size="sm"
+                        variant="secondary"
+                        onClick={() => void handleTogglePhotoCommentVisibility(comment)}
+                        disabled={commentActionId === comment.id}
+                      >
+                        <EyeOff className="mr-2 h-4 w-4" />
+                        {comment.is_hidden ? 'Unhide' : 'Hide'}
+                      </Button>
+                      <Button
+                        size="sm"
+                        variant="danger"
+                        onClick={() => void handleDeletePhotoComment(comment)}
+                        disabled={commentActionId === comment.id}
+                      >
+                        <Trash2 className="mr-2 h-4 w-4" />
+                        Delete
+                      </Button>
+                    </div>
+                  </div>
+                </div>
+              </article>
+            ))}
+          </div>
+        )}
+      </section>
 
       {filteredUploads.length === 0 ? (
         <div className="text-center py-12 bg-white rounded-xl border border-gold-100">

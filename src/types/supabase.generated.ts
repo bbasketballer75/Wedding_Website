@@ -451,22 +451,37 @@ export type Database = {
           author: string
           content: string
           created_at: string | null
+          hidden_at: string | null
+          hidden_by_user_id: string | null
+          hidden_reason: string | null
           id: string
+          is_hidden: boolean
           photo_key: string
+          session_id: string | null
         }
         Insert: {
           author?: string
           content: string
           created_at?: string | null
+          hidden_at?: string | null
+          hidden_by_user_id?: string | null
+          hidden_reason?: string | null
           id?: string
+          is_hidden?: boolean
           photo_key: string
+          session_id?: string | null
         }
         Update: {
           author?: string
           content?: string
           created_at?: string | null
+          hidden_at?: string | null
+          hidden_by_user_id?: string | null
+          hidden_reason?: string | null
           id?: string
+          is_hidden?: boolean
           photo_key?: string
+          session_id?: string | null
         }
         Relationships: []
       }
@@ -725,6 +740,30 @@ export type Database = {
           photo_key: string
         }[]
       }
+      get_photo_engagement_summary_v1: {
+        Args: { p_photo_keys: string[] }
+        Returns: {
+          comments_count: number
+          hidden_comments_count: number
+          likes_count: number
+          photo_key: string
+        }[]
+      }
+      get_recent_photo_comments_v1: {
+        Args: { p_limit?: number }
+        Returns: {
+          album: string
+          author: string
+          caption: string
+          content: string
+          created_at: string
+          id: string
+          is_hidden: boolean
+          photo_key: string
+          thumbnail: string
+          url: string
+        }[]
+      }
       increment_rate_limit: {
         Args: {
           p_action: string
@@ -733,11 +772,47 @@ export type Database = {
         }
         Returns: undefined
       }
+      create_photo_comment_v1: {
+        Args: {
+          p_author: string
+          p_content: string
+          p_photo_key: string
+          p_session_id: string
+        }
+        Returns: {
+          author: string
+          content: string
+          created_at: string
+          id: string
+          is_hidden: boolean
+          photo_key: string
+        }[]
+      }
       delete_gallery_photos_v1: {
         Args: { p_photo_ids?: string[]; p_photo_urls?: string[] }
         Returns: {
           deleted_count: number
           deleted_photo_keys: string[]
+          deleted_photo_urls: string[]
+        }[]
+      }
+      delete_photo_comment_v1: {
+        Args: { p_comment_id: string }
+        Returns: {
+          deleted_id: string
+          photo_key: string
+        }[]
+      }
+      hide_photo_comment_v1: {
+        Args: {
+          p_comment_id: string
+          p_hidden?: boolean
+          p_reason?: string
+        }
+        Returns: {
+          id: string
+          is_hidden: boolean
+          photo_key: string
         }[]
       }
       save_album_organization_v1: {
