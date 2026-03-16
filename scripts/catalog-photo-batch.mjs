@@ -7,6 +7,7 @@ import {
   getImageMetadata,
   getKind,
   getVideoMetadata,
+  inferCanonicalAlbum,
   inferSourceInfo,
   toPosix,
   walk,
@@ -30,6 +31,7 @@ async function buildRecord(filePath, absoluteRoot) {
   const extension = path.extname(filePath).toLowerCase()
   const kind = getKind(extension)
   const sourceInfo = inferSourceInfo(topLevelFolder)
+  const canonicalAlbum = inferCanonicalAlbum(topLevelFolder, relativePath)
   const enriched =
     kind === 'image'
       ? await getImageMetadata(filePath, `${topLevelFolder} ${relativePath}`)
@@ -64,7 +66,7 @@ async function buildRecord(filePath, absoluteRoot) {
     extension,
     kind,
     source: sourceInfo.source,
-    collection: enriched.collection ?? sourceInfo.collection,
+    collection: canonicalAlbum ?? enriched.collection ?? sourceInfo.collection,
     storyLaneSuggestion: enriched.storyLaneSuggestion ?? sourceInfo.storyLaneSuggestion,
     memoryTrailSuggestion: enriched.memoryTrailSuggestion ?? sourceInfo.memoryTrailSuggestion,
     sizeBytes: stats.size,

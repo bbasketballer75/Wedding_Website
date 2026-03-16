@@ -1,15 +1,13 @@
 import { type ElementType, useState, useEffect, useMemo, useRef } from 'react'
 import { motion, useScroll, useTransform, useMotionValueEvent } from 'framer-motion'
 import { Link } from 'react-router-dom'
-import { Heart, ChevronDown, Sparkles, Clock3, Rows3, Images, BookHeart, ArrowRight, MessageCircleHeart, Smartphone } from 'lucide-react'
+import { Heart, ChevronDown, Sparkles, Clock3, Rows3, Images, BookHeart } from 'lucide-react'
 import { LoveTimeline } from '@/components/timeline/LoveTimeline'
 import { publicNavLinks } from '@/components/layout/publicNav'
-import Search from '@/components/search/Search'
 import { HomeSEO } from '@/components/seo/SEOHead'
-import { MAIN_FILM_CHAPTERS_FALLBACK, MAIN_FILM_RUNTIME_LABEL, filmWatchPaths, loadMainFilmChapters, slugifyFilmMoment } from '@/data/film'
+import { MAIN_FILM_CHAPTERS_FALLBACK, MAIN_FILM_RUNTIME_LABEL, loadMainFilmChapters } from '@/data/film'
 import { CURATED_GALLERY_PHOTO_COUNT } from '@/data/gallery'
-import { getMemoryTrailById, memoryTrails } from '@/data/memoryTrails'
-import { fetchSiteEditorialFeatures, supabase, type GuestUpload, type GuestbookMessage, type SiteEditorialFeature, type SiteEditorialFeatureSlot } from '@/lib/supabase'
+import { supabase } from '@/lib/supabase'
 import { cn } from '@/lib/utils'
 import { getMediaPath } from '@/utils/media'
 
@@ -21,24 +19,6 @@ interface HomeStat {
   number: string
   label: string
   detail: string
-}
-
-interface HomeReturnCard {
-  id: string
-  eyebrow: string
-  title: string
-  summary: string
-  href: string
-  badge: string
-  icon: ElementType
-}
-
-function getFeatureTrailLabel(feature: SiteEditorialFeature | null | undefined, fallback: string) {
-  if (feature?.memory_trail) {
-    return getMemoryTrailById(feature.memory_trail)?.label || feature.trail || fallback
-  }
-
-  return feature?.trail || fallback
 }
 
 const DEFAULT_HOME_STATS: HomeStat[] = [
@@ -107,9 +87,6 @@ export default function Home() {
   const [videoReady, setVideoReady] = useState(false)
   const [videoErrored, setVideoErrored] = useState(false)
   const [homeStats, setHomeStats] = useState<HomeStat[]>(DEFAULT_HOME_STATS)
-  const [editorialFeatures, setEditorialFeatures] = useState<Partial<Record<SiteEditorialFeatureSlot, SiteEditorialFeature | null>>>({})
-  const [newestUpload, setNewestUpload] = useState<GuestUpload | null>(null)
-  const [newestGuestbookNote, setNewestGuestbookNote] = useState<GuestbookMessage | null>(null)
   const heroRef = useRef<HTMLDivElement>(null)
   const containerRef = useRef<HTMLDivElement>(null)
   const videoRef = useRef<HTMLVideoElement>(null)
@@ -132,13 +109,10 @@ export default function Home() {
     let isMounted = true
 
     const loadHomeStats = async () => {
-      const [chaptersResult, photoCountResult, guestbookCountResult, featuresResult, uploadResult, noteResult] = await Promise.allSettled([
+      const [chaptersResult, photoCountResult, guestbookCountResult] = await Promise.allSettled([
         loadMainFilmChapters(),
         supabase.from('photos').select('id', { count: 'exact', head: true }),
         supabase.from('guestbook_messages').select('id', { count: 'exact', head: true }),
-        fetchSiteEditorialFeatures(),
-        supabase.from('guest_uploads').select('*').eq('status', 'approved').order('created_at', { ascending: false }).limit(1).maybeSingle(),
-        supabase.from('guestbook_messages').select('*').order('created_at', { ascending: false }).limit(1).maybeSingle(),
       ])
 
       if (!isMounted) {
@@ -160,29 +134,6 @@ export default function Home() {
         guestbookCountResult.status === 'fulfilled'
           ? guestbookCountResult.value.count ?? 0
           : 0
-
-      const features =
-        featuresResult.status === 'fulfilled' && Array.isArray(featuresResult.value.data)
-          ? (featuresResult.value.data as SiteEditorialFeature[])
-          : []
-
-      const featuresBySlot = features.reduce<Partial<Record<SiteEditorialFeatureSlot, SiteEditorialFeature | null>>>(
-        (acc, feature) => {
-          acc[feature.slot] = feature
-          return acc
-        },
-        {}
-      )
-
-      const upload =
-        uploadResult.status === 'fulfilled'
-          ? ((uploadResult.value.data as GuestUpload | null) ?? null)
-          : null
-
-      const newestNote =
-        noteResult.status === 'fulfilled'
-          ? ((noteResult.value.data as GuestbookMessage | null) ?? null)
-          : null
 
       setHomeStats([
         DEFAULT_HOME_STATS[0],
@@ -207,9 +158,6 @@ export default function Home() {
               : 'A clean slate for the first note, memory, or blessing from our guests.',
         },
       ])
-      setEditorialFeatures(featuresBySlot)
-      setNewestUpload(upload)
-      setNewestGuestbookNote(newestNote)
     }
 
     void loadHomeStats()
@@ -220,133 +168,6 @@ export default function Home() {
   }, [])
 
   const homeStatsColumn = useMemo(() => homeStats, [homeStats])
-
-  const filmFallbackPath = useMemo(() => {
-    const familyPath = filmWatchPaths.find((path) => path.id === 'family-moments')
-    return familyPath?.momentSlug
-      ? `/film?moment=${familyPath.momentSlug}`
-      : '/film'
-  }, [])
-
-  const momentOfWeekFeature = editorialFeatures.home_moment_of_the_week
-
-  const returnVisitCards = useMemo<HomeReturnCard[]>(() => {
-    const uploadFeature = editorialFeatures.home_newest_standout_upload
-    const guestbookFeature = editorialFeatures.home_featured_guestbook_note
-
-    const uploadCard: HomeReturnCard = uploadFeature?.is_active
-      ? {
-          id: 'upload-feature',
-          eyebrow: getFeatureTrailLabel(uploadFeature, 'Now unfolding'),
-          title: uploadFeature.title,
-          summary:
-            uploadFeature.summary ||
-            'A newly approved angle from the room, ready to become part of the archive.',
-          href:
-            uploadFeature.source_url ||
-            '/gallery?collection=Guest%20Uploads',
-          badge: uploadFeature.badge_label || uploadFeature.source_label || 'Guest upload',
-          icon: Smartphone,
-        }
-      : {
-          id: 'upload-latest',
-          eyebrow: 'Now unfolding',
-          title: newestUpload?.message?.trim() || `Newest guest upload from ${newestUpload?.guest_name || 'your side of the room'}`,
-          summary:
-            newestUpload
-              ? `${newestUpload.guest_name} just added a new point-of-view angle for the archive.`
-              : 'The next approved guest upload will appear here once a new angle is ready to share.',
-          href: '/gallery?collection=Guest%20Uploads',
-          badge: newestUpload ? 'Guest upload' : 'Waiting for the next moment',
-          icon: Smartphone,
-        }
-
-    const guestbookCard: HomeReturnCard = guestbookFeature?.is_active
-      ? {
-          id: 'guestbook-feature',
-          eyebrow: getFeatureTrailLabel(guestbookFeature, 'Keepsake note'),
-          title: guestbookFeature.title,
-          summary:
-            guestbookFeature.summary ||
-            'A highlighted note from the guestbook, saved because it says something we know we will reread.',
-          href:
-            guestbookFeature.source_url ||
-            (guestbookFeature.source_id ? `/guestbook?message=${guestbookFeature.source_id}` : '/guestbook'),
-          badge: guestbookFeature.badge_label || guestbookFeature.source_label || 'Featured note',
-          icon: MessageCircleHeart,
-        }
-      : {
-          id: 'guestbook-latest',
-          eyebrow: 'Keepsake note',
-          title: newestGuestbookNote?.name || 'The next note we will reread',
-          summary:
-            newestGuestbookNote?.content ||
-            'When the next guestbook message lands, it will show up here as a reason to come back and revisit the day.',
-          href: newestGuestbookNote ? `/guestbook?message=${newestGuestbookNote.id}` : '/guestbook',
-          badge: newestGuestbookNote ? 'Guestbook' : 'Open guestbook',
-          icon: MessageCircleHeart,
-        }
-
-    const filmCard: HomeReturnCard =
-      momentOfWeekFeature?.is_active && momentOfWeekFeature.source_type === 'film_chapter'
-        ? {
-            id: 'film-feature',
-            eyebrow: getFeatureTrailLabel(momentOfWeekFeature, 'Featured moment'),
-            title: momentOfWeekFeature.title,
-            summary:
-              momentOfWeekFeature.summary ||
-              'A chapter to jump straight into when you want the feeling of the room back quickly.',
-            href:
-              momentOfWeekFeature.source_url ||
-              `/film?moment=${slugifyFilmMoment(
-                momentOfWeekFeature.source_id || momentOfWeekFeature.source_label || momentOfWeekFeature.title
-              )}`,
-            badge: momentOfWeekFeature.badge_label || momentOfWeekFeature.source_label || 'Film moment',
-            icon: Sparkles,
-          }
-        : {
-            id: 'film-default',
-            eyebrow: 'Re-enter the film',
-            title: 'A chapter worth revisiting this week',
-            summary: 'Jump back into the vows, speeches, or family moments without restarting the entire feature.',
-            href: filmFallbackPath,
-            badge: 'Watch path',
-            icon: Sparkles,
-          }
-
-    return [uploadCard, guestbookCard, filmCard]
-  }, [editorialFeatures.home_featured_guestbook_note, editorialFeatures.home_newest_standout_upload, filmFallbackPath, momentOfWeekFeature, newestGuestbookNote, newestUpload])
-
-  const memoryTrailLinks = useMemo(() => memoryTrails.slice(0, 5), [])
-
-  const momentOfTheWeek = useMemo(() => {
-    const feature = editorialFeatures.home_moment_of_the_week
-
-    if (feature?.is_active) {
-      return {
-        eyebrow: getFeatureTrailLabel(feature, 'Moment of the week'),
-        title: feature.title,
-        summary:
-          feature.summary ||
-          'A curated invitation back into one piece of the story that feels worth revisiting right now.',
-        href:
-          feature.source_url ||
-          (feature.source_type === 'film_chapter'
-            ? `/film?moment=${slugifyFilmMoment(feature.source_id || feature.source_label || feature.title)}`
-            : '/film'),
-        badge: feature.badge_label || feature.source_label || 'Editorial pick',
-      }
-    }
-
-    return {
-      eyebrow: 'Moment of the week',
-      title: 'Family moments worth another watch',
-      summary:
-        'Start with the family watch path when you want something emotional, intimate, and easy to re-enter without committing to the full feature.',
-      href: filmFallbackPath,
-      badge: 'Editorial fallback',
-    }
-  }, [editorialFeatures.home_moment_of_the_week, filmFallbackPath])
 
   useEffect(() => {
     const video = videoRef.current
@@ -629,118 +450,6 @@ export default function Home() {
             </div>
           </div>
         </motion.div>
-      </section>
-
-      <section className="px-4 pb-10">
-        <div className="mx-auto max-w-6xl">
-          <motion.div
-            initial={{ opacity: 0, y: 24 }}
-            whileInView={{ opacity: 1, y: 0 }}
-            viewport={{ once: true, amount: 0.25 }}
-            transition={{ duration: 0.65 }}
-            className="cinematic-panel px-6 py-6 sm:px-8 sm:py-8"
-          >
-            <div className="flex flex-col gap-6 lg:flex-row lg:items-start lg:justify-between">
-              <div className="max-w-2xl">
-                <span className="eyebrow-chip">
-                  <Sparkles className="h-3.5 w-3.5" />
-                  Now unfolding
-                </span>
-                <h2 className="mt-5 text-4xl text-cinematic-primary sm:text-5xl">
-                  A reason to come back, not just a place to land once.
-                </h2>
-                <p className="mt-4 text-base leading-7 text-cinematic-secondary sm:text-lg">
-                  We want this to keep feeling alive as new guest angles, guestbook notes, and
-                  featured film moments settle into the archive. These are the places to start if
-                  you are returning for something fresh.
-                </p>
-              </div>
-
-              <div className="w-full max-w-xl">
-                <Search />
-              </div>
-            </div>
-
-            <div className="mt-8 grid gap-4 lg:grid-cols-3">
-              {returnVisitCards.map((card, index) => {
-                const Icon = card.icon
-
-                return (
-                  <motion.div
-                    key={card.id}
-                    initial={{ opacity: 0, y: 20 }}
-                    whileInView={{ opacity: 1, y: 0 }}
-                    viewport={{ once: true }}
-                    transition={{ duration: 0.45, delay: 0.08 + index * 0.08 }}
-                    className="rounded-[1.6rem] border border-gold-200/14 bg-[rgba(255,247,235,0.08)] p-5"
-                  >
-                    <div className="flex items-start justify-between gap-4">
-                      <div className="flex h-11 w-11 items-center justify-center rounded-2xl border border-gold-200/18 bg-[rgba(255,247,235,0.1)] text-gold-300">
-                        <Icon className="h-4.5 w-4.5" />
-                      </div>
-                      <span className="rounded-full border border-gold-200/18 bg-[rgba(255,247,235,0.08)] px-3 py-1.5 text-[10px] uppercase tracking-[0.22em] text-cinematic-muted">
-                        {card.badge}
-                      </span>
-                    </div>
-                    <p className="mt-4 text-[10px] uppercase tracking-[0.32em] text-gold-300/82">
-                      {card.eyebrow}
-                    </p>
-                    <h3 className="mt-3 text-2xl text-cinematic-primary">{card.title}</h3>
-                    <p className="mt-3 text-sm leading-6 text-cinematic-secondary">{card.summary}</p>
-                    <Link
-                      to={card.href}
-                      className="mt-5 inline-flex items-center gap-2 text-sm font-medium text-gold-300 transition-colors hover:text-cinematic-primary"
-                    >
-                      Open this thread
-                      <ArrowRight className="h-4 w-4" />
-                    </Link>
-                  </motion.div>
-                )
-              })}
-            </div>
-
-            <div className="mt-8 grid gap-4 xl:grid-cols-[minmax(0,0.95fr)_minmax(0,1.05fr)]">
-              <div className="rounded-[1.6rem] border border-gold-200/14 bg-[rgba(255,247,235,0.08)] p-5">
-                <p className="text-[10px] uppercase tracking-[0.32em] text-gold-300/82">
-                  {momentOfTheWeek.eyebrow}
-                </p>
-                <h3 className="mt-3 text-3xl text-cinematic-primary">{momentOfTheWeek.title}</h3>
-                <p className="mt-4 max-w-xl text-sm leading-7 text-cinematic-secondary">
-                  {momentOfTheWeek.summary}
-                </p>
-                <Link
-                  to={momentOfTheWeek.href}
-                  className="mt-5 inline-flex items-center gap-2 rounded-full border border-gold-200/18 bg-[rgba(255,247,235,0.08)] px-4 py-2.5 text-sm font-medium text-gold-300 transition-colors hover:border-gold-300/35 hover:text-cinematic-primary"
-                >
-                  {momentOfTheWeek.badge}
-                  <ArrowRight className="h-4 w-4" />
-                </Link>
-              </div>
-
-              <div className="rounded-[1.6rem] border border-gold-200/14 bg-[rgba(255,247,235,0.08)] p-5">
-                <p className="text-[10px] uppercase tracking-[0.32em] text-gold-300/82">Memory trails</p>
-                <h3 className="mt-3 text-2xl text-cinematic-primary">Follow one feeling across the whole site.</h3>
-                <p className="mt-3 text-sm leading-6 text-cinematic-secondary">
-                  These story lanes tie the film, gallery, guestbook, and guest highlights together
-                  without turning the site into a feed.
-                </p>
-                <div className="mt-5 grid gap-3 sm:grid-cols-2">
-                  {memoryTrailLinks.map((trail) => (
-                    <Link
-                      key={trail.id}
-                      to={trail.href}
-                      className="rounded-[1.2rem] border border-gold-200/14 bg-[rgba(255,247,235,0.06)] px-4 py-3 transition-colors hover:border-gold-300/35 hover:bg-[rgba(255,247,235,0.1)]"
-                    >
-                      <p className="text-sm font-semibold text-cinematic-primary">{trail.label}</p>
-                      <p className="mt-1 text-xs uppercase tracking-[0.22em] text-gold-300/72">{trail.cue}</p>
-                      <p className="mt-3 text-sm leading-6 text-cinematic-secondary">{trail.description}</p>
-                    </Link>
-                  ))}
-                </div>
-              </div>
-            </div>
-          </motion.div>
-        </div>
       </section>
 
       {/* Timeline Section - Love Story */}

@@ -6,7 +6,6 @@ import { LocationMap } from './LocationMap'
 import { ImageCarousel } from './ImageCarousel'
 import { TimelineIcon } from './TimelineIcon'
 import { BridalShowerLink } from './BridalShowerLink'
-import { getMediaPath } from '@/utils/media'
 
 interface TimelineEvent {
   id: string
@@ -22,7 +21,7 @@ interface TimelineEvent {
 }
 
 // Media paths configuration
-const MEDIA_BASE_PATH = getMediaPath('/media/timeline')
+const MEDIA_BASE_PATH = '/media/timeline'
 
 // Timeline data with media
 const timelineEvents: TimelineEvent[] = [

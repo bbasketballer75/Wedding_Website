@@ -58,6 +58,7 @@ interface PhotoLightboxProps {
   onDownload?: (photoId: string) => void
   onAddComment?: (photoId: string, comment: string) => void
   isDownloading?: boolean
+  highlightedFaceName?: string | null
 }
 
 export function PhotoLightbox({
@@ -71,6 +72,7 @@ export function PhotoLightbox({
   onDownload,
   onAddComment,
   isDownloading = false,
+  highlightedFaceName = null,
 }: PhotoLightboxProps) {
   const [showInfo, setShowInfo] = useState(true)
   const [showFaces, setShowFaces] = useState(true)
@@ -79,14 +81,27 @@ export function PhotoLightbox({
   const [activeTab, setActiveTab] = useState<'info' | 'comments'>('info')
   const [selectedFace, setSelectedFace] = useState<string | null>(null)
   const [shareModalOpen, setShareModalOpen] = useState(false)
+  const [isImageHovered, setIsImageHovered] = useState(false)
 
   const currentPhoto = photos[currentIndex]
   const hasMultiplePhotos = photos.length > 1
+  const visibleFaces = (currentPhoto?.faces || []).filter((face) =>
+    highlightedFaceName ? face.name === highlightedFaceName : true
+  )
+  const shouldRenderFaceOverlay = showFaces && (isImageHovered || Boolean(highlightedFaceName))
+  const defaultSelectedFaceId = highlightedFaceName
+    ? currentPhoto?.faces?.find((face) => face.name === highlightedFaceName)?.id ?? null
+    : null
+  const activeSelectedFaceId =
+    selectedFace && currentPhoto?.faces?.some((face) => face.id === selectedFace)
+      ? selectedFace
+      : defaultSelectedFaceId
 
   const handlePrevious = useCallback(() => {
     if (currentIndex > 0) {
       onNavigate(currentIndex - 1)
       setZoom(1)
+      setSelectedFace(null)
     }
   }, [currentIndex, onNavigate])
 
@@ -94,6 +109,7 @@ export function PhotoLightbox({
     if (currentIndex < photos.length - 1) {
       onNavigate(currentIndex + 1)
       setZoom(1)
+      setSelectedFace(null)
     }
   }, [currentIndex, photos.length, onNavigate])
 
@@ -157,7 +173,7 @@ export function PhotoLightbox({
                     <button
                       onClick={(e) => { e.stopPropagation(); setShowFaces(!showFaces); }}
                       type="button"
-                      aria-label={showFaces ? 'Hide face tags' : 'Show face tags'}
+                      aria-label={showFaces ? 'Turn off face hints' : 'Turn on face hints'}
                       className={cn(
                         "p-2 rounded-full transition-colors",
                         showFaces ? "bg-gold-500 text-white" : "bg-white/10 text-white/80 hover:bg-white/20"
@@ -225,6 +241,13 @@ export function PhotoLightbox({
                   animate={{ scale: zoom }}
                   transition={{ duration: 0.3 }}
                   className="relative"
+                  onMouseEnter={() => setIsImageHovered(true)}
+                  onMouseLeave={() => {
+                    setIsImageHovered(false)
+                    if (!highlightedFaceName) {
+                      setSelectedFace(null)
+                    }
+                  }}
                 >
                   <img
                     src={currentPhoto.url}
@@ -233,7 +256,7 @@ export function PhotoLightbox({
                   />
                   
                   {/* Face Tags Overlay */}
-                  {showFaces && currentPhoto.faces?.map((face) => (
+                  {shouldRenderFaceOverlay && visibleFaces.map((face) => (
                     <button
                       key={face.id}
                       onClick={(e) => { e.stopPropagation(); setSelectedFace(face.id); }}
@@ -244,11 +267,11 @@ export function PhotoLightbox({
                     >
                       <div className={cn(
                         "w-full h-full rounded-full border-2 transition-all",
-                        selectedFace === face.id 
+                        activeSelectedFaceId === face.id 
                           ? "border-gold-400 bg-gold-400/20" 
                           : "border-white/70 hover:border-gold-400 hover:bg-gold-400/10"
                       )} />
-                      {selectedFace === face.id && (
+                      {(activeSelectedFaceId === face.id || Boolean(highlightedFaceName)) && (
                         <motion.div
                           initial={{ opacity: 0, y: 10 }}
                           animate={{ opacity: 1, y: 0 }}

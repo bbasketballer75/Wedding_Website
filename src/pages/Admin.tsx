@@ -2,12 +2,9 @@ import { useState, useEffect, useCallback, useMemo, useRef } from 'react'
 import { Navigate, Routes, Route, Link, useLocation } from 'react-router-dom'
 import { useAuthStore } from '@/stores/authStore'
 import {
-  fetchSiteEditorialFeatureHistory,
   fetchGuestFaceTaggingBatches,
   fetchMediaReviewBatches,
   fetchModerationAuditTimeline,
-  fetchSiteEditorialFeatures,
-  recordSiteEditorialFeatureHistory,
   recordModerationAudit,
   supabase,
   type GuestFaceTaggingBatch,
@@ -16,11 +13,6 @@ import {
   type ModerationAuditAction,
   type ModerationAuditLog,
   type RecordModerationAuditInput,
-  type SiteEditorialFeature,
-  type SiteEditorialFeatureHistoryEntry,
-  type SiteEditorialFeatureSlot,
-  type SiteEditorialFeatureSourceType,
-  upsertSiteEditorialFeature,
 } from '@/lib/supabase'
 import { 
   LayoutDashboard, 
@@ -38,7 +30,6 @@ import {
   Video,
   History,
   RefreshCw,
-  Sparkles,
   UploadCloud,
   Users,
   ArrowRight,
@@ -84,9 +75,8 @@ const adminNavSections: AdminNavSection[] = [
   },
   {
     title: 'Shape the public site',
-    description: 'Editorial tools for keeping the wedding site intentional.',
+    description: 'History, reporting, and operating notes.',
     items: [
-      { path: '/admin/featured', label: 'Featured', icon: Sparkles, description: 'Control what Home and Film spotlight next.' },
       { path: '/admin/audit', label: 'Audit Trail', icon: History, description: 'See who changed moderation state and when.' },
       { path: '/admin/analytics', label: 'Analytics', icon: BarChart3, description: 'Track verified database activity inside the app.' },
       { path: '/admin/settings', label: 'Settings', icon: SettingsIcon, description: 'Reference the live setup and operating notes.' },
@@ -99,7 +89,7 @@ const adminRouteMeta: Record<string, { eyebrow: string; title: string; descripti
     eyebrow: 'Control room',
     title: 'Keep the whole wedding archive moving smoothly.',
     description:
-      'Start here to see what needs attention now, then jump straight into the next task for photos, people, guestbook, or featured content.',
+      'Start here to see what needs attention now, then jump straight into the next task for photos, people, or the guestbook.',
   },
   '/admin/photos': {
     eyebrow: 'Photos workflow',
@@ -119,15 +109,9 @@ const adminRouteMeta: Record<string, { eyebrow: string; title: string; descripti
     description:
       'Review notes and media only when needed, without losing the warmth of the messages that make the site feel lived in.',
   },
-  '/admin/featured': {
-    eyebrow: 'Editorial workflow',
-    title: 'Choose what the public site should spotlight next.',
-    description:
-      'Set the standout upload, guestbook note, or featured clip so the homepage and film page feel curated instead of accidental.',
-  },
   '/admin/audit': {
     eyebrow: 'History',
-    title: 'See the moderation and editorial paper trail.',
+    title: 'See the moderation paper trail.',
     description:
       'Use this whenever you want to confirm what changed, who changed it, and whether a workflow is behaving the way you expect.',
   },
@@ -163,7 +147,6 @@ function Dashboard() {
     totalMessages: 0,
     approvedUploads: 0,
     peopleBatchesInFlight: 0,
-    activeFeaturedSlots: 0,
     lastGuestTaggingSyncLabel: 'No guest sync yet',
   })
 
@@ -176,7 +159,6 @@ function Dashboard() {
         { count: approvedUploadCount },
         { data: mediaReviewBatches },
         { data: guestTaggingBatches },
-        { data: featuredRows },
       ] = await Promise.all([
         supabase.from('photos').select('*', { count: 'exact', head: true }),
         supabase.from('guest_uploads').select('*', { count: 'exact', head: true }).eq('status', 'pending'),
@@ -184,13 +166,11 @@ function Dashboard() {
         supabase.from('guest_uploads').select('*', { count: 'exact', head: true }).eq('status', 'approved'),
         fetchMediaReviewBatches(),
         fetchGuestFaceTaggingBatches(),
-        fetchSiteEditorialFeatures(),
       ])
 
       const latestGuestTaggingBatch = guestTaggingBatches?.[0] || null
       const peopleBatchesInFlight =
         (mediaReviewBatches || []).filter((batch) => batch.status === 'pending' || batch.status === 'in_review').length
-      const activeFeaturedSlots = (featuredRows || []).filter((row) => row.is_active).length
 
       setStats({
         totalPhotos: photoCount || 0,
@@ -198,7 +178,6 @@ function Dashboard() {
         totalMessages: messageCount || 0,
         approvedUploads: approvedUploadCount || 0,
         peopleBatchesInFlight,
-        activeFeaturedSlots,
         lastGuestTaggingSyncLabel: latestGuestTaggingBatch?.last_synced_at
           ? new Date(latestGuestTaggingBatch.last_synced_at).toLocaleString()
           : 'No guest sync yet',
@@ -209,84 +188,65 @@ function Dashboard() {
   }, [])
 
   return (
-    <div className="space-y-8">
-      <section className="overflow-hidden rounded-[1.75rem] border border-gold-100 bg-white shadow-[0_20px_60px_rgba(22,18,14,0.06)]">
-        <div className="grid gap-0 xl:grid-cols-[minmax(0,1.25fr)_minmax(20rem,0.95fr)]">
-          <div className="bg-gradient-to-br from-white via-cream-50 to-gold-50/80 px-6 py-8 sm:px-8">
+    <div className="space-y-6">
+      <section className="rounded-[1.5rem] border border-gold-100 bg-white px-5 py-5 shadow-sm sm:px-6">
+        <div className="flex flex-col gap-4 xl:flex-row xl:items-start xl:justify-between">
+          <div className="max-w-3xl">
             <p className="text-[11px] uppercase tracking-[0.32em] text-charcoal-500">Austin + Jordyn control room</p>
-            <h2 className="mt-3 max-w-2xl font-display text-3xl leading-tight text-charcoal-900 sm:text-4xl">
-              One place to keep the wedding site polished, current, and easy to manage together.
+            <h2 className="mt-2 font-display text-2xl leading-tight text-charcoal-900 sm:text-[2rem]">
+              A faster weekly view of what needs attention.
             </h2>
-            <p className="mt-4 max-w-2xl text-sm leading-7 text-charcoal-600 sm:text-[15px]">
-              Treat this dashboard like a morning brief: see what is waiting, jump into the right workflow, and keep
-              the public experience feeling intentional without having to remember where every tool lives.
+            <p className="mt-2 text-sm leading-6 text-charcoal-600">
+              Use this like a briefing, not a landing page: check the current state, then jump straight into the next
+              workflow.
             </p>
-
-            <div className="mt-6 grid gap-3 sm:grid-cols-2">
-              <QuickActionCard
-                to="/admin/photos"
-                title="Review photo submissions"
-                description="Moderate uploads, publish the best moments, and prep guest-tagging batches."
-                icon={Image}
-              />
-              <QuickActionCard
-                to="/admin/review"
-                title="Clean up people tags"
-                description="Work through the wedding face-review queue and improve public people browsing."
-                icon={Users}
-              />
-              <QuickActionCard
-                to="/admin/featured"
-                title="Refresh featured content"
-                description="Decide what Home and Film should highlight next."
-                icon={Sparkles}
-              />
-              <QuickActionCard
-                to="/admin/guestbook"
-                title="Check the guestbook"
-                description="Keep notes, voice messages, and video posts tidy when needed."
-                icon={MessageSquare}
-              />
-            </div>
           </div>
 
-          <div className="border-t border-gold-100 bg-charcoal-900 px-6 py-8 text-cream-50 xl:border-l xl:border-t-0">
-            <p className="text-[11px] uppercase tracking-[0.32em] text-gold-200/80">What needs attention</p>
-            <div className="mt-5 space-y-4">
-              <AdminSignalRow
-                label="Pending uploads"
-                value={stats.pendingPhotos.toString()}
-                tone={stats.pendingPhotos > 0 ? 'alert' : 'calm'}
-                detail={stats.pendingPhotos > 0 ? 'Photos are waiting in review.' : 'The photo queue is currently clear.'}
-              />
-              <AdminSignalRow
-                label="People batches in flight"
-                value={stats.peopleBatchesInFlight.toString()}
-                tone={stats.peopleBatchesInFlight > 0 ? 'alert' : 'calm'}
-                detail={
-                  stats.peopleBatchesInFlight > 0
-                    ? 'There is still face-review work waiting in /admin/review.'
-                    : 'No active people-review batches need attention right now.'
-                }
-              />
-              <AdminSignalRow
-                label="Guest tagging sync"
-                value={stats.lastGuestTaggingSyncLabel}
-                tone="neutral"
-                detail="This reflects the latest browser or terminal guest-tagging sync back into the live gallery."
-              />
-              <AdminSignalRow
-                label="Featured slots live"
-                value={stats.activeFeaturedSlots.toString()}
-                tone="neutral"
-                detail="Use Featured whenever the homepage or film page needs a fresher editorial story."
-              />
-            </div>
+          <div className="grid gap-2 sm:grid-cols-2 xl:w-[24rem]">
+            <Button variant="secondary" size="sm" asChild>
+              <Link to="/admin/photos">Photos</Link>
+            </Button>
+            <Button variant="secondary" size="sm" asChild>
+              <Link to="/admin/review">People Review</Link>
+            </Button>
+            <Button variant="secondary" size="sm" asChild>
+              <Link to="/admin/guestbook">Guestbook</Link>
+            </Button>
+            <Button variant="secondary" size="sm" asChild>
+              <Link to="/admin/audit">Audit</Link>
+            </Button>
           </div>
         </div>
       </section>
 
-      <div className="grid grid-cols-1 gap-4 md:grid-cols-2 xl:grid-cols-4">
+      <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-4">
+        <AdminSignalRow
+          label="Pending uploads"
+          value={stats.pendingPhotos.toString()}
+          tone={stats.pendingPhotos > 0 ? 'alert' : 'calm'}
+          detail={stats.pendingPhotos > 0 ? 'Waiting in /admin/photos.' : 'Queue is clear.'}
+        />
+        <AdminSignalRow
+          label="People review"
+          value={stats.peopleBatchesInFlight.toString()}
+          tone={stats.peopleBatchesInFlight > 0 ? 'alert' : 'calm'}
+          detail={stats.peopleBatchesInFlight > 0 ? 'Batch still in flight.' : 'No active batch.'}
+        />
+        <AdminSignalRow
+          label="Guest tagging sync"
+          value={stats.lastGuestTaggingSyncLabel}
+          tone="neutral"
+          detail="Last metadata sync back into Gallery."
+        />
+        <AdminSignalRow
+          label="Approved uploads"
+          value={stats.approvedUploads.toString()}
+          tone="neutral"
+          detail="Ready to browse or face-tag later."
+        />
+      </div>
+
+      <div className="grid grid-cols-2 gap-4 xl:grid-cols-4">
         <StatCard
           title="Live gallery photos"
           value={stats.totalPhotos}
@@ -314,54 +274,50 @@ function Dashboard() {
         />
       </div>
 
-      <div className="grid gap-4 xl:grid-cols-[minmax(0,1.15fr)_minmax(20rem,0.85fr)]">
-        <div className="rounded-[1.5rem] border border-gold-100 bg-white p-6 shadow-sm">
-          <div className="flex items-start justify-between gap-4">
+      <div className="grid gap-4 xl:grid-cols-[minmax(0,1.2fr)_minmax(18rem,0.8fr)]">
+        <div className="rounded-[1.5rem] border border-gold-100 bg-white p-5 shadow-sm">
+          <div className="flex items-center justify-between gap-4">
             <div>
               <p className="text-[11px] uppercase tracking-[0.32em] text-charcoal-500">Recommended rhythm</p>
-              <h3 className="mt-2 text-xl font-display text-charcoal-900">A simpler way to use admin every week</h3>
+              <h3 className="mt-1 text-xl font-display text-charcoal-900">Three steps, in order</h3>
             </div>
             <ShieldCheck className="h-5 w-5 text-gold-500" />
           </div>
-          <div className="mt-5 grid gap-3">
+          <div className="mt-4 grid gap-3 lg:grid-cols-3">
             <WorkflowStep
               step="1"
-              title="Clear the photo queue"
-              description="Start with /admin/photos so uploads either move forward or stop blocking the rest of the system."
+              title="Photos"
+              description="Clear /admin/photos first."
             />
             <WorkflowStep
               step="2"
-              title="Tighten face coverage"
-              description="Use /admin/review when the public people browser needs cleaner names or better grouping."
+              title="People"
+              description="Tighten names in /admin/review."
             />
             <WorkflowStep
               step="3"
-              title="Refresh what guests notice first"
-              description="Open /admin/featured after moderation so Home and Film highlight the strongest new material."
+              title="Guestbook"
+              description="Clean up messages only when needed."
             />
           </div>
         </div>
 
-        <div className="rounded-[1.5rem] border border-gold-100 bg-white p-6 shadow-sm">
-          <div className="flex items-start justify-between gap-4">
+        <div className="rounded-[1.5rem] border border-gold-100 bg-white p-5 shadow-sm">
+          <div className="flex items-center justify-between gap-4">
             <div>
-              <p className="text-[11px] uppercase tracking-[0.32em] text-charcoal-500">Ground rules</p>
-              <h3 className="mt-2 text-xl font-display text-charcoal-900">What this dashboard is and is not</h3>
+              <p className="text-[11px] uppercase tracking-[0.32em] text-charcoal-500">Scope</p>
+              <h3 className="mt-1 text-xl font-display text-charcoal-900">What belongs here</h3>
             </div>
             <FolderOpen className="h-5 w-5 text-gold-500" />
           </div>
-          <div className="mt-5 space-y-4 text-sm leading-6 text-charcoal-600">
-            <p>
-              This admin area is for operational truth: moderation state, people review, editorial choices, and
-              database-backed activity.
-            </p>
-            <p>
-              Traffic and production errors still belong in Google Analytics and Sentry. That keeps this space focused
-              on decisions you and Jordyn can actually make here.
-            </p>
+          <p className="mt-4 text-sm leading-6 text-charcoal-600">
+            Admin is for moderation, people review, and verified site data. Traffic and error
+            dashboards still live in Google Analytics and Sentry.
+          </p>
+          <div className="mt-4">
             <Button variant="secondary" asChild>
               <Link to="/admin/settings">
-                Review operating notes
+                Operating notes
                 <ArrowRight className="h-4 w-4" />
               </Link>
             </Button>
@@ -369,34 +325,6 @@ function Dashboard() {
         </div>
       </div>
     </div>
-  )
-}
-
-function QuickActionCard({
-  to,
-  title,
-  description,
-  icon: Icon,
-}: {
-  to: string
-  title: string
-  description: string
-  icon: React.ElementType
-}) {
-  return (
-    <Link
-      to={to}
-      className="group rounded-[1.25rem] border border-gold-100 bg-white/80 p-4 transition-all hover:-translate-y-0.5 hover:border-gold-300 hover:shadow-[0_18px_40px_rgba(22,18,14,0.08)]"
-    >
-      <div className="flex items-start justify-between gap-3">
-        <div className="rounded-xl bg-gold-50 p-2 text-gold-700">
-          <Icon className="h-5 w-5" />
-        </div>
-        <ArrowRight className="h-4 w-4 text-charcoal-300 transition-colors group-hover:text-gold-600" />
-      </div>
-      <p className="mt-4 font-medium text-charcoal-900">{title}</p>
-      <p className="mt-2 text-sm leading-6 text-charcoal-500">{description}</p>
-    </Link>
   )
 }
 
@@ -413,20 +341,20 @@ function AdminSignalRow({
 }) {
   const toneClasses =
     tone === 'alert'
-      ? 'border-amber-400/40 bg-amber-500/10'
+      ? 'border-amber-300 bg-amber-50'
       : tone === 'calm'
-        ? 'border-emerald-400/30 bg-emerald-500/10'
-        : 'border-white/10 bg-white/5'
+        ? 'border-emerald-300 bg-emerald-50'
+        : 'border-gold-100 bg-cream-50/70'
 
   return (
-    <div className={`rounded-2xl border px-4 py-4 ${toneClasses}`}>
+    <div className={`rounded-[1.25rem] border px-4 py-4 ${toneClasses}`}>
       <div className="flex items-start justify-between gap-4">
         <div>
-          <p className="text-[11px] uppercase tracking-[0.28em] text-gold-100/70">{label}</p>
-          <p className="mt-2 text-lg font-medium text-white break-words">{value}</p>
+          <p className="text-[10px] uppercase tracking-[0.28em] text-charcoal-500">{label}</p>
+          <p className="mt-2 text-lg font-medium text-charcoal-900 break-words">{value}</p>
         </div>
       </div>
-      <p className="mt-2 text-sm leading-6 text-cream-100/75">{detail}</p>
+      <p className="mt-1 text-sm leading-6 text-charcoal-600">{detail}</p>
     </div>
   )
 }
@@ -441,14 +369,14 @@ function WorkflowStep({
   description: string
 }) {
   return (
-    <div className="rounded-2xl border border-gold-100 bg-cream-50/70 px-4 py-4">
-      <div className="flex items-start gap-4">
-        <div className="flex h-9 w-9 flex-shrink-0 items-center justify-center rounded-full bg-gold-500 text-sm font-semibold text-white">
+    <div className="rounded-[1.1rem] border border-gold-100 bg-cream-50/70 px-4 py-4">
+      <div className="flex items-start gap-3">
+        <div className="flex h-8 w-8 flex-shrink-0 items-center justify-center rounded-full bg-gold-500 text-xs font-semibold text-white">
           {step}
         </div>
         <div>
-          <p className="font-medium text-charcoal-900">{title}</p>
-          <p className="mt-1 text-sm leading-6 text-charcoal-500">{description}</p>
+          <p className="text-sm font-medium text-charcoal-900">{title}</p>
+          <p className="mt-1 text-sm leading-5 text-charcoal-500">{description}</p>
         </div>
       </div>
     </div>
@@ -476,14 +404,14 @@ function StatCard({
   }
 
   return (
-    <div className={`bg-white rounded-xl p-6 shadow-sm border ${alert ? 'border-amber-400' : 'border-gold-100'}`}>
+    <div className={`bg-white rounded-[1.2rem] p-4 shadow-sm border ${alert ? 'border-amber-400' : 'border-gold-100'}`}>
       <div className="flex items-center justify-between">
         <div>
           <p className="text-sm text-charcoal-500">{title}</p>
-          <p className="text-3xl font-display text-charcoal-900 mt-1">{value}</p>
+          <p className="mt-1 text-[2rem] font-display leading-none text-charcoal-900">{value}</p>
         </div>
-        <div className={`p-3 rounded-lg ${colors[color]}`}>
-          <Icon className="w-6 h-6" />
+        <div className={`rounded-xl p-2.5 ${colors[color]}`}>
+          <Icon className="h-5 w-5" />
         </div>
       </div>
       {alert && (
@@ -499,7 +427,7 @@ function StatCard({
 type ModerationUpload = Omit<GuestUpload, 'message'> & { message?: string | null }
 
 type ModerationCollection = 'Wedding Day' | 'Engagement' | 'Bach+ette' | 'Guest Uploads'
-type GuestVideoVisibility = 'archive_only' | 'guest_highlights' | 'featured'
+type GuestVideoVisibility = 'archive_only' | 'guest_highlights'
 
 interface PromotionDraft {
   collection: ModerationCollection
@@ -509,9 +437,6 @@ interface PromotionDraft {
   location: string
   videoVisibility: GuestVideoVisibility
   memoryTrail: MemoryTrailId | ''
-  editorialTitle: string
-  editorialSummary: string
-  featuredRank: string
 }
 
 const collectionOptions: Array<{
@@ -573,9 +498,6 @@ const defaultPromotionDraft: PromotionDraft = {
   location: '',
   videoVisibility: 'archive_only',
   memoryTrail: '',
-  editorialTitle: '',
-  editorialSummary: '',
-  featuredRank: '',
 }
 
 type ModerationQueueFilter = 'pending' | 'approved-unpublished' | 'approved-published' | 'rejected'
@@ -608,11 +530,13 @@ function createPromotionDraft(upload: ModerationUpload): PromotionDraft {
     caption: upload.message || '',
     tags: preset.defaultTags.join(', '),
     location: '',
-    videoVisibility: (upload.video_visibility as GuestVideoVisibility | undefined) || (upload.video_urls?.length ? 'guest_highlights' : 'archive_only'),
+    videoVisibility:
+      upload.video_visibility === 'guest_highlights'
+        ? 'guest_highlights'
+        : upload.video_urls?.length
+          ? 'guest_highlights'
+          : 'archive_only',
     memoryTrail: (upload.memory_trail as MemoryTrailId | null) || '',
-    editorialTitle: upload.editorial_title || '',
-    editorialSummary: upload.editorial_summary || '',
-    featuredRank: upload.featured_rank?.toString() || '',
   }
 }
 
@@ -620,8 +544,6 @@ function getGuestVideoVisibilityLabel(value: GuestVideoVisibility) {
   switch (value) {
     case 'guest_highlights':
       return 'Guest highlights'
-    case 'featured':
-      return 'Featured'
     default:
       return 'Archive only'
   }
@@ -631,9 +553,9 @@ function buildGuestVideoPromotionPatch(draft: PromotionDraft) {
   return {
     video_visibility: draft.videoVisibility,
     memory_trail: draft.memoryTrail || null,
-    editorial_title: draft.editorialTitle.trim() || null,
-    editorial_summary: draft.editorialSummary.trim() || null,
-    featured_rank: draft.featuredRank.trim() ? Number.parseInt(draft.featuredRank.trim(), 10) || 0 : null,
+    editorial_title: null,
+    editorial_summary: null,
+    featured_rank: null,
   }
 }
 
@@ -764,155 +686,12 @@ const auditActionLabels: Record<ModerationAuditAction, string> = {
   guestbook_bulk_deleted: 'Bulk deleted message',
 }
 
-const editorialSlotDefinitions: Array<{
-  slot: SiteEditorialFeatureSlot
-  label: string
-  description: string
-  defaultTrail: string
-  defaultMemoryTrail?: MemoryTrailId
-  defaultSourceType: SiteEditorialFeatureSourceType
-  defaultTitle: string
-  defaultBadgeLabel?: string
-  defaultCtaLabel?: string
-}> = [
-  {
-    slot: 'home_newest_standout_upload',
-    label: 'Home: Standout upload',
-    description: 'Use this for the first “Now Unfolding” card when you want to spotlight a guest contribution on Home.',
-    defaultTrail: 'From your phones',
-    defaultMemoryTrail: 'dance-floor',
-    defaultSourceType: 'guest_upload',
-    defaultTitle: 'Newest standout upload',
-    defaultBadgeLabel: 'Guest upload',
-    defaultCtaLabel: 'See the moment',
-  },
-  {
-    slot: 'home_featured_guestbook_note',
-    label: 'Home: Featured guestbook note',
-    description: 'Highlights one especially meaningful note from the guestbook as a keepsake moment on Home.',
-    defaultTrail: 'Guestbook keepsake',
-    defaultMemoryTrail: 'family',
-    defaultSourceType: 'guestbook_message',
-    defaultTitle: 'Featured guestbook note',
-    defaultBadgeLabel: 'Featured note',
-    defaultCtaLabel: 'Open the note',
-  },
-  {
-    slot: 'home_moment_of_the_week',
-    label: 'Home: Moment of the week',
-    description: 'A curated editorial spotlight for whatever feels worth revisiting this week, whether it comes from the film or a custom story beat.',
-    defaultTrail: 'Now unfolding',
-    defaultMemoryTrail: 'ceremony',
-    defaultSourceType: 'custom',
-    defaultTitle: 'Moment of the week',
-    defaultBadgeLabel: 'Editorial pick',
-    defaultCtaLabel: 'Revisit the moment',
-  },
-  {
-    slot: 'film_featured_guest_video',
-    label: 'Film: Featured guest video',
-    description: 'Overrides the public guest-video highlight so you can feature the right clip under the main film.',
-    defaultTrail: 'From your phones',
-    defaultMemoryTrail: 'dance-floor',
-    defaultSourceType: 'guest_upload',
-    defaultTitle: 'Featured guest highlight',
-    defaultBadgeLabel: 'Featured guest clip',
-    defaultCtaLabel: 'Play clip',
-  },
-]
-
-const editorialSourceLabels: Record<SiteEditorialFeatureSourceType, string> = {
-  guest_upload: 'Guest upload',
-  guestbook_message: 'Guestbook note',
-  film_chapter: 'Film chapter',
-  custom: 'Custom editorial',
-}
-
-const filmChapterFeatureOptions = [
-  { value: 'start', label: 'Film chapter: Start' },
-  { value: 'bachelor-ette', label: 'Film chapter: Bachelor+ette' },
-  { value: 'who-is-it', label: 'Film chapter: "Who Is It"' },
-  { value: 'wedding-party', label: 'Film chapter: Wedding Party' },
-  { value: 'our-vows', label: 'Film chapter: Our Vows' },
-  { value: 'the-ceremony', label: 'Film chapter: The Ceremony' },
-  { value: 'the-reception', label: 'Film chapter: The Reception' },
-  { value: 'first-dance', label: 'Film chapter: First Dance' },
-  { value: 'bloopers', label: 'Film chapter: Bloopers' },
-  { value: 'the-party', label: 'Film chapter: The Party' },
-]
-
-interface EditorialDraft {
-  title: string
-  summary: string
-  trail: string
-  memoryTrail: MemoryTrailId | ''
-  badgeLabel: string
-  ctaLabel: string
-  sourceType: SiteEditorialFeatureSourceType
-  sourceId: string
-  sourceLabel: string
-  sourceUrl: string
-  startsAt: string
-  endsAt: string
-  isActive: boolean
-}
-
-function createEditorialDraft(slot: SiteEditorialFeatureSlot, feature?: SiteEditorialFeature | null): EditorialDraft {
-  const defaults = editorialSlotDefinitions.find((definition) => definition.slot === slot)
-
-  return {
-    title: feature?.title || defaults?.defaultTitle || '',
-    summary: feature?.summary || '',
-    trail: feature?.trail || defaults?.defaultTrail || '',
-    memoryTrail: feature?.memory_trail || defaults?.defaultMemoryTrail || '',
-    badgeLabel: feature?.badge_label || defaults?.defaultBadgeLabel || '',
-    ctaLabel: feature?.cta_label || defaults?.defaultCtaLabel || '',
-    sourceType: feature?.source_type || defaults?.defaultSourceType || 'custom',
-    sourceId: feature?.source_id || '',
-    sourceLabel: feature?.source_label || '',
-    sourceUrl: feature?.source_url || '',
-    startsAt: feature?.starts_at ? feature.starts_at.slice(0, 16) : '',
-    endsAt: feature?.ends_at ? feature.ends_at.slice(0, 16) : '',
-    isActive: feature?.is_active ?? false,
-  }
-}
-
-function formatDatetimeLocalValue(value: string) {
-  if (!value) return null
-  const parsed = new Date(value)
-  if (Number.isNaN(parsed.getTime())) return null
-  return parsed.toLocaleString()
-}
-
 function formatMemoryTrailLabel(trail: MemoryTrailId | '' | null | undefined, fallback?: string | null) {
   if (trail) {
     return getMemoryTrailById(trail)?.label || fallback || trail
   }
 
   return fallback || 'Editorial lane'
-}
-
-function getQuickActionLabel(slot: SiteEditorialFeatureSlot) {
-  switch (slot) {
-    case 'home_newest_standout_upload':
-      return 'Use newest approved upload'
-    case 'home_featured_guestbook_note':
-      return 'Use newest guestbook note'
-    case 'home_moment_of_the_week':
-      return 'Use current family-film moment'
-    case 'film_featured_guest_video':
-      return 'Use top guest video'
-    default:
-      return 'Use latest source'
-  }
-}
-
-function getSlotPreviewCta(slot: SiteEditorialFeatureSlot, draft: EditorialDraft) {
-  return draft.ctaLabel.trim() || (slot === 'film_featured_guest_video' ? 'Play clip' : 'Open it')
-}
-
-function serializeEditorialFeatureForHistory(feature: SiteEditorialFeature | null | undefined) {
-  return feature ? (JSON.parse(JSON.stringify(feature)) as Record<string, unknown>) : {}
 }
 
 function getAdminAuditActor(user: ReturnType<typeof useAuthStore.getState>['user']): AuditActor {
@@ -1052,88 +831,6 @@ function CompactAuditHistory({
           <AuditTrailList entries={remainingEntries} />
         </div>
       )}
-    </div>
-  )
-}
-
-function EditorialHistoryList({ entries }: { entries: SiteEditorialFeatureHistoryEntry[] }) {
-  if (entries.length === 0) {
-    return (
-      <div className="rounded-2xl border border-gold-100 bg-white/88 px-4 py-3 text-sm text-charcoal-500">
-        No slot history yet.
-      </div>
-    )
-  }
-
-  return (
-    <div className="space-y-3">
-      {entries.map((entry) => (
-        <div key={entry.id} className="rounded-2xl border border-gold-100 bg-white/88 px-4 py-3">
-          <p className="text-sm font-medium text-charcoal-900">{entry.change_summary}</p>
-          <p className="mt-1 text-xs text-charcoal-400">
-            {entry.actor_name || entry.actor_email || 'Admin'} · {formatAuditTimestamp(entry.created_at)}
-          </p>
-        </div>
-      ))}
-    </div>
-  )
-}
-
-function FeaturedSlotPreviewCard({
-  slot,
-  draft,
-}: {
-  slot: SiteEditorialFeatureSlot
-  draft: EditorialDraft
-}) {
-  const slotDefinition = editorialSlotDefinitions.find((definition) => definition.slot === slot)
-
-  return (
-    <div className="overflow-hidden rounded-[1.5rem] border border-gold-200/70 bg-[linear-gradient(145deg,rgba(255,251,245,0.98),rgba(247,238,226,0.92))] shadow-sm">
-      <div className="border-b border-gold-100 px-4 py-3">
-        <p className="text-[10px] uppercase tracking-[0.28em] text-gold-700">Public preview</p>
-      </div>
-      <div className="space-y-4 px-4 py-4">
-        <div className="flex flex-wrap items-center gap-2">
-          <span className="rounded-full border border-gold-200 bg-white/84 px-3 py-1 text-[10px] uppercase tracking-[0.24em] text-gold-700">
-            {formatMemoryTrailLabel(draft.memoryTrail, draft.trail)}
-          </span>
-          {(draft.badgeLabel.trim() || draft.sourceLabel.trim()) && (
-            <span className="rounded-full border border-white/80 bg-white/84 px-3 py-1 text-[10px] uppercase tracking-[0.24em] text-charcoal-600">
-              {draft.badgeLabel.trim() || draft.sourceLabel.trim()}
-            </span>
-          )}
-        </div>
-
-        <div>
-          <p className="text-2xl font-display text-charcoal-900">
-            {draft.title.trim() || slotDefinition?.defaultTitle}
-          </p>
-          <p className="mt-3 text-sm leading-6 text-charcoal-600">
-            {draft.summary.trim() || 'This preview updates as you refine the public card copy, trail, badge, and timing.'}
-          </p>
-        </div>
-
-        <div className="grid gap-3 sm:grid-cols-2">
-          <div className="rounded-2xl border border-white/80 bg-white/86 px-4 py-3">
-            <p className="text-[10px] uppercase tracking-[0.24em] text-charcoal-400">Source</p>
-            <p className="mt-2 text-sm font-medium text-charcoal-900">{editorialSourceLabels[draft.sourceType]}</p>
-          </div>
-          <div className="rounded-2xl border border-white/80 bg-white/86 px-4 py-3">
-            <p className="text-[10px] uppercase tracking-[0.24em] text-charcoal-400">Call to action</p>
-            <p className="mt-2 text-sm font-medium text-charcoal-900">{getSlotPreviewCta(slot, draft)}</p>
-          </div>
-        </div>
-
-        {(draft.startsAt || draft.endsAt) && (
-          <div className="rounded-2xl border border-gold-100 bg-white/86 px-4 py-3 text-sm text-charcoal-600">
-            <p className="text-[10px] uppercase tracking-[0.24em] text-charcoal-400">Live window</p>
-            <p className="mt-2">
-              {formatDatetimeLocalValue(draft.startsAt) || 'Now'} to {formatDatetimeLocalValue(draft.endsAt) || 'open-ended'}
-            </p>
-          </div>
-        )}
-      </div>
     </div>
   )
 }
@@ -1293,9 +990,7 @@ function PhotoModeration() {
     const approvalSummary =
       publishedPhotoCount > 0
         ? `Approved and published ${publishedPhotoCount} guest photo${publishedPhotoCount === 1 ? '' : 's'} to ${draft.collection}.${skippedDuplicatePhotoCount > 0 ? ` Skipped ${skippedDuplicatePhotoCount} duplicate photo${skippedDuplicatePhotoCount === 1 ? '' : 's'}.` : ''}`
-        : uploadVideoUrls.length > 0 && draft.videoVisibility === 'featured'
-          ? `Approved ${upload.guest_name}'s video submission as a featured guest clip.`
-          : uploadVideoUrls.length > 0 && draft.videoVisibility === 'guest_highlights'
+        : uploadVideoUrls.length > 0 && draft.videoVisibility === 'guest_highlights'
             ? `Approved ${upload.guest_name}'s video submission for the guest highlight lane.`
             : uploadVideoUrls.length > 0
               ? `Approved ${upload.guest_name}'s video submission for the private archive.`
@@ -1304,12 +999,10 @@ function PhotoModeration() {
     addToast(
       rowsToInsert.length > 0
         ? `Approved and published ${rowsToInsert.length} guest photo${rowsToInsert.length === 1 ? '' : 's'} to ${draft.collection}.${skippedDuplicatePhotoCount > 0 ? ` Skipped ${skippedDuplicatePhotoCount} duplicate photo${skippedDuplicatePhotoCount === 1 ? '' : 's'}.` : ''}`
-        : uploadVideoUrls.length > 0 && draft.videoVisibility === 'featured'
-          ? 'Approved the video-only upload and marked it as a featured guest clip.'
-          : uploadVideoUrls.length > 0 && draft.videoVisibility === 'guest_highlights'
-            ? 'Approved the video-only upload. It is now eligible for the guest video highlights lane.'
-            : uploadVideoUrls.length > 0
-              ? 'Approved the video-only upload. It will stay in the private archive until you promote it later.'
+        : uploadVideoUrls.length > 0 && draft.videoVisibility === 'guest_highlights'
+          ? 'Approved the video-only upload. It is now eligible for the guest video highlights lane.'
+          : uploadVideoUrls.length > 0
+            ? 'Approved the video-only upload. It will stay in the private archive until you promote it later.'
           : 'Approved the upload.',
       'success'
     )
@@ -1353,9 +1046,6 @@ function PhotoModeration() {
         tags,
         video_visibility: draft.videoVisibility,
         memory_trail: draft.memoryTrail || null,
-        editorial_title: draft.editorialTitle.trim() || null,
-        editorial_summary: draft.editorialSummary.trim() || null,
-        featured_rank: draft.featuredRank.trim() || null,
       },
     })
 
@@ -1378,7 +1068,7 @@ function PhotoModeration() {
       .eq('id', upload.id)
 
     if (error) {
-      addToast('Could not save the video promotion settings.', 'error')
+      addToast('Could not save the guest video settings.', 'error')
       setBusyId(null)
       return
     }
@@ -1393,7 +1083,7 @@ function PhotoModeration() {
           : photo
       )
     )
-    addToast('Video promotion settings saved.', 'success')
+    addToast('Guest video settings saved.', 'success')
     setBusyId(null)
   }
 
@@ -2203,7 +1893,7 @@ function PhotoModeration() {
 
                           {videoCount > 0 && (
                             <div className="rounded-2xl border border-gold-100 bg-white/84 p-4">
-                              <p className="text-[10px] uppercase tracking-[0.28em] text-charcoal-500">Guest video promotion</p>
+                              <p className="text-[10px] uppercase tracking-[0.28em] text-charcoal-500">Guest video lane</p>
                               <div className="mt-4 grid gap-4 md:grid-cols-2">
                                 <div>
                                   <Label htmlFor={`video-visibility-${photo.id}`} className="mb-2 text-xs normal-case tracking-normal text-charcoal-500">
@@ -2217,7 +1907,6 @@ function PhotoModeration() {
                                   >
                                     <option value="archive_only">Archive only</option>
                                     <option value="guest_highlights">Guest highlights</option>
-                                    <option value="featured">Featured guest clip</option>
                                   </select>
                                 </div>
                                 <div>
@@ -2239,44 +1928,10 @@ function PhotoModeration() {
                                   </select>
                                 </div>
                               </div>
-
-                              <div className="mt-4 grid gap-4 md:grid-cols-2">
-                                <div>
-                                  <Label htmlFor={`video-title-${photo.id}`} className="mb-2 text-xs normal-case tracking-normal text-charcoal-500">
-                                    Editorial title
-                                  </Label>
-                                  <Input
-                                    id={`video-title-${photo.id}`}
-                                    value={draft.editorialTitle}
-                                    onChange={(event) => updateDraft(photo.id, { editorialTitle: event.target.value })}
-                                    placeholder="Optional public title for the clip"
-                                  />
-                                </div>
-                                <div>
-                                  <Label htmlFor={`video-rank-${photo.id}`} className="mb-2 text-xs normal-case tracking-normal text-charcoal-500">
-                                    Featured rank
-                                  </Label>
-                                  <Input
-                                    id={`video-rank-${photo.id}`}
-                                    value={draft.featuredRank}
-                                    onChange={(event) => updateDraft(photo.id, { featuredRank: event.target.value })}
-                                    placeholder="1 for highest priority"
-                                  />
-                                </div>
-                              </div>
-
-                              <div className="mt-4">
-                                <Label htmlFor={`video-summary-${photo.id}`} className="mb-2 text-xs normal-case tracking-normal text-charcoal-500">
-                                  Editorial summary
-                                </Label>
-                                <Textarea
-                                  id={`video-summary-${photo.id}`}
-                                  value={draft.editorialSummary}
-                                  onChange={(event) => updateDraft(photo.id, { editorialSummary: event.target.value })}
-                                  placeholder="Short copy for the public guest-video lane."
-                                  className="min-h-[88px]"
-                                />
-                              </div>
+                              <p className="mt-4 text-xs leading-5 text-charcoal-500">
+                                Keep this simple: either leave guest videos in the archive or include them in the shared
+                                highlights lane.
+                              </p>
                             </div>
                           )}
                         </div>
@@ -2324,7 +1979,7 @@ function PhotoModeration() {
                           )}
                           {isApprovedUnpublished && (
                             <div className="rounded-2xl border border-purple-200 bg-purple-50/70 px-4 py-3 text-purple-800">
-                              Approved, but not yet surfaced in a public lane. This is usually a video-only upload waiting for the guest highlight feature lane.
+                              Approved, but not yet surfaced in a public lane. This is usually a video-only upload waiting for the guest highlights lane.
                             </div>
                           )}
                           {isRejected && (
@@ -2779,6 +2434,7 @@ function AuditLogView() {
   )
 }
 
+/* Legacy spotlight editor retired.
 function FeaturedContentManager() {
   const [featuresBySlot, setFeaturesBySlot] = useState<Record<SiteEditorialFeatureSlot, SiteEditorialFeature | null>>(() =>
     editorialSlotDefinitions.reduce(
@@ -2808,6 +2464,7 @@ function FeaturedContentManager() {
   const [recentMessages, setRecentMessages] = useState<GuestbookMessage[]>([])
   const [loading, setLoading] = useState(true)
   const [savingSlot, setSavingSlot] = useState<SiteEditorialFeatureSlot | null>(null)
+  const [selectedSlot, setSelectedSlot] = useState<SiteEditorialFeatureSlot>('home_newest_standout_upload')
   const { addToast } = useToast()
   const { user } = useAuthStore()
   const actor = getAdminAuditActor(user)
@@ -3016,6 +2673,97 @@ function FeaturedContentManager() {
     setSavingSlot(null)
   }
 
+  const selectedDefinition =
+    editorialSlotDefinitions.find((definition) => definition.slot === selectedSlot) || editorialSlotDefinitions[0]
+  const selectedDraft = drafts[selectedSlot] || createEditorialDraft(selectedSlot)
+  const selectedFeature = featuresBySlot[selectedSlot]
+  const selectedHistory = historyBySlot[selectedSlot] || []
+  const selectedCandidateSearch = candidateSearchBySlot[selectedSlot] || ''
+  const selectedIsSaving = savingSlot === selectedSlot
+
+  const activeSlotCount = Object.values(featuresBySlot).filter((feature) => feature?.is_active).length
+  const approvedUploadsCount = recentUploads.filter((upload) => upload.status === 'approved').length
+  const guestbookCount = recentMessages.length
+  const normalizedCandidateSearch = selectedCandidateSearch.trim().toLowerCase()
+  const filteredUploadCandidates = recentUploads
+    .filter((upload) => upload.status === 'approved')
+    .filter((upload) =>
+      selectedSlot === 'film_featured_guest_video' ? (upload.video_urls?.length || 0) > 0 : true
+    )
+    .filter((upload) => {
+      if (!normalizedCandidateSearch) return true
+      const haystack = `${upload.guest_name} ${upload.guest_email} ${upload.message || ''}`.toLowerCase()
+      return haystack.includes(normalizedCandidateSearch)
+    })
+    .slice(0, 6)
+  const filteredGuestbookCandidates = recentMessages
+    .filter((message) => {
+      if (!normalizedCandidateSearch) return true
+      const haystack = `${message.name} ${message.email} ${message.content}`.toLowerCase()
+      return haystack.includes(normalizedCandidateSearch)
+    })
+    .slice(0, 6)
+  const activeSourceCount =
+    selectedDraft.sourceType === 'guest_upload'
+      ? filteredUploadCandidates.length
+      : selectedDraft.sourceType === 'guestbook_message'
+        ? filteredGuestbookCandidates.length
+        : selectedDraft.sourceType === 'film_chapter'
+          ? filmChapterFeatureOptions.length
+          : 1
+
+  function applyGuestUploadSelection(upload: ModerationUpload) {
+    updateDraft(selectedSlot, {
+      sourceType: 'guest_upload',
+      sourceId: upload.id,
+      sourceLabel: upload.guest_name,
+      sourceUrl: selectedSlot === 'film_featured_guest_video' ? '/film' : '/gallery?collection=Guest%20Uploads',
+      title:
+        upload.editorial_title?.trim() ||
+        upload.message?.trim() ||
+        (selectedSlot === 'film_featured_guest_video'
+          ? `Featured clip from ${upload.guest_name}`
+          : `Standout upload from ${upload.guest_name}`),
+      summary:
+        upload.editorial_summary?.trim() ||
+        upload.message?.trim() ||
+        (selectedSlot === 'film_featured_guest_video'
+          ? 'A guest-shot angle worth highlighting right under the main film.'
+          : 'A guest contribution worth putting near the top of the story right now.'),
+      badgeLabel:
+        selectedSlot === 'film_featured_guest_video'
+          ? 'Featured guest clip'
+          : 'Guest upload',
+      memoryTrail: (upload.memory_trail as MemoryTrailId | null) || selectedDefinition.defaultMemoryTrail || '',
+    })
+  }
+
+  function applyGuestbookSelection(message: GuestbookMessage) {
+    updateDraft(selectedSlot, {
+      sourceType: 'guestbook_message',
+      sourceId: message.id,
+      sourceLabel: message.name,
+      sourceUrl: `/guestbook?message=${message.id}`,
+      title: `A note from ${message.name}`,
+      summary: message.content.slice(0, 180),
+      badgeLabel: 'Featured note',
+      memoryTrail: 'family',
+    })
+  }
+
+  function applyFilmChapterSelection(option: (typeof filmChapterFeatureOptions)[number]) {
+    updateDraft(selectedSlot, {
+      sourceType: 'film_chapter',
+      sourceId: option.value,
+      sourceLabel: option.label.replace('Film chapter: ', ''),
+      sourceUrl: `/film?moment=${option.value}`,
+      title: option.label.replace('Film chapter: ', ''),
+      summary: 'A direct path back into one chapter of the film without asking guests to restart the full feature.',
+      badgeLabel: 'Film moment',
+      memoryTrail: selectedDefinition.defaultMemoryTrail || '',
+    })
+  }
+
   if (loading) {
     return (
       <div className="rounded-xl border border-gold-100 bg-white px-6 py-12 text-center">
@@ -3030,346 +2778,395 @@ function FeaturedContentManager() {
       <div className="space-y-2">
         <h2 className="text-2xl font-display text-charcoal-900">Featured Content</h2>
         <p className="max-w-3xl text-sm leading-6 text-charcoal-500">
-          These editorial slots feed the homepage and film page when you want to spotlight a specific upload, note,
-          or moment. They are intentionally simple so you can keep the public experience curated without turning admin
-          into a full CMS.
+          Use this like a small editorial desk, not a CMS. Choose one public slot, decide what should feel alive on
+          the site right now, and save that single spotlight before moving to the next one.
         </p>
       </div>
 
-      <div className="rounded-xl border border-blue-200 bg-blue-50 p-4">
-        <p className="font-medium text-blue-900">How v1 works</p>
-        <p className="mt-1 text-sm text-blue-700">
-          Save one row per slot. You can point a slot at a guest upload, a guestbook note, a film chapter, or a
-          custom editorial highlight. Public pages can then read these slots without guessing what should be featured.
-        </p>
+      <div className="grid gap-4 lg:grid-cols-3">
+        <div className="rounded-[1.4rem] border border-gold-100 bg-white px-5 py-5 shadow-sm">
+          <p className="text-[10px] uppercase tracking-[0.3em] text-charcoal-500">Live now</p>
+          <p className="mt-3 text-3xl font-display text-charcoal-900">{activeSlotCount}</p>
+          <p className="mt-2 text-sm leading-6 text-charcoal-600">
+            Editorial slots are currently active across Home and Film.
+          </p>
+        </div>
+        <div className="rounded-[1.4rem] border border-gold-100 bg-white px-5 py-5 shadow-sm">
+          <p className="text-[10px] uppercase tracking-[0.3em] text-charcoal-500">Ready sources</p>
+          <p className="mt-3 text-3xl font-display text-charcoal-900">{approvedUploadsCount}</p>
+          <p className="mt-2 text-sm leading-6 text-charcoal-600">
+            Approved uploads are ready to become a standout card or featured clip.
+          </p>
+        </div>
+        <div className="rounded-[1.4rem] border border-gold-100 bg-white px-5 py-5 shadow-sm">
+          <p className="text-[10px] uppercase tracking-[0.3em] text-charcoal-500">Keepsake notes</p>
+          <p className="mt-3 text-3xl font-display text-charcoal-900">{guestbookCount}</p>
+          <p className="mt-2 text-sm leading-6 text-charcoal-600">
+            Recent guestbook messages are available if you want a softer homepage moment.
+          </p>
+        </div>
       </div>
 
-      <div className="grid gap-6 xl:grid-cols-2">
-        {editorialSlotDefinitions.map((definition) => {
-          const draft = drafts[definition.slot]
-          const feature = featuresBySlot[definition.slot]
-          const isSaving = savingSlot === definition.slot
-          const uploadOptions = recentUploads.map((upload) => ({
-            value: upload.id,
-            label: `${upload.guest_name} · ${upload.status} · ${new Date(upload.created_at).toLocaleDateString()}`,
-          }))
-          const guestbookOptions = recentMessages.map((message) => ({
-            value: message.id,
-            label: `${message.name} · ${message.type} · ${new Date(message.created_at).toLocaleDateString()}`,
-          }))
+      <section className="space-y-4 rounded-[1.6rem] border border-gold-100 bg-white p-5 shadow-sm">
+        <div className="flex flex-wrap items-end justify-between gap-4">
+          <div>
+            <p className="text-[10px] uppercase tracking-[0.3em] text-charcoal-500">Featured overview</p>
+            <h3 className="mt-2 text-xl font-display text-charcoal-900">Pick the next spotlight.</h3>
+            <p className="mt-2 text-sm leading-6 text-charcoal-600">
+              Choose a slot first, then make one clean editorial decision at a time.
+            </p>
+          </div>
+          <Button variant="secondary" onClick={() => applyQuickAction(selectedSlot)} disabled={selectedIsSaving}>
+            {getQuickActionLabel(selectedSlot)}
+          </Button>
+        </div>
 
-          return (
-            <section key={definition.slot} className="rounded-xl border border-gold-100 bg-white p-6 shadow-sm">
-              <div className="flex flex-wrap items-start justify-between gap-4">
-                <div>
-                  <p className="text-[10px] uppercase tracking-[0.28em] text-gold-700">{definition.slot}</p>
-                  <h3 className="mt-2 text-xl font-display text-charcoal-900">{definition.label}</h3>
-                  <p className="mt-2 max-w-xl text-sm leading-6 text-charcoal-500">{definition.description}</p>
-                </div>
-                <span
-                  className={`rounded-full border px-3 py-1 text-[10px] uppercase tracking-[0.24em] ${
-                    draft.isActive
-                      ? 'border-sage-200 bg-sage-100 text-charcoal-700'
-                      : 'border-charcoal-200 bg-charcoal-50 text-charcoal-500'
-                  }`}
+        <div className="grid gap-3 md:grid-cols-2 xl:grid-cols-4">
+          {editorialSlotDefinitions.map((definition) => (
+            <FeaturedSlotOverviewCard
+              key={definition.slot}
+              definition={definition}
+              draft={drafts[definition.slot]}
+              feature={featuresBySlot[definition.slot]}
+              isSelected={selectedSlot === definition.slot}
+              onSelect={() => setSelectedSlot(definition.slot)}
+            />
+          ))}
+        </div>
+      </section>
+
+      <div className="grid gap-6 xl:grid-cols-[minmax(0,1.1fr)_minmax(20rem,0.9fr)]">
+        <section className="space-y-6 rounded-[1.6rem] border border-gold-100 bg-white p-6 shadow-sm">
+          <div className="flex flex-wrap items-start justify-between gap-4">
+            <div>
+              <p className="text-[10px] uppercase tracking-[0.28em] text-gold-700">Selected slot</p>
+              <h3 className="mt-2 text-2xl font-display text-charcoal-900">{selectedDefinition.label}</h3>
+              <p className="mt-2 max-w-3xl text-sm leading-6 text-charcoal-500">{selectedDefinition.description}</p>
+            </div>
+            <span
+              className={`rounded-full border px-3 py-1 text-[10px] uppercase tracking-[0.24em] ${
+                selectedDraft.isActive
+                  ? 'border-sage-200 bg-sage-100 text-charcoal-700'
+                  : 'border-charcoal-200 bg-charcoal-50 text-charcoal-500'
+              }`}
+            >
+              {selectedDraft.isActive ? 'Active on site' : 'Saved as draft'}
+            </span>
+          </div>
+
+          <div className="space-y-4">
+            <div className="grid gap-4 lg:grid-cols-2">
+              <div>
+                <Label htmlFor={`${selectedSlot}-source-type`}>Source type</Label>
+                <select
+                  id={`${selectedSlot}-source-type`}
+                  value={selectedDraft.sourceType}
+                  onChange={(event) =>
+                    updateDraft(selectedSlot, {
+                      sourceType: event.target.value as SiteEditorialFeatureSourceType,
+                      sourceId: '',
+                      sourceLabel: '',
+                    })
+                  }
+                  className="mt-2 h-11 w-full rounded-xl border border-gold-200/70 bg-white px-4 text-sm text-charcoal-900 outline-none transition focus:border-gold-500 focus:ring-2 focus:ring-gold-500/20"
                 >
-                  {draft.isActive ? 'Active' : 'Inactive'}
-                </span>
+                  {Object.entries(editorialSourceLabels).map(([value, label]) => (
+                    <option key={value} value={value}>
+                      {label}
+                    </option>
+                  ))}
+                </select>
               </div>
+              <div className="rounded-[1.15rem] border border-gold-100 bg-cream-50/70 px-4 py-4">
+                <p className="text-[10px] uppercase tracking-[0.28em] text-charcoal-500">Selection status</p>
+                <p className="mt-2 text-sm font-medium text-charcoal-900">
+                  {selectedDraft.sourceId ? 'Source selected' : 'Choose a source next'}
+                </p>
+                <p className="mt-1 text-sm leading-6 text-charcoal-600">
+                  Picking a source fills in the story fields so you can refine instead of starting from scratch.
+                </p>
+              </div>
+            </div>
 
-              <div className="mt-5 grid gap-4">
-                <div className="rounded-[1.25rem] border border-gold-100 bg-cream-50/70 p-4">
-                  <div className="flex flex-wrap items-center justify-between gap-3">
-                    <div>
-                      <p className="text-[10px] uppercase tracking-[0.3em] text-charcoal-500">Quick action</p>
-                      <p className="mt-2 text-sm text-charcoal-600">
-                        Start from the newest real content, then refine the public wording and schedule below.
-                      </p>
-                    </div>
-                    <Button variant="secondary" onClick={() => applyQuickAction(definition.slot)} disabled={isSaving}>
-                      {getQuickActionLabel(definition.slot)}
-                    </Button>
+            {(selectedDraft.sourceType === 'guest_upload' || selectedDraft.sourceType === 'guestbook_message') && (
+              <div className="rounded-[1.25rem] border border-gold-100 bg-cream-50/70 p-4">
+                <div className="flex flex-wrap items-center justify-between gap-3">
+                  <div>
+                    <p className="text-[10px] uppercase tracking-[0.28em] text-charcoal-500">Source picker</p>
+                    <p className="mt-2 text-sm font-medium text-charcoal-900">
+                      {selectedDraft.sourceType === 'guest_upload' ? 'Search approved uploads' : 'Search guestbook notes'}
+                    </p>
                   </div>
+                  <span className="rounded-full border border-gold-200 bg-gold-50 px-3 py-1 text-[10px] uppercase tracking-[0.24em] text-gold-700">
+                    {activeSourceCount} results
+                  </span>
                 </div>
 
-                <div className="grid gap-4 lg:grid-cols-2">
-                  <div>
-                    <Label htmlFor={`${definition.slot}-title`}>Title</Label>
-                    <Input
-                      id={`${definition.slot}-title`}
-                      value={draft.title}
-                      onChange={(event) => updateDraft(definition.slot, { title: event.target.value })}
-                      placeholder="Card headline"
-                    />
-                  </div>
-                  <div>
-                    <Label htmlFor={`${definition.slot}-memory-trail`}>Memory trail</Label>
-                    <select
-                      id={`${definition.slot}-memory-trail`}
-                      value={draft.memoryTrail}
-                      onChange={(event) => updateDraft(definition.slot, { memoryTrail: event.target.value as MemoryTrailId | '' })}
-                      className="mt-2 h-11 w-full rounded-xl border border-gold-200/70 bg-white px-4 text-sm text-charcoal-900 outline-none transition focus:border-gold-500 focus:ring-2 focus:ring-gold-500/20"
-                    >
-                      <option value="">No shared trail</option>
-                      {memoryTrails.map((trail) => (
-                        <option key={trail.id} value={trail.id}>
-                          {trail.label}
-                        </option>
-                      ))}
-                    </select>
-                  </div>
-                </div>
-
-                <div>
-                  <Label htmlFor={`${definition.slot}-summary`}>Summary</Label>
-                  <Textarea
-                    id={`${definition.slot}-summary`}
-                    value={draft.summary}
-                    onChange={(event) => updateDraft(definition.slot, { summary: event.target.value })}
-                    rows={3}
-                    placeholder="Short editorial summary for the public card."
+                <div className="mt-4">
+                  <Input
+                    id={`${selectedSlot}-source-search`}
+                    value={selectedCandidateSearch}
+                    onChange={(event) => updateCandidateSearch(selectedSlot, event.target.value)}
+                    placeholder={
+                      selectedDraft.sourceType === 'guest_upload'
+                        ? 'Search by guest name, email, or note'
+                        : 'Search by guest name or note'
+                    }
                   />
                 </div>
 
-                <div className="grid gap-4 lg:grid-cols-3">
+                <div className="mt-4 grid gap-3">
+                  {selectedDraft.sourceType === 'guest_upload' &&
+                    filteredUploadCandidates.map((candidate) => (
+                      <FeaturedSourceResultCard
+                        key={candidate.id}
+                        title={candidate.guest_name}
+                        subtitle={
+                          candidate.message?.trim() ||
+                          (((candidate.video_urls?.length || 0) > 0)
+                            ? 'Guest upload ready to spotlight.'
+                            : 'Approved upload with no custom note yet.')
+                        }
+                        meta={`${new Date(candidate.created_at).toLocaleDateString()} · ${
+                          ((candidate.video_urls?.length || 0) > 0) ? 'Has video' : 'Photo upload'
+                        }`}
+                        isSelected={selectedDraft.sourceId === candidate.id}
+                        onClick={() => applyGuestUploadSelection(candidate)}
+                      />
+                    ))}
+                  {selectedDraft.sourceType === 'guestbook_message' &&
+                    filteredGuestbookCandidates.map((candidate) => (
+                      <FeaturedSourceResultCard
+                        key={candidate.id}
+                        title={candidate.name}
+                        subtitle={candidate.content}
+                        meta={`${new Date(candidate.created_at).toLocaleDateString()} · ${candidate.type}`}
+                        isSelected={selectedDraft.sourceId === candidate.id}
+                        onClick={() => applyGuestbookSelection(candidate)}
+                      />
+                    ))}
+                  {activeSourceCount === 0 && (
+                    <div className="rounded-[1rem] border border-dashed border-gold-200 bg-white/85 px-4 py-4 text-sm text-charcoal-500">
+                      No matches yet. Try a broader search or use the latest recommended source.
+                    </div>
+                  )}
+                </div>
+              </div>
+            )}
+
+            {selectedDraft.sourceType === 'film_chapter' && (
+              <div className="rounded-[1.25rem] border border-gold-100 bg-cream-50/70 p-4">
+                <p className="text-[10px] uppercase tracking-[0.28em] text-charcoal-500">Source picker</p>
+                <p className="mt-2 text-sm font-medium text-charcoal-900">Choose a film chapter</p>
+                <div className="mt-4 grid gap-3 md:grid-cols-2">
+                  {filmChapterFeatureOptions.map((option) => (
+                    <FeaturedSourceResultCard
+                      key={option.value}
+                      title={option.label.replace('Film chapter: ', '')}
+                      subtitle="Use this chapter as the featured return path."
+                      meta={`/film?moment=${option.value}`}
+                      isSelected={selectedDraft.sourceId === option.value}
+                      onClick={() => applyFilmChapterSelection(option)}
+                    />
+                  ))}
+                </div>
+              </div>
+            )}
+
+            {selectedDraft.sourceType === 'custom' && (
+              <div className="rounded-[1.25rem] border border-gold-100 bg-cream-50/70 p-4">
+                <p className="text-[10px] uppercase tracking-[0.28em] text-charcoal-500">Custom source</p>
+                <div className="mt-4">
+                  <Label htmlFor={`${selectedSlot}-source-id-custom`}>Custom source key</Label>
+                  <Input
+                    id={`${selectedSlot}-source-id-custom`}
+                    value={selectedDraft.sourceId}
+                    onChange={(event) => updateDraft(selectedSlot, { sourceId: event.target.value })}
+                    placeholder="Optional custom identifier"
+                  />
+                </div>
+              </div>
+            )}
+
+            <div className="grid gap-4 lg:grid-cols-2">
+              <div>
+                <Label htmlFor={`${selectedSlot}-title`}>Title</Label>
+                <Input
+                  id={`${selectedSlot}-title`}
+                  value={selectedDraft.title}
+                  onChange={(event) => updateDraft(selectedSlot, { title: event.target.value })}
+                  placeholder="Card headline"
+                />
+              </div>
+              <div>
+                <Label htmlFor={`${selectedSlot}-memory-trail`}>Memory trail</Label>
+                <select
+                  id={`${selectedSlot}-memory-trail`}
+                  value={selectedDraft.memoryTrail}
+                  onChange={(event) => updateDraft(selectedSlot, { memoryTrail: event.target.value as MemoryTrailId | '' })}
+                  className="mt-2 h-11 w-full rounded-xl border border-gold-200/70 bg-white px-4 text-sm text-charcoal-900 outline-none transition focus:border-gold-500 focus:ring-2 focus:ring-gold-500/20"
+                >
+                  <option value="">No shared trail</option>
+                  {memoryTrails.map((trail) => (
+                    <option key={trail.id} value={trail.id}>
+                      {trail.label}
+                    </option>
+                  ))}
+                </select>
+              </div>
+            </div>
+
+            <div>
+              <Label htmlFor={`${selectedSlot}-summary`}>Summary</Label>
+              <Textarea
+                id={`${selectedSlot}-summary`}
+                value={selectedDraft.summary}
+                onChange={(event) => updateDraft(selectedSlot, { summary: event.target.value })}
+                rows={3}
+                placeholder="Short editorial summary for the public card."
+              />
+            </div>
+
+            <div className="grid gap-4 lg:grid-cols-3">
+              <div>
+                <Label htmlFor={`${selectedSlot}-badge-label`}>Badge label</Label>
+                <Input
+                  id={`${selectedSlot}-badge-label`}
+                  value={selectedDraft.badgeLabel}
+                  onChange={(event) => updateDraft(selectedSlot, { badgeLabel: event.target.value })}
+                  placeholder="Featured note, Guest upload..."
+                />
+              </div>
+              <div>
+                <Label htmlFor={`${selectedSlot}-cta-label`}>CTA label</Label>
+                <Input
+                  id={`${selectedSlot}-cta-label`}
+                  value={selectedDraft.ctaLabel}
+                  onChange={(event) => updateDraft(selectedSlot, { ctaLabel: event.target.value })}
+                  placeholder="Open it, Play clip..."
+                />
+              </div>
+              <div>
+                <Label htmlFor={`${selectedSlot}-trail-text`}>Eyebrow text</Label>
+                <Input
+                  id={`${selectedSlot}-trail-text`}
+                  value={selectedDraft.trail}
+                  onChange={(event) => updateDraft(selectedSlot, { trail: event.target.value })}
+                  placeholder="Now unfolding, Keepsake note..."
+                />
+              </div>
+            </div>
+
+            <label className="flex items-center gap-3 rounded-xl border border-gold-100 bg-cream-50/70 px-4 py-3 text-sm text-charcoal-600">
+                <input
+                  type="checkbox"
+                  checked={selectedDraft.isActive}
+                  onChange={(event) => updateDraft(selectedSlot, { isActive: event.target.checked })}
+                  className="h-4 w-4 rounded border-gold-300 text-gold-600 focus:ring-gold-500/30"
+                />
+                Make this slot active on the public site
+            </label>
+
+            <details className="rounded-[1.25rem] border border-gold-100 bg-white/90 p-4">
+              <summary className="flex cursor-pointer list-none items-center justify-between gap-3 text-sm font-medium text-charcoal-900">
+                Advanced settings
+                <ChevronDown className="h-4 w-4 text-charcoal-400" />
+              </summary>
+              <div className="mt-4 space-y-4">
+                <div className="grid gap-4 lg:grid-cols-2">
                   <div>
-                    <Label htmlFor={`${definition.slot}-badge-label`}>Badge label</Label>
+                    <Label htmlFor={`${selectedSlot}-starts-at`}>Starts at</Label>
                     <Input
-                      id={`${definition.slot}-badge-label`}
-                      value={draft.badgeLabel}
-                      onChange={(event) => updateDraft(definition.slot, { badgeLabel: event.target.value })}
-                      placeholder="Featured note, Guest upload..."
+                      id={`${selectedSlot}-starts-at`}
+                      type="datetime-local"
+                      value={selectedDraft.startsAt}
+                      onChange={(event) => updateDraft(selectedSlot, { startsAt: event.target.value })}
                     />
                   </div>
                   <div>
-                    <Label htmlFor={`${definition.slot}-cta-label`}>CTA label</Label>
+                    <Label htmlFor={`${selectedSlot}-ends-at`}>Ends at</Label>
                     <Input
-                      id={`${definition.slot}-cta-label`}
-                      value={draft.ctaLabel}
-                      onChange={(event) => updateDraft(definition.slot, { ctaLabel: event.target.value })}
-                      placeholder="Open it, Play clip..."
-                    />
-                  </div>
-                  <div>
-                    <Label htmlFor={`${definition.slot}-trail-text`}>Eyebrow text</Label>
-                    <Input
-                      id={`${definition.slot}-trail-text`}
-                      value={draft.trail}
-                      onChange={(event) => updateDraft(definition.slot, { trail: event.target.value })}
-                      placeholder="Now unfolding, Keepsake note..."
+                      id={`${selectedSlot}-ends-at`}
+                      type="datetime-local"
+                      value={selectedDraft.endsAt}
+                      onChange={(event) => updateDraft(selectedSlot, { endsAt: event.target.value })}
                     />
                   </div>
                 </div>
 
                 <div className="grid gap-4 lg:grid-cols-2">
                   <div>
-                    <Label htmlFor={`${definition.slot}-starts-at`}>Starts at</Label>
+                    <Label htmlFor={`${selectedSlot}-source-label`}>Source label override</Label>
                     <Input
-                      id={`${definition.slot}-starts-at`}
-                      type="datetime-local"
-                      value={draft.startsAt}
-                      onChange={(event) => updateDraft(definition.slot, { startsAt: event.target.value })}
-                    />
-                  </div>
-                  <div>
-                    <Label htmlFor={`${definition.slot}-ends-at`}>Ends at</Label>
-                    <Input
-                      id={`${definition.slot}-ends-at`}
-                      type="datetime-local"
-                      value={draft.endsAt}
-                      onChange={(event) => updateDraft(definition.slot, { endsAt: event.target.value })}
-                    />
-                  </div>
-                </div>
-
-                <div className="grid gap-4 lg:grid-cols-2">
-                  <div>
-                    <Label htmlFor={`${definition.slot}-source-type`}>Source type</Label>
-                    <select
-                      id={`${definition.slot}-source-type`}
-                      value={draft.sourceType}
-                      onChange={(event) =>
-                        updateDraft(definition.slot, {
-                          sourceType: event.target.value as SiteEditorialFeatureSourceType,
-                          sourceId: '',
-                          sourceLabel: '',
-                        })
-                      }
-                      className="mt-2 h-11 w-full rounded-xl border border-gold-200/70 bg-white px-4 text-sm text-charcoal-900 outline-none transition focus:border-gold-500 focus:ring-2 focus:ring-gold-500/20"
-                    >
-                      {Object.entries(editorialSourceLabels).map(([value, label]) => (
-                        <option key={value} value={value}>
-                          {label}
-                        </option>
-                      ))}
-                    </select>
-                  </div>
-
-                  <div>
-                    <Label htmlFor={`${definition.slot}-source-label`}>Source label</Label>
-                    <Input
-                      id={`${definition.slot}-source-label`}
-                      value={draft.sourceLabel}
-                      onChange={(event) => updateDraft(definition.slot, { sourceLabel: event.target.value })}
+                      id={`${selectedSlot}-source-label`}
+                      value={selectedDraft.sourceLabel}
+                      onChange={(event) => updateDraft(selectedSlot, { sourceLabel: event.target.value })}
                       placeholder="Optional public-facing source label"
                     />
                   </div>
-                </div>
-
-                {draft.sourceType === 'guest_upload' && (
                   <div>
-                    <Label htmlFor={`${definition.slot}-upload-search`}>Find a guest upload</Label>
+                    <Label htmlFor={`${selectedSlot}-source-url`}>Source URL override</Label>
                     <Input
-                      id={`${definition.slot}-upload-search`}
-                      value={candidateSearchBySlot[definition.slot]}
-                      onChange={(event) => updateCandidateSearch(definition.slot, event.target.value)}
-                      placeholder="Filter uploads by guest name, email, or note"
+                      id={`${selectedSlot}-source-url`}
+                      value={selectedDraft.sourceUrl}
+                      onChange={(event) => updateDraft(selectedSlot, { sourceUrl: event.target.value })}
+                      placeholder="Optional deep link for the public card"
                     />
-                    <Label htmlFor={`${definition.slot}-source-id-upload`}>Choose a guest upload</Label>
-                    <select
-                      id={`${definition.slot}-source-id-upload`}
-                      value={draft.sourceId}
-                      onChange={(event) => updateDraft(definition.slot, { sourceId: event.target.value })}
-                      className="mt-2 h-11 w-full rounded-xl border border-gold-200/70 bg-white px-4 text-sm text-charcoal-900 outline-none transition focus:border-gold-500 focus:ring-2 focus:ring-gold-500/20"
-                    >
-                      <option value="">No linked upload</option>
-                      {uploadOptions
-                        .filter((option) => option.label.toLowerCase().includes(candidateSearchBySlot[definition.slot].trim().toLowerCase()))
-                        .map((option) => (
-                        <option key={option.value} value={option.value}>
-                          {option.label}
-                        </option>
-                      ))}
-                    </select>
-                  </div>
-                )}
-
-                {draft.sourceType === 'guestbook_message' && (
-                  <div>
-                    <Label htmlFor={`${definition.slot}-message-search`}>Find a guestbook note</Label>
-                    <Input
-                      id={`${definition.slot}-message-search`}
-                      value={candidateSearchBySlot[definition.slot]}
-                      onChange={(event) => updateCandidateSearch(definition.slot, event.target.value)}
-                      placeholder="Filter notes by guest name or message"
-                    />
-                    <Label htmlFor={`${definition.slot}-source-id-guestbook`}>Choose a guestbook note</Label>
-                    <select
-                      id={`${definition.slot}-source-id-guestbook`}
-                      value={draft.sourceId}
-                      onChange={(event) => updateDraft(definition.slot, { sourceId: event.target.value })}
-                      className="mt-2 h-11 w-full rounded-xl border border-gold-200/70 bg-white px-4 text-sm text-charcoal-900 outline-none transition focus:border-gold-500 focus:ring-2 focus:ring-gold-500/20"
-                    >
-                      <option value="">No linked note</option>
-                      {guestbookOptions
-                        .filter((option) => option.label.toLowerCase().includes(candidateSearchBySlot[definition.slot].trim().toLowerCase()))
-                        .map((option) => (
-                        <option key={option.value} value={option.value}>
-                          {option.label}
-                        </option>
-                      ))}
-                    </select>
-                  </div>
-                )}
-
-                {draft.sourceType === 'film_chapter' && (
-                  <div>
-                    <Label htmlFor={`${definition.slot}-source-id-film`}>Choose a film chapter</Label>
-                    <select
-                      id={`${definition.slot}-source-id-film`}
-                      value={draft.sourceId}
-                      onChange={(event) => updateDraft(definition.slot, { sourceId: event.target.value })}
-                      className="mt-2 h-11 w-full rounded-xl border border-gold-200/70 bg-white px-4 text-sm text-charcoal-900 outline-none transition focus:border-gold-500 focus:ring-2 focus:ring-gold-500/20"
-                    >
-                      <option value="">No linked chapter</option>
-                      {filmChapterFeatureOptions.map((option) => (
-                        <option key={option.value} value={option.value}>
-                          {option.label}
-                        </option>
-                      ))}
-                    </select>
-                  </div>
-                )}
-
-                {draft.sourceType === 'custom' && (
-                  <div>
-                    <Label htmlFor={`${definition.slot}-source-id-custom`}>Custom source key</Label>
-                    <Input
-                      id={`${definition.slot}-source-id-custom`}
-                      value={draft.sourceId}
-                      onChange={(event) => updateDraft(definition.slot, { sourceId: event.target.value })}
-                      placeholder="Optional custom identifier"
-                    />
-                  </div>
-                )}
-
-                <div>
-                  <Label htmlFor={`${definition.slot}-source-url`}>Source URL</Label>
-                  <Input
-                    id={`${definition.slot}-source-url`}
-                    value={draft.sourceUrl}
-                    onChange={(event) => updateDraft(definition.slot, { sourceUrl: event.target.value })}
-                    placeholder="Optional deep link for the public card"
-                  />
-                </div>
-
-                <label className="flex items-center gap-3 rounded-xl border border-gold-100 bg-cream-50/70 px-4 py-3 text-sm text-charcoal-600">
-                  <input
-                    type="checkbox"
-                    checked={draft.isActive}
-                    onChange={(event) => updateDraft(definition.slot, { isActive: event.target.checked })}
-                    className="h-4 w-4 rounded border-gold-300 text-gold-600 focus:ring-gold-500/30"
-                  />
-                  Make this slot active on the public site
-                </label>
-              </div>
-
-              <div className="mt-5 grid gap-4 xl:grid-cols-[minmax(0,1fr)_minmax(0,0.9fr)]">
-                <FeaturedSlotPreviewCard slot={definition.slot} draft={draft} />
-
-                <div className="space-y-4">
-                  {feature && (
-                    <div className="rounded-2xl border border-gold-100 bg-cream-50/70 px-4 py-4">
-                      <p className="text-[10px] uppercase tracking-[0.28em] text-charcoal-500">Current live row</p>
-                      <p className="mt-2 text-sm font-medium text-charcoal-900">
-                        Updated {formatAuditTimestamp(feature.updated_at)}
-                        {feature.updated_by_email ? ` by ${feature.updated_by_email}` : ''}
-                      </p>
-                      <p className="mt-2 text-sm leading-6 text-charcoal-600">
-                        {feature.title}
-                        {feature.summary ? ` — ${feature.summary}` : ''}
-                      </p>
-                    </div>
-                  )}
-
-                  <div className="space-y-3">
-                    <p className="text-[10px] uppercase tracking-[0.28em] text-charcoal-500">Slot history</p>
-                    <EditorialHistoryList entries={historyBySlot[definition.slot] || []} />
                   </div>
                 </div>
               </div>
+            </details>
 
-              <div className="mt-5 flex flex-wrap gap-3">
-                <Button
-                  onClick={() => void handleSave(definition.slot)}
-                  disabled={isSaving}
-                >
-                  {isSaving ? 'Saving...' : 'Save featured slot'}
-                </Button>
-                <Button
-                  variant="secondary"
-                  onClick={() => updateDraft(definition.slot, createEditorialDraft(definition.slot, featuresBySlot[definition.slot]))}
-                  disabled={isSaving}
-                >
-                  Reset changes
-                </Button>
-              </div>
-            </section>
-          )
-        })}
+            <div className="flex flex-wrap gap-3">
+              <Button onClick={() => void handleSave(selectedSlot)} disabled={selectedIsSaving}>
+                {selectedIsSaving ? 'Saving...' : 'Save featured slot'}
+              </Button>
+              <Button
+                variant="secondary"
+                onClick={() => updateDraft(selectedSlot, createEditorialDraft(selectedSlot, featuresBySlot[selectedSlot]))}
+                disabled={selectedIsSaving}
+              >
+                Reset changes
+              </Button>
+            </div>
+          </div>
+        </section>
+
+        <aside className="space-y-4">
+          <FeaturedSlotPreviewCard slot={selectedSlot} draft={selectedDraft} />
+
+          {selectedFeature && (
+            <div className="rounded-[1.25rem] border border-gold-100 bg-cream-50/70 px-4 py-4">
+              <p className="text-[10px] uppercase tracking-[0.28em] text-charcoal-500">Current live row</p>
+              <p className="mt-2 text-sm font-medium text-charcoal-900">
+                Updated {formatAuditTimestamp(selectedFeature.updated_at)}
+                {selectedFeature.updated_by_email ? ` by ${selectedFeature.updated_by_email}` : ''}
+              </p>
+              <p className="mt-2 text-sm leading-6 text-charcoal-600">
+                {selectedFeature.title}
+                {selectedFeature.summary ? ` — ${selectedFeature.summary}` : ''}
+              </p>
+            </div>
+          )}
+
+          <details className="rounded-[1.25rem] border border-gold-100 bg-white/90 p-4">
+            <summary className="flex cursor-pointer list-none items-center justify-between gap-3 text-sm font-medium text-charcoal-900">
+              Slot history
+              <ChevronDown className="h-4 w-4 text-charcoal-400" />
+            </summary>
+            <div className="mt-4">
+              <EditorialHistoryList entries={selectedHistory} />
+            </div>
+          </details>
+        </aside>
       </div>
     </div>
   )
+}
+*/
+
+function FeaturedContentManager() {
+  return <Navigate to="/admin/photos" replace />
 }
 
 // Analytics Dashboard Component
@@ -3627,14 +3424,6 @@ function Settings() {
               This admin area only shows database-backed counts and moderation workflow.
             </p>
           </div>
-          <div className="rounded-xl border border-gold-100 bg-cream-50/70 px-4 py-4">
-            <p className="font-medium text-charcoal-900">Featured content is curated in one place.</p>
-            <p className="mt-2 text-sm text-charcoal-500">
-              Use <span className="font-medium text-charcoal-700">/admin/featured</span> to decide what Home and Film
-              should spotlight next. These editorial slots are schema-backed, read/write, and meant to keep the public
-              site feeling intentional without guessing from raw moderation state.
-            </p>
-          </div>
         </div>
       </div>
 
@@ -3664,6 +3453,7 @@ function AdminLayout() {
   const { signOut, user } = useAuthStore()
   const { addToast } = useToast()
   const currentPage = getAdminRouteMeta(location.pathname)
+  const isDashboardRoute = location.pathname === '/admin'
 
   const handleSignOut = async () => {
     await signOut()
@@ -3680,9 +3470,7 @@ function AdminLayout() {
               <span className="text-gold-500">A</span>&<span className="text-gold-500">J</span>
               <span className="ml-2 text-sm font-normal text-charcoal-500">Admin</span>
             </Link>
-            <p className="mt-1 text-sm text-charcoal-500">
-              A calmer workspace for moderation, people review, and editorial decisions.
-            </p>
+            <p className="mt-1 text-sm text-charcoal-500">A calmer workspace for moderation, people review, and site upkeep.</p>
           </div>
           <div className="flex flex-wrap items-center gap-3 sm:justify-end">
             <div className="rounded-full border border-gold-100 bg-cream-50/80 px-4 py-2 text-sm text-charcoal-600">
@@ -3700,30 +3488,17 @@ function AdminLayout() {
       </header>
 
       <div className="mx-auto max-w-7xl px-4 py-6 xl:py-8">
-        <section className="mb-6 rounded-[1.75rem] border border-gold-100 bg-white/92 px-6 py-6 shadow-[0_16px_50px_rgba(22,18,14,0.06)] sm:px-8">
-          <div className="flex flex-col gap-4 xl:flex-row xl:items-end xl:justify-between">
+        {!isDashboardRoute && (
+          <section className="mb-4 rounded-[1.15rem] border border-gold-100 bg-white/92 px-4 py-4 shadow-sm sm:px-5">
             <div className="max-w-3xl">
-              <p className="text-[11px] uppercase tracking-[0.32em] text-charcoal-500">{currentPage.eyebrow}</p>
-              <h1 className="mt-2 font-display text-3xl leading-tight text-charcoal-900 sm:text-[2.2rem]">
+              <p className="text-[10px] uppercase tracking-[0.32em] text-charcoal-500">{currentPage.eyebrow}</p>
+              <h1 className="mt-1 font-display text-[1.6rem] leading-tight text-charcoal-900">
                 {currentPage.title}
               </h1>
-              <p className="mt-3 text-sm leading-7 text-charcoal-500 sm:text-[15px]">
-                {currentPage.description}
-              </p>
+              <p className="mt-1 text-sm leading-5 text-charcoal-500">{currentPage.description}</p>
             </div>
-            <div className="flex flex-wrap gap-2">
-              <Button variant={location.pathname === '/admin/photos' ? 'primary' : 'secondary'} size="sm" asChild>
-                <Link to="/admin/photos">Photos</Link>
-              </Button>
-              <Button variant={location.pathname === '/admin/review' ? 'primary' : 'secondary'} size="sm" asChild>
-                <Link to="/admin/review">People Review</Link>
-              </Button>
-              <Button variant={location.pathname === '/admin/featured' ? 'primary' : 'secondary'} size="sm" asChild>
-                <Link to="/admin/featured">Featured</Link>
-              </Button>
-            </div>
-          </div>
-        </section>
+          </section>
+        )}
 
         <div className="mb-5 flex gap-2 overflow-x-auto pb-1 xl:hidden">
           {adminNavSections.flatMap((section) => section.items).map((item) => {
@@ -3737,22 +3512,19 @@ function AdminLayout() {
           })}
         </div>
 
-        <div className="flex flex-col gap-6 xl:flex-row xl:gap-8">
+        <div className="flex flex-col gap-5 xl:flex-row xl:gap-6">
         {/* Sidebar */}
-          <nav className="hidden w-full xl:block xl:w-80 xl:flex-shrink-0" aria-label="Admin navigation">
-            <div className="overflow-hidden rounded-[1.75rem] border border-gold-100 bg-white/95 shadow-sm xl:sticky xl:top-28">
-              <div className="border-b border-gold-100 px-5 py-5">
+          <nav className="hidden w-full xl:block xl:w-64 xl:flex-shrink-0" aria-label="Admin navigation">
+            <div className="overflow-hidden rounded-[1.4rem] border border-gold-100 bg-white/95 shadow-sm xl:sticky xl:top-24">
+              <div className="border-b border-gold-100 px-4 py-4">
                 <p className="text-[11px] uppercase tracking-[0.32em] text-charcoal-500">Workspace map</p>
-                <p className="mt-2 text-sm leading-6 text-charcoal-500">
-                  Start with the workflow that matches the kind of content you are trying to move forward.
-                </p>
+                <p className="mt-2 text-sm leading-5 text-charcoal-500">Open the tool that matches the work in front of you.</p>
               </div>
-              <div className="space-y-6 px-4 py-5">
+              <div className="space-y-5 px-3 py-4">
                 {adminNavSections.map((section) => (
                   <div key={section.title}>
-                    <div className="px-2 pb-2">
+                    <div className="px-2 pb-1">
                       <p className="text-[11px] uppercase tracking-[0.28em] text-charcoal-400">{section.title}</p>
-                      <p className="mt-1 text-xs leading-5 text-charcoal-500">{section.description}</p>
                     </div>
                     <div className="space-y-2">
                       {section.items.map((item) => {
@@ -3763,20 +3535,20 @@ function AdminLayout() {
                           <Link
                             key={item.path}
                             to={item.path}
-                            className={`block rounded-2xl border px-4 py-4 transition-all ${
+                            className={`block rounded-[1rem] border px-3 py-3 transition-all ${
                               isActive
-                                ? 'border-gold-300 bg-gold-50 text-gold-800 shadow-[0_14px_32px_rgba(219,180,92,0.18)]'
+                                ? 'border-gold-300 bg-gold-50 text-gold-800 shadow-[0_10px_20px_rgba(219,180,92,0.14)]'
                                 : 'border-gold-100 bg-white text-charcoal-700 hover:border-gold-200 hover:bg-cream-50/80'
                             }`}
                             aria-current={isActive ? 'page' : undefined}
                           >
                             <div className="flex items-start gap-3">
-                              <div className={`rounded-xl p-2 ${isActive ? 'bg-white text-gold-700' : 'bg-cream-50 text-charcoal-500'}`}>
-                                <Icon className="h-5 w-5" />
+                              <div className={`rounded-lg p-2 ${isActive ? 'bg-white text-gold-700' : 'bg-cream-50 text-charcoal-500'}`}>
+                                <Icon className="h-4 w-4" />
                               </div>
                               <div className="min-w-0">
-                                <p className="font-medium">{item.label}</p>
-                                <p className={`mt-1 text-sm leading-6 ${isActive ? 'text-gold-700/90' : 'text-charcoal-500'}`}>
+                                <p className="text-sm font-medium">{item.label}</p>
+                                <p className={`mt-1 text-xs leading-5 ${isActive ? 'text-gold-700/90' : 'text-charcoal-500'}`}>
                                   {item.description}
                                 </p>
                               </div>

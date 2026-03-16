@@ -1,4 +1,6 @@
 const OFFLOADED_MEDIA_PREFIXES = ['/video/', '/background_audio/', '/media/']
+const STORAGE_MEDIA_PREFIX = '/media/'
+const DEFAULT_MEDIA_BUCKET = 'wedding-media'
 
 function trimTrailingSlash(value: string): string {
   return value.replace(/\/+$/, '')
@@ -42,6 +44,12 @@ export function toRemoteMediaPath(path: string): string {
 export function getMediaPath(path: string): string {
   if (!path.startsWith('/')) {
     return path
+  }
+
+  const supabaseUrl = trimTrailingSlash(import.meta.env.VITE_SUPABASE_URL || '')
+  const supabaseMediaBucket = import.meta.env.VITE_SUPABASE_MEDIA_BUCKET || DEFAULT_MEDIA_BUCKET
+  if (supabaseUrl && path.startsWith(STORAGE_MEDIA_PREFIX)) {
+    return `${supabaseUrl}/storage/v1/object/public/${supabaseMediaBucket}/${toRemoteMediaPath(path)}`
   }
 
   const mediaBaseUrl = trimTrailingSlash(import.meta.env.VITE_MEDIA_BASE_URL || '')
