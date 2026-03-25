@@ -72,10 +72,10 @@ function describeUploadSummary(photoCount: number, videoCount: number) {
 
 function describeSubmitLabel(photoCount: number, videoCount: number) {
   if (photoCount === 0 && videoCount === 0) {
-    return 'Select Files First'
+    return 'Choose your files first'
   }
 
-  return `Submit ${describeUploadSummary(photoCount, videoCount)}`
+  return `Send ${describeUploadSummary(photoCount, videoCount)}`
 }
 
 function createUploadId() {
@@ -154,7 +154,7 @@ export default function UploadPage() {
               ? {
                   ...f,
                   status: 'error',
-                  errorMessage: error.message || 'The file could not be uploaded. Please try again.',
+                  errorMessage: error.message || 'This one didn\'t make it through — try uploading again',
                 }
               : f
           )
@@ -177,7 +177,7 @@ export default function UploadPage() {
       const message =
         error instanceof Error
           ? error.message
-          : 'The file could not be uploaded. Please try again.'
+          : 'This one didn\'t make it through — try uploading again'
 
       setFiles(prev =>
         prev.map(f =>
@@ -309,7 +309,7 @@ export default function UploadPage() {
       setIsSubmitted(true)
       setQueueNotice(null)
     } catch {
-      setSubmitError('Something went wrong. Please try again.')
+      setSubmitError('Something didn\'t quite work — give it another go')
     } finally {
       setIsSubmitting(false)
     }
@@ -419,7 +419,7 @@ export default function UploadPage() {
                   View Gallery
                 </Button>
                 <Button onClick={() => window.location.reload()} size="lg">
-                  Upload More
+                  Share more
                 </Button>
               </div>
             </div>
@@ -617,8 +617,7 @@ export default function UploadPage() {
               </h2>
 
               <p className="mx-auto mt-4 max-w-2xl text-base text-charcoal-600 sm:text-lg">
-                Click anywhere in this panel or drag files in from your desktop. We’ll upload first,
-                then you can add your name and a note before sending everything through for review.
+                Click anywhere or drag your files in
               </p>
 
               <div className="mt-8 flex flex-wrap items-center justify-center gap-3 text-sm text-charcoal-500">
@@ -669,8 +668,7 @@ export default function UploadPage() {
                       {completedFiles} of {files.length} files ready to send
                     </h3>
                     <p className="mt-3 max-w-2xl text-sm text-charcoal-500 sm:text-base">
-                      Review everything here before you submit. Remove anything you do not want included,
-                      retry anything that failed, and only send once the files you want are marked ready.
+                      Take a look before sending. Remove anything you don't want, retry anything that didn't upload, and send when you're happy with what's ready.
                     </p>
                   </div>
 
@@ -685,7 +683,7 @@ export default function UploadPage() {
                     )}
                     {hasErrors && (
                       <span className="rounded-full border border-rose-200 bg-rose-50 px-4 py-2 text-rose-600">
-                        Failed files stay out until you retry or remove them
+                        These didn't upload — retry or remove them before sending
                       </span>
                     )}
                   </div>
@@ -725,7 +723,7 @@ export default function UploadPage() {
                         {file.status === 'uploading' && (
                           <div>
                             <div className="mb-2 flex items-center justify-between text-xs text-charcoal-500">
-                              <span>Uploading to the private review queue…</span>
+                              <span>Uploading for us…</span>
                               <span>Processing</span>
                             </div>
                             <div className="h-2 overflow-hidden rounded-full bg-gold-100">
@@ -753,17 +751,17 @@ export default function UploadPage() {
                           <div className="space-y-2">
                             <div className="inline-flex items-center gap-2 rounded-full border border-rose-200 bg-rose-50 px-3 py-1.5 text-xs font-medium text-rose-600">
                               <AlertCircle className="h-3.5 w-3.5" />
-                              Needs retry
+                              Didn't upload
                             </div>
                             <p className="text-xs leading-5 text-rose-600">
-                              {file.errorMessage || 'This file did not make it through. Retry it or remove it before you submit.'}
+                              {file.errorMessage || 'This one didn\'t upload — try again or skip it'}
                             </p>
                             <button
                               type="button"
                               onClick={() => retryUpload(file.id)}
                               className="text-xs font-medium uppercase tracking-[0.22em] text-gold-700 transition-colors hover:text-gold-600"
                             >
-                              Retry upload
+                              Try again
                             </button>
                           </div>
                         )}
@@ -829,7 +827,7 @@ export default function UploadPage() {
                     required
                   />
                   <p className="mt-2 text-xs text-charcoal-400">
-                    Saved with the upload so we can identify the submission if questions come up.
+                    We keep this in case we need to reach you about your photos.
                   </p>
                 </div>
 

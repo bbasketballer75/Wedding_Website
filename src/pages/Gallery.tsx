@@ -488,7 +488,7 @@ export default function Gallery() {
           .order('created_at', { ascending: false })
 
         if (error) {
-          setLoadError('Could not load the live gallery right now. The curated collections below are still ready to browse.')
+          setLoadError('The live gallery is taking a moment — the collections below are still ready to explore.')
           return
         }
 
@@ -812,7 +812,7 @@ export default function Gallery() {
         )
       )
       setSubmittingCommentPhotoId((current) => (current === photoId ? null : current))
-      addToast('Could not post that comment right now.', 'error')
+      addToast('That didn\'t go through — try again in a moment.', 'error')
       return false
     }
 
