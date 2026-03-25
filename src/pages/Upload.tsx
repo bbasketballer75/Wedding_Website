@@ -351,7 +351,7 @@ export default function UploadPage() {
     const uploadSummary = describeUploadSummary(completedPhotoCount, completedVideoCount)
 
     return (
-      <div className="min-h-screen bg-[linear-gradient(to_b,rgba(12,8,5,1),rgba(22,14,6,1))] px-4 pb-20 pt-32">
+      <div className="min-h-screen bg-[linear-gradient(to_bottom,rgba(12,8,5,1),rgba(22,14,6,1))] px-4 pb-20 pt-32">
         <div className="pointer-events-none fixed inset-0 overflow-hidden" aria-hidden="true">
           <div className="absolute -top-32 left-1/4 h-96 w-96 rounded-full bg-gold-500/4 blur-[120px]" />
           <div className="absolute bottom-1/4 right-1/4 h-64 w-64 rounded-full bg-gold-400/3 blur-[100px]" />
@@ -434,7 +434,7 @@ export default function UploadPage() {
   }
 
   return (
-    <div className="min-h-screen bg-[linear-gradient(to_b,rgba(12,8,5,1),rgba(22,14,6,1))] pb-20 pt-28 sm:pt-32">
+    <div className="min-h-screen bg-[linear-gradient(to_bottom,rgba(12,8,5,1),rgba(22,14,6,1))] pb-20 pt-28 sm:pt-32">
       <div className="pointer-events-none fixed inset-0 overflow-hidden" aria-hidden="true">
         <div className="absolute -top-32 left-1/4 h-96 w-96 rounded-full bg-gold-500/4 blur-[120px]" />
         <div className="absolute bottom-1/4 right-1/4 h-64 w-64 rounded-full bg-gold-400/3 blur-[100px]" />
