@@ -642,36 +642,40 @@ function FilmCTACard() {
       <motion.div
         whileHover={{ y: -6, boxShadow: '0 30px 60px -15px rgba(198,156,78,0.3)', borderColor: 'rgba(198,156,78,0.6)' }}
         transition={{ duration: 0.3 }}
-        className="relative overflow-hidden rounded-2xl border border-gold-200/80 bg-white p-6 shadow-lg cursor-pointer group sm:p-8"
+        className="relative overflow-hidden rounded-2xl border border-gold-200/15 bg-[linear-gradient(145deg,rgba(12,8,5,0.98),rgba(36,22,8,0.97)_55%,rgba(18,11,4,0.98))] p-6 shadow-[0_20px_60px_-20px_rgba(0,0,0,0.6)] cursor-pointer group sm:p-8"
       >
-        <div className="flex items-start justify-between gap-4">
-          <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-2xl border border-gold-200/60 bg-gold-50 text-gold-600">
+        {/* Ambient glow */}
+        <div className="pointer-events-none absolute -right-16 -top-16 h-48 w-48 rounded-full bg-gold-500/10 blur-3xl" />
+        <div className="pointer-events-none absolute -left-8 bottom-0 h-36 w-36 rounded-full bg-rose-700/8 blur-3xl" />
+
+        <div className="relative flex items-start justify-between gap-4">
+          <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-2xl border border-gold-300/25 bg-gold-500/10 text-gold-400">
             <Clapperboard className="h-5 w-5" />
           </div>
           <motion.div
-            animate={{ scale: [1, 1.12, 1] }}
+            animate={{ scale: [1, 1.15, 1] }}
             transition={{ duration: 2.8, repeat: Infinity, ease: 'easeInOut' }}
-            className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full border border-gold-300/50 bg-gold-50 text-gold-600"
+            className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full border border-white/25 bg-white/10 backdrop-blur-sm"
           >
-            <Play className="h-4 w-4 fill-gold-500 text-gold-500 ml-0.5" />
+            <Play className="h-4 w-4 fill-white text-white ml-0.5" />
           </motion.div>
         </div>
 
-        <h3 className="mt-5 font-display text-2xl text-charcoal-900 transition-colors duration-300 group-hover:text-gold-600 sm:text-3xl">
+        <h3 className="relative mt-5 font-display text-2xl text-white sm:text-3xl">
           The whole night, start to finish.
         </h3>
 
-        <p className="mt-3 text-sm leading-relaxed text-charcoal-600 sm:text-base">
+        <p className="relative mt-3 text-sm leading-relaxed text-white/55 sm:text-base">
           Ceremony, vows, speeches, first dance — and everything in between.
         </p>
 
-        <div className="mt-6">
+        <div className="relative mt-6">
           <Button size="lg" to={resumeTime ? `/film?resume=1` : '/film'} className="w-full justify-center">
             {resumeTime ? `Resume at ${formatVideoProgressLabel(resumeTime)}` : 'Watch the Film'}
           </Button>
         </div>
 
-        <motion.div className="pointer-events-none absolute inset-0 bg-gradient-to-br from-gold-50/60 via-transparent to-rose-50/60 opacity-0 transition-opacity duration-500 group-hover:opacity-100" />
+        <motion.div className="pointer-events-none absolute inset-0 rounded-2xl opacity-0 ring-1 ring-inset ring-gold-400/30 transition-opacity duration-300 group-hover:opacity-100" />
       </motion.div>
     </motion.div>
   )
