@@ -1,11 +1,19 @@
 import { useRef } from 'react'
 import { motion, useScroll, useTransform, useSpring } from 'framer-motion'
-import { Heart, MapPin, Calendar, Sparkles } from 'lucide-react'
+import { Heart, MapPin, Calendar, Clapperboard, Play, Sparkles } from 'lucide-react'
 import { cn } from '@/lib/utils'
 import { LocationMap } from './LocationMap'
 import { ImageCarousel } from './ImageCarousel'
 import { TimelineIcon } from './TimelineIcon'
 import { BridalShowerLink } from './BridalShowerLink'
+import { Button } from '@/components/ui/Button'
+import {
+  MAIN_FILM_PROGRESS_KEY,
+  formatVideoProgressLabel,
+  readSavedVideoProgress,
+} from '@/utils/videoProgress'
+
+const HERO_POSTER = '/images/home/intro-video-poster.png'
 
 interface TimelineEvent {
   id: string
@@ -590,6 +598,110 @@ function StandardTimelineCard({ event, index }: { event: TimelineEvent; index: n
   )
 }
 
+function FilmCTACard() {
+  const cardRef = useRef<HTMLDivElement>(null)
+  const isMobile = typeof window !== 'undefined' && window.innerWidth < 768
+  const resumeTime = readSavedVideoProgress(MAIN_FILM_PROGRESS_KEY)
+
+  const { scrollYProgress } = useScroll({
+    target: cardRef,
+    offset: ['start end', 'center center'],
+  })
+
+  const opacity = useTransform(scrollYProgress, [0, 0.5, 1], [0.3, 1, 1])
+  const scale = useTransform(scrollYProgress, [0, 0.5, 1], isMobile ? [0.97, 1, 1] : [0.8, 1, 1])
+  const x = useTransform(scrollYProgress, [0, 1], isMobile ? [0, 0] : [100, 0])
+
+  return (
+    <motion.div
+      ref={cardRef}
+      style={{ opacity, scale, x }}
+      className="relative z-[60] ml-7 w-[calc(100%-1.75rem)] md:ml-auto md:mr-0 md:ml-0 md:w-[calc(50%-60px)]"
+    >
+      {/* Mobile dot */}
+      <div className="absolute -left-3 top-7 z-30 md:hidden">
+        <div className="h-3 w-3 rounded-full border-2 border-white shadow-sm bg-gold-500" />
+      </div>
+
+      {/* Desktop dot */}
+      <div className="absolute -left-[68px] top-1/2 -translate-y-1/2 z-30 hidden md:flex">
+        <motion.div
+          initial={{ scale: 0 }}
+          whileInView={{ scale: 1 }}
+          viewport={{ once: true }}
+          transition={{ type: 'spring', stiffness: 200 }}
+          className="relative h-5 w-5 rounded-full border-4 border-white bg-gold-500 shadow-lg shadow-gold-300/50"
+        >
+          <motion.div
+            animate={{ scale: [1, 2, 1], opacity: [0.5, 0, 0.5] }}
+            transition={{ duration: 2, repeat: Infinity }}
+            className="absolute inset-0 rounded-full -z-10 bg-gold-400"
+          />
+        </motion.div>
+      </div>
+
+      {/* Connector */}
+      <div className="absolute -left-[60px] top-1/2 -translate-y-1/2 h-0.5 w-[60px] bg-gold-300/50 hidden md:block z-20" />
+
+      {/* Card */}
+      <motion.div
+        whileHover={{ y: -8, boxShadow: '0 25px 50px -12px rgba(198,156,78,0.35)', borderColor: 'rgba(198,156,78,0.6)' }}
+        transition={{ duration: 0.3 }}
+        className="relative overflow-hidden rounded-2xl border border-gold-200/80 bg-white shadow-lg cursor-pointer group"
+      >
+        {/* Poster thumbnail */}
+        <div className="relative overflow-hidden">
+          <img
+            src={HERO_POSTER}
+            alt="Film"
+            className="h-44 w-full object-cover object-[58%_30%] transition-transform duration-700 group-hover:scale-105"
+          />
+          <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-black/10 to-transparent" />
+          <div className="absolute inset-0 flex items-center justify-center">
+            <motion.div
+              animate={{ scale: [1, 1.1, 1] }}
+              transition={{ duration: 2.8, repeat: Infinity, ease: 'easeInOut' }}
+              className="flex h-14 w-14 items-center justify-center rounded-full border border-white/40 bg-white/20 backdrop-blur-sm shadow-[0_0_30px_rgba(255,255,255,0.15)]"
+            >
+              <Play className="h-5 w-5 fill-white text-white ml-0.5" />
+            </motion.div>
+          </div>
+          {/* Sparkles on hover */}
+          <div className="absolute top-3 right-3 opacity-0 group-hover:opacity-100 transition-opacity duration-300">
+            <motion.div animate={{ y: [0, -8, 0], opacity: [0, 1, 0] }} transition={{ repeat: Infinity, duration: 2 }}>
+              <Sparkles className="h-4 w-4 text-gold-300" />
+            </motion.div>
+          </div>
+        </div>
+
+        {/* Content */}
+        <div className="p-6">
+          <motion.div className="flex items-center gap-2 mb-4" whileHover={{ scale: 1.05 }}>
+            <span className="inline-flex items-center gap-1.5 rounded-full bg-gold-100 px-4 py-1.5 text-xs font-semibold tracking-wide text-gold-700">
+              <Clapperboard className="h-3 w-3" />
+              The Film
+            </span>
+          </motion.div>
+
+          <h3 className="mb-3 font-display text-2xl text-charcoal-900 transition-colors duration-300 group-hover:text-gold-600 md:text-3xl">
+            The whole night,<br />start to finish.
+          </h3>
+
+          <p className="mb-5 text-sm leading-relaxed text-charcoal-600 md:text-base">
+            Ceremony, vows, speeches, first dance — and everything in between.
+          </p>
+
+          <Button size="lg" to={resumeTime ? `/film?resume=1` : '/film'} className="w-full justify-center">
+            {resumeTime ? `Resume at ${formatVideoProgressLabel(resumeTime)}` : 'Watch the Film'}
+          </Button>
+        </div>
+
+        <motion.div className="absolute inset-0 bg-gradient-to-br from-gold-50/80 via-transparent to-rose-50/80 opacity-0 group-hover:opacity-100 transition-opacity duration-500 pointer-events-none" />
+      </motion.div>
+    </motion.div>
+  )
+}
+
 export function LoveTimeline() {
   const containerRef = useRef<HTMLDivElement>(null)
   const { scrollYProgress } = useScroll({
@@ -727,6 +839,7 @@ export function LoveTimeline() {
             {timelineEvents.map((event, index) => (
               <TimelineCard key={event.id} event={event} index={index} />
             ))}
+            <FilmCTACard />
           </div>
         </div>
       </div>
