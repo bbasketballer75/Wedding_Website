@@ -8,20 +8,23 @@ import { AuthProvider } from './providers/AuthProvider'
 import { AppProviders } from './providers/AppProviders'
 import { initAnalytics } from './services/AnalyticsService'
 import { initErrorTracking } from './services/ErrorLoggingService'
+import { swManager } from './utils/serviceWorker'
 
 // Initialize error tracking (Sentry) in production
 initErrorTracking()
 initAnalytics()
 
 // Register service worker via vite-plugin-pwa
-registerSW({
+const updateSW = registerSW({
   onNeedRefresh() {
-    // Show prompt to user
+    swManager.signalUpdateAvailable()
   },
   onOfflineReady() {
     // App is offline ready - PWA registered
   },
 })
+
+swManager.setUpdateHandler(updateSW)
 
 createRoot(document.getElementById('root')).render(
   <StrictMode>

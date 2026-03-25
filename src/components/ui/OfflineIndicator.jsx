@@ -22,15 +22,18 @@ const OfflineIndicator = () => {
     }
 
     swManager.addListener('connection-change', handleConnectionChange)
-    swManager.addListener('update-available', () => {
+    const handleUpdateAvailable = () => {
       setUpdateAvailable(true)
-    })
+    }
+
+    swManager.addListener('update-available', handleUpdateAvailable)
 
     // Check initial connection
     swManager.checkConnection()
 
     return () => {
       swManager.removeListener('connection-change', handleConnectionChange)
+      swManager.removeListener('update-available', handleUpdateAvailable)
     }
   }, [])
 
@@ -111,18 +114,6 @@ const OfflineIndicator = () => {
           </motion.div>
         )}
       </AnimatePresence>
-
-      {/* Online Status Indicator (subtle) */}
-      {isOnline && (
-        <div className='fixed bottom-4 right-4 z-40'>
-          <motion.div
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 0.5 }}
-            className='bg-green-500 w-3 h-3 rounded-full'
-            title='Online'
-          />
-        </div>
-      )}
     </>
   )
 }

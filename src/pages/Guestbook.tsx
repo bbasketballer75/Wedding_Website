@@ -651,7 +651,6 @@ export default function Guestbook() {
   const filteredMessages = messages.filter((message) => (filter === 'all' ? true : message.type === filter))
   const visibleMessages = filteredMessages.slice(0, visibleCount)
   const hasMoreMessages = filteredMessages.length > visibleCount
-  const totalReactions = messages.reduce((total, message) => total + message.reactions.reduce((sum, reaction) => sum + reaction.count, 0), 0)
   const totalReplies = messages.reduce((total, message) => total + message.comments.length, 0)
   const featuredMessage = messages[0]
   const counts = {
@@ -689,37 +688,37 @@ export default function Guestbook() {
           <motion.div initial={{ opacity: 0, y: 24 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.7, ease: [0.16, 1, 0.3, 1] }} className="editorial-panel overflow-hidden px-6 py-8 sm:px-8 sm:py-10 lg:px-10">
             <div className="absolute -right-16 top-10 h-44 w-44 rounded-full bg-gold-200/30 blur-3xl" />
             <div className="absolute -left-10 bottom-0 h-32 w-32 rounded-full bg-blush-200/35 blur-3xl" />
-            <div className="relative grid gap-8 xl:grid-cols-[minmax(0,1.15fr)_minmax(16rem,0.85fr)] xl:items-start">
+            <div className="relative grid gap-8 2xl:grid-cols-[minmax(0,1.15fr)_minmax(16rem,0.85fr)] 2xl:items-start">
               <div>
-                <span className="eyebrow-chip"><BookHeart className="h-3.5 w-3.5" />The guestbook</span>
-                <h1 className="mt-6 max-w-3xl text-5xl text-charcoal-900 sm:text-6xl">Leave the part of the day only you can tell back to us.</h1>
-                <p className="mt-5 max-w-2xl text-base text-charcoal-600 sm:text-lg">This is the softer side of the archive: a written note from your table, a voice memo on the ride home, or a quick video hello that still sounds like the room felt.</p>
+                <span className="eyebrow-chip"><BookHeart className="h-3.5 w-3.5" />After the film</span>
+                <h1 className="mt-6 max-w-3xl text-5xl text-charcoal-900 sm:text-6xl">Leave one note before you go.</h1>
+                <p className="mt-5 max-w-2xl text-base text-charcoal-600 sm:text-lg">A short written note is usually enough. Voice and video are here when hearing the tone matters more than polish.</p>
                 <div className="mt-8 flex flex-wrap items-center gap-3 text-sm text-charcoal-500">
-                  <span className="rounded-full border border-white/80 bg-white/76 px-4 py-2">{messages.length} notes collected</span>
-                  <span className="rounded-full border border-white/80 bg-white/76 px-4 py-2">{totalReplies} replies tucked in</span>
-                  <span className="rounded-full border border-white/80 bg-white/76 px-4 py-2">{totalReactions} reactions shared</span>
+                  <span className="rounded-full border border-white/80 bg-white/76 px-4 py-2">Text is the default</span>
+                  <span className="rounded-full border border-white/80 bg-white/76 px-4 py-2">Voice and video are optional</span>
+                  <span className="rounded-full border border-white/80 bg-white/76 px-4 py-2">{messages.length} notes in the archive</span>
                 </div>
                 <div className="mt-8 flex flex-wrap gap-3">
                   <Button size="lg" onClick={() => openComposer('text')}>Leave a note</Button>
-                  <Button size="lg" variant="secondary" onClick={() => openComposer('voice')}>Record a message</Button>
+                  <Button size="lg" variant="ghost" onClick={() => openComposer('voice')}>Open voice or video options</Button>
                 </div>
               </div>
 
-              <div className="grid gap-3 sm:grid-cols-3 xl:grid-cols-1">
+              <div className="grid gap-3 md:grid-cols-3 2xl:grid-cols-1">
                 <div className="editorial-card px-5 py-5">
-                  <p className="text-[10px] uppercase tracking-[0.3em] text-gold-700">What belongs here</p>
-                  <p className="mt-3 text-lg font-semibold text-charcoal-900">The emotional, funny, and in-between parts.</p>
-                  <p className="mt-2 text-sm leading-6 text-charcoal-500">The guestbook works best when it sounds like you, not like a polished speech.</p>
+                  <p className="text-[10px] uppercase tracking-[0.3em] text-gold-700">Best use</p>
+                  <p className="mt-3 text-lg font-semibold text-charcoal-900">Write the thing you would say on the drive home.</p>
+                  <p className="mt-2 text-sm leading-6 text-charcoal-500">A short note usually feels better here than a polished speech.</p>
                 </div>
                 <div className="editorial-card px-5 py-5">
-                  <p className="text-[10px] uppercase tracking-[0.3em] text-gold-700">Best formats</p>
-                  <p className="mt-3 text-lg font-semibold text-charcoal-900">Text for a full thought, voice or video for tone.</p>
-                  <p className="mt-2 text-sm leading-6 text-charcoal-500">Choose the format that feels easiest and send it through in one step.</p>
+                  <p className="text-[10px] uppercase tracking-[0.3em] text-gold-700">Format choice</p>
+                  <p className="mt-3 text-lg font-semibold text-charcoal-900">Start with text unless a voice or video matters.</p>
+                  <p className="mt-2 text-sm leading-6 text-charcoal-500">The page keeps the other formats available without making them the main task.</p>
                 </div>
                 <div className="editorial-card px-5 py-5">
                   <p className="text-[10px] uppercase tracking-[0.3em] text-gold-700">Good to know</p>
-                  <p className="mt-3 text-lg font-semibold text-charcoal-900">You can still post even if the feed is loading slowly.</p>
-                  <p className="mt-2 text-sm leading-6 text-charcoal-500">Your note goes straight into the archive, and the page refreshes around it.</p>
+                  <p className="mt-3 text-lg font-semibold text-charcoal-900">Your note goes straight into the archive.</p>
+                  <p className="mt-2 text-sm leading-6 text-charcoal-500">Even if the feed is still loading, you can leave your message and the page will catch up around it.</p>
                 </div>
               </div>
             </div>
@@ -728,8 +727,8 @@ export default function Guestbook() {
       </section>
 
       <section className="px-4">
-        <div className="mx-auto grid max-w-6xl gap-6 xl:grid-cols-[minmax(0,18rem)_minmax(0,1fr)] xl:items-start">
-          <div className="grid gap-4 xl:sticky xl:top-28">
+        <div className="mx-auto grid max-w-6xl gap-6 2xl:grid-cols-[minmax(0,18rem)_minmax(0,1fr)] 2xl:items-start">
+          <div className="grid gap-4 2xl:sticky 2xl:top-28">
             <motion.div initial={{ opacity: 0, y: 18 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.08 }} className="editorial-card px-5 py-5">
               <p className="text-[10px] uppercase tracking-[0.3em] text-gold-700">Contribute</p>
               <h2 className="mt-4 text-2xl text-charcoal-900">Add your side of the day.</h2>
@@ -802,8 +801,8 @@ export default function Guestbook() {
                       <div className="flex items-start justify-between gap-4">
                         <div>
                           <span className="eyebrow-chip"><Send className="h-3.5 w-3.5" />Compose a message</span>
-                          <h2 className="mt-5 text-3xl text-charcoal-900 sm:text-4xl">Share a note in the format that fits.</h2>
-                          <p className="mt-3 max-w-2xl text-sm leading-6 text-charcoal-600 sm:text-base">Written notes are perfect for a full thought. Voice and video work best when tone matters more than polish.</p>
+                          <h2 className="mt-5 text-3xl text-charcoal-900 sm:text-4xl">Leave one note before you go.</h2>
+                          <p className="mt-3 max-w-2xl text-sm leading-6 text-charcoal-600 sm:text-base">A written note is usually enough. Voice and video are here when hearing the tone matters more than polish.</p>
                         </div>
                         <button type="button" onClick={() => setShowForm(false)} className="rounded-full border border-gold-200/70 bg-cream-50/88 p-2 text-charcoal-500 shadow-sm transition-colors hover:border-gold-300/70 hover:text-charcoal-800" aria-label="Close composer"><X className="h-5 w-5" /></button>
                       </div>
@@ -867,7 +866,7 @@ export default function Guestbook() {
 
                       {submitError && <div className="mt-5 rounded-[1.35rem] border border-rose-200 bg-rose-50 px-4 py-3"><p className="text-sm text-rose-600">{submitError}</p></div>}
 
-                      <div className="mt-6 flex flex-col gap-4 border-t border-charcoal-900/8 pt-5 xl:flex-row xl:items-center xl:justify-between">
+                      <div className="mt-6 flex flex-col gap-4 border-t border-charcoal-900/8 pt-5 2xl:flex-row 2xl:items-center 2xl:justify-between">
                         <div className="space-y-2 text-sm text-charcoal-500">
                           <p className="flex items-center gap-2"><Mail className="h-4 w-4 text-gold-600" />We only need your name, email, and the message itself.</p>
                           <p className="flex items-center gap-2"><Sparkles className="h-4 w-4 text-gold-600" />Voice and video entries upload exactly the same way they already do today.</p>
@@ -885,7 +884,7 @@ export default function Guestbook() {
             {loadError && <motion.div initial={{ opacity: 0, y: -10 }} animate={{ opacity: 1, y: 0 }} className="rounded-[1.5rem] border border-amber-200/80 bg-amber-50/90 px-5 py-4 text-sm text-amber-700">{loadError}</motion.div>}
 
             <motion.div initial={{ opacity: 0, y: 18 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.18 }} data-testid="guestbook-feed" className="editorial-card px-5 py-5">
-              <div className="flex flex-col gap-4 xl:flex-row xl:items-end xl:justify-between">
+              <div className="flex flex-col gap-4 2xl:flex-row 2xl:items-end 2xl:justify-between">
                 <div>
                   <p className="text-[10px] uppercase tracking-[0.3em] text-gold-700">Now showing</p>
                   <h2 className="mt-3 text-3xl text-charcoal-900 sm:text-4xl">{filter === 'all' ? 'Every guestbook entry' : filter === 'text' ? 'Written notes' : filter === 'voice' ? 'Voice messages' : 'Video messages'}</h2>
@@ -906,7 +905,7 @@ export default function Guestbook() {
               </div>
             ) : filteredMessages.length > 0 ? (
               <>
-                <div className="grid gap-5 xl:grid-cols-2">
+                <div className="grid gap-5 2xl:grid-cols-2">
                   {visibleMessages.map((message) => (
                     <MessageCard
                       key={message.id}

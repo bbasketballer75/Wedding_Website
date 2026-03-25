@@ -514,6 +514,7 @@ export type Database = {
           category: string | null
           created_at: string | null
           date: string | null
+          download_url: string | null
           faces: Json | null
           id: string
           is_professional: boolean | null
@@ -531,6 +532,7 @@ export type Database = {
           category?: string | null
           created_at?: string | null
           date?: string | null
+          download_url?: string | null
           faces?: Json | null
           id?: string
           is_professional?: boolean | null
@@ -548,6 +550,7 @@ export type Database = {
           category?: string | null
           created_at?: string | null
           date?: string | null
+          download_url?: string | null
           faces?: Json | null
           id?: string
           is_professional?: boolean | null

@@ -51,6 +51,7 @@ export interface Photo {
   id: string
   url: string
   thumbnail: string
+  download_url?: string | null
   album?: string
   album_sort_order?: number | null
   caption?: string
@@ -456,6 +457,59 @@ export async function fetchMediaReviewBatches() {
     .select('*')
     .order('updated_at', { ascending: false })
     .returns<MediaReviewBatch[]>()
+}
+
+export async function fetchKnownPeopleNames() {
+  const names = new Set<string>()
+  const pageSize = 500
+  let from = 0
+
+  while (true) {
+    const to = from + pageSize - 1
+    const { data, error } = await supabase
+      .from('photos')
+      .select('faces')
+      .range(from, to)
+      .returns<Array<{ faces: PhotoFace[] | null }>>()
+
+    if (error) {
+      return { data: null, error }
+    }
+
+    const rows = data || []
+    rows.forEach((row) => {
+      ;(row.faces || []).forEach((face) => {
+        const name = face.name?.trim()
+        if (name) names.add(name)
+      })
+    })
+
+    if (rows.length < pageSize) {
+      break
+    }
+
+    from += pageSize
+  }
+
+  const { data: reviewFaces, error: reviewError } = await supabase
+    .from('media_review_faces')
+    .select('confirmed_name')
+    .not('confirmed_name', 'is', null)
+    .returns<Array<{ confirmed_name: string | null }>>()
+
+  if (reviewError) {
+    return { data: null, error: reviewError }
+  }
+
+  ;(reviewFaces || []).forEach((row) => {
+    const name = row.confirmed_name?.trim()
+    if (name) names.add(name)
+  })
+
+  return {
+    data: [...names].sort((left, right) => left.localeCompare(right)),
+    error: null,
+  }
 }
 
 export async function fetchGuestFaceTaggingBatches() {

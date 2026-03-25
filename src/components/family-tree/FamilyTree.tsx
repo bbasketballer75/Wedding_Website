@@ -6,6 +6,10 @@ import { Heart, Users, Sparkles, X } from 'lucide-react'
 import { cn } from '@/lib/utils'
 import { partyData, type WeddingPartyPerson } from '@/data/weddingParty'
 
+const parentGridStyle = {
+  gridTemplateColumns: 'repeat(2, minmax(0, 1fr))',
+}
+
 function PersonCard({
   person,
   isCenter = false,
@@ -27,7 +31,7 @@ function PersonCard({
       type="button"
       onClick={onClick}
       className={cn(
-        'relative group cursor-pointer rounded-2xl text-left'
+        'relative group h-full w-full cursor-pointer rounded-2xl text-left'
       )}
     >
       <div
@@ -39,12 +43,12 @@ function PersonCard({
 
       <div
         className={cn(
-          'relative flex flex-col items-center rounded-[1.75rem] p-4 transition-colors duration-200 sm:p-5',
+          'relative flex h-full w-full flex-col items-center rounded-[1.75rem] p-4 transition-colors duration-200 sm:p-5',
           isCenter
-            ? 'min-w-[9.5rem] px-5 py-5 sm:min-w-[11.75rem] sm:px-7 sm:py-7 lg:min-w-[13rem] lg:px-8 lg:py-8'
+            ? 'min-h-[13.5rem] px-5 py-5 sm:min-h-[15.5rem] sm:px-7 sm:py-7 lg:min-h-[17rem] lg:px-9 lg:py-8'
             : isPartyCard
-              ? 'min-w-[7.5rem] px-4 py-4 sm:min-w-[8.75rem] sm:px-5 sm:py-5 lg:min-w-[9.75rem] lg:px-6 lg:py-6'
-              : 'min-w-[8.5rem] px-4 py-5 sm:min-w-[10rem] lg:min-w-[11.5rem]',
+              ? 'min-h-[11.75rem] px-4 py-4 sm:min-h-[13rem] sm:px-5 sm:py-5 lg:min-h-[14rem] lg:px-6 lg:py-6'
+              : 'min-h-[12rem] px-4 py-5 sm:min-h-[13.5rem] sm:px-5 sm:py-5 lg:min-h-[14.5rem] lg:px-6 lg:py-6',
           isCenter
             ? 'bg-gradient-to-br from-gold-100 to-gold-200 shadow-lg'
             : 'bg-white/92 shadow-soft backdrop-blur-sm hover:bg-white',
@@ -64,18 +68,18 @@ function PersonCard({
             }}
             className={cn(
               'border-2 object-center',
-              isCenter ? 'h-28 w-28 text-lg sm:h-36 sm:w-36 sm:text-xl lg:h-40 lg:w-40' : isPartyCard ? 'h-20 w-20 text-base sm:h-24 sm:w-24 sm:text-lg lg:h-28 lg:w-28 lg:text-xl' : 'h-22 w-22 text-lg sm:h-26 sm:w-26 sm:text-xl lg:h-28 lg:w-28',
+              isCenter ? 'h-24 w-24 text-lg sm:h-32 sm:w-32 sm:text-xl lg:h-36 lg:w-36 xl:h-40 xl:w-40' : isPartyCard ? 'h-20 w-20 text-base sm:h-24 sm:w-24 sm:text-lg lg:h-[6.5rem] lg:w-[6.5rem] xl:h-28 xl:w-28 xl:text-xl' : 'h-[5.5rem] w-[5.5rem] text-lg sm:h-[6.5rem] sm:w-[6.5rem] sm:text-xl lg:h-28 lg:w-28 xl:h-[7.5rem] xl:w-[7.5rem]',
               isBride ? 'border-rose-300' : 'border-blue-300',
               isCenter && 'border-gold-400'
             )}
           />
         </div>
 
-        <div className="mt-4 text-center">
+        <div className="mt-4 flex flex-1 flex-col justify-center text-center">
           <p
             className={cn(
               'font-display font-medium',
-              isCenter ? 'text-[1.65rem] leading-none text-charcoal-900 sm:text-[2rem] lg:text-[2.15rem]' : isPartyCard ? 'text-base text-charcoal-800 sm:text-lg lg:text-[1.3rem]' : 'text-lg text-charcoal-800 sm:text-xl'
+              isCenter ? 'text-[1.65rem] leading-none text-charcoal-900 sm:text-[2rem] lg:text-[2.15rem] xl:text-[2.35rem]' : isPartyCard ? 'text-base text-charcoal-800 sm:text-lg lg:text-[1.24rem] xl:text-[1.34rem]' : 'text-lg text-charcoal-800 sm:text-xl xl:text-[1.45rem]'
             )}
           >
             {person.name}
@@ -103,7 +107,7 @@ function ConnectionLine({
     <div
       className={cn(
         'relative overflow-hidden',
-        vertical ? 'my-2 h-8 w-px' : 'mx-2 h-px w-16'
+        vertical ? 'my-1.5 h-6 w-px sm:my-2 sm:h-7' : 'mx-1.5 h-px w-12 sm:mx-2 sm:w-16'
       )}
     >
       <div className="absolute inset-0 bg-gradient-to-r from-transparent via-gold-300 to-transparent" />
@@ -154,13 +158,14 @@ export function FamilyTree() {
 
     return [...pinned, ...remaining]
   }, [])
+  const orderedGroomsmen = useMemo(() => partyData.groomsmen, [])
   const bridesmaidRows = useMemo(
     () => [orderedBridesmaids.slice(0, 2), orderedBridesmaids.slice(2, 5), orderedBridesmaids.slice(5, 7)],
     [orderedBridesmaids]
   )
   const groomsmenRows = useMemo(
-    () => [partyData.groomsmen.slice(0, 2), partyData.groomsmen.slice(2, 5), partyData.groomsmen.slice(5, 7)],
-    []
+    () => [orderedGroomsmen.slice(0, 2), orderedGroomsmen.slice(2, 5), orderedGroomsmen.slice(5, 7)],
+    [orderedGroomsmen]
   )
 
   const toggleSelectedPerson = (personId: string) => {
@@ -187,11 +192,11 @@ export function FamilyTree() {
   }, [selectedPerson])
 
   return (
-    <div className="mx-auto w-full max-w-6xl px-3 py-10 sm:px-4 sm:py-12">
+    <div className="mx-auto w-full max-w-6xl px-2 py-8 sm:px-3 sm:py-10 lg:px-4 lg:py-11">
       <motion.div
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
-        className="mb-16 text-center"
+        className="mb-10 text-center sm:mb-12"
       >
         <div className="mb-3 flex items-center justify-center gap-2">
           <Users className="h-4 w-4 text-gold-500" />
@@ -212,7 +217,7 @@ export function FamilyTree() {
           initial={{ opacity: 0, y: -20 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ delay: 0.2 }}
-          className="mx-auto mb-6 grid max-w-4xl gap-8 md:grid-cols-2 md:gap-x-10 lg:gap-x-20 xl:gap-x-28"
+          className="mx-auto mb-4 grid max-w-5xl gap-6 md:grid-cols-2 md:gap-x-8 lg:gap-x-12 xl:gap-x-16"
         >
           <div
             className="flex flex-col items-center"
@@ -220,13 +225,14 @@ export function FamilyTree() {
             onMouseLeave={() => setHoveredSection(null)}
           >
             <p className="mb-3 text-xs uppercase tracking-wider text-rose-500">Bride&apos;s family</p>
-            <div className="flex items-center gap-3 sm:gap-4 lg:gap-5">
+            <div className="grid w-full gap-3 sm:gap-4" style={parentGridStyle}>
               {brideParents.map((parent, index) => (
                 <motion.div
                   key={parent.id}
                   initial={{ opacity: 0, scale: 0.8 }}
                   animate={{ opacity: 1, scale: 1 }}
                   transition={{ delay: 0.3 + index * 0.1 }}
+                  className="min-w-0"
                 >
                   <PersonCard
                     person={parent}
@@ -245,13 +251,14 @@ export function FamilyTree() {
             onMouseLeave={() => setHoveredSection(null)}
           >
             <p className="mb-3 text-xs uppercase tracking-wider text-blue-500">Groom&apos;s family</p>
-            <div className="flex items-center gap-3 sm:gap-4 lg:gap-5">
+            <div className="grid w-full gap-3 sm:gap-4" style={parentGridStyle}>
               {groomParents.map((parent, index) => (
                 <motion.div
                   key={parent.id}
                   initial={{ opacity: 0, scale: 0.8 }}
                   animate={{ opacity: 1, scale: 1 }}
                   transition={{ delay: 0.3 + index * 0.1 }}
+                  className="min-w-0"
                 >
                   <PersonCard
                     person={parent}
@@ -269,9 +276,9 @@ export function FamilyTree() {
           initial={{ opacity: 0, scale: 0.5 }}
           animate={{ opacity: 1, scale: 1 }}
           transition={{ delay: 0.5, type: 'spring' }}
-          className="relative mx-auto mb-8 grid max-w-4xl grid-cols-2 items-center gap-x-10 sm:gap-x-12 lg:gap-x-20 xl:gap-x-28"
+          className="relative mx-auto mb-6 grid w-full max-w-4xl grid-cols-2 items-center gap-x-6 sm:gap-x-8 lg:gap-x-12 xl:gap-x-16"
         >
-          <div className="absolute top-0 left-1/2 h-8 w-px -translate-x-1/2 bg-gradient-to-b from-gold-300 to-transparent" />
+          <div className="absolute left-1/2 top-0 h-6 w-px -translate-x-1/2 bg-gradient-to-b from-gold-300 to-transparent sm:h-7" />
 
           {orderedCouple.map((person, index) => (
             <motion.div
@@ -279,7 +286,7 @@ export function FamilyTree() {
               initial={{ opacity: 0, x: index === 0 ? -20 : 20 }}
               animate={{ opacity: 1, x: 0 }}
               transition={{ delay: 0.6 + index * 0.1 }}
-              className="relative justify-self-center"
+              className="relative w-full max-w-[16rem] justify-self-center sm:max-w-[18rem] lg:max-w-[19rem]"
             >
               <PersonCard
                 person={person}
@@ -302,25 +309,25 @@ export function FamilyTree() {
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ delay: 0.7 }}
-          className="flex flex-col justify-center gap-8 xl:flex-row xl:items-start xl:gap-10"
+          className="grid gap-6 lg:grid-cols-2 lg:gap-8"
         >
           <div
-            className="flex flex-col items-center xl:min-w-0 xl:flex-1"
+            className="flex flex-col items-center"
             onMouseEnter={() => setHoveredSection('bridesmaids')}
             onMouseLeave={() => setHoveredSection(null)}
           >
             <ConnectionLine vertical animated={hoveredSection === 'bridesmaids'} />
             <p className="mb-3 mt-2 text-xs uppercase tracking-wider text-rose-500">Bridesmaids</p>
-            <div className="flex w-full max-w-[34rem] flex-col items-center gap-4 sm:max-w-[38rem] xl:max-w-none">
+            <div className="flex w-full flex-col items-center gap-3 sm:gap-4">
               {bridesmaidRows.map((row, rowIndex) => (
-                <div key={`bridesmaid-row-${rowIndex}`} className="flex w-full items-start justify-center gap-3 sm:gap-4 lg:gap-5">
+                <div key={`bridesmaid-row-${rowIndex}`} className="flex justify-center gap-3 sm:gap-4">
                   {row.map((person, index) => (
                     <motion.div
                       key={person.id}
                       initial={{ opacity: 0, scale: 0.8 }}
                       animate={{ opacity: 1, scale: 1 }}
                       transition={{ delay: 0.9 + (rowIndex * 3 + index) * 0.08 }}
-                      className="flex justify-center"
+                      className="w-[10.75rem] shrink-0 sm:w-[11.5rem] lg:w-[10.5rem] xl:w-[11rem]"
                     >
                       <PersonCard
                         person={person}
@@ -336,22 +343,22 @@ export function FamilyTree() {
           </div>
 
           <div
-            className="flex flex-col items-center xl:min-w-0 xl:flex-1"
+            className="flex flex-col items-center"
             onMouseEnter={() => setHoveredSection('groomsmen')}
             onMouseLeave={() => setHoveredSection(null)}
           >
             <ConnectionLine vertical animated={hoveredSection === 'groomsmen'} />
             <p className="mb-3 mt-2 text-xs uppercase tracking-wider text-blue-500">Groomsmen</p>
-            <div className="flex w-full max-w-[34rem] flex-col items-center gap-4 sm:max-w-[38rem] xl:max-w-none">
+            <div className="flex w-full flex-col items-center gap-3 sm:gap-4">
               {groomsmenRows.map((row, rowIndex) => (
-                <div key={`groomsmen-row-${rowIndex}`} className="flex w-full items-start justify-center gap-3 sm:gap-4 lg:gap-5">
+                <div key={`groomsmen-row-${rowIndex}`} className="flex justify-center gap-3 sm:gap-4">
                   {row.map((person, index) => (
                     <motion.div
                       key={person.id}
                       initial={{ opacity: 0, scale: 0.8 }}
                       animate={{ opacity: 1, scale: 1 }}
                       transition={{ delay: 0.9 + (rowIndex * 3 + index) * 0.08 }}
-                      className="flex justify-center"
+                      className="w-[10.75rem] shrink-0 sm:w-[11.5rem] lg:w-[10.5rem] xl:w-[11rem]"
                     >
                       <PersonCard
                         person={person}

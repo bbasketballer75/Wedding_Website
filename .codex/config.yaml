@@ -1,0 +1,65 @@
+# Codex Configuration for Wedding Website
+
+name: wedding-website
+version: 1.0.0
+description: Austin & Jordyn's Wedding Website - React + Vite + Supabase
+
+# Project settings
+project:
+  type: react-vite
+  language: typescript
+  node_version: ">=20.19.0"
+  package_manager: npm
+
+# Skills to enable
+skills:
+  - react-vite
+  - supabase
+  - testing
+  - deployment
+  - media-workflow
+  - pwa
+  - accessibility
+
+# File patterns to include in context
+include:
+  - src/**/*.{ts,tsx}
+  - tests/**/*.{ts,tsx}
+  - e2e/**/*.{ts}
+  - scripts/**/*.js
+  - *.config.{js,ts}
+  - *.md
+
+# Files to exclude from context
+exclude:
+  - node_modules/**
+  - dist/**
+  - dev-dist/**
+  - .netlify/**
+  - test-results/**
+  - playwright-report/**
+  - "*.log"
+  - "*.png"
+  - "*.jpg"
+  - "*.jpeg"
+  - "*.gif"
+  - "*.svg"
+  - "*.ico"
+
+# Commands that Codex can use
+commands:
+  dev: npm run dev
+  build: npm run build
+  test: npm run test:run
+  test:e2e: npm run test:e2e:public
+  lint: npm run lint
+  format: npm run format
+  typecheck: npx tsc --noEmit
+
+# Key documentation files
+docs:
+  - CODEX.md
+  - README-DEPLOY.md
+  - SUPABASE_CLI_GUIDE.md
+  - GALLERY_OPERATIONS.md
+  - LAUNCH_RUNBOOK.md

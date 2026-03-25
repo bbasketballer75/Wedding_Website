@@ -210,6 +210,7 @@ async function main() {
         photoRowDraft: {
           url: item.displayRelativePath,
           thumbnail: item.thumbRelativePath,
+          download_url: item.displayRelativePath,
           caption: null,
           album,
           category: album,
