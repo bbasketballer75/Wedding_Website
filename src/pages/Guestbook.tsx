@@ -60,9 +60,9 @@ const INITIAL_VISIBLE_MESSAGES = 8
 
 
 const messageTypeMeta = {
-  text: { label: 'Written note', icon: PenSquare, badgeClass: 'border-gold-200 bg-gold-50 text-gold-700' },
-  voice: { label: 'Voice note', icon: Mic, badgeClass: 'border-rose-200 bg-rose-50 text-rose-600' },
-  video: { label: 'Video note', icon: Video, badgeClass: 'border-sage-200 bg-sage-100 text-charcoal-700' },
+  text:  { label: 'Written note', icon: PenSquare, badgeClass: 'border-gold-400/30 bg-gold-500/10 text-gold-300' },
+  voice: { label: 'Voice note',   icon: Mic,       badgeClass: 'border-rose-400/30 bg-rose-500/10 text-rose-300' },
+  video: { label: 'Video note',   icon: Video,     badgeClass: 'border-white/15 bg-white/8 text-white/60' },
 } as const
 
 function formatGuestbookDate(timestamp?: string) {
@@ -130,14 +130,14 @@ function AudioPlayer({ url }: { url?: string }) {
 
   if (!url) {
     return (
-      <div className="rounded-[1.5rem] border border-rose-200/70 bg-rose-50/90 px-4 py-4">
+      <div className="rounded-xl border border-rose-400/20 bg-white/8 px-4 py-4">
         <div className="flex items-center gap-3">
-          <div className="flex h-11 w-11 items-center justify-center rounded-full border border-white/70 bg-white text-rose-500 shadow-sm">
+          <div className="flex h-11 w-11 items-center justify-center rounded-full border border-rose-400/25 bg-rose-500/10 text-rose-300">
             <Mic className="h-4 w-4" />
           </div>
           <div>
-            <p className="text-sm font-semibold text-charcoal-900">Voice note shared</p>
-            <p className="text-sm text-charcoal-500">Playback preview is unavailable right now, but the voice note is still part of the guestbook.</p>
+            <p className="text-sm font-semibold text-white">Voice note shared</p>
+            <p className="text-sm text-white/55">Playback preview is unavailable right now, but the voice note is still part of the guestbook.</p>
           </div>
         </div>
       </div>
@@ -147,7 +147,7 @@ function AudioPlayer({ url }: { url?: string }) {
   const activeBars = Math.max(1, Math.round((duration > 0 ? currentTime / duration : 0) * bars.length))
 
   return (
-    <div className="rounded-[1.5rem] border border-rose-200/70 bg-[linear-gradient(135deg,rgba(255,255,255,0.9),rgba(253,246,244,0.98)_55%,rgba(249,232,227,0.94))] px-4 py-4 shadow-sm">
+    <div className="rounded-xl border border-rose-400/20 bg-white/8 px-4 py-4">
       <audio
         ref={audioRef}
         src={url}
@@ -182,8 +182,8 @@ function AudioPlayer({ url }: { url?: string }) {
 
         <div className="min-w-0 flex-1">
           <div className="flex items-center justify-between gap-3">
-            <p className="text-sm font-semibold text-charcoal-900">Voice note</p>
-            <span className="text-xs uppercase tracking-[0.24em] text-charcoal-400">
+            <p className="text-sm font-semibold text-white">Voice note</p>
+            <span className="text-xs uppercase tracking-[0.24em] text-white/45">
               {formatAudioTime(isPlaying ? currentTime : duration || currentTime)}
             </span>
           </div>
@@ -194,7 +194,7 @@ function AudioPlayer({ url }: { url?: string }) {
                 key={index}
                 className={cn(
                   'w-1 rounded-full transition-colors duration-300',
-                  index < activeBars ? 'bg-rose-400' : 'bg-rose-200'
+                  index < activeBars ? 'bg-rose-400' : 'bg-rose-400/20'
                 )}
                 style={{ height }}
               />
@@ -232,16 +232,16 @@ function MessageCard({
       whileInView={{ opacity: 1, y: 0 }}
       viewport={{ once: true, amount: 0.2 }}
       className={cn(
-        'editorial-card px-5 py-5 transition-all duration-300 sm:px-6 sm:py-6',
-        isHighlighted && 'ring-2 ring-gold-300/80 shadow-[0_24px_60px_-36px_rgba(173,129,49,0.45)]'
+        'relative overflow-hidden rounded-2xl bg-white/5 backdrop-blur-sm border border-gold-200/12 px-5 py-5 transition-all duration-300 sm:px-6 sm:py-6',
+        isHighlighted && 'ring-2 ring-gold-400/40 shadow-[0_0_40px_-10px_rgba(198,156,78,0.25)]'
       )}
     >
       <div className="flex items-start justify-between gap-4">
         <div className="flex min-w-0 items-center gap-3">
           <Avatar fallback={message.name} size="lg" />
           <div className="min-w-0">
-            <h3 className="truncate text-lg font-semibold text-charcoal-900">{message.name}</h3>
-            <p className="mt-1 text-sm text-charcoal-500">{message.timestamp}</p>
+            <h3 className="truncate text-lg font-semibold text-white">{message.name}</h3>
+            <p className="mt-1 text-sm text-white/45">{message.timestamp}</p>
           </div>
         </div>
 
@@ -265,14 +265,14 @@ function MessageCard({
               </video>
             </div>
           ) : (
-            <div className="rounded-[1.5rem] border border-sage-200/80 bg-sage-100/90 px-4 py-4">
+            <div className="rounded-xl border border-white/15 bg-white/8 px-4 py-4">
               <div className="flex items-center gap-3">
-                <div className="flex h-11 w-11 items-center justify-center rounded-full border border-white/70 bg-white text-charcoal-700 shadow-sm">
+                <div className="flex h-11 w-11 items-center justify-center rounded-full border border-white/15 bg-white/8 text-white/60">
                   <Video className="h-4 w-4" />
                 </div>
                 <div>
-                  <p className="text-sm font-semibold text-charcoal-900">Video note shared</p>
-                  <p className="text-sm text-charcoal-500">Playback preview is unavailable right now, but the note is still part of the guestbook.</p>
+                  <p className="text-sm font-semibold text-white">Video note shared</p>
+                  <p className="text-sm text-white/55">Playback preview is unavailable right now, but the note is still part of the guestbook.</p>
                 </div>
               </div>
             </div>
@@ -281,27 +281,27 @@ function MessageCard({
         {message.type === 'voice' && <AudioPlayer url={message.mediaUrl} />}
 
         {displayContent && (
-          <div className="rounded-[1.35rem] bg-white/74 px-4 py-4">
-            <p className="text-base leading-7 text-charcoal-700">{displayContent}</p>
+          <div className="rounded-xl bg-white/6 px-4 py-4">
+            <p className="text-base leading-7 text-white/75">{displayContent}</p>
           </div>
         )}
       </div>
 
       {message.comments.length > 0 && (
-        <div className="mt-5 rounded-[1.35rem] border border-white/75 bg-cream-50/88 px-4 py-4">
+        <div className="mt-5 rounded-xl border border-white/10 bg-white/4 px-4 py-4">
           <div className="flex items-center justify-between gap-3">
-            <p className="text-[10px] uppercase tracking-[0.28em] text-charcoal-500">Replies</p>
-            <span className="text-xs text-charcoal-400">{message.comments.length} total</span>
+            <p className="text-[10px] uppercase tracking-[0.28em] text-white/40">Replies</p>
+            <span className="text-xs text-white/30">{message.comments.length} total</span>
           </div>
 
           <div className="mt-4 space-y-3">
             {visibleComments.map((comment) => (
-              <div key={comment.id} className="rounded-2xl bg-cream-50/90 px-4 py-3">
+              <div key={comment.id} className="rounded-2xl bg-white/5 px-4 py-3">
                 <div className="flex items-center gap-2 text-sm">
-                  <span className="font-medium text-charcoal-900">{comment.author}</span>
-                  <span className="text-charcoal-400">{comment.timestamp}</span>
+                  <span className="font-medium text-white">{comment.author}</span>
+                  <span className="text-white/35">{comment.timestamp}</span>
                 </div>
-                <p className="mt-2 text-sm leading-6 text-charcoal-600">{comment.content}</p>
+                <p className="mt-2 text-sm leading-6 text-white/65">{comment.content}</p>
               </div>
             ))}
           </div>
@@ -310,7 +310,7 @@ function MessageCard({
             <button
               type="button"
               onClick={() => setShowAllReplies((current) => !current)}
-              className="mt-4 text-xs font-medium uppercase tracking-[0.24em] text-gold-700 transition-colors hover:text-gold-600"
+              className="mt-4 text-xs font-medium uppercase tracking-[0.24em] text-gold-400 transition-colors hover:text-gold-300"
             >
               {showAllReplies ? 'Show fewer replies' : `Show all ${message.comments.length} replies`}
             </button>
@@ -318,8 +318,8 @@ function MessageCard({
         </div>
       )}
 
-      <div className="mt-5 flex flex-col gap-3 border-t border-charcoal-900/8 pt-4 sm:flex-row sm:items-center sm:justify-between">
-        <div className="rounded-full bg-cream-50/90 px-2 py-1">
+      <div className="mt-5 flex flex-col gap-3 border-t border-white/8 pt-4 sm:flex-row sm:items-center sm:justify-between">
+        <div className="rounded-full bg-white/5 px-2 py-1">
           <ReactionPicker reactions={message.reactions} onReact={(type) => onReact(message.id, type)} />
         </div>
 
@@ -329,14 +329,14 @@ function MessageCard({
           className={cn(
             'inline-flex items-center gap-2 rounded-full border px-3.5 py-2 text-sm transition-colors',
             showReplyForm
-              ? 'border-gold-300 bg-gold-50 text-gold-700'
-              : 'border-white/70 bg-cream-50/88 text-charcoal-500 hover:text-charcoal-700'
+              ? 'border-gold-400/40 bg-gold-500/10 text-gold-300'
+              : 'border-white/12 bg-white/5 text-white/50 hover:text-white'
           )}
           aria-expanded={showReplyForm}
         >
           <MessageCircle className="h-4 w-4" />
           Reply
-          {message.comments.length > 0 && <span className="text-charcoal-400">({message.comments.length})</span>}
+          {message.comments.length > 0 && <span className="text-white/35">({message.comments.length})</span>}
         </button>
       </div>
 
@@ -353,11 +353,11 @@ function MessageCard({
               setReplyContent('')
               setShowReplyForm(false)
             }}
-            className="mt-4 overflow-hidden rounded-[1.35rem] border border-white/80 bg-white/72 px-4 py-4"
+            className="mt-4 overflow-hidden rounded-xl border border-white/10 bg-white/5 px-4 py-4"
           >
-            <Label htmlFor={`reply-${message.id}`}>Add a reply</Label>
+            <Label htmlFor={`reply-${message.id}`} className="text-white/70">Add a reply</Label>
             <div className="mt-3 flex flex-col gap-3 sm:flex-row">
-              <Input id={`reply-${message.id}`} value={replyContent} onChange={(event) => setReplyContent(event.target.value)} placeholder="Write a quick note back..." className="flex-1" />
+              <Input id={`reply-${message.id}`} value={replyContent} onChange={(event) => setReplyContent(event.target.value)} placeholder="Write a quick note back..." className="flex-1 bg-white/8 border-white/12 text-white placeholder:text-white/30" />
               <Button type="submit" size="sm" disabled={!replyContent.trim()}>
                 <Send className="h-4 w-4" />
                 Send
