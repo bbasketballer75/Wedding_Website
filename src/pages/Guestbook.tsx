@@ -835,7 +835,7 @@ export default function Guestbook() {
                         </div>
                       )}
 
-                      <div className="mt-6 flex justify-end border-t border-charcoal-900/8 pt-5">
+                      <div className="mt-6 flex justify-end border-t border-white/10 pt-5">
                         <Button type="submit" size="lg" disabled={isSubmitting || !name || !content.trim()}>
                           {isSubmitting
                             ? <><Loader2 className="h-4 w-4 animate-spin" />Sending…</>
