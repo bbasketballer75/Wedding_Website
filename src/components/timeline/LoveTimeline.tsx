@@ -196,15 +196,16 @@ function getImagePaths(folder: string, count: number): string[] {
 
 function HalloweenCard({ event, index }: { event: TimelineEvent; index: number }) {
   const cardRef = useRef<HTMLDivElement>(null)
-  
+  const isMobile = typeof window !== 'undefined' && window.innerWidth < 768
+
   const { scrollYProgress } = useScroll({
     target: cardRef,
     offset: ["start end", "center center"]
   })
-  
+
   const opacity = useTransform(scrollYProgress, [0, 0.5, 1], [0.3, 1, 1])
-  const scale = useTransform(scrollYProgress, [0, 0.5, 1], [0.8, 1, 1])
-  const x = useTransform(scrollYProgress, [0, 1], [event.side === 'left' ? -100 : 100, 0])
+  const scale = useTransform(scrollYProgress, [0, 0.5, 1], isMobile ? [0.97, 1, 1] : [0.8, 1, 1])
+  const x = useTransform(scrollYProgress, [0, 1], isMobile ? [0, 0] : [event.side === 'left' ? -100 : 100, 0])
 
   // Get engagement photos
   const engagementImages = getImagePaths('engagemnet', 8)
@@ -214,10 +215,15 @@ function HalloweenCard({ event, index }: { event: TimelineEvent; index: number }
       ref={cardRef}
       style={{ opacity, scale, x }}
       className={cn(
-        "relative z-[60] w-full md:w-[calc(50%-60px)]",
+        "relative z-[60] ml-7 w-[calc(100%-1.75rem)] md:ml-0 md:w-[calc(50%-60px)]",
         event.side === 'left' ? "md:mr-auto" : "md:ml-auto"
       )}
     >
+      {/* Mobile timeline dot */}
+      <div className="absolute -left-3 top-7 z-30 md:hidden">
+        <div className="h-3 w-3 rounded-full border-2 border-white shadow-sm bg-red-600" />
+      </div>
+
       {/* Horror Themed Halloween Card */}
       <motion.div
         whileHover={{ 
@@ -420,6 +426,7 @@ function TimelineCard({ event, index }: { event: TimelineEvent; index: number })
 
 function StandardTimelineCard({ event, index }: { event: TimelineEvent; index: number }) {
   const cardRef = useRef<HTMLDivElement>(null)
+  const isMobile = typeof window !== 'undefined' && window.innerWidth < 768
 
   const { scrollYProgress } = useScroll({
     target: cardRef,
@@ -427,11 +434,11 @@ function StandardTimelineCard({ event, index }: { event: TimelineEvent; index: n
   })
 
   const opacity = useTransform(scrollYProgress, [0, 0.5, 1], [0.3, 1, 1])
-  const scale = useTransform(scrollYProgress, [0, 0.5, 1], [0.8, 1, 1])
+  const scale = useTransform(scrollYProgress, [0, 0.5, 1], isMobile ? [0.97, 1, 1] : [0.8, 1, 1])
   const x = useTransform(
-    scrollYProgress, 
-    [0, 1], 
-    [event.side === 'left' ? -100 : 100, 0]
+    scrollYProgress,
+    [0, 1],
+    isMobile ? [0, 0] : [event.side === 'left' ? -100 : 100, 0]
   )
 
   // Get images for carousel media
@@ -446,10 +453,18 @@ function StandardTimelineCard({ event, index }: { event: TimelineEvent; index: n
       ref={cardRef}
       style={{ opacity, scale, x }}
       className={cn(
-        "relative z-[60] w-full md:w-[calc(50%-60px)]",
+        "relative z-[60] ml-7 w-[calc(100%-1.75rem)] md:ml-0 md:w-[calc(50%-60px)]",
         event.side === 'left' ? "md:mr-auto" : "md:ml-auto"
       )}
     >
+      {/* Mobile timeline dot */}
+      <div className="absolute -left-3 top-7 z-30 md:hidden">
+        <div className={cn(
+          "h-3 w-3 rounded-full border-2 border-white shadow-sm",
+          event.date === 'May 10, 2025' ? "bg-rose-500" : "bg-gold-500"
+        )} />
+      </div>
+
       {/* Standard Card */}
       <motion.div
         whileHover={{ 
