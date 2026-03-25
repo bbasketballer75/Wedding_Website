@@ -672,7 +672,7 @@ export default function Guestbook() {
   }, [filteredMessages, highlightedMessageId, visibleCount])
 
   return (
-    <div className="min-h-screen bg-cream-50 pb-20 pt-28 sm:pt-32">
+    <div className="min-h-screen bg-[linear-gradient(to_b,rgba(12,8,5,1),rgba(22,14,6,1))] pb-20 pt-28 sm:pt-32">
       <GuestbookSEO />
 
       {/* Hero */}
@@ -682,20 +682,20 @@ export default function Guestbook() {
             initial={{ opacity: 0, y: 24 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.7, ease: [0.16, 1, 0.3, 1] }}
-            className="editorial-panel overflow-hidden px-6 py-10 sm:px-10 sm:py-14"
+            className="relative overflow-hidden rounded-2xl bg-white/6 backdrop-blur-md border border-gold-200/15 px-6 py-10 sm:px-10 sm:py-14"
           >
-            <div className="absolute -right-16 top-10 h-44 w-44 rounded-full bg-gold-200/30 blur-3xl" />
-            <div className="absolute -left-10 bottom-0 h-32 w-32 rounded-full bg-blush-200/35 blur-3xl" />
+            <div className="absolute -right-16 top-10 h-44 w-44 rounded-full bg-gold-500/8 blur-3xl" />
+            <div className="absolute -left-10 bottom-0 h-32 w-32 rounded-full bg-gold-400/5 blur-3xl" />
             <div className="relative max-w-2xl">
-              <span className="eyebrow-chip"><BookHeart className="h-3.5 w-3.5" />After the film</span>
-              <h1 className="mt-6 text-5xl text-charcoal-900 sm:text-6xl">Say something before you go.</h1>
-              <p className="mt-5 text-base text-charcoal-600 sm:text-lg">
+              <span className="flex items-center gap-1.5 text-[10px] uppercase tracking-[0.3em] text-gold-400"><BookHeart className="h-3.5 w-3.5" />After the film</span>
+              <h1 className="mt-6 text-5xl text-white sm:text-6xl">Say something before you go.</h1>
+              <p className="mt-5 text-base text-white/55 sm:text-lg">
                 The guestbook is where the day settles. Whatever you felt, what you remember, or what you want us to carry forward — leave it here.
               </p>
               <div className="mt-8 flex flex-wrap items-center gap-4">
                 <Button size="lg" onClick={() => openComposer('text')}>Leave a note</Button>
                 {messages.length > 0 && (
-                  <span className="text-sm text-charcoal-400">{messages.length} {messages.length === 1 ? 'note' : 'notes'} so far</span>
+                  <span className="text-sm text-white/35">{messages.length} {messages.length === 1 ? 'note' : 'notes'} so far</span>
                 )}
               </div>
             </div>
