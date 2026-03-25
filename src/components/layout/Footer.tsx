@@ -58,23 +58,23 @@ export function Footer() {
               </div>
             </div>
 
-            <div className="grid gap-3 lg:grid-cols-3">
+            <div className="grid grid-cols-3 gap-2">
               {footerLinks.map(({ title, description, to, icon: Icon }) => (
                 <Link
                   key={to}
                   to={to}
-                  className="group cinematic-card p-5 transition-all duration-300 hover:-translate-y-1 hover:border-gold-300/45 hover:bg-white/9"
+                  className="group cinematic-card flex flex-col gap-2.5 p-3.5 transition-all duration-300 hover:-translate-y-0.5 hover:border-gold-300/45 hover:bg-white/9 sm:p-4"
                 >
-                  <div className="flex items-start justify-between gap-3">
-                    <div className="flex h-11 w-11 items-center justify-center rounded-2xl border border-gold-200/14 bg-[rgba(255,247,235,0.08)] text-gold-300">
-                      <Icon className="h-5 w-5" />
+                  <div className="flex items-center justify-between gap-2">
+                    <div className="flex h-7 w-7 items-center justify-center rounded-lg border border-gold-200/14 bg-[rgba(255,247,235,0.08)] text-gold-300">
+                      <Icon className="h-3.5 w-3.5" />
                     </div>
-                    <ArrowUpRight className="h-4 w-4 text-gold-300/70 transition-transform duration-300 group-hover:translate-x-0.5 group-hover:-translate-y-0.5" />
+                    <ArrowUpRight className="h-3 w-3 text-gold-300/60 transition-transform duration-300 group-hover:translate-x-0.5 group-hover:-translate-y-0.5" />
                   </div>
-                  <p className="mt-6 font-display text-2xl leading-none text-cinematic-primary">
+                  <p className="font-display text-base leading-tight text-cinematic-primary sm:text-lg">
                     {title}
                   </p>
-                  <p className="mt-3 text-sm leading-6 text-cinematic-secondary">
+                  <p className="text-xs leading-5 text-cinematic-secondary">
                     {description}
                   </p>
                 </Link>
