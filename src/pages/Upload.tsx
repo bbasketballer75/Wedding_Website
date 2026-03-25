@@ -745,7 +745,7 @@ export default function UploadPage() {
                         )}
 
                         {file.status === 'complete' && (
-                          <div className="inline-flex items-center gap-2 rounded-full border border-emerald-200 bg-emerald-50 px-3 py-1.5 text-xs font-medium text-emerald-700">
+                          <div className="inline-flex items-center gap-2 rounded-full border border-emerald-400/25 bg-emerald-500/10 px-3 py-1.5 text-xs font-medium text-emerald-300">
                             <CheckCircle className="h-3.5 w-3.5" />
                             Uploaded and ready
                           </div>
@@ -763,7 +763,7 @@ export default function UploadPage() {
                             <button
                               type="button"
                               onClick={() => retryUpload(file.id)}
-                              className="text-xs font-medium uppercase tracking-[0.22em] text-gold-700 transition-colors hover:text-gold-600"
+                              className="text-xs font-medium uppercase tracking-[0.22em] text-gold-300 transition-colors hover:text-gold-400"
                             >
                               Try again
                             </button>
