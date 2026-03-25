@@ -554,7 +554,7 @@ export default function Film() {
           id: `${upload.id}-${videoIndex}`,
           uploadId: upload.id,
           guestName: upload.guest_name,
-          title: upload.message?.trim() || `A guest angle from ${upload.guest_name}`,
+          title: upload.message?.trim() || `A moment from ${upload.guest_name}`,
           description:
             upload.message?.trim() ||
             'A little handheld piece of the day, straight from the room and exactly how it felt to be there.',

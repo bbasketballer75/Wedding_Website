@@ -9,8 +9,6 @@ import { Input } from '@/components/ui/Input'
 import { Label } from '@/components/ui/Label'
 import { Textarea } from '@/components/ui/Textarea'
 import { ReactionPicker, type ReactionType } from '@/components/guestbook/ReactionPicker'
-import { VideoRecorder } from '@/components/guestbook/VideoRecorder'
-import { VoiceRecorder } from '@/components/guestbook/VoiceRecorder'
 import { useToast } from '@/context/ToastContext'
 import { supabase, type GuestbookMessage as SupabaseMessage } from '@/lib/supabase'
 import { cn } from '@/lib/utils'
@@ -19,7 +17,6 @@ import {
   BookHeart,
   CheckCircle,
   Loader2,
-  Mail,
   MessageCircle,
   Mic,
   Pause,
@@ -61,11 +58,6 @@ interface Message {
 const EMPTY_CAPTIONS_TRACK = 'data:text/vtt,WEBVTT'
 const INITIAL_VISIBLE_MESSAGES = 8
 
-const composerModes = [
-  { type: 'text', label: 'Text', description: 'Write a note, memory, or blessing.', icon: PenSquare },
-  { type: 'voice', label: 'Voice', description: 'Record something more personal.', icon: Mic },
-  { type: 'video', label: 'Video', description: 'Send a quick face-to-camera hello.', icon: Video },
-] as const
 
 const messageTypeMeta = {
   text: { label: 'Written note', icon: PenSquare, badgeClass: 'border-gold-200 bg-gold-50 text-gold-700' },
@@ -421,7 +413,7 @@ export default function Guestbook() {
         ])
 
         if (error) {
-          setLoadError('Could not load live messages right now. New notes can still be added below.')
+          setLoadError('Having trouble loading notes right now — yours will still go through below.')
           setMessages([])
           return
         }
@@ -447,7 +439,7 @@ export default function Guestbook() {
           )
         )
       } catch {
-        setLoadError('Could not connect to the guestbook database. New notes can still be added below.')
+        setLoadError('Having trouble reaching the guestbook — your note will still go through below.')
         setMessages([])
       } finally {
         setIsLoading(false)
@@ -575,11 +567,11 @@ export default function Guestbook() {
 
     const clientRateCheck = rateLimiter.check('guestbook-submit', { maxRequests: 3, windowMs: 60000 })
     if (!clientRateCheck.canProceed) {
-      addToast(`Please wait ${formatTimeRemaining(clientRateCheck.timeRemainingMs)} before submitting another message`, 'warning')
+      addToast(`Give it a moment — you can leave another note in ${formatTimeRemaining(clientRateCheck.timeRemainingMs)}`, 'warning')
       return
     }
 
-    if (!name || !email || (formType === 'text' && !content.trim())) return
+    if (!name || !content.trim()) return
 
     setIsSubmitting(true)
     setSubmitError(null)
@@ -609,7 +601,7 @@ export default function Guestbook() {
         const result = rpcData as { success: boolean; message_id: string; error_message: string }
 
         if (!result.success) {
-          addToast(result.error_message || 'Rate limit exceeded. Please try again later.', 'warning')
+          addToast(result.error_message || 'Just a moment before the next one.', 'warning')
           setIsSubmitting(false)
           return
         }
@@ -642,7 +634,7 @@ export default function Guestbook() {
         setFormType('text')
       }, 2200)
     } catch {
-      setSubmitError('Failed to submit your note. Please try again.')
+      setSubmitError("Something didn't go through — give it another try.")
     } finally {
       setIsSubmitting(false)
     }
@@ -683,90 +675,57 @@ export default function Guestbook() {
     <div className="min-h-screen bg-cream-50 pb-20 pt-28 sm:pt-32">
       <GuestbookSEO />
 
-      <section className="px-4 pb-8">
+      {/* Hero */}
+      <section className="px-4 pb-10">
         <div className="mx-auto max-w-6xl">
-          <motion.div initial={{ opacity: 0, y: 24 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.7, ease: [0.16, 1, 0.3, 1] }} className="editorial-panel overflow-hidden px-6 py-8 sm:px-8 sm:py-10 lg:px-10">
+          <motion.div
+            initial={{ opacity: 0, y: 24 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.7, ease: [0.16, 1, 0.3, 1] }}
+            className="editorial-panel overflow-hidden px-6 py-10 sm:px-10 sm:py-14"
+          >
             <div className="absolute -right-16 top-10 h-44 w-44 rounded-full bg-gold-200/30 blur-3xl" />
             <div className="absolute -left-10 bottom-0 h-32 w-32 rounded-full bg-blush-200/35 blur-3xl" />
-            <div className="relative grid gap-8 2xl:grid-cols-[minmax(0,1.15fr)_minmax(16rem,0.85fr)] 2xl:items-start">
-              <div>
-                <span className="eyebrow-chip"><BookHeart className="h-3.5 w-3.5" />After the film</span>
-                <h1 className="mt-6 max-w-3xl text-5xl text-charcoal-900 sm:text-6xl">Leave one note before you go.</h1>
-                <p className="mt-5 max-w-2xl text-base text-charcoal-600 sm:text-lg">A short written note is usually enough. Voice and video are here when hearing the tone matters more than polish.</p>
-                <div className="mt-8 flex flex-wrap items-center gap-3 text-sm text-charcoal-500">
-                  <span className="rounded-full border border-white/80 bg-white/76 px-4 py-2">Text is the default</span>
-                  <span className="rounded-full border border-white/80 bg-white/76 px-4 py-2">Voice and video are optional</span>
-                  <span className="rounded-full border border-white/80 bg-white/76 px-4 py-2">{messages.length} notes in the archive</span>
-                </div>
-                <div className="mt-8 flex flex-wrap gap-3">
-                  <Button size="lg" onClick={() => openComposer('text')}>Leave a note</Button>
-                  <Button size="lg" variant="ghost" onClick={() => openComposer('voice')}>Open voice or video options</Button>
-                </div>
-              </div>
-
-              <div className="grid gap-3 md:grid-cols-3 2xl:grid-cols-1">
-                <div className="editorial-card px-5 py-5">
-                  <p className="text-[10px] uppercase tracking-[0.3em] text-gold-700">Best use</p>
-                  <p className="mt-3 text-lg font-semibold text-charcoal-900">Write the thing you would say on the drive home.</p>
-                  <p className="mt-2 text-sm leading-6 text-charcoal-500">A short note usually feels better here than a polished speech.</p>
-                </div>
-                <div className="editorial-card px-5 py-5">
-                  <p className="text-[10px] uppercase tracking-[0.3em] text-gold-700">Format choice</p>
-                  <p className="mt-3 text-lg font-semibold text-charcoal-900">Start with text unless a voice or video matters.</p>
-                  <p className="mt-2 text-sm leading-6 text-charcoal-500">The page keeps the other formats available without making them the main task.</p>
-                </div>
-                <div className="editorial-card px-5 py-5">
-                  <p className="text-[10px] uppercase tracking-[0.3em] text-gold-700">Good to know</p>
-                  <p className="mt-3 text-lg font-semibold text-charcoal-900">Your note goes straight into the archive.</p>
-                  <p className="mt-2 text-sm leading-6 text-charcoal-500">Even if the feed is still loading, you can leave your message and the page will catch up around it.</p>
-                </div>
+            <div className="relative max-w-2xl">
+              <span className="eyebrow-chip"><BookHeart className="h-3.5 w-3.5" />After the film</span>
+              <h1 className="mt-6 text-5xl text-charcoal-900 sm:text-6xl">Say something before you go.</h1>
+              <p className="mt-5 text-base text-charcoal-600 sm:text-lg">
+                The guestbook is where the day settles. Whatever you felt, what you remember, or what you want us to carry forward — leave it here.
+              </p>
+              <div className="mt-8 flex flex-wrap items-center gap-4">
+                <Button size="lg" onClick={() => openComposer('text')}>Leave a note</Button>
+                {messages.length > 0 && (
+                  <span className="text-sm text-charcoal-400">{messages.length} {messages.length === 1 ? 'note' : 'notes'} so far</span>
+                )}
               </div>
             </div>
           </motion.div>
         </div>
       </section>
 
+      {/* Main content */}
       <section className="px-4">
         <div className="mx-auto grid max-w-6xl gap-6 2xl:grid-cols-[minmax(0,18rem)_minmax(0,1fr)] 2xl:items-start">
+
+          {/* Sidebar */}
           <div className="grid gap-4 2xl:sticky 2xl:top-28">
             <motion.div initial={{ opacity: 0, y: 18 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.08 }} className="editorial-card px-5 py-5">
-              <p className="text-[10px] uppercase tracking-[0.3em] text-gold-700">Contribute</p>
-              <h2 className="mt-4 text-2xl text-charcoal-900">Add your side of the day.</h2>
-              <p className="mt-3 text-sm leading-6 text-charcoal-500">Pick the format that feels easiest and open the composer only when you are ready.</p>
-              <div className="mt-5 grid gap-2">
-                {composerModes.map((mode) => {
-                  const Icon = mode.icon
-                  const isActive = formType === mode.type
-                  return (
-                    <button key={mode.type} type="button" onClick={() => { setFormType(mode.type); setMediaBlob(null); openComposer(mode.type) }} className={cn('flex items-start gap-3 rounded-[1.25rem] border px-4 py-3 text-left transition-all', isActive ? 'border-gold-300 bg-gold-50/90' : 'border-white/80 bg-white/74 hover:border-gold-200 hover:bg-white')}>
-                      <div className="mt-0.5 flex h-10 w-10 items-center justify-center rounded-2xl border border-white/75 bg-white text-gold-600 shadow-sm"><Icon className="h-4 w-4" /></div>
-                      <div>
-                        <p className="text-sm font-semibold text-charcoal-900">{mode.label}</p>
-                        <p className="mt-1 text-xs leading-5 text-charcoal-500">{mode.description}</p>
-                      </div>
-                    </button>
-                  )
-                })}
-              </div>
-              <Button type="button" size="lg" variant={showForm ? 'secondary' : 'primary'} onClick={() => (showForm ? setShowForm(false) : openComposer(formType))} className="mt-5 w-full" aria-expanded={showForm}>
-                {showForm ? <><X className="h-4 w-4" />Close composer</> : <><Send className="h-4 w-4" />Start your message</>}
+              <p className="text-[10px] uppercase tracking-[0.3em] text-gold-700">Leave a note</p>
+              <h2 className="mt-4 text-2xl text-charcoal-900">Something to remember us by.</h2>
+              <p className="mt-3 text-sm leading-6 text-charcoal-500">A few words is plenty. Write what came to mind on the drive home.</p>
+              <Button
+                type="button"
+                size="lg"
+                variant={showForm ? 'secondary' : 'primary'}
+                onClick={() => (showForm ? setShowForm(false) : openComposer('text'))}
+                className="mt-5 w-full"
+                aria-expanded={showForm}
+              >
+                {showForm ? <><X className="h-4 w-4" />Close</> : <><Send className="h-4 w-4" />Write a note</>}
               </Button>
             </motion.div>
 
-            <motion.div initial={{ opacity: 0, y: 18 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.14 }} data-testid="guestbook-filters" className="editorial-card px-5 py-5">
-              <p className="text-[10px] uppercase tracking-[0.3em] text-gold-700">Browse softly</p>
-              <p className="mt-3 text-sm leading-6 text-charcoal-500">Use the filters when you want a specific format, or leave everything on and read straight through.</p>
-              <div className="mt-5 flex flex-wrap gap-2">
-                {[{ key: 'all', label: 'Everything' }, { key: 'text', label: 'Text' }, { key: 'voice', label: 'Voice' }, { key: 'video', label: 'Video' }].map((option) => (
-                  <button key={option.key} type="button" onClick={() => setFilter(option.key as typeof filter)} className={cn('inline-flex items-center gap-2 rounded-full px-4 py-2 text-sm transition-all', filter === option.key ? 'cinematic-toggle-active' : 'bg-cream-50 text-charcoal-600 hover:bg-gold-50/80 hover:text-charcoal-800')} aria-pressed={filter === option.key}>
-                    <span>{option.label}</span>
-                    <span className={cn('text-xs', filter === option.key ? 'text-charcoal-700/80' : 'text-charcoal-400')}>{counts[option.key as keyof typeof counts]}</span>
-                  </button>
-                ))}
-              </div>
-            </motion.div>
-
-            <motion.div initial={{ opacity: 0, y: 18 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.18 }} className="editorial-card px-5 py-5">
+            <motion.div initial={{ opacity: 0, y: 18 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.14 }} className="editorial-card px-5 py-5">
               <p className="text-[10px] uppercase tracking-[0.3em] text-gold-700">Newest note</p>
               {featuredMessage ? (
                 <>
@@ -779,100 +738,107 @@ export default function Guestbook() {
                 </>
               ) : (
                 <p className="mt-3 text-sm leading-6 text-charcoal-500">
-                  The first note will appear here once someone adds a memory, blessing, or little story from the day.
+                  The first note will appear here once someone leaves a memory from the day.
                 </p>
               )}
             </motion.div>
+
+            <motion.div initial={{ opacity: 0, y: 18 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.18 }} data-testid="guestbook-filters" className="editorial-card px-5 py-5">
+              <p className="text-[10px] uppercase tracking-[0.3em] text-gold-700">Browse</p>
+              <div className="mt-4 flex flex-wrap gap-2">
+                {([{ key: 'all', label: 'Everything' }, { key: 'text', label: 'Written' }, { key: 'voice', label: 'Voice' }, { key: 'video', label: 'Video' }] as const).map((option) => (
+                  <button
+                    key={option.key}
+                    type="button"
+                    onClick={() => setFilter(option.key)}
+                    className={cn('inline-flex items-center gap-2 rounded-full px-4 py-2 text-sm transition-all', filter === option.key ? 'cinematic-toggle-active' : 'bg-cream-50 text-charcoal-600 hover:bg-gold-50/80 hover:text-charcoal-800')}
+                    aria-pressed={filter === option.key}
+                  >
+                    <span>{option.label}</span>
+                    <span className={cn('text-xs', filter === option.key ? 'text-charcoal-700/80' : 'text-charcoal-400')}>{counts[option.key]}</span>
+                  </button>
+                ))}
+              </div>
+            </motion.div>
           </div>
 
+          {/* Feed */}
           <div className="space-y-6">
             <AnimatePresence initial={false}>
               {showForm && (
-                <motion.div ref={composerRef} initial={{ opacity: 0, y: 18 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -12 }} data-testid="guestbook-composer" className="editorial-panel px-5 py-5 sm:px-6 sm:py-6 lg:px-8">
+                <motion.div
+                  ref={composerRef}
+                  initial={{ opacity: 0, y: 18 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  exit={{ opacity: 0, y: -12 }}
+                  data-testid="guestbook-composer"
+                  className="editorial-panel px-5 py-5 sm:px-6 sm:py-6 lg:px-8"
+                >
                   {isSubmitted ? (
                     <div className="text-center">
-                      <div className="mx-auto flex h-20 w-20 items-center justify-center rounded-full border border-green-200/80 bg-green-100/88 shadow-sm"><CheckCircle className="h-10 w-10 text-green-600" /></div>
-                      <span className="eyebrow-chip mt-6"><Sparkles className="h-3.5 w-3.5" />Message sent</span>
-                      <h2 className="mt-6 text-4xl text-charcoal-900 sm:text-5xl">Your note is part of the book now.</h2>
-                      <p className="mx-auto mt-4 max-w-2xl text-base text-charcoal-600 sm:text-lg">Thank you for adding your voice to the day. We just tucked it into the archive.</p>
+                      <div className="mx-auto flex h-20 w-20 items-center justify-center rounded-full border border-green-200/80 bg-green-100/88 shadow-sm">
+                        <CheckCircle className="h-10 w-10 text-green-600" />
+                      </div>
+                      <span className="eyebrow-chip mt-6"><Sparkles className="h-3.5 w-3.5" />Sent</span>
+                      <h2 className="mt-6 text-4xl text-charcoal-900 sm:text-5xl">Your note is in the book.</h2>
+                      <p className="mx-auto mt-4 max-w-2xl text-base text-charcoal-600 sm:text-lg">
+                        Thank you for leaving something with us. We'll carry it forward.
+                      </p>
                     </div>
                   ) : (
                     <form onSubmit={handleSubmit}>
                       <div className="flex items-start justify-between gap-4">
                         <div>
-                          <span className="eyebrow-chip"><Send className="h-3.5 w-3.5" />Compose a message</span>
-                          <h2 className="mt-5 text-3xl text-charcoal-900 sm:text-4xl">Leave one note before you go.</h2>
-                          <p className="mt-3 max-w-2xl text-sm leading-6 text-charcoal-600 sm:text-base">A written note is usually enough. Voice and video are here when hearing the tone matters more than polish.</p>
+                          <span className="eyebrow-chip"><PenSquare className="h-3.5 w-3.5" />Your note</span>
+                          <h2 className="mt-5 text-3xl text-charcoal-900 sm:text-4xl">What's on your heart?</h2>
                         </div>
-                        <button type="button" onClick={() => setShowForm(false)} className="rounded-full border border-gold-200/70 bg-cream-50/88 p-2 text-charcoal-500 shadow-sm transition-colors hover:border-gold-300/70 hover:text-charcoal-800" aria-label="Close composer"><X className="h-5 w-5" /></button>
-                      </div>
-
-                      <div className="mt-6 grid gap-2 md:grid-cols-3">
-                        {composerModes.map((mode) => {
-                          const Icon = mode.icon
-                          const isActive = formType === mode.type
-                          return (
-                            <button key={mode.type} type="button" onClick={() => { setFormType(mode.type); setMediaBlob(null); setSubmitError(null) }} className={cn('rounded-[1.35rem] border px-4 py-4 text-left transition-all', isActive ? 'border-gold-300 bg-gold-50/90' : 'border-white/78 bg-white/76 hover:border-gold-200 hover:bg-white')} aria-pressed={isActive}>
-                              <div className="flex items-center gap-3">
-                                <div className="flex h-10 w-10 items-center justify-center rounded-2xl border border-white/75 bg-white text-gold-600 shadow-sm"><Icon className="h-4 w-4" /></div>
-                                <div>
-                                  <p className="text-sm font-semibold text-charcoal-900">{mode.label}</p>
-                                  <p className="mt-1 text-xs uppercase tracking-[0.22em] text-charcoal-400">Guestbook mode</p>
-                                </div>
-                              </div>
-                            </button>
-                          )
-                        })}
+                        <button
+                          type="button"
+                          onClick={() => setShowForm(false)}
+                          className="rounded-full border border-gold-200/70 bg-cream-50/88 p-2 text-charcoal-500 shadow-sm transition-colors hover:border-gold-300/70 hover:text-charcoal-800"
+                          aria-label="Close"
+                        >
+                          <X className="h-5 w-5" />
+                        </button>
                       </div>
 
                       <div className="mt-6 grid gap-5 lg:grid-cols-2">
                         <div>
-                          <Label htmlFor="guestbook-name">Your Name</Label>
+                          <Label htmlFor="guestbook-name">Your name</Label>
                           <Input id="guestbook-name" value={name} onChange={(event) => setName(event.target.value)} placeholder="Your name" required />
                         </div>
                         <div>
-                          <Label htmlFor="guestbook-email">Email</Label>
-                          <Input id="guestbook-email" type="email" value={email} onChange={(event) => setEmail(event.target.value)} placeholder="your@email.com" required />
-                          <p className="mt-2 text-xs text-charcoal-400">Only used if we ever need to reach you about your submission.</p>
+                          <Label htmlFor="guestbook-email">
+                            Email <span className="font-normal text-charcoal-400">(optional)</span>
+                          </Label>
+                          <Input id="guestbook-email" type="email" value={email} onChange={(event) => setEmail(event.target.value)} placeholder="your@email.com" />
+                          <p className="mt-2 text-xs text-charcoal-400">Just in case we want to follow up with you.</p>
                         </div>
                       </div>
 
                       <div className="mt-6">
-                        {formType === 'text' && (
-                          <div>
-                            <Label htmlFor="guestbook-message">Your Message</Label>
-                            <Textarea id="guestbook-message" value={content} onChange={(event) => setContent(event.target.value)} placeholder="Tell us what you felt, what you remember, or what you hope for us next." rows={6} required />
-                          </div>
-                        )}
-                        {formType === 'voice' && (
-                          <div className="space-y-4">
-                            <VoiceRecorder onRecordingComplete={setMediaBlob} maxDuration={60} />
-                            <div>
-                              <Label htmlFor="guestbook-voice-note">Add a Note (Optional)</Label>
-                              <Textarea id="guestbook-voice-note" value={content} onChange={(event) => setContent(event.target.value)} placeholder="Add context, a name, or a quick memory to sit alongside the recording." rows={3} />
-                            </div>
-                          </div>
-                        )}
-                        {formType === 'video' && (
-                          <div className="space-y-4">
-                            <VideoRecorder onRecordingComplete={setMediaBlob} maxDuration={30} />
-                            <div>
-                              <Label htmlFor="guestbook-video-note">Add a Note (Optional)</Label>
-                              <Textarea id="guestbook-video-note" value={content} onChange={(event) => setContent(event.target.value)} placeholder="Add context for the clip, or leave this blank and let the video speak for itself." rows={3} />
-                            </div>
-                          </div>
-                        )}
+                        <Label htmlFor="guestbook-message">Your message</Label>
+                        <Textarea
+                          id="guestbook-message"
+                          value={content}
+                          onChange={(event) => setContent(event.target.value)}
+                          placeholder="Tell us what you felt, what you remember, or what you hope for us next."
+                          rows={6}
+                          required
+                        />
                       </div>
 
-                      {submitError && <div className="mt-5 rounded-[1.35rem] border border-rose-200 bg-rose-50 px-4 py-3"><p className="text-sm text-rose-600">{submitError}</p></div>}
-
-                      <div className="mt-6 flex flex-col gap-4 border-t border-charcoal-900/8 pt-5 2xl:flex-row 2xl:items-center 2xl:justify-between">
-                        <div className="space-y-2 text-sm text-charcoal-500">
-                          <p className="flex items-center gap-2"><Mail className="h-4 w-4 text-gold-600" />We only need your name, email, and the message itself.</p>
-                          <p className="flex items-center gap-2"><Sparkles className="h-4 w-4 text-gold-600" />Voice and video entries upload exactly the same way they already do today.</p>
+                      {submitError && (
+                        <div className="mt-5 rounded-[1.35rem] border border-rose-200 bg-rose-50 px-4 py-3">
+                          <p className="text-sm text-rose-600">{submitError}</p>
                         </div>
-                        <Button type="submit" size="lg" disabled={isSubmitting || !name || !email || (formType === 'text' && !content.trim()) || (formType !== 'text' && !mediaBlob)}>
-                          {isSubmitting ? <><Loader2 className="h-4 w-4 animate-spin" />Sending...</> : <><Send className="h-4 w-4" />Post to the guestbook</>}
+                      )}
+
+                      <div className="mt-6 flex justify-end border-t border-charcoal-900/8 pt-5">
+                        <Button type="submit" size="lg" disabled={isSubmitting || !name || !content.trim()}>
+                          {isSubmitting
+                            ? <><Loader2 className="h-4 w-4 animate-spin" />Sending…</>
+                            : <><Send className="h-4 w-4" />Send your note</>}
                         </Button>
                       </div>
                     </form>
@@ -881,27 +847,42 @@ export default function Guestbook() {
               )}
             </AnimatePresence>
 
-            {loadError && <motion.div initial={{ opacity: 0, y: -10 }} animate={{ opacity: 1, y: 0 }} className="rounded-[1.5rem] border border-amber-200/80 bg-amber-50/90 px-5 py-4 text-sm text-amber-700">{loadError}</motion.div>}
+            {loadError && (
+              <motion.div initial={{ opacity: 0, y: -10 }} animate={{ opacity: 1, y: 0 }} className="rounded-[1.5rem] border border-amber-200/80 bg-amber-50/90 px-5 py-4 text-sm text-amber-700">
+                {loadError}
+              </motion.div>
+            )}
 
             <motion.div initial={{ opacity: 0, y: 18 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.18 }} data-testid="guestbook-feed" className="editorial-card px-5 py-5">
               <div className="flex flex-col gap-4 2xl:flex-row 2xl:items-end 2xl:justify-between">
                 <div>
-                  <p className="text-[10px] uppercase tracking-[0.3em] text-gold-700">Now showing</p>
-                  <h2 className="mt-3 text-3xl text-charcoal-900 sm:text-4xl">{filter === 'all' ? 'Every guestbook entry' : filter === 'text' ? 'Written notes' : filter === 'voice' ? 'Voice messages' : 'Video messages'}</h2>
-                  <p className="mt-3 max-w-2xl text-sm leading-6 text-charcoal-500 sm:text-base">Read straight through, react to a favorite note, or reply when a memory sparks another one.</p>
+                  <p className="text-[10px] uppercase tracking-[0.3em] text-gold-700">Notes from the day</p>
+                  <h2 className="mt-3 text-3xl text-charcoal-900 sm:text-4xl">
+                    {filter === 'all' ? 'Everyone who left a note' : filter === 'text' ? 'Written notes' : filter === 'voice' ? 'Voice messages' : 'Video messages'}
+                  </h2>
                 </div>
                 <div className="flex flex-wrap gap-2">
-                  <div className="inline-flex items-center gap-2 rounded-full border border-gold-200/70 bg-white/80 px-4 py-2 text-sm text-charcoal-500"><BookHeart className="h-4 w-4 text-gold-500" />{filteredMessages.length} matching entries</div>
-                  <div className="inline-flex items-center gap-2 rounded-full border border-gold-200/70 bg-white/80 px-4 py-2 text-sm text-charcoal-500"><MessageCircle className="h-4 w-4 text-gold-500" />{totalReplies} replies total</div>
+                  <div className="inline-flex items-center gap-2 rounded-full border border-gold-200/70 bg-white/80 px-4 py-2 text-sm text-charcoal-500">
+                    <BookHeart className="h-4 w-4 text-gold-500" />
+                    {filteredMessages.length} {filteredMessages.length === 1 ? 'note' : 'notes'}
+                  </div>
+                  {totalReplies > 0 && (
+                    <div className="inline-flex items-center gap-2 rounded-full border border-gold-200/70 bg-white/80 px-4 py-2 text-sm text-charcoal-500">
+                      <MessageCircle className="h-4 w-4 text-gold-500" />
+                      {totalReplies} {totalReplies === 1 ? 'reply' : 'replies'}
+                    </div>
+                  )}
                 </div>
               </div>
             </motion.div>
 
             {isLoading ? (
               <div className="editorial-panel px-6 py-12 text-center">
-                <div className="mx-auto flex h-16 w-16 items-center justify-center rounded-full bg-gold-100 text-gold-600"><Loader2 className="h-7 w-7 animate-spin" /></div>
-                <p className="mt-6 font-display text-2xl text-charcoal-900">Gathering the guestbook</p>
-                <p className="mt-2 text-charcoal-500">Pulling in notes, replies, and recordings from the people we love most.</p>
+                <div className="mx-auto flex h-16 w-16 items-center justify-center rounded-full bg-gold-100 text-gold-600">
+                  <Loader2 className="h-7 w-7 animate-spin" />
+                </div>
+                <p className="mt-6 font-display text-2xl text-charcoal-900">Gathering the notes</p>
+                <p className="mt-2 text-charcoal-500">Just a moment while we bring in everything from the day.</p>
               </div>
             ) : filteredMessages.length > 0 ? (
               <>
@@ -916,21 +897,31 @@ export default function Guestbook() {
                     />
                   ))}
                 </div>
-                {hasMoreMessages && <div className="flex justify-center pt-2"><Button variant="secondary" size="lg" onClick={() => setVisibleCount((current) => current + INITIAL_VISIBLE_MESSAGES)}>Load more messages</Button></div>}
+                {hasMoreMessages && (
+                  <div className="flex justify-center pt-2">
+                    <Button variant="secondary" size="lg" onClick={() => setVisibleCount((current) => current + INITIAL_VISIBLE_MESSAGES)}>
+                      Read more notes
+                    </Button>
+                  </div>
+                )}
               </>
             ) : messages.length > 0 ? (
               <div className="editorial-panel px-6 py-12 text-center">
-                <div className="mx-auto flex h-16 w-16 items-center justify-center rounded-full bg-gold-100 text-gold-600"><BookHeart className="h-7 w-7" /></div>
-                <p className="mt-6 font-display text-2xl text-charcoal-900">Nothing matches this filter just yet.</p>
-                <p className="mx-auto mt-2 max-w-md text-charcoal-500">Try switching formats or opening everything again to read straight through the guestbook.</p>
+                <div className="mx-auto flex h-16 w-16 items-center justify-center rounded-full bg-gold-100 text-gold-600">
+                  <BookHeart className="h-7 w-7" />
+                </div>
+                <p className="mt-6 font-display text-2xl text-charcoal-900">Nothing here for this filter.</p>
+                <p className="mx-auto mt-2 max-w-md text-charcoal-500">Switch to everything to read all the way through.</p>
                 <Button className="mt-6" size="lg" variant="secondary" onClick={() => setFilter('all')}>Show everything</Button>
               </div>
             ) : (
               <div className="editorial-panel px-6 py-12 text-center">
-                <div className="mx-auto flex h-16 w-16 items-center justify-center rounded-full bg-gold-100 text-gold-600"><BookHeart className="h-7 w-7" /></div>
-                <p className="mt-6 font-display text-2xl text-charcoal-900">The guestbook is ready for its first real note.</p>
-                <p className="mx-auto mt-2 max-w-md text-charcoal-500">There are no demo messages here now. Start the page off with a written note, a voice memo, or a quick video hello.</p>
-                <Button className="mt-6" size="lg" onClick={() => openComposer('text')}>Leave the first message</Button>
+                <div className="mx-auto flex h-16 w-16 items-center justify-center rounded-full bg-gold-100 text-gold-600">
+                  <BookHeart className="h-7 w-7" />
+                </div>
+                <p className="mt-6 font-display text-2xl text-charcoal-900">No notes yet — yours could be the first.</p>
+                <p className="mx-auto mt-2 max-w-md text-charcoal-500">Leave something small. It doesn't need to be a speech.</p>
+                <Button className="mt-6" size="lg" onClick={() => openComposer('text')}>Leave the first note</Button>
               </div>
             )}
           </div>

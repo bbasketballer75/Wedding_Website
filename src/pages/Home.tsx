@@ -1,7 +1,7 @@
 import { type ElementType, useState, useEffect, useRef } from 'react'
 import { motion, useScroll, useTransform, useMotionValueEvent } from 'framer-motion'
 import { Link } from 'react-router-dom'
-import { ChevronDown, Clapperboard, Heart } from 'lucide-react'
+import { ChevronDown, Clapperboard } from 'lucide-react'
 import { LoveTimeline } from '@/components/timeline/LoveTimeline'
 import { publicNavLinks } from '@/components/layout/publicNav'
 import { HomeSEO } from '@/components/seo/SEOHead'
@@ -257,22 +257,13 @@ export default function Home() {
             transition={{ duration: 4, repeat: Infinity, ease: 'easeInOut' }}
             whileHover={{ scale: 1.03, y: -6 }}
             whileTap={{ scale: 0.95 }}
-            className="group relative overflow-hidden rounded-full border border-white/55 bg-[linear-gradient(135deg,rgba(255,251,245,0.88),rgba(247,239,227,0.9)_54%,rgba(236,219,191,0.88))] px-3.5 py-2.5 text-charcoal-800 shadow-[0_18px_40px_-22px_rgba(41,29,23,0.65)] backdrop-blur-md transition-colors hover:border-gold-300/80 sm:px-4"
+            className="group flex items-center gap-3"
           >
-            <motion.span
-              aria-hidden="true"
-              animate={{ x: ['-120%', '120%'] }}
-              transition={{ duration: 3.6, repeat: Infinity, ease: 'easeInOut' }}
-              className="pointer-events-none absolute inset-y-0 left-0 w-16 bg-gradient-to-r from-transparent via-white/55 to-transparent blur-md"
-            />
-            <span className="relative flex items-center gap-2.5">
-              <span className="flex items-center gap-1.5 rounded-full border border-gold-200/80 bg-white/72 px-2.5 py-1 text-gold-700 shadow-sm">
-                <Heart className="h-3.5 w-3.5 fill-gold-300/35 text-gold-500" />
-                <span className="text-[10px] uppercase tracking-[0.3em]">Explore</span>
-              </span>
-              <span className="flex h-7 w-7 items-center justify-center rounded-full border border-gold-200/80 bg-white/76 text-gold-700 shadow-sm transition-transform duration-300 group-hover:translate-y-0.5">
-                <ChevronDown className="h-4 w-4" />
-              </span>
+            <span className="rounded-full bg-gold-500 px-5 py-2.5 text-[11px] font-medium uppercase tracking-[0.25em] text-white shadow-[0_8px_24px_-8px_rgba(180,140,50,0.55)]">
+              Explore
+            </span>
+            <span className="flex h-9 w-9 items-center justify-center rounded-full border border-white/40 bg-white/18 text-white shadow-sm backdrop-blur-sm transition-transform duration-300 group-hover:translate-y-0.5">
+              <ChevronDown className="h-4 w-4" />
             </span>
           </motion.button>
         </motion.div>
