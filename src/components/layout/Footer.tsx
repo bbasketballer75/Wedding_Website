@@ -71,10 +71,10 @@ export function Footer() {
                     </div>
                     <ArrowUpRight className="h-3 w-3 text-gold-300/60 transition-transform duration-300 group-hover:translate-x-0.5 group-hover:-translate-y-0.5" />
                   </div>
-                  <p className="font-display text-base leading-tight text-cinematic-primary sm:text-lg">
+                  <p className="font-display text-sm leading-tight text-cinematic-primary sm:text-base">
                     {title}
                   </p>
-                  <p className="text-xs leading-5 text-cinematic-secondary">
+                  <p className="hidden text-xs leading-5 text-cinematic-secondary sm:block">
                     {description}
                   </p>
                 </Link>
