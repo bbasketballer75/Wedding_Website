@@ -597,10 +597,10 @@ export default function UploadPage() {
               onDrop={handleDrop}
               data-testid="upload-dropzone"
               className={cn(
-                'relative overflow-hidden rounded-[2rem] border-2 border-dashed px-6 py-8 text-center transition-all sm:px-8 sm:py-10',
+                'relative overflow-hidden rounded-2xl border-2 border-dashed px-6 py-8 text-center transition-all sm:px-8 sm:py-10',
                 isDragging
-                  ? 'border-gold-500 bg-gold-50/72 shadow-[0_24px_60px_-45px_rgba(201,160,92,0.65)]'
-                  : 'border-gold-200/80 bg-white/82 hover:border-gold-400 hover:bg-white'
+                  ? 'border-gold-400 bg-gold-500/8 shadow-[0_0_60px_-20px_rgba(198,156,78,0.3)]'
+                  : 'border-gold-200/20 bg-white/4 hover:border-gold-400/40 hover:bg-white/6'
               )}
             >
               <input
@@ -612,32 +612,32 @@ export default function UploadPage() {
                 className="absolute inset-0 h-full w-full cursor-pointer opacity-0"
               />
 
-              <div className="mx-auto flex h-18 w-18 items-center justify-center rounded-full border border-gold-200/70 bg-gold-100 sm:h-20 sm:w-20">
-                <Upload className="h-9 w-9 text-gold-600 sm:h-10 sm:w-10" />
+              <div className="mx-auto flex h-18 w-18 items-center justify-center rounded-full border border-gold-400/20 bg-gold-500/10 sm:h-20 sm:w-20">
+                <Upload className="h-9 w-9 text-gold-400 sm:h-10 sm:w-10" />
               </div>
 
-              <h2 className="mt-6 text-4xl text-charcoal-900 sm:text-5xl">
+              <h2 className="mt-6 text-4xl text-white sm:text-5xl">
                 {isDragging ? 'Drop them right here.' : 'Drop photos or videos to begin.'}
               </h2>
 
-              <p className="mx-auto mt-4 max-w-2xl text-base text-charcoal-600 sm:text-lg">
+              <p className="mx-auto mt-4 max-w-2xl text-base text-white/55 sm:text-lg">
                 Click anywhere or drag your files in
               </p>
 
-              <div className="mt-8 flex flex-wrap items-center justify-center gap-3 text-sm text-charcoal-500">
-                <span className="rounded-full border border-white/80 bg-white/76 px-4 py-2">
+              <div className="mt-8 flex flex-wrap items-center justify-center gap-3 text-sm text-white/50">
+                <span className="rounded-full border border-white/12 bg-white/6 px-4 py-2">
                   <span className="inline-flex items-center gap-2">
-                    <ImageIcon className="h-4 w-4 text-gold-600" />
+                    <ImageIcon className="h-4 w-4 text-gold-400" />
                     JPG, PNG, HEIC
                   </span>
                 </span>
-                <span className="rounded-full border border-white/80 bg-white/76 px-4 py-2">
+                <span className="rounded-full border border-white/12 bg-white/6 px-4 py-2">
                   <span className="inline-flex items-center gap-2">
-                    <Video className="h-4 w-4 text-gold-600" />
+                    <Video className="h-4 w-4 text-gold-400" />
                     MP4, MOV
                   </span>
                 </span>
-                <span className="rounded-full border border-white/80 bg-white/76 px-4 py-2">
+                <span className="rounded-full border border-white/12 bg-white/6 px-4 py-2">
                   Up to 50 files, 500MB each
                 </span>
               </div>
@@ -647,9 +647,9 @@ export default function UploadPage() {
               <motion.div
                 initial={{ opacity: 0, y: 12 }}
                 animate={{ opacity: 1, y: 0 }}
-                className="rounded-[1.5rem] border border-amber-200 bg-amber-50 px-5 py-4"
+                className="rounded-[1.5rem] border border-amber-400/25 bg-amber-500/8 px-5 py-4"
               >
-                <p className="flex items-start gap-2 text-sm leading-6 text-amber-700">
+                <p className="flex items-start gap-2 text-sm leading-6 text-amber-300">
                   <AlertCircle className="mt-0.5 h-4 w-4 shrink-0" />
                   {queueNotice}
                 </p>
@@ -660,33 +660,33 @@ export default function UploadPage() {
               <motion.section
                 initial={{ opacity: 0, y: 20 }}
                 animate={{ opacity: 1, y: 0 }}
-                className="editorial-panel px-6 py-6 sm:px-8"
+                className="relative overflow-hidden rounded-2xl bg-white/6 backdrop-blur-md border border-gold-200/15 px-6 py-6 sm:px-8"
               >
                 <div className="flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between">
                   <div>
-                    <span className="eyebrow-chip">
+                    <span className="flex items-center gap-1.5 text-[10px] uppercase tracking-[0.3em] text-gold-400">
                       <Upload className="h-3.5 w-3.5" />
                       Upload queue
                     </span>
-                    <h3 className="mt-5 text-3xl text-charcoal-900 sm:text-4xl">
+                    <h3 className="mt-5 text-3xl text-white sm:text-4xl">
                       {completedFiles} of {files.length} files ready to send
                     </h3>
-                    <p className="mt-3 max-w-2xl text-sm text-charcoal-500 sm:text-base">
+                    <p className="mt-3 max-w-2xl text-sm text-white/55 sm:text-base">
                       Take a look before sending. Remove anything you don't want, retry anything that didn't upload, and send when you're happy with what's ready.
                     </p>
                   </div>
 
-                  <div className="flex flex-wrap items-center gap-3 text-sm text-charcoal-500">
-                    <span className="rounded-full border border-white/80 bg-white/76 px-4 py-2">
+                  <div className="flex flex-wrap items-center gap-3 text-sm text-white/50">
+                    <span className="rounded-full border border-white/12 bg-white/6 px-4 py-2">
                       {describeUploadSummary(completedPhotoCount, completedVideoCount)}
                     </span>
                     {uploadingCount > 0 && (
-                      <span className="rounded-full border border-gold-200 bg-gold-50 px-4 py-2 text-gold-700">
+                      <span className="rounded-full border border-gold-400/25 bg-gold-500/8 px-4 py-2 text-gold-300">
                         {uploadingCount} still uploading
                       </span>
                     )}
                     {hasErrors && (
-                      <span className="rounded-full border border-rose-200 bg-rose-50 px-4 py-2 text-rose-600">
+                      <span className="rounded-full border border-rose-400/20 bg-rose-500/10 px-4 py-2 text-rose-300">
                         These didn't upload — retry or remove them before sending
                       </span>
                     )}
@@ -698,24 +698,24 @@ export default function UploadPage() {
                     <div
                       key={file.id}
                       className={cn(
-                        'editorial-card flex flex-col gap-4 px-4 py-4 sm:flex-row sm:items-center',
-                        file.status === 'error' && 'border-rose-200/80'
+                        'flex flex-col gap-4 px-4 py-4 sm:flex-row sm:items-center bg-white/5 border border-white/8 rounded-xl',
+                        file.status === 'error' && 'border-rose-400/20 bg-rose-500/10'
                       )}
                     >
                       <div className="flex items-center gap-4">
                         {file.preview ? (
                           <img src={file.preview} alt="" className="h-16 w-16 rounded-2xl object-cover" />
                         ) : (
-                          <div className="flex h-16 w-16 items-center justify-center rounded-2xl border border-gold-200/70 bg-gold-50 text-gold-600">
+                          <div className="flex h-16 w-16 items-center justify-center rounded-2xl border border-gold-400/20 bg-gold-500/10 text-gold-400">
                             <Video className="h-6 w-6" />
                           </div>
                         )}
 
                         <div className="min-w-0">
-                          <p className="truncate text-sm font-semibold text-charcoal-800">
+                          <p className="truncate text-sm font-semibold text-white">
                             {file.file.name}
                           </p>
-                          <div className="mt-1 flex flex-wrap items-center gap-2 text-xs text-charcoal-400">
+                          <div className="mt-1 flex flex-wrap items-center gap-2 text-xs text-white/50">
                             <span>{(file.file.size / 1024 / 1024).toFixed(1)} MB</span>
                             <span className="h-1 w-1 rounded-full bg-gold-300" />
                             <span>{file.file.type.startsWith('video/') ? 'Video' : 'Photo'}</span>
@@ -726,7 +726,7 @@ export default function UploadPage() {
                       <div className="flex-1">
                         {file.status === 'uploading' && (
                           <div>
-                            <div className="mb-2 flex items-center justify-between text-xs text-charcoal-500">
+                            <div className="mb-2 flex items-center justify-between text-xs text-white/50">
                               <span>Uploading for us…</span>
                               <span>Processing</span>
                             </div>
@@ -738,7 +738,7 @@ export default function UploadPage() {
                                 className="h-full w-1/3 rounded-full bg-gradient-to-r from-gold-300 via-gold-500 to-gold-300"
                               />
                             </div>
-                            <p className="mt-2 text-xs text-charcoal-400">
+                            <p className="mt-2 text-xs text-white/50">
                               We only show ready vs failed states here so the queue never implies fake precision.
                             </p>
                           </div>
@@ -753,11 +753,11 @@ export default function UploadPage() {
 
                         {file.status === 'error' && (
                           <div className="space-y-2">
-                            <div className="inline-flex items-center gap-2 rounded-full border border-rose-200 bg-rose-50 px-3 py-1.5 text-xs font-medium text-rose-600">
+                            <div className="inline-flex items-center gap-2 rounded-full border border-rose-400/20 bg-rose-500/10 px-3 py-1.5 text-xs font-medium text-rose-300">
                               <AlertCircle className="h-3.5 w-3.5" />
                               Didn't upload
                             </div>
-                            <p className="text-xs leading-5 text-rose-600">
+                            <p className="text-xs leading-5 text-rose-300">
                               {file.errorMessage || 'This one didn\'t upload — try again or skip it'}
                             </p>
                             <button
@@ -775,7 +775,7 @@ export default function UploadPage() {
                         <button
                           type="button"
                           onClick={() => removeFile(file.id)}
-                          className="self-start rounded-full p-2 text-charcoal-400 transition-colors hover:bg-white hover:text-rose-500 sm:self-center"
+                          className="self-start rounded-full border border-white/12 bg-white/8 p-2 text-white/50 transition-colors hover:bg-white/12 hover:text-white sm:self-center"
                           aria-label={`Remove ${file.file.name}`}
                         >
                           <X className="h-5 w-5" />
