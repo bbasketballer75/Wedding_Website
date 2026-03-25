@@ -1,17 +1,11 @@
 import { type ElementType, useState, useEffect, useRef } from 'react'
 import { motion, useScroll, useTransform, useMotionValueEvent } from 'framer-motion'
 import { Link } from 'react-router-dom'
-import { ChevronDown, Clapperboard, Play } from 'lucide-react'
+import { ChevronDown } from 'lucide-react'
 import { LoveTimeline } from '@/components/timeline/LoveTimeline'
 import { publicNavLinks } from '@/components/layout/publicNav'
 import { HomeSEO } from '@/components/seo/SEOHead'
-import { Button } from '@/components/ui/Button'
 import { cn } from '@/lib/utils'
-import {
-  MAIN_FILM_PROGRESS_KEY,
-  formatVideoProgressLabel,
-  readSavedVideoProgress,
-} from '@/utils/videoProgress'
 
 const HERO_POSTER = '/images/home/intro-video-poster.png'
 const HERO_VIDEO_WEBM = '/video/home-hero.webm'
@@ -54,7 +48,6 @@ export default function Home() {
   const [showUI, setShowUI] = useState(false)
   const [scrolled, setScrolled] = useState(false)
   const [heroMateriallyVisible, setHeroMateriallyVisible] = useState(true)
-  const [resumeTime, setResumeTime] = useState<number | null>(null)
   const heroRef = useRef<HTMLDivElement>(null)
   const containerRef = useRef<HTMLDivElement>(null)
   const videoRef = useRef<HTMLVideoElement>(null)
@@ -73,20 +66,6 @@ export default function Home() {
     return () => clearTimeout(timer)
   }, [])
 
-  useEffect(() => {
-    const syncResumeTime = () => {
-      setResumeTime(readSavedVideoProgress(MAIN_FILM_PROGRESS_KEY))
-    }
-
-    syncResumeTime()
-    document.addEventListener('visibilitychange', syncResumeTime)
-    window.addEventListener('focus', syncResumeTime)
-
-    return () => {
-      document.removeEventListener('visibilitychange', syncResumeTime)
-      window.removeEventListener('focus', syncResumeTime)
-    }
-  }, [])
 
   useEffect(() => {
     const hero = heroRef.current
@@ -270,79 +249,6 @@ export default function Home() {
       </section>
 
       <LoveTimeline />
-
-      <section className="relative overflow-hidden px-4 pb-24 pt-10 sm:pt-14">
-        <div className="absolute inset-0 bg-gradient-to-b from-cream-100 via-cream-50 to-cream-100" />
-
-        <motion.div
-          initial={{ opacity: 0, y: 30 }}
-          whileInView={{ opacity: 1, y: 0 }}
-          viewport={{ once: true, amount: 0.2 }}
-          transition={{ duration: 0.7 }}
-          className="relative z-10 mx-auto max-w-5xl"
-        >
-          <div className="relative overflow-hidden rounded-[2rem] bg-[linear-gradient(145deg,rgba(10,7,4,0.98),rgba(34,21,8,0.97)_55%,rgba(16,10,4,0.98))] border border-gold-200/12 shadow-[0_40px_100px_-35px_rgba(0,0,0,0.7)]">
-
-            {/* Ambient glows */}
-            <div className="pointer-events-none absolute -right-20 -top-20 h-72 w-72 rounded-full bg-gold-500/12 blur-3xl" />
-            <div className="pointer-events-none absolute -left-12 bottom-0 h-56 w-56 rounded-full bg-rose-700/8 blur-3xl" />
-
-            <div className="grid md:grid-cols-[1fr_340px] lg:grid-cols-[1fr_420px]">
-
-              {/* Text */}
-              <div className="flex flex-col justify-center p-7 sm:p-10 lg:p-12">
-                <div className="mb-5 inline-flex w-fit items-center gap-2 rounded-full border border-gold-300/30 bg-gold-500/10 px-4 py-2 text-[10px] uppercase tracking-[0.35em] text-gold-300">
-                  <Clapperboard className="h-3.5 w-3.5" />
-                  The Film
-                </div>
-
-                <h2 className="text-[2rem] leading-[1] tracking-[-0.03em] text-white sm:text-[2.6rem] lg:text-[3rem]">
-                  The whole night,<br />start to finish.
-                </h2>
-
-                <p className="mt-4 max-w-md text-sm leading-7 text-white/55 sm:text-[0.95rem]">
-                  Ceremony, vows, speeches, first dance — and everything in between.
-                  Watch it at whatever pace feels right.
-                </p>
-
-                <div className="mt-7">
-                  <Button size="lg" to={resumeTime ? `/film?resume=1` : '/film'} className="min-w-[13rem] justify-center">
-                    {resumeTime ? `Resume at ${formatVideoProgressLabel(resumeTime)}` : 'Watch the Film'}
-                  </Button>
-                </div>
-              </div>
-
-              {/* Thumbnail */}
-              <Link
-                to={resumeTime ? `/film?resume=1` : '/film'}
-                className="group relative hidden overflow-hidden md:block"
-              >
-                <img
-                  src={HERO_POSTER}
-                  alt="Film preview"
-                  className="h-full w-full object-cover object-[58%_center] transition-transform duration-700 group-hover:scale-105"
-                />
-                {/* left fade to blend into text panel */}
-                <div className="absolute inset-0 bg-gradient-to-r from-[rgba(10,7,4,0.85)] via-transparent to-transparent" />
-                {/* dark overlay */}
-                <div className="absolute inset-0 bg-black/20 transition-opacity duration-300 group-hover:bg-black/10" />
-
-                {/* Play button */}
-                <div className="absolute inset-0 flex items-center justify-center">
-                  <motion.div
-                    animate={{ scale: [1, 1.1, 1] }}
-                    transition={{ duration: 2.8, repeat: Infinity, ease: 'easeInOut' }}
-                    className="flex h-16 w-16 items-center justify-center rounded-full border border-white/35 bg-white/15 shadow-[0_0_40px_rgba(255,255,255,0.12)] backdrop-blur-sm transition-all duration-300 group-hover:bg-white/25 group-hover:scale-110"
-                  >
-                    <Play className="h-6 w-6 fill-white text-white ml-0.5" />
-                  </motion.div>
-                </div>
-              </Link>
-
-            </div>
-          </div>
-        </motion.div>
-      </section>
 
     </div>
   )
