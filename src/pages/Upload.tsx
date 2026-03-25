@@ -430,7 +430,11 @@ export default function UploadPage() {
   }
 
   return (
-    <div className="min-h-screen bg-cream-50 pb-20 pt-28 sm:pt-32">
+    <div className="min-h-screen bg-[linear-gradient(to_b,rgba(12,8,5,1),rgba(22,14,6,1))] pb-20 pt-28 sm:pt-32">
+      <div className="pointer-events-none fixed inset-0 overflow-hidden" aria-hidden="true">
+        <div className="absolute -top-32 left-1/4 h-96 w-96 rounded-full bg-gold-500/4 blur-[120px]" />
+        <div className="absolute bottom-1/4 right-1/4 h-64 w-64 rounded-full bg-gold-400/3 blur-[100px]" />
+      </div>
       <UploadSEO />
 
       <div className="mx-auto max-w-6xl px-4">
@@ -438,61 +442,61 @@ export default function UploadPage() {
           initial={{ opacity: 0, y: 24 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.7, ease: [0.16, 1, 0.3, 1] }}
-          className="editorial-panel px-6 py-8 sm:px-8 sm:py-10"
+          className="relative overflow-hidden rounded-2xl bg-white/6 backdrop-blur-md border border-gold-200/15 px-6 py-8 sm:px-8 sm:py-10"
         >
-          <div className="absolute -right-16 top-10 h-44 w-44 rounded-full bg-gold-200/30 blur-3xl" />
-          <div className="absolute -left-10 bottom-0 h-28 w-28 rounded-full bg-blush-200/35 blur-3xl" />
+          <div className="absolute -right-16 top-10 h-44 w-44 rounded-full bg-gold-500/8 blur-3xl" />
+          <div className="absolute -left-10 bottom-0 h-28 w-28 rounded-full bg-gold-400/5 blur-3xl" />
 
           <div className="relative grid gap-10 2xl:grid-cols-[minmax(0,1.1fr)_minmax(0,0.9fr)]">
             <div>
-              <span className="eyebrow-chip">
+              <span className="flex items-center gap-1.5 text-[10px] uppercase tracking-[0.3em] text-gold-400">
                 <Sparkles className="h-3.5 w-3.5" />
                 Add your side of the day
               </span>
 
-              <h1 className="mt-6 text-5xl text-charcoal-900 sm:text-6xl">
+              <h1 className="mt-6 text-5xl text-white sm:text-6xl">
                 Help us fill in the corners we could not see.
               </h1>
 
-              <p className="mt-5 max-w-2xl text-base text-charcoal-600 sm:text-lg">
+              <p className="mt-5 max-w-2xl text-base text-white/55 sm:text-lg">
                 Phone photos, shaky dance-floor videos, ceremony candids, quiet table moments:
                 the whole archive gets better when your side of the day is part of it too.
               </p>
 
-              <div className="mt-8 flex flex-wrap items-center gap-3 text-sm text-charcoal-500">
-                <span className="rounded-full border border-white/80 bg-white/76 px-4 py-2">
+              <div className="mt-8 flex flex-wrap items-center gap-3 text-sm text-white/50">
+                <span className="rounded-full border border-white/12 bg-white/8 px-4 py-2">
                   {selectedPhotoCount > 0 ? formatMediaCount(selectedPhotoCount, 'selected photo') : 'Photos welcome'}
                 </span>
-                <span className="rounded-full border border-white/80 bg-white/76 px-4 py-2">
+                <span className="rounded-full border border-white/12 bg-white/8 px-4 py-2">
                   {selectedVideoCount > 0 ? formatMediaCount(selectedVideoCount, 'selected video') : 'Videos welcome'}
                 </span>
-                <span className="rounded-full border border-white/80 bg-white/76 px-4 py-2">
+                <span className="rounded-full border border-white/12 bg-white/8 px-4 py-2">
                   Reviewed before posting
                 </span>
               </div>
 
-              <div className="mt-8 rounded-[1.5rem] border border-white/80 bg-white/76 p-5 shadow-sm">
+              <div className="mt-8 rounded-[1.5rem] border border-white/10 bg-white/5 p-5 shadow-sm">
                 <div className="flex flex-col gap-3 lg:flex-row lg:items-start lg:justify-between">
                   <div className="max-w-xl">
-                    <p className="text-[10px] uppercase tracking-[0.3em] text-gold-700">
+                    <p className="text-[10px] uppercase tracking-[0.3em] text-gold-400">
                       Pass the site along
                     </p>
-                    <p className="mt-3 text-lg font-semibold text-charcoal-900">
+                    <p className="mt-3 text-lg font-semibold text-white">
                       Send the full site to anyone who still has not watched or browsed yet.
                     </p>
-                    <p className="mt-2 text-sm leading-6 text-charcoal-500">
+                    <p className="mt-2 text-sm leading-6 text-white/55">
                       These buttons share the site itself. Uploads still happen separately below, so this stays a side action rather than the main event.
                     </p>
                   </div>
 
-                  <div className="flex flex-wrap gap-2 xl:max-w-[21rem] xl:justify-end">
+                  <div className="flex flex-wrap gap-2 items-center xl:max-w-[21rem] xl:justify-end">
                     <button
                       type="button"
                       onClick={handleCopyShareLink}
-                      className="inline-flex items-center gap-2 rounded-full border border-gold-200/70 bg-gold-50 px-4 py-2 text-sm font-medium text-gold-700 transition-colors hover:border-gold-300 hover:bg-gold-100"
+                      className="flex h-10 w-10 items-center justify-center rounded-full border border-white/12 bg-white/6 text-white/60 transition-all hover:border-gold-400/30 hover:text-gold-300 hover:bg-white/10"
+                      aria-label={shareCopied ? 'Copied' : 'Copy link'}
                     >
                       {shareCopied ? <Check className="h-4 w-4" /> : <Copy className="h-4 w-4" />}
-                      {shareCopied ? 'Copied' : 'Copy Link'}
                     </button>
                     <button
                       type="button"
@@ -500,26 +504,26 @@ export default function UploadPage() {
                         const body = encodeURIComponent(`${siteShareTitle} — ${siteShareDescription} ${siteShareUrl}`)
                         window.location.href = `sms:?&body=${body}`
                       }}
-                      className="inline-flex items-center gap-2 rounded-full border border-white/90 bg-white px-4 py-2 text-sm font-medium text-charcoal-700 transition-colors hover:border-gold-200 hover:text-gold-700"
+                      className="flex h-10 w-10 items-center justify-center rounded-full border border-white/12 bg-white/6 text-white/60 transition-all hover:border-gold-400/30 hover:text-gold-300 hover:bg-white/10"
+                      aria-label="Text it"
                     >
                       <MessageCircle className="h-4 w-4" />
-                      Text It
                     </button>
                     <button
                       type="button"
                       onClick={() => openShareWindow(`https://www.facebook.com/sharer/sharer.php?u=${encodeURIComponent(siteShareUrl)}`)}
-                      className="inline-flex items-center gap-2 rounded-full border border-white/90 bg-white px-4 py-2 text-sm font-medium text-charcoal-700 transition-colors hover:border-gold-200 hover:text-gold-700"
+                      className="flex h-10 w-10 items-center justify-center rounded-full border border-white/12 bg-white/6 text-white/60 transition-all hover:border-gold-400/30 hover:text-gold-300 hover:bg-white/10"
+                      aria-label="Share on Facebook"
                     >
                       <Facebook className="h-4 w-4" />
-                      Facebook
                     </button>
                     <button
                       type="button"
                       onClick={() => openShareWindow(`https://twitter.com/intent/tweet?text=${encodeURIComponent(`${siteShareTitle} — ${siteShareDescription}`)}&url=${encodeURIComponent(siteShareUrl)}`)}
-                      className="inline-flex items-center gap-2 rounded-full border border-white/90 bg-white px-4 py-2 text-sm font-medium text-charcoal-700 transition-colors hover:border-gold-200 hover:text-gold-700"
+                      className="flex h-10 w-10 items-center justify-center rounded-full border border-white/12 bg-white/6 text-white/60 transition-all hover:border-gold-400/30 hover:text-gold-300 hover:bg-white/10"
+                      aria-label="Share on X"
                     >
                       <Twitter className="h-4 w-4" />
-                      X
                     </button>
                     <button
                       type="button"
@@ -528,10 +532,10 @@ export default function UploadPage() {
                         const body = encodeURIComponent(`${siteShareDescription}\n\n${siteShareUrl}`)
                         window.location.href = `mailto:?subject=${subject}&body=${body}`
                       }}
-                      className="inline-flex items-center gap-2 rounded-full border border-white/90 bg-white px-4 py-2 text-sm font-medium text-charcoal-700 transition-colors hover:border-gold-200 hover:text-gold-700"
+                      className="flex h-10 w-10 items-center justify-center rounded-full border border-white/12 bg-white/6 text-white/60 transition-all hover:border-gold-400/30 hover:text-gold-300 hover:bg-white/10"
+                      aria-label="Share via email"
                     >
                       <Mail className="h-4 w-4" />
-                      Email
                     </button>
                     {typeof navigator !== 'undefined' && navigator.share && (
                       <button
@@ -543,15 +547,15 @@ export default function UploadPage() {
                             url: siteShareUrl,
                           }).catch(() => {})
                         }}
-                        className="inline-flex items-center gap-2 rounded-full border border-white/90 bg-white px-4 py-2 text-sm font-medium text-charcoal-700 transition-colors hover:border-gold-200 hover:text-gold-700"
+                        className="flex h-10 w-10 items-center justify-center rounded-full border border-white/12 bg-white/6 text-white/60 transition-all hover:border-gold-400/30 hover:text-gold-300 hover:bg-white/10"
+                        aria-label="More share options"
                       >
                         <Share2 className="h-4 w-4" />
-                        More
                       </button>
                     )}
-                    <div className="inline-flex min-h-[2.75rem] max-w-full items-center gap-2 rounded-full border border-white/90 bg-white px-4 py-2 text-sm text-charcoal-500">
-                      <Link2 className="h-4 w-4 text-gold-600" />
-                      <span className="max-w-[11rem] truncate sm:max-w-[13rem]">{siteShareUrl}</span>
+                    <div className="inline-flex min-h-[2.5rem] items-center gap-2 rounded-full border border-white/12 bg-white/6 px-4 py-2 text-sm">
+                      <Link2 className="h-4 w-4 text-gold-400" />
+                      <span className="max-w-[11rem] truncate sm:max-w-[13rem] text-white/40">{siteShareUrl}</span>
                     </div>
                   </div>
                 </div>
@@ -565,15 +569,15 @@ export default function UploadPage() {
                   initial={{ opacity: 0, y: 18 }}
                   animate={{ opacity: 1, y: 0 }}
                   transition={{ duration: 0.45, delay: 0.12 + index * 0.08 }}
-                  className="editorial-card px-5 py-5"
+                  className="relative overflow-hidden rounded-xl bg-white/5 backdrop-blur-sm border border-gold-200/12 px-5 py-5"
                 >
-                  <div className="flex h-11 w-11 items-center justify-center rounded-2xl border border-gold-200/70 bg-gold-50 text-gold-600">
+                  <div className="flex h-11 w-11 items-center justify-center rounded-2xl border border-gold-400/20 bg-gold-500/10 text-gold-400">
                     <Icon className="h-5 w-5" />
                   </div>
-                  <p className="mt-5 text-xl font-semibold text-charcoal-900">
+                  <p className="mt-5 text-xl font-semibold text-white">
                     {title}
                   </p>
-                  <p className="mt-3 text-sm leading-6 text-charcoal-500">
+                  <p className="mt-3 text-sm leading-6 text-white/55">
                     {description}
                   </p>
                 </motion.div>
