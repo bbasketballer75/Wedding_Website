@@ -1,7 +1,7 @@
 import { type ElementType, useState, useEffect, useRef } from 'react'
 import { motion, useScroll, useTransform, useMotionValueEvent } from 'framer-motion'
 import { Link } from 'react-router-dom'
-import { ChevronDown, Clapperboard } from 'lucide-react'
+import { ChevronDown, Clapperboard, Play } from 'lucide-react'
 import { LoveTimeline } from '@/components/timeline/LoveTimeline'
 import { publicNavLinks } from '@/components/layout/publicNav'
 import { HomeSEO } from '@/components/seo/SEOHead'
@@ -274,52 +274,71 @@ export default function Home() {
       <section className="relative overflow-hidden px-4 pb-24 pt-10 sm:pt-14">
         <div className="absolute inset-0 bg-gradient-to-b from-cream-100 via-cream-50 to-cream-100" />
 
-        <div className="absolute inset-0 pointer-events-none overflow-hidden">
-          <motion.div
-            animate={{ x: [0, 36, 0], y: [0, 24, 0] }}
-            transition={{ duration: 18, repeat: Infinity, ease: 'linear' }}
-            className="absolute right-0 top-0 h-64 w-64 rounded-full bg-gold-200/25 blur-3xl"
-          />
-          <motion.div
-            animate={{ x: [0, -32, 0], y: [0, 28, 0] }}
-            transition={{ duration: 20, repeat: Infinity, ease: 'linear' }}
-            className="absolute bottom-0 left-0 h-56 w-56 rounded-full bg-blush-200/35 blur-3xl"
-          />
-        </div>
-
         <motion.div
           initial={{ opacity: 0, y: 30 }}
           whileInView={{ opacity: 1, y: 0 }}
-          viewport={{ once: true, amount: 0.25 }}
+          viewport={{ once: true, amount: 0.2 }}
           transition={{ duration: 0.7 }}
           className="relative z-10 mx-auto max-w-5xl"
         >
-          <div className="relative overflow-hidden rounded-[2rem] border border-white/70 bg-[linear-gradient(135deg,rgba(255,255,255,0.94),rgba(250,248,244,0.98)_58%,rgba(246,239,226,0.92))] p-5 shadow-[0_35px_90px_-45px_rgba(46,33,13,0.45)] backdrop-blur-xl sm:p-8 lg:p-10">
-            <div className="absolute -right-12 top-6 h-36 w-36 rounded-full bg-gold-200/30 blur-3xl" />
-            <div className="absolute -left-8 bottom-0 h-28 w-28 rounded-full bg-blush-200/35 blur-3xl" />
+          <div className="relative overflow-hidden rounded-[2rem] bg-[linear-gradient(145deg,rgba(10,7,4,0.98),rgba(34,21,8,0.97)_55%,rgba(16,10,4,0.98))] border border-gold-200/12 shadow-[0_40px_100px_-35px_rgba(0,0,0,0.7)]">
 
-            <div className="relative">
-              <div className="max-w-2xl">
-                <div className="mb-5 inline-flex items-center gap-2 rounded-full border border-gold-300/60 bg-white/80 px-4 py-2 text-[10px] uppercase tracking-[0.35em] text-gold-700 shadow-sm">
+            {/* Ambient glows */}
+            <div className="pointer-events-none absolute -right-20 -top-20 h-72 w-72 rounded-full bg-gold-500/12 blur-3xl" />
+            <div className="pointer-events-none absolute -left-12 bottom-0 h-56 w-56 rounded-full bg-rose-700/8 blur-3xl" />
+
+            <div className="grid md:grid-cols-[1fr_340px] lg:grid-cols-[1fr_420px]">
+
+              {/* Text */}
+              <div className="flex flex-col justify-center p-7 sm:p-10 lg:p-12">
+                <div className="mb-5 inline-flex w-fit items-center gap-2 rounded-full border border-gold-300/30 bg-gold-500/10 px-4 py-2 text-[10px] uppercase tracking-[0.35em] text-gold-300">
                   <Clapperboard className="h-3.5 w-3.5" />
-                  Watch next
+                  The Film
                 </div>
 
-                <h2 className="max-w-xl text-[2.2rem] leading-[0.98] tracking-[-0.035em] text-charcoal-900 min-[380px]:text-[2.5rem] sm:text-[4rem]">
-                  When you are ready, the film is waiting.
+                <h2 className="text-[2rem] leading-[1] tracking-[-0.03em] text-white sm:text-[2.6rem] lg:text-[3rem]">
+                  The whole night,<br />start to finish.
                 </h2>
 
-                <p className="mt-5 max-w-2xl text-base leading-7 text-charcoal-700 sm:text-[1.08rem] sm:leading-8">
-                  The timeline gives the shape of the story. The film lets you settle into the
-                  ceremony, the speeches, and the rest of the night at an easy pace.
+                <p className="mt-4 max-w-md text-sm leading-7 text-white/55 sm:text-[0.95rem]">
+                  Ceremony, vows, speeches, first dance — and everything in between.
+                  Watch it at whatever pace feels right.
                 </p>
 
-                <div className="mt-8 flex flex-wrap gap-3">
-                  <Button size="lg" to={resumeTime ? `/film?resume=1` : '/film'} className="min-w-[14rem] justify-center">
-                    {resumeTime ? `Resume the Film at ${formatVideoProgressLabel(resumeTime)}` : 'Watch the Film'}
+                <div className="mt-7">
+                  <Button size="lg" to={resumeTime ? `/film?resume=1` : '/film'} className="min-w-[13rem] justify-center">
+                    {resumeTime ? `Resume at ${formatVideoProgressLabel(resumeTime)}` : 'Watch the Film'}
                   </Button>
                 </div>
               </div>
+
+              {/* Thumbnail */}
+              <Link
+                to={resumeTime ? `/film?resume=1` : '/film'}
+                className="group relative hidden overflow-hidden md:block"
+              >
+                <img
+                  src={HERO_POSTER}
+                  alt="Film preview"
+                  className="h-full w-full object-cover object-[58%_center] transition-transform duration-700 group-hover:scale-105"
+                />
+                {/* left fade to blend into text panel */}
+                <div className="absolute inset-0 bg-gradient-to-r from-[rgba(10,7,4,0.85)] via-transparent to-transparent" />
+                {/* dark overlay */}
+                <div className="absolute inset-0 bg-black/20 transition-opacity duration-300 group-hover:bg-black/10" />
+
+                {/* Play button */}
+                <div className="absolute inset-0 flex items-center justify-center">
+                  <motion.div
+                    animate={{ scale: [1, 1.1, 1] }}
+                    transition={{ duration: 2.8, repeat: Infinity, ease: 'easeInOut' }}
+                    className="flex h-16 w-16 items-center justify-center rounded-full border border-white/35 bg-white/15 shadow-[0_0_40px_rgba(255,255,255,0.12)] backdrop-blur-sm transition-all duration-300 group-hover:bg-white/25 group-hover:scale-110"
+                  >
+                    <Play className="h-6 w-6 fill-white text-white ml-0.5" />
+                  </motion.div>
+                </div>
+              </Link>
+
             </div>
           </div>
         </motion.div>
