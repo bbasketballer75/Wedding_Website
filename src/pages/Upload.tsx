@@ -351,7 +351,11 @@ export default function UploadPage() {
     const uploadSummary = describeUploadSummary(completedPhotoCount, completedVideoCount)
 
     return (
-      <div className="min-h-screen bg-cream-50 px-4 pb-20 pt-32">
+      <div className="min-h-screen bg-[linear-gradient(to_b,rgba(12,8,5,1),rgba(22,14,6,1))] px-4 pb-20 pt-32">
+        <div className="pointer-events-none fixed inset-0 overflow-hidden" aria-hidden="true">
+          <div className="absolute -top-32 left-1/4 h-96 w-96 rounded-full bg-gold-500/4 blur-[120px]" />
+          <div className="absolute bottom-1/4 right-1/4 h-64 w-64 rounded-full bg-gold-400/3 blur-[100px]" />
+        </div>
         <UploadSEO />
 
         <div className="mx-auto max-w-3xl">
@@ -360,57 +364,57 @@ export default function UploadPage() {
             animate={{ opacity: 1, scale: 1, y: 0 }}
             transition={{ duration: 0.55, ease: [0.16, 1, 0.3, 1] }}
             data-testid="upload-success-panel"
-            className="editorial-panel px-6 py-10 text-center sm:px-10"
+            className="relative overflow-hidden rounded-2xl bg-white/6 backdrop-blur-md border border-gold-200/15 px-6 py-10 text-center sm:px-10"
           >
-            <div className="absolute -right-10 top-6 h-28 w-28 rounded-full bg-gold-200/35 blur-3xl" />
-            <div className="absolute -left-8 bottom-0 h-28 w-28 rounded-full bg-blush-200/35 blur-3xl" />
+            <div className="absolute -right-10 top-6 h-28 w-28 rounded-full bg-gold-500/8 blur-3xl" />
+            <div className="absolute -left-8 bottom-0 h-28 w-28 rounded-full bg-gold-400/5 blur-3xl" />
 
             <div className="relative">
-              <div className="mx-auto flex h-20 w-20 items-center justify-center rounded-full border border-green-200/80 bg-green-100/88 shadow-sm">
-                <CheckCircle className="h-10 w-10 text-green-600" />
+              <div className="mx-auto flex h-20 w-20 items-center justify-center rounded-full border border-green-400/25 bg-green-500/10 shadow-sm">
+                <CheckCircle className="h-10 w-10 text-green-400" />
               </div>
 
-              <span className="eyebrow-chip mt-6">
+              <span className="flex items-center justify-center gap-1.5 text-[10px] uppercase tracking-[0.3em] text-gold-400 mt-6">
                 <Sparkles className="h-3.5 w-3.5" />
                 Upload received
               </span>
 
-              <h1 className="mt-6 text-4xl text-charcoal-900 sm:text-5xl">
+              <h1 className="mt-6 text-4xl text-white sm:text-5xl">
                 Thank you for adding to the archive.
               </h1>
 
-              <p className="mx-auto mt-4 max-w-2xl text-base text-charcoal-600 sm:text-lg">
+              <p className="mx-auto mt-4 max-w-2xl text-base text-white/55 sm:text-lg">
                 Your {uploadSummary} {completedPhotoCount + completedVideoCount === 1 ? 'is' : 'are'} uploaded and pending review.
                 We’ll take a look and add the approved moments to the shared archive after review.
               </p>
 
-              <div className="mt-8 flex flex-wrap items-center justify-center gap-3 text-sm text-charcoal-500">
-                <span className="rounded-full border border-white/80 bg-white/76 px-4 py-2">
+              <div className="mt-8 flex flex-wrap items-center justify-center gap-3 text-sm text-white/50">
+                <span className="rounded-full border border-white/12 bg-white/8 px-4 py-2">
                   {completedPhotoCount > 0 ? formatMediaCount(completedPhotoCount, 'photo') : 'No photos'}
                 </span>
-                <span className="rounded-full border border-white/80 bg-white/76 px-4 py-2">
+                <span className="rounded-full border border-white/12 bg-white/8 px-4 py-2">
                   {completedVideoCount > 0 ? formatMediaCount(completedVideoCount, 'video') : 'No videos'}
                 </span>
-                <span className="rounded-full border border-white/80 bg-white/76 px-4 py-2">
+                <span className="rounded-full border border-white/12 bg-white/8 px-4 py-2">
                   Contact saved for {email}
                 </span>
               </div>
 
               <div className="mt-8 grid gap-3 sm:grid-cols-3">
-                <div className="rounded-[1.35rem] border border-gold-100 bg-white/76 px-4 py-4">
-                  <p className="text-[10px] uppercase tracking-[0.28em] text-gold-700">Step 1</p>
-                  <p className="mt-3 text-sm font-semibold text-charcoal-900">We review it first.</p>
-                  <p className="mt-2 text-sm leading-6 text-charcoal-500">Nothing goes public automatically. We sort through everything before it appears anywhere on the site.</p>
+                <div className="rounded-xl border border-gold-200/15 bg-white/5 px-4 py-4">
+                  <p className="text-[10px] uppercase tracking-[0.28em] text-gold-400">Step 1</p>
+                  <p className="mt-3 text-sm font-semibold text-white">We review it first.</p>
+                  <p className="mt-2 text-sm leading-6 text-white/55">Nothing goes public automatically. We sort through everything before it appears anywhere on the site.</p>
                 </div>
-                <div className="rounded-[1.35rem] border border-gold-100 bg-white/76 px-4 py-4">
-                  <p className="text-[10px] uppercase tracking-[0.28em] text-gold-700">Step 2</p>
-                  <p className="mt-3 text-sm font-semibold text-charcoal-900">We tag it into the right story lane.</p>
-                  <p className="mt-2 text-sm leading-6 text-charcoal-500">The best photos get captioned, tagged, and placed into the wedding-day, engagement, or guest-upload collections.</p>
+                <div className="rounded-xl border border-gold-200/15 bg-white/5 px-4 py-4">
+                  <p className="text-[10px] uppercase tracking-[0.28em] text-gold-400">Step 2</p>
+                  <p className="mt-3 text-sm font-semibold text-white">We tag it into the right story lane.</p>
+                  <p className="mt-2 text-sm leading-6 text-white/55">The best photos get captioned, tagged, and placed into the wedding-day, engagement, or guest-upload collections.</p>
                 </div>
-                <div className="rounded-[1.35rem] border border-gold-100 bg-white/76 px-4 py-4">
-                  <p className="text-[10px] uppercase tracking-[0.28em] text-gold-700">Step 3</p>
-                  <p className="mt-3 text-sm font-semibold text-charcoal-900">The approved moments join the archive.</p>
-                  <p className="mt-2 text-sm leading-6 text-charcoal-500">Photos can appear in the live gallery, and approved video clips can stay private, join the guest-highlight lane, or become a featured moment later.</p>
+                <div className="rounded-xl border border-gold-200/15 bg-white/5 px-4 py-4">
+                  <p className="text-[10px] uppercase tracking-[0.28em] text-gold-400">Step 3</p>
+                  <p className="mt-3 text-sm font-semibold text-white">The approved moments join the archive.</p>
+                  <p className="mt-2 text-sm leading-6 text-white/55">Photos can appear in the live gallery, and approved video clips can stay private, join the guest-highlight lane, or become a featured moment later.</p>
                 </div>
               </div>
 
