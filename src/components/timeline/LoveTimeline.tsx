@@ -614,7 +614,7 @@ function FilmCTACard() {
     <motion.div
       ref={cardRef}
       style={{ opacity, scale }}
-      className="relative z-[60] ml-7 w-[calc(100%-1.75rem)] md:mx-auto md:ml-0 md:w-full md:max-w-xl"
+      className="relative z-[60] ml-7 w-[calc(100%-1.75rem)] md:mx-auto md:w-full md:max-w-xl"
     >
       {/* Mobile dot — left rail */}
       <div className="absolute -left-3 top-8 z-30 md:hidden">
