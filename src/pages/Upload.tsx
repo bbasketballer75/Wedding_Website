@@ -479,7 +479,7 @@ export default function UploadPage() {
                 </span>
               </div>
 
-              <div className="mt-8 rounded-[1.5rem] border border-white/10 bg-white/5 p-5 shadow-sm">
+              <div className="mt-8 rounded-2xl border border-white/10 bg-white/5 p-5 shadow-sm">
                 <div className="flex flex-col gap-3 lg:flex-row lg:items-start lg:justify-between">
                   <div className="max-w-xl">
                     <p className="text-[10px] uppercase tracking-[0.3em] text-gold-400">
@@ -651,7 +651,7 @@ export default function UploadPage() {
               <motion.div
                 initial={{ opacity: 0, y: 12 }}
                 animate={{ opacity: 1, y: 0 }}
-                className="rounded-[1.5rem] border border-amber-400/25 bg-amber-500/8 px-5 py-4"
+                className="rounded-2xl border border-amber-400/25 bg-amber-500/8 px-5 py-4"
               >
                 <p className="flex items-start gap-2 text-sm leading-6 text-amber-300">
                   <AlertCircle className="mt-0.5 h-4 w-4 shrink-0" />
@@ -734,7 +734,7 @@ export default function UploadPage() {
                               <span>Uploading for us…</span>
                               <span>Processing</span>
                             </div>
-                            <div className="h-2 overflow-hidden rounded-full bg-gold-100">
+                            <div className="h-2 overflow-hidden rounded-full bg-white/10">
                               <motion.div
                                 initial={{ x: '-100%' }}
                                 animate={{ x: '250%' }}
@@ -923,7 +923,7 @@ export default function UploadPage() {
                 failed will stay out until you retry or remove them.
               </p>
 
-              <div className="mt-4 rounded-[1.25rem] border border-white/10 bg-white/5 px-4 py-4">
+              <div className="mt-4 rounded-xl border border-white/10 bg-white/5 px-4 py-4">
                 <p className="text-[10px] uppercase tracking-[0.28em] text-gold-400">What happens next</p>
                 <p className="mt-3 text-sm leading-6 text-white/55">
                   After you send, the upload enters a private review queue. Approved photos can be published into the
