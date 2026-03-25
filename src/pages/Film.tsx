@@ -1,37 +1,34 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import { AnimatePresence, motion } from 'framer-motion'
 import { useSearchParams } from 'react-router-dom'
+import { FamilyTree } from '@/components/family-tree/FamilyTree'
 import { FilmSEO } from '@/components/seo/SEOHead'
 import { VideoPlayer } from '@/components/video/VideoPlayer'
 import { Button } from '@/components/ui/Button'
-import { FamilyTree } from '@/components/family-tree/FamilyTree'
 import { supabase, type GuestUpload } from '@/lib/supabase'
 import {
   MAIN_FILM_CHAPTERS_FALLBACK,
   MAIN_FILM_RUNTIME_LABEL,
   familyFilms,
-  filmQuotes,
-  filmWatchPaths,
   type FamilyFilm,
   loadMainFilmChapters,
   slugifyFilmMoment,
   type FilmChapter,
 } from '@/data/film'
 import { getMemoryTrailById, memoryTrails } from '@/data/memoryTrails'
+import { cn } from '@/lib/utils'
 import { getMediaPath } from '@/utils/media'
 import {
   Play,
-  Clock3,
-  ArrowDown,
   ArrowRight,
   Sparkles,
-  Camera,
-  HeartHandshake,
   Smartphone,
   X,
-  Link2,
-  Search,
 } from 'lucide-react'
+import {
+  MAIN_FILM_PROGRESS_KEY,
+  readSavedVideoProgress,
+} from '@/utils/videoProgress'
 
 const MAIN_FILM_POSTER = '/images/film/main-film-poster.png'
 const EMPTY_CAPTIONS_TRACK = 'data:text/vtt,WEBVTT'
@@ -134,6 +131,7 @@ function ParentDanceCard({
     <button
       type="button"
       onClick={() => onOpen(film)}
+      aria-label={`Play ${film.label} parent dance`}
       onMouseEnter={() => {
         setActiveFrame(0)
         setIsHovering(true)
@@ -150,34 +148,24 @@ function ParentDanceCard({
         setActiveFrame(0)
         setIsHovering(false)
       }}
-      className="group cinematic-card relative min-h-[24rem] snap-start overflow-hidden text-left transition-transform duration-300 hover:-translate-y-1"
+      className="group relative block w-full overflow-hidden rounded-[1.75rem] border border-[rgba(255,245,230,0.08)] bg-[#0b0908] p-2.5 text-left shadow-[0_28px_70px_-46px_rgba(10,8,7,0.9)] transition-transform duration-300 hover:-translate-y-1 hover:border-gold-300/18 sm:p-3"
     >
       <div
-        className="absolute inset-0 bg-cover bg-center transition-transform duration-500 group-hover:scale-[1.04]"
-        style={{
-          backgroundImage: `linear-gradient(to top, rgba(24,17,14,0.9), rgba(24,17,14,0.28) 55%, rgba(255,247,235,0.08)), url(${(isHovering ? previewFrames[activeFrame] : previewFrames[0]) || film.thumbnail})`,
-        }}
-      />
-      <div className="absolute inset-0 bg-[radial-gradient(circle_at_top,rgba(255,247,235,0.16),transparent_36%)]" />
-
-      <div className="absolute left-4 top-4 inline-flex items-center gap-2 rounded-full border border-[#f5e2bf]/30 bg-[rgba(64,44,34,0.68)] px-3 py-1.5 text-[10px] uppercase tracking-[0.26em] text-[#fff7eb] backdrop-blur-sm">
-        Parent dance
-      </div>
-
-      <div className="absolute right-4 top-4 rounded-full border border-[#f5e2bf]/30 bg-[rgba(64,44,34,0.72)] px-3 py-1.5 text-xs font-mono text-[#fff7eb] backdrop-blur-sm">
-        {film.duration}
-      </div>
-
-      <div className="absolute inset-x-0 bottom-0 p-5 sm:p-6">
-        <div className="mb-4 inline-flex h-12 w-12 items-center justify-center rounded-full bg-white/90 text-charcoal-900 shadow-lg transition-transform duration-300 group-hover:scale-105">
-          <Play className="ml-0.5 h-5 w-5" fill="currentColor" />
+        className="relative aspect-video overflow-hidden rounded-[1.3rem] bg-[#14100d]"
+      >
+        <div
+          className="absolute inset-0 bg-contain bg-center bg-no-repeat transition-transform duration-500 group-hover:scale-[1.02]"
+          style={{
+            backgroundImage: `url(${(isHovering ? previewFrames[activeFrame] : previewFrames[0]) || film.thumbnail})`,
+          }}
+        />
+        <div className="absolute inset-x-0 bottom-0 h-20 bg-[linear-gradient(to_top,rgba(7,6,6,0.56)_0%,rgba(7,6,6,0.18)_48%,transparent_100%)]" />
+        <div className="absolute inset-0 bg-[radial-gradient(circle_at_top,rgba(255,244,227,0.12),transparent_34%)]" />
+        <div className="pointer-events-none absolute inset-0 flex items-center justify-center opacity-0 transition-opacity duration-300 group-hover:opacity-100 group-focus-visible:opacity-100">
+          <div className="flex h-12 w-12 items-center justify-center text-[rgba(255,248,239,0.96)] drop-shadow-[0_10px_24px_rgba(7,6,6,0.55)]">
+            <Play className="ml-0.5 h-4 w-4" fill="currentColor" />
+          </div>
         </div>
-        <h3 className="font-display text-[1.95rem] leading-none text-white">
-          {film.label}
-        </h3>
-        <p className="mt-3 max-w-sm text-sm leading-6 text-[#f8efe3]">
-          {film.description}
-        </p>
       </div>
     </button>
   )
@@ -191,6 +179,8 @@ function ParentDanceModal({
   onClose: () => void
 }) {
   const videoRef = useRef<HTMLVideoElement | null>(null)
+  const [isPhonePortrait, setIsPhonePortrait] = useState(false)
+  const shouldRequireLandscape = isPhonePortrait
 
   useEffect(() => {
     if (!film) {
@@ -213,7 +203,26 @@ function ParentDanceModal({
   }, [film, onClose])
 
   useEffect(() => {
-    if (!film || !videoRef.current) {
+    if (typeof window === 'undefined') {
+      return
+    }
+
+    const updateViewportState = () => {
+      setIsPhonePortrait(window.matchMedia('(max-width: 767px) and (orientation: portrait)').matches)
+    }
+
+    updateViewportState()
+    window.addEventListener('resize', updateViewportState)
+    window.addEventListener('orientationchange', updateViewportState)
+
+    return () => {
+      window.removeEventListener('resize', updateViewportState)
+      window.removeEventListener('orientationchange', updateViewportState)
+    }
+  }, [])
+
+  useEffect(() => {
+    if (!film || !videoRef.current || shouldRequireLandscape) {
       return
     }
 
@@ -221,7 +230,15 @@ function ParentDanceModal({
     if (playAttempt && typeof playAttempt.catch === 'function') {
       playAttempt.catch(() => {})
     }
-  }, [film])
+  }, [film, shouldRequireLandscape])
+
+  useEffect(() => {
+    if (!shouldRequireLandscape || !videoRef.current) {
+      return
+    }
+
+    videoRef.current.pause()
+  }, [shouldRequireLandscape])
 
   return (
     <AnimatePresence>
@@ -257,16 +274,39 @@ function ParentDanceModal({
             </div>
 
             <div className="grid gap-6 p-5 sm:p-6 lg:grid-cols-[minmax(0,1.15fr)_minmax(18rem,0.85fr)]">
-              <div className="overflow-hidden rounded-[1.75rem] border border-gold-200/16 bg-black/20">
+              <div className="relative overflow-hidden rounded-[1.75rem] border border-gold-200/16 bg-black/20">
                 <video
                   ref={videoRef}
                   src={getMediaPath(film.videoSrc)}
                   controls
                   poster={film.thumbnail}
-                  className="aspect-video w-full object-cover"
+                  playsInline
+                  className={cn(
+                    'aspect-video w-full object-cover transition-[filter,transform] duration-500',
+                    shouldRequireLandscape && 'scale-[1.03] blur-[10px] saturate-[0.82] brightness-[0.68]'
+                  )}
                 >
-                  <track kind="captions" src={EMPTY_CAPTIONS_TRACK} srcLang="en" label="No captions available" />
+                  <track
+                    kind="captions"
+                    src={getMediaPath(film.captionsSrc)}
+                    srcLang="en"
+                    label="English captions"
+                    default
+                  />
                 </video>
+                {shouldRequireLandscape && (
+                  <div className="absolute inset-0 flex items-center justify-center bg-[radial-gradient(circle_at_center,rgba(255,247,235,0.08),rgba(18,13,10,0.66)_42%,rgba(18,13,10,0.9))] px-5 text-center">
+                    <div className="max-w-sm rounded-[1.4rem] border border-gold-200/20 bg-[linear-gradient(145deg,rgba(38,28,22,0.94),rgba(54,39,31,0.95))] px-5 py-6 shadow-[0_24px_60px_-32px_rgba(21,20,19,0.72)] backdrop-blur-xl">
+                      <p className="text-[10px] uppercase tracking-[0.32em] text-gold-300/82">Best in landscape</p>
+                      <h4 className="mt-3 font-display text-3xl text-cinematic-primary">
+                        Rotate your phone to watch.
+                      </h4>
+                      <p className="mt-3 text-sm leading-6 text-cinematic-secondary">
+                        These longer clips use the same landscape-only phone view as the main film.
+                      </p>
+                    </div>
+                  </div>
+                )}
               </div>
 
               <div className="cinematic-card px-5 py-5">
@@ -450,8 +490,8 @@ export default function Film() {
   const [activeFamilyFilm, setActiveFamilyFilm] = useState<FamilyFilm | null>(null)
   const [guestHighlights, setGuestHighlights] = useState<GuestVideoHighlight[]>([])
   const [activeGuestHighlight, setActiveGuestHighlight] = useState<GuestVideoHighlight | null>(null)
-  const [quoteQuery, setQuoteQuery] = useState('')
-  const [copiedMoment, setCopiedMoment] = useState<string | null>(null)
+  const [resumeTime, setResumeTime] = useState<number | null>(null)
+  const [didFinishMainFilm, setDidFinishMainFilm] = useState(false)
   const [searchParams, setSearchParams] = useSearchParams()
 
   useEffect(() => {
@@ -467,6 +507,21 @@ export default function Film() {
 
     return () => {
       isActive = false
+    }
+  }, [])
+
+  useEffect(() => {
+    const syncResume = () => {
+      setResumeTime(readSavedVideoProgress(MAIN_FILM_PROGRESS_KEY))
+    }
+
+    syncResume()
+    document.addEventListener('visibilitychange', syncResume)
+    window.addEventListener('focus', syncResume)
+
+    return () => {
+      document.removeEventListener('visibilitychange', syncResume)
+      window.removeEventListener('focus', syncResume)
     }
   }, [])
 
@@ -547,52 +602,14 @@ export default function Film() {
     }, 420)
   }, [scrollToVideo])
 
-  const setMomentInUrl = (key: 'moment' | 'clip', value: string) => {
-    setSearchParams((prev) => {
-      const next = new URLSearchParams(prev)
-      next.delete('moment')
-      next.delete('clip')
-      next.set(key, value)
-      return next
-    }, { replace: true })
-  }
+  const resumeMainFilm = useCallback(() => {
+    if (!resumeTime) {
+      scrollToVideo()
+      return
+    }
 
-  const copyMomentLink = async (key: 'moment' | 'clip', value: string, label: string) => {
-    const url = new URL(window.location.href)
-    url.searchParams.delete('moment')
-    url.searchParams.delete('clip')
-    url.searchParams.set(key, value)
-    await navigator.clipboard.writeText(url.toString())
-    setCopiedMoment(label)
-    window.setTimeout(() => setCopiedMoment((current) => (current === label ? null : current)), 1800)
-  }
-
-  const filmHighlights = [
-    {
-      icon: Clock3,
-      title: `${MAIN_FILM_RUNTIME_LABEL} feature`,
-      description: 'From the first nervous seconds to the last blur of the dance floor, uninterrupted.',
-    },
-    {
-      icon: Camera,
-      title: 'Track-synced chapters',
-      description: 'Every chapter jump lands on the real beat of the edit, not an approximation.',
-    },
-    {
-      icon: HeartHandshake,
-      title: 'Parent dances',
-      description: 'A quieter second path for the dances that made the whole room soften.',
-    },
-  ] as const
-
-  const filteredQuotes = useMemo(() => {
-    const normalized = quoteQuery.trim().toLowerCase()
-    if (!normalized) return filmQuotes
-
-    return filmQuotes.filter((quote) =>
-      [quote.quote, quote.speaker, quote.note].join(' ').toLowerCase().includes(normalized)
-    )
-  }, [quoteQuery])
+    jumpToChapter(resumeTime)
+  }, [jumpToChapter, resumeTime, scrollToVideo])
 
   useEffect(() => {
     const moment = searchParams.get('moment')
@@ -610,11 +627,25 @@ export default function Film() {
     }
   }, [chapters, jumpToChapter, searchParams])
 
+  useEffect(() => {
+    if (searchParams.get('resume') !== '1' || !resumeTime) {
+      return
+    }
+
+    resumeMainFilm()
+
+    setSearchParams((prev) => {
+      const next = new URLSearchParams(prev)
+      next.delete('resume')
+      return next
+    }, { replace: true })
+  }, [resumeMainFilm, resumeTime, searchParams, setSearchParams])
+
   return (
     <div className="min-h-screen bg-cream-50">
       <FilmSEO />
 
-      <section className="px-4 pb-10 pt-32 sm:pt-36">
+      <section className="px-4 pb-16 pt-32 sm:pt-36">
         <div className="mx-auto max-w-6xl">
           <motion.div
             initial={{ opacity: 0, y: 24 }}
@@ -638,8 +669,9 @@ export default function Film() {
                 </h1>
 
                 <p className="mt-5 max-w-2xl text-base text-charcoal-600 sm:text-lg">
-                  This is the full arc of May 10, 2025: the nerves, the vows, the speeches,
-                  the laughter, and the dance floor blur that still feels impossible to forget.
+                  Start here if you are only opening one page. This is the full arc of May 10, 2025:
+                  the nerves, the vows, the speeches, the laughter, and the dance floor blur that still
+                  feels impossible to forget.
                 </p>
 
                 <div className="mt-8 flex flex-wrap items-center gap-3 text-sm text-charcoal-500">
@@ -653,300 +685,134 @@ export default function Film() {
                     {MAIN_FILM_RUNTIME_LABEL} feature film
                   </span>
                 </div>
-
-                <div className="mt-8 flex flex-wrap items-center gap-3">
-                  <Button size="lg" onClick={scrollToVideo}>
-                    Watch Now
-                    <ArrowDown className="h-4 w-4" />
-                  </Button>
-                  <Button size="lg" variant="secondary" to="/upload">
-                    Share Your Angle
-                  </Button>
-                </div>
-
-                <div className="mt-8 rounded-[1.5rem] border border-white/80 bg-white/76 p-4 shadow-sm">
-                  <p className="text-[10px] uppercase tracking-[0.3em] text-gold-700">Watch paths</p>
-                  <div className="mt-4 grid gap-2 sm:grid-cols-2 xl:grid-cols-3">
-                    {filmWatchPaths.map((path) => (
-                      <button
-                        key={path.id}
-                        type="button"
-                        onClick={() => {
-                          if (path.clipId) {
-                            setMomentInUrl('clip', path.clipId)
-                            const clip = familyFilms.find((film) => film.id === path.clipId)
-                            if (clip) setActiveFamilyFilm(clip)
-                            return
-                          }
-
-                          if (path.momentSlug) {
-                            setMomentInUrl('moment', path.momentSlug)
-                            const chapter = MAIN_FILM_CHAPTERS_FALLBACK.find(
-                              (entry) => slugifyFilmMoment(entry.label) === path.momentSlug
-                            )
-                            if (chapter) jumpToChapter(chapter.time)
-                          }
-                        }}
-                        className="rounded-[1.2rem] border border-gold-100 bg-cream-50/84 px-4 py-3 text-left transition-colors hover:border-gold-300/70 hover:bg-white"
-                      >
-                        <p className="text-sm font-semibold text-charcoal-900">{path.label}</p>
-                        <p className="mt-2 text-xs leading-5 text-charcoal-500">{path.description}</p>
-                      </button>
-                    ))}
-                  </div>
-                </div>
               </div>
 
-              <div className="mt-8 grid gap-3 md:grid-cols-3">
-                {filmHighlights.map(({ icon: Icon, title, description }, index) => (
-                  <motion.div
-                    key={title}
-                    initial={{ opacity: 0, y: 20 }}
-                    animate={{ opacity: 1, y: 0 }}
-                    transition={{ duration: 0.45, delay: 0.12 + index * 0.08 }}
-                    className="editorial-card px-4 py-4 sm:px-5 sm:py-5"
-                  >
-                    <div className="flex h-10 w-10 items-center justify-center rounded-2xl border border-gold-200/70 bg-gold-50 text-gold-600">
-                      <Icon className="h-4.5 w-4.5" />
-                    </div>
-                    <p className="mt-4 text-lg font-semibold text-charcoal-900 sm:text-xl">
-                      {title}
-                    </p>
-                    <p className="mt-3 text-sm leading-6 text-charcoal-500">
-                      {description}
-                    </p>
-                  </motion.div>
-                ))}
-              </div>
-            </div>
-          </motion.div>
-        </div>
-      </section>
-
-      <section className="px-4 pb-12">
-        <div className="mx-auto flex max-w-6xl flex-col gap-6">
-          <motion.div
-            initial={{ opacity: 0, y: 24 }}
-            whileInView={{ opacity: 1, y: 0 }}
-            viewport={{ once: true, amount: 0.3 }}
-            transition={{ duration: 0.6 }}
-            className="editorial-panel px-6 py-6 sm:px-8"
-          >
-            <div>
-              <span className="eyebrow-chip">Meet the family and friends</span>
-              <h2 className="mt-5 text-4xl text-charcoal-900 sm:text-5xl">
-                The people who held the day together.
-              </h2>
-              <p className="mt-4 max-w-2xl text-base text-charcoal-600 sm:text-lg">
-                Before you hit play, take a moment to meet the family and friends woven into every
-                chapter of the film. It makes the speeches, reactions, and little glances land even harder.
-              </p>
-            </div>
-          </motion.div>
-
-          <div className="editorial-panel px-2 py-4 sm:px-4">
-            <FamilyTree />
-          </div>
-        </div>
-      </section>
-
-      <section id="wedding-video" className="px-4 pb-16">
-        <div className="mx-auto max-w-6xl">
-          <div
-            data-testid="film-player-section"
-            className="cinematic-panel px-5 py-6 sm:px-7 sm:py-8 lg:px-8 lg:py-9"
-          >
-            <div className="grid gap-6">
               <motion.div
-                initial={{ opacity: 0, y: 20 }}
+                initial={{ opacity: 0, y: 24 }}
                 whileInView={{ opacity: 1, y: 0 }}
-                viewport={{ once: true }}
+                viewport={{ once: true, amount: 0.3 }}
                 transition={{ duration: 0.6 }}
+                className="mt-10"
               >
-                <span className="cinematic-chip">
-                  <Play className="h-3.5 w-3.5" />
-                  Feature presentation
-                </span>
-                <h2 className="mt-5 max-w-3xl text-4xl leading-[0.95] text-cinematic-primary sm:text-5xl">
-                  Press play on the whole day.
-                </h2>
-                <p className="mt-4 max-w-2xl text-base leading-7 text-cinematic-secondary sm:text-lg">
-                  Watch it straight through or use the chapter jumps below to revisit a single moment
-                  without losing the cinematic feel of the full cut.
-                </p>
+                <div className="editorial-panel px-6 py-6 sm:px-8">
+                  <div>
+                    <span className="eyebrow-chip">Meet the family and friends</span>
+                    <h2 className="mt-5 text-4xl text-charcoal-900 sm:text-5xl">
+                      The people who held the day together.
+                    </h2>
+                    <p className="mt-4 max-w-2xl text-base text-charcoal-600 sm:text-lg">
+                      Before you hit play, take a moment to meet the family and friends woven into every
+                      chapter of the film. It makes the speeches, reactions, and little glances land even harder.
+                    </p>
+                  </div>
+                </div>
 
-                <div className="mt-5 grid gap-2.5 md:grid-cols-3">
-                  <div className="cinematic-card px-3.5 py-3.5">
-                    <p className="text-[10px] uppercase tracking-[0.28em] text-gold-300/80">Runtime</p>
-                    <p className="mt-2 font-display text-[1.35rem] leading-none text-cinematic-primary sm:text-[1.5rem]">{MAIN_FILM_RUNTIME_LABEL}</p>
-                    <p className="mt-2 text-sm leading-5 text-cinematic-secondary">The whole day, kept intact.</p>
-                  </div>
-                  <div className="cinematic-card px-3.5 py-3.5">
-                    <p className="text-[10px] uppercase tracking-[0.28em] text-gold-300/80">Chapters</p>
-                    <p className="mt-2 font-display text-[1.35rem] leading-none text-cinematic-primary sm:text-[1.5rem]">{chapters.length}</p>
-                    <p className="mt-2 text-sm leading-5 text-cinematic-secondary">Every jump mapped from the real chapter track.</p>
-                  </div>
-                  <div className="cinematic-card px-3.5 py-3.5">
-                    <p className="text-[10px] uppercase tracking-[0.28em] text-gold-300/80">Best viewed</p>
-                    <p className="mt-2 font-display text-[1.35rem] leading-none text-cinematic-primary sm:text-[1.5rem]">With sound</p>
-                    <p className="mt-2 text-sm leading-5 text-cinematic-secondary">For the vows, speeches, and little laughs in between.</p>
-                  </div>
+                <div className="mt-5 editorial-panel px-2 py-4 sm:px-4">
+                  <FamilyTree />
                 </div>
               </motion.div>
 
-            <motion.div
-              id="wedding-film-player"
-              initial={{ opacity: 0, scale: 0.985 }}
-              whileInView={{ opacity: 1, scale: 1 }}
-              viewport={{ once: true }}
-              transition={{ duration: 0.7, ease: [0.16, 1, 0.3, 1] }}
-              className="mt-8 scroll-mt-28"
-            >
-              <VideoPlayer
-                src={getMediaPath('/video/main.mp4')}
-                title="Austin & Jordyn's Wedding"
-                chapters={chapters}
-                poster={MAIN_FILM_POSTER}
-                className="aspect-video ring-1 ring-white/10"
-              />
-            </motion.div>
-
-            <motion.div
-              initial={{ opacity: 0, y: 20 }}
-              whileInView={{ opacity: 1, y: 0 }}
-              viewport={{ once: true }}
-              transition={{ duration: 0.55, delay: 0.15 }}
-              className="mt-7"
-            >
-              <div className="mb-4 flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between sm:gap-4">
-                <h3 className="text-sm uppercase tracking-[0.28em] text-gold-300/82">
-                  Jump to a moment
-                </h3>
-                <p className="text-sm text-cinematic-muted">
-                  Click a chapter and the player will jump there.
-                </p>
-              </div>
-              <div className="overflow-x-auto pb-2 hide-scrollbar">
-                <div className="grid grid-flow-col grid-rows-2 gap-2.5 auto-cols-[minmax(8.1rem,1fr)] sm:auto-cols-[minmax(9rem,1fr)] lg:auto-cols-[minmax(10.5rem,1fr)]">
-                {chapters.map((chapter) => (
-                  <button
-                    key={chapter.label}
-                    type="button"
-                    onClick={() => jumpToChapter(chapter.time)}
-                    className="group cinematic-card min-h-[4.8rem] px-3 py-2.5 text-left transition-colors duration-200 hover:border-gold-300/35 hover:bg-white/8 sm:min-h-[5.1rem] sm:px-3.5 sm:py-3"
-                  >
-                    <div className="flex items-start justify-between gap-3">
-                      <div>
-                        <p className="text-[10px] uppercase tracking-[0.28em] text-gold-300/72">
-                          {formatChapterTime(chapter.time)}
-                        </p>
-                        <p className="mt-1.5 text-[0.9rem] font-semibold leading-5 text-cinematic-primary sm:text-[0.96rem]">
-                          {chapter.label}
-                        </p>
-                      </div>
-                      <ArrowRight className="mt-0.5 h-4 w-4 shrink-0 text-gold-300/72 transition-transform duration-200 group-hover:translate-x-0.5" />
-                    </div>
-                  </button>
-                ))}
-                </div>
-              </div>
-            </motion.div>
-
-            <motion.div
-              initial={{ opacity: 0, y: 18 }}
-              whileInView={{ opacity: 1, y: 0 }}
-              viewport={{ once: true }}
-              transition={{ duration: 0.55, delay: 0.2 }}
-              className="mt-7 rounded-[1.75rem] border border-gold-200/14 bg-[rgba(255,247,235,0.06)] px-4 py-5 sm:px-5"
-            >
-              <div className="flex flex-col gap-4 lg:flex-row lg:items-start lg:justify-between">
-                <div className="max-w-2xl">
-                  <p className="text-[10px] uppercase tracking-[0.3em] text-gold-300/82">Quote rail</p>
-                  <h3 className="mt-3 text-3xl text-cinematic-primary sm:text-4xl">
-                    Re-enter the film from a line, a vow, or a feeling.
-                  </h3>
-                  <p className="mt-3 text-sm leading-6 text-cinematic-secondary">
-                    Use this as a soft search layer for the film. It is not a full transcript yet, but it gives guests
-                    a faster way back into the moments people quote most.
+              <div
+                id="wedding-video"
+                data-testid="film-player-section"
+                className="mt-10 cinematic-panel px-5 py-6 sm:px-7 sm:py-8 lg:px-8 lg:py-9"
+              >
+                <div className="grid gap-6">
+                  <p className="text-sm text-cinematic-muted">
+                    {MAIN_FILM_RUNTIME_LABEL} feature film
+                    <span className="mx-2 text-gold-300/55">•</span>
+                    {chapters.length} chapters
+                    <span className="mx-2 text-gold-300/55">•</span>
+                    Captions available
                   </p>
-                </div>
-                <div className="relative w-full lg:max-w-sm">
-                  <Search className="pointer-events-none absolute left-4 top-1/2 h-4 w-4 -translate-y-1/2 text-gold-300/72" />
-                  <input
-                    type="text"
-                    value={quoteQuery}
-                    onChange={(event) => setQuoteQuery(event.target.value)}
-                    placeholder="Search vows, speeches, or funny moments"
-                    className="h-12 w-full rounded-full border border-gold-200/16 bg-[rgba(255,247,235,0.08)] px-11 pr-4 text-sm text-cinematic-primary placeholder:text-cinematic-muted focus:border-gold-300/38 focus:outline-none focus:ring-2 focus:ring-gold-300/12"
-                  />
-                </div>
-              </div>
 
-              <div className="mt-5 grid gap-3 lg:grid-cols-2">
-                {filteredQuotes.map((quote) => (
-                  <div key={quote.id} className="cinematic-card px-4 py-4">
-                    <div className="flex items-start justify-between gap-3">
-                      <div>
-                        <p className="text-[10px] uppercase tracking-[0.28em] text-gold-300/78">{quote.speaker}</p>
-                        <p className="mt-3 text-base leading-7 text-cinematic-primary">“{quote.quote}”</p>
+                  <motion.div
+                    id="wedding-film-player"
+                    initial={{ opacity: 0, scale: 0.985 }}
+                    whileInView={{ opacity: 1, scale: 1 }}
+                    viewport={{ once: true }}
+                    transition={{ duration: 0.7, ease: [0.16, 1, 0.3, 1] }}
+                    className="scroll-mt-28"
+                  >
+                    <VideoPlayer
+                      src={getMediaPath('/video/main.mp4')}
+                      title="Austin & Jordyn's Wedding"
+                      chapters={chapters}
+                      poster={MAIN_FILM_POSTER}
+                      captionsSrc={getMediaPath('/video/main.vtt')}
+                      previewStartTime={44}
+                      storageKey={MAIN_FILM_PROGRESS_KEY}
+                      onEnded={() => setDidFinishMainFilm(true)}
+                      className="aspect-video ring-1 ring-white/10"
+                      requireLandscapeOnPhone
+                    />
+                  </motion.div>
+
+                  <motion.div
+                    initial={{ opacity: 0, y: 20 }}
+                    whileInView={{ opacity: 1, y: 0 }}
+                    viewport={{ once: true }}
+                    transition={{ duration: 0.55, delay: 0.15 }}
+                  >
+                    <div className="mb-4 flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between sm:gap-4">
+                      <h3 className="text-sm uppercase tracking-[0.28em] text-gold-300/82">
+                        Chapter guide
+                      </h3>
+                      <p className="text-sm text-cinematic-muted">
+                        Jump back in only when you need a specific section.
+                      </p>
+                    </div>
+                    <div className="overflow-x-auto pb-2 hide-scrollbar">
+                      <div className="grid grid-cols-2 gap-2.5 sm:grid-cols-3 lg:grid-cols-5">
+                        {chapters.map((chapter) => (
+                          <button
+                            key={chapter.label}
+                            type="button"
+                            onClick={() => jumpToChapter(chapter.time)}
+                            className="group cinematic-card min-h-[4.8rem] px-3 py-2.5 text-left transition-colors duration-200 hover:border-gold-300/35 hover:bg-white/8 sm:min-h-[5.1rem] sm:px-3.5 sm:py-3"
+                          >
+                            <div className="flex items-start justify-between gap-3">
+                              <div>
+                                <p className="text-[10px] uppercase tracking-[0.28em] text-gold-300/72">
+                                  {formatChapterTime(chapter.time)}
+                                </p>
+                                <p className="mt-1.5 text-[0.9rem] font-semibold leading-5 text-cinematic-primary sm:text-[0.96rem]">
+                                  {chapter.label}
+                                </p>
+                              </div>
+                              <ArrowRight className="mt-0.5 h-4 w-4 shrink-0 text-gold-300/72 transition-transform duration-200 group-hover:translate-x-0.5" />
+                            </div>
+                          </button>
+                        ))}
                       </div>
-                      <button
-                        type="button"
-                        onClick={() => void copyMomentLink('moment', quote.momentSlug, quote.id)}
-                        className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full border border-gold-200/18 bg-[rgba(255,247,235,0.08)] text-gold-300 transition-colors hover:border-gold-300/35 hover:text-cinematic-primary"
-                        aria-label={`Copy share link for ${quote.speaker}`}
-                      >
-                        <Link2 className="h-4 w-4" />
-                      </button>
                     </div>
-                    <p className="mt-3 text-sm leading-6 text-cinematic-secondary">{quote.note}</p>
-                    <div className="mt-4 flex flex-wrap gap-2">
-                      <button
-                        type="button"
-                        onClick={() => {
-                          setMomentInUrl('moment', quote.momentSlug)
-                          jumpToChapter(quote.time)
-                        }}
-                        className="rounded-full border border-gold-200/18 bg-[rgba(255,247,235,0.08)] px-3 py-1.5 text-xs uppercase tracking-[0.2em] text-cinematic-primary transition-colors hover:border-gold-300/35"
-                      >
-                        Jump to moment
-                      </button>
-                      {copiedMoment === quote.id && (
-                        <span className="rounded-full border border-gold-200/18 bg-[rgba(255,247,235,0.08)] px-3 py-1.5 text-xs uppercase tracking-[0.2em] text-gold-300">
-                          Link copied
-                        </span>
-                      )}
-                    </div>
-                  </div>
-                ))}
+                  </motion.div>
+                </div>
               </div>
-            </motion.div>
             </div>
-          </div>
+          </motion.div>
         </div>
       </section>
 
-      <section className="px-4 pb-16">
+      <section className="px-4 pt-10 pb-16 sm:pt-12 lg:pt-14">
         <div className="mx-auto max-w-6xl">
           <motion.div
             initial={{ opacity: 0, y: 20 }}
             whileInView={{ opacity: 1, y: 0 }}
             viewport={{ once: true }}
             transition={{ duration: 0.6 }}
-            className="mb-8 max-w-3xl"
-          >
-            <span className="eyebrow-chip">Parent dances</span>
-            <h2 className="mt-5 text-4xl text-charcoal-900 sm:text-5xl">
-              Four quieter moments that deserve their own replay.
-            </h2>
-            <p className="mt-4 text-base text-charcoal-600 sm:text-lg">
-              These dances are some of the most personal pauses in the whole reception. Hover to let the cards
-              breathe a little, then open any one of them for the full moment.
-            </p>
-          </motion.div>
+            className="mb-6 max-w-3xl sm:mb-7"
+            >
+              <span className="eyebrow-chip">Parent dances</span>
+              <h2 className="mt-4 text-3xl text-charcoal-900 sm:text-4xl">
+                Watch the parent dances.
+              </h2>
+              <p className="mt-3 text-base text-charcoal-600 sm:text-lg">
+                These four clips are here on their own so you can go straight to the parent dances whenever you want to revisit them.
+              </p>
+            </motion.div>
 
-          <div className="overflow-x-auto pb-2 hide-scrollbar">
-            <div className="grid grid-flow-col auto-cols-[minmax(17rem,1fr)] gap-4 lg:grid-flow-row lg:auto-cols-auto lg:grid-cols-4">
+          <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4">
             {familyFilms.map((film, index) => (
               <motion.div
                 key={film.id}
@@ -957,19 +823,8 @@ export default function Film() {
                 className="min-w-0"
               >
                 <ParentDanceCard film={film} onOpen={setActiveFamilyFilm} />
-                <div className="mt-3 flex justify-end">
-                  <button
-                    type="button"
-                    onClick={() => void copyMomentLink('clip', film.id, film.id)}
-                    className="inline-flex items-center gap-2 rounded-full border border-gold-200/70 bg-white/82 px-3 py-1.5 text-xs uppercase tracking-[0.18em] text-charcoal-600 transition-colors hover:border-gold-300 hover:text-gold-700"
-                  >
-                    <Link2 className="h-3.5 w-3.5" />
-                    {copiedMoment === film.id ? 'Copied' : 'Share moment'}
-                  </button>
-                </div>
               </motion.div>
             ))}
-            </div>
           </div>
         </div>
       </section>
@@ -984,24 +839,42 @@ export default function Film() {
             className="editorial-panel px-6 py-8 sm:px-8 sm:py-10"
           >
             <div className="absolute -right-10 top-8 h-32 w-32 rounded-full bg-gold-200/35 blur-3xl" />
-            <div className="relative grid gap-8 lg:grid-cols-[minmax(0,1fr)_16rem] lg:items-end">
+            <div className="relative flex flex-col gap-6 lg:flex-row lg:items-end lg:justify-between">
               <div>
-                <span className="eyebrow-chip">Keep the archive growing</span>
+                <span className="eyebrow-chip">{didFinishMainFilm ? 'One last stop' : 'After the film'}</span>
                 <h2 className="mt-5 text-4xl text-charcoal-900 sm:text-5xl">
-                  Have your own angle from the day?
+                  {didFinishMainFilm ? 'Choose what to open next.' : 'Where to next'}
                 </h2>
                 <p className="mt-4 max-w-2xl text-base text-charcoal-600 sm:text-lg">
-                  Add the clips, candids, and dance floor moments only your phone caught so the
-                  story feels complete from every side of the room.
+                  {didFinishMainFilm
+                    ? 'Most guests head to the gallery next. The guestbook stays here as the quieter last step if you still want to leave one thoughtful note.'
+                    : 'The next step is usually the gallery. Guest uploads and the guestbook stay here if you want one more pass through the day before you leave.'}
                 </p>
               </div>
 
-              <div className="flex flex-col gap-3">
-                <Button size="lg" to="/upload">
-                  Share Your Memories
+              <div className="flex flex-wrap gap-3 lg:max-w-[42rem] lg:justify-end">
+                <Button
+                  size="md"
+                  className="min-w-[12.5rem] px-5 py-2.5 sm:min-w-[13rem] sm:px-6"
+                  to="/gallery?collection=Wedding+Day"
+                >
+                  Open Wedding Day Gallery
                 </Button>
-                <Button size="lg" variant="secondary" to="/gallery">
-                  Browse the Gallery
+                <Button
+                  size="md"
+                  variant="secondary"
+                  className="min-w-[12rem] px-5 py-2.5 sm:min-w-[12.5rem] sm:px-6"
+                  to="/gallery?collection=Guest+Uploads"
+                >
+                  Browse Guest Uploads
+                </Button>
+                <Button
+                  size="md"
+                  variant="ghost"
+                  className="min-w-[10rem] px-4 py-2.5 sm:min-w-[10.5rem] sm:px-5"
+                  to="/guestbook"
+                >
+                  Leave a Note
                 </Button>
               </div>
             </div>
@@ -1023,12 +896,11 @@ export default function Film() {
                 <Smartphone className="h-3.5 w-3.5" />
                 From your phones
               </span>
-              <h2 className="mt-5 text-4xl text-charcoal-900 sm:text-5xl">
-                Small clips from the room that make the day feel alive again.
+              <h2 className="mt-5 text-3xl text-charcoal-900 sm:text-4xl">
+                Guest angles, if you want the room back from another point of view.
               </h2>
               <p className="mt-4 text-base text-charcoal-600 sm:text-lg">
-                These are the quick guest angles that fill in the edges: the table laughs, the dance-floor blur, and
-                the little in-between pieces no feature camera can catch from every side of the room.
+                These are optional after the main film: quick table laughs, dance-floor blur, and the small in-between clips no single camera can catch from every side.
               </p>
               <div className="mt-5 flex flex-wrap gap-2">
                 {memoryTrails.slice(0, 3).map((trail) => (
@@ -1042,12 +914,10 @@ export default function Film() {
               </div>
             </motion.div>
 
-            <div className="overflow-x-auto pb-2 hide-scrollbar">
-              <div className="grid grid-flow-col auto-cols-[minmax(16rem,1fr)] gap-4">
+            <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-3">
                 {guestHighlights.map((clip) => (
                   <GuestVideoHighlightCard key={clip.id} clip={clip} onOpen={setActiveGuestHighlight} />
                 ))}
-              </div>
             </div>
           </div>
         </section>

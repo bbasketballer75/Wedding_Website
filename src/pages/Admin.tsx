@@ -52,6 +52,7 @@ import { Label } from '@/components/ui/Label'
 import { Textarea } from '@/components/ui/Textarea'
 import { useToast } from '@/context/ToastContext'
 import { getMemoryTrailById, memoryTrails, type MemoryTrailId } from '@/data/memoryTrails'
+import { cn } from '@/lib/utils'
 import {
   buildGuestTaggingSyncPayloadFromFiles,
   downloadGuestTaggingBatchZip,
@@ -1707,6 +1708,7 @@ function PhotoModeration() {
                     type="file"
                     multiple
                     accept=".json,.xmp,.jpg,.jpeg,.png,.webp,.heic,.heif"
+                    aria-label="Upload tagged guest photo batch files"
                     onChange={(event) => void handleGuestTaggingFileSelection(event)}
                     className="hidden"
                   />
@@ -1877,7 +1879,7 @@ function PhotoModeration() {
         </div>
       ) : (
         <div className="grid grid-cols-1 gap-5 xl:grid-cols-2">
-          {filteredUploads.map((photo) => {
+          {filteredUploads.map((photo, photoIndex) => {
             const moderationState = getModerationState(photo, publishedPhotoUrls)
             const isPending = moderationState === 'pending'
             const isApprovedPublished = moderationState === 'approved-published'
@@ -1890,6 +1892,7 @@ function PhotoModeration() {
             const auditEntries = auditByUploadId[photo.id] || []
             const shouldShowAuditHistory = !isPending || auditEntries.length > 0
             const duplicateInsight = getGuestUploadDuplicateInsight(photo, photos, publishedPhotoUrls)
+            const fieldIdPrefix = `upload-${photo.id}-${photoIndex}`
             const hasDuplicateWarning =
               duplicateInsight.withinUploadCount > 0 ||
               duplicateInsight.approvedDuplicateCount > 0 ||
@@ -2010,13 +2013,13 @@ function PhotoModeration() {
                         <div className="mt-4 grid gap-4">
                           <div>
                             <Label
-                              htmlFor={`collection-${photo.id}`}
+                              htmlFor={`${fieldIdPrefix}-collection`}
                               className="mb-2 text-xs normal-case tracking-normal text-charcoal-500"
                             >
                               Story lane
                             </Label>
                             <select
-                              id={`collection-${photo.id}`}
+                              id={`${fieldIdPrefix}-collection`}
                               value={draft.collection}
                               onChange={(event) => {
                                 const collection = event.target.value as ModerationCollection
@@ -2124,11 +2127,11 @@ function PhotoModeration() {
                               <p className="text-[10px] uppercase tracking-[0.28em] text-charcoal-500">Guest video lane</p>
                               <div className="mt-4 grid gap-4 md:grid-cols-2">
                                 <div>
-                                  <Label htmlFor={`video-visibility-${photo.id}`} className="mb-2 text-xs normal-case tracking-normal text-charcoal-500">
+                                  <Label htmlFor={`${fieldIdPrefix}-video-visibility`} className="mb-2 text-xs normal-case tracking-normal text-charcoal-500">
                                     Public treatment
                                   </Label>
                                   <select
-                                    id={`video-visibility-${photo.id}`}
+                                    id={`${fieldIdPrefix}-video-visibility`}
                                     value={draft.videoVisibility}
                                     onChange={(event) => updateDraft(photo.id, { videoVisibility: event.target.value as GuestVideoVisibility })}
                                     className="h-11 w-full rounded-full border border-gold-200/70 bg-white px-4 text-sm text-charcoal-900 outline-none transition focus:border-gold-500 focus:ring-2 focus:ring-gold-500/20"
@@ -2138,11 +2141,11 @@ function PhotoModeration() {
                                   </select>
                                 </div>
                                 <div>
-                                  <Label htmlFor={`video-trail-${photo.id}`} className="mb-2 text-xs normal-case tracking-normal text-charcoal-500">
+                                  <Label htmlFor={`${fieldIdPrefix}-video-trail`} className="mb-2 text-xs normal-case tracking-normal text-charcoal-500">
                                     Memory trail
                                   </Label>
                                   <select
-                                    id={`video-trail-${photo.id}`}
+                                    id={`${fieldIdPrefix}-video-trail`}
                                     value={draft.memoryTrail}
                                     onChange={(event) => updateDraft(photo.id, { memoryTrail: event.target.value as MemoryTrailId | '' })}
                                     className="h-11 w-full rounded-full border border-gold-200/70 bg-white px-4 text-sm text-charcoal-900 outline-none transition focus:border-gold-500 focus:ring-2 focus:ring-gold-500/20"
@@ -2624,6 +2627,7 @@ function AuditLogView() {
           <select
             value={entityFilter}
             onChange={(event) => setEntityFilter(event.target.value as typeof entityFilter)}
+            aria-label="Filter audit trail by entity type"
             className="h-11 rounded-full border border-gold-200/70 bg-white px-4 text-sm text-charcoal-900 outline-none transition focus:border-gold-500 focus:ring-2 focus:ring-gold-500/20"
           >
             <option value="all">All entities</option>
@@ -2633,6 +2637,7 @@ function AuditLogView() {
           <select
             value={actionFilter}
             onChange={(event) => setActionFilter(event.target.value as typeof actionFilter)}
+            aria-label="Filter audit trail by action"
             className="h-11 rounded-full border border-gold-200/70 bg-white px-4 text-sm text-charcoal-900 outline-none transition focus:border-gold-500 focus:ring-2 focus:ring-gold-500/20"
           >
             <option value="all">All actions</option>
@@ -2645,6 +2650,7 @@ function AuditLogView() {
           <select
             value={actorFilter}
             onChange={(event) => setActorFilter(event.target.value)}
+            aria-label="Filter audit trail by actor"
             className="h-11 rounded-full border border-gold-200/70 bg-white px-4 text-sm text-charcoal-900 outline-none transition focus:border-gold-500 focus:ring-2 focus:ring-gold-500/20"
           >
             <option value="all">All actors</option>
@@ -3694,6 +3700,7 @@ function AdminLayout() {
   const { addToast } = useToast()
   const currentPage = getAdminRouteMeta(location.pathname)
   const isDashboardRoute = location.pathname === '/admin'
+  const isReviewRoute = location.pathname.startsWith('/admin/review')
 
   const handleSignOut = async () => {
     await signOut()
@@ -3727,8 +3734,8 @@ function AdminLayout() {
         </div>
       </header>
 
-      <div className="mx-auto max-w-7xl px-4 py-6 xl:py-8">
-        {!isDashboardRoute && (
+      <div className={cn('mx-auto px-4 py-6 xl:py-8', isReviewRoute ? 'max-w-[110rem]' : 'max-w-7xl')}>
+        {!isDashboardRoute && !isReviewRoute && (
           <section className="mb-4 rounded-[1.15rem] border border-gold-100 bg-white/92 px-4 py-4 shadow-sm sm:px-5">
             <div className="max-w-3xl">
               <p className="text-[10px] uppercase tracking-[0.32em] text-charcoal-500">{currentPage.eyebrow}</p>
@@ -3740,19 +3747,45 @@ function AdminLayout() {
           </section>
         )}
 
-        <div className="mb-5 flex gap-2 overflow-x-auto pb-1 xl:hidden">
-          {adminNavSections.flatMap((section) => section.items).map((item) => {
-            const isActive = location.pathname === item.path
+        {!isReviewRoute && (
+          <div className="mb-5 flex gap-2 overflow-x-auto pb-1 xl:hidden">
+            {adminNavSections.flatMap((section) => section.items).map((item) => {
+              const isActive = location.pathname === item.path
 
-            return (
-              <Button key={item.path} variant={isActive ? 'primary' : 'secondary'} size="sm" asChild>
-                <Link to={item.path}>{item.label}</Link>
+              return (
+                <Button key={item.path} variant={isActive ? 'primary' : 'secondary'} size="sm" asChild>
+                  <Link to={item.path}>{item.label}</Link>
+                </Button>
+              )
+            })}
+          </div>
+        )}
+
+        {isReviewRoute ? (
+          <main className="min-w-0">
+            <div className="mb-4 flex items-center justify-between gap-3 rounded-[1.15rem] border border-gold-100 bg-white/92 px-4 py-3 shadow-sm">
+              <div className="min-w-0">
+                <p className="text-[10px] uppercase tracking-[0.32em] text-charcoal-500">{currentPage.eyebrow}</p>
+                <h1 className="mt-1 text-xl font-display leading-tight text-charcoal-900">{currentPage.title}</h1>
+              </div>
+              <Button variant="secondary" size="sm" asChild>
+                <Link to="/admin">Back to Dashboard</Link>
               </Button>
-            )
-          })}
-        </div>
-
-        <div className="flex flex-col gap-5 xl:flex-row xl:gap-6">
+            </div>
+            <Routes>
+              <Route index element={<Dashboard />} />
+              <Route path="photos" element={<PhotoModeration />} />
+              <Route path="albums" element={<AlbumOrganizer />} />
+              <Route path="review" element={<MediaReviewPanel />} />
+              <Route path="guestbook" element={<GuestbookModeration />} />
+              <Route path="featured" element={<FeaturedContentManager />} />
+              <Route path="audit" element={<AuditLogView />} />
+              <Route path="analytics" element={<Analytics />} />
+              <Route path="settings" element={<Settings />} />
+            </Routes>
+          </main>
+        ) : (
+          <div className="flex flex-col gap-5 xl:flex-row xl:gap-6">
         {/* Sidebar */}
           <nav className="hidden w-full xl:block xl:w-64 xl:flex-shrink-0" aria-label="Admin navigation">
             <div className="overflow-hidden rounded-[1.4rem] border border-gold-100 bg-white/95 shadow-sm xl:sticky xl:top-24">
@@ -3818,6 +3851,7 @@ function AdminLayout() {
             </Routes>
           </main>
         </div>
+        )}
       </div>
     </div>
   )

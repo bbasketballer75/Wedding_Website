@@ -447,7 +447,7 @@ export default function UploadPage() {
             <div>
               <span className="eyebrow-chip">
                 <Sparkles className="h-3.5 w-3.5" />
-                Share your memories
+                Add your side of the day
               </span>
 
               <h1 className="mt-6 text-5xl text-charcoal-900 sm:text-6xl">
@@ -475,18 +475,17 @@ export default function UploadPage() {
                 <div className="flex flex-col gap-3 lg:flex-row lg:items-start lg:justify-between">
                   <div className="max-w-xl">
                     <p className="text-[10px] uppercase tracking-[0.3em] text-gold-700">
-                      Share the site too
+                      Pass the site along
                     </p>
                     <p className="mt-3 text-lg font-semibold text-charcoal-900">
-                      Pass along the film, gallery, guestbook, and upload page in one share.
+                      Send the full site to anyone who still has not watched or browsed yet.
                     </p>
                     <p className="mt-2 text-sm leading-6 text-charcoal-500">
-                      These buttons share the site itself. Uploads happen separately below, so guests can either send the
-                      link around or start contributing right away.
+                      These buttons share the site itself. Uploads still happen separately below, so this stays a side action rather than the main event.
                     </p>
                   </div>
 
-                  <div className="flex flex-wrap gap-2 lg:max-w-[21rem] lg:justify-end">
+                  <div className="flex flex-wrap gap-2 xl:max-w-[21rem] xl:justify-end">
                     <button
                       type="button"
                       onClick={handleCopyShareLink}
@@ -550,16 +549,16 @@ export default function UploadPage() {
                         More
                       </button>
                     )}
-                    <div className="inline-flex min-h-[2.75rem] items-center gap-2 rounded-full border border-white/90 bg-white px-4 py-2 text-sm text-charcoal-500">
+                    <div className="inline-flex min-h-[2.75rem] max-w-full items-center gap-2 rounded-full border border-white/90 bg-white px-4 py-2 text-sm text-charcoal-500">
                       <Link2 className="h-4 w-4 text-gold-600" />
-                      <span className="max-w-[13rem] truncate">{siteShareUrl}</span>
+                      <span className="max-w-[11rem] truncate sm:max-w-[13rem]">{siteShareUrl}</span>
                     </div>
                   </div>
                 </div>
               </div>
             </div>
 
-            <div className="grid gap-3 md:grid-cols-3 2xl:grid-cols-1">
+            <div className="grid gap-3 md:grid-cols-2 xl:grid-cols-3 2xl:grid-cols-1">
               {uploadHighlights.map(({ icon: Icon, title, description }, index) => (
                 <motion.div
                   key={title}

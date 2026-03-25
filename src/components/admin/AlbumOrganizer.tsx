@@ -845,6 +845,7 @@ export function AlbumOrganizer() {
               <select
                 value={bulkMoveAlbum}
                 onChange={(event) => setBulkMoveAlbum(event.target.value as PhotoAlbum | '')}
+                aria-label="Bulk move selected photos to album"
                 className="h-10 rounded-full border border-gold-200 bg-white px-3 text-sm text-charcoal-700 outline-none transition-colors hover:border-gold-300 focus:border-gold-400"
               >
                 <option value="">Bulk move to album...</option>
@@ -858,6 +859,7 @@ export function AlbumOrganizer() {
               <select
                 value={bulkAfterTargetId}
                 onChange={(event) => setBulkAfterTargetId(event.target.value)}
+                aria-label="Place selected photos after another photo"
                 className="h-10 rounded-full border border-gold-200 bg-white px-3 text-sm text-charcoal-700 outline-none transition-colors hover:border-gold-300 focus:border-gold-400"
               >
                 <option value="">Place after...</option>

@@ -28,6 +28,7 @@ interface Photo {
   id: string
   url: string
   thumbnail: string
+  downloadUrl?: string
   album?: string
   albumSortOrder?: number
   caption?: string
@@ -328,6 +329,7 @@ const normalizeGalleryPhoto = (photo: Photo): Photo => ({
   ...photo,
   url: normalizeGalleryMediaPath(photo.url),
   thumbnail: normalizeGalleryMediaPath(photo.thumbnail || photo.url),
+  downloadUrl: normalizeGalleryMediaPath(photo.downloadUrl || photo.url),
 })
 
 const PHOTO_ENGAGEMENT_SESSION_KEY = 'wedding-gallery-engagement-session'
@@ -438,6 +440,7 @@ const mapSupabasePhoto = (photo: SupabasePhoto): Photo => normalizeGalleryPhoto(
   id: photo.id,
   url: photo.url,
   thumbnail: photo.thumbnail,
+  downloadUrl: photo.download_url ?? photo.url,
   caption: photo.caption,
   album: photo.album,
   albumSortOrder: photo.album_sort_order ?? undefined,
@@ -556,8 +559,10 @@ export default function Gallery() {
     const requestedQuery = searchParams.get('q') || ''
     const requestedCollection = searchParams.get('collection') as CollectionTab | null
     const requestedPhotoId = searchParams.get('photo')
+    const requestedPerson = searchParams.get('person')
 
     setSearchQuery((current) => (current !== requestedQuery ? requestedQuery : current))
+    setFaceFilter((current) => (current !== requestedPerson ? requestedPerson : current))
 
     if (requestedCollection && collectionTabs.includes(requestedCollection)) {
       setSelectedCollection((current) => (current !== requestedCollection ? requestedCollection : current))
@@ -753,7 +758,7 @@ export default function Gallery() {
     setDownloadingId(photoId)
     try {
       const filename = `Austin-Jordyn-Wedding-${photo.caption || photo.id}.jpg`
-      await downloadFile(photo.url, filename)
+      await downloadFile(photo.downloadUrl || photo.url, filename)
     } catch {
       // Error handled via UI
     }
@@ -1088,7 +1093,7 @@ export default function Gallery() {
           >
             <div
               ref={galleryScrollRef}
-              className="h-[68vh] min-h-[32rem] overflow-y-auto pr-1 sm:h-[72vh] lg:h-[calc(100vh-18rem)]"
+              className="overflow-visible lg:h-[calc(100vh-18rem)] lg:min-h-[32rem] lg:overflow-y-auto lg:pr-1"
             >
             {isLoading ? (
               <div className="flex min-h-[20rem] flex-col items-center justify-center text-center">

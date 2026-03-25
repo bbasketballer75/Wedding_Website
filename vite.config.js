@@ -160,6 +160,7 @@ const pwaManifest = {
 export default defineConfig(({ mode }) => {
   const env = loadEnv(mode, process.cwd(), '')
   const siteUrl = (env.VITE_SITE_URL || DEFAULT_SITE_URL).replace(/\/+$/, '')
+  const mediaBaseUrl = (env.VITE_MEDIA_BASE_URL || '').replace(/\/+$/, '')
 
   return {
     base: '/',
@@ -191,6 +192,11 @@ export default defineConfig(({ mode }) => {
           'offline.html',
         ],
         manifest: pwaManifest,
+        workbox: {
+          cleanupOutdatedCaches: true,
+          clientsClaim: true,
+          skipWaiting: true,
+        },
       }),
       process.env.ANALYZE &&
         visualizer({
@@ -235,6 +241,15 @@ export default defineConfig(({ mode }) => {
     server: {
       port: 5173,
       strictPort: true,
+      proxy: mediaBaseUrl
+        ? {
+            '/__media_proxy': {
+              target: mediaBaseUrl,
+              changeOrigin: true,
+              rewrite: (requestPath) => requestPath.replace(/^\/__media_proxy/, ''),
+            },
+          }
+        : undefined,
     },
     define: {
       __DEV__: process.env.NODE_ENV === 'development',

@@ -16,8 +16,8 @@ const footerLinks = [
     icon: Images,
   },
   {
-    title: 'Read the guestbook',
-    description: 'Messages, replies, voice notes, and all the warmth from our people.',
+    title: 'Leave a note',
+    description: 'A quiet last stop for one message, blessing, or little memory from the day.',
     to: '/guestbook',
     icon: BookHeart,
   },
@@ -37,7 +37,7 @@ export function Footer() {
 
       <div className="relative mx-auto max-w-7xl">
         <div className="cinematic-panel px-6 py-8 sm:px-8 lg:px-10 lg:py-10">
-          <div className="grid gap-10 lg:grid-cols-[minmax(0,1fr)_minmax(0,1.15fr)] lg:items-start">
+          <div className="grid gap-10 xl:grid-cols-[minmax(0,1fr)_minmax(0,1.15fr)] xl:items-start">
             <div className="max-w-xl">
               <p className="text-[10px] uppercase tracking-[0.35em] text-[#f7e6c6]">
                 Austin and Jordyn
@@ -46,9 +46,9 @@ export function Footer() {
                 Thanks for helping us keep the day alive.
               </h2>
               <p className="mt-4 max-w-lg text-sm leading-7 text-cinematic-secondary sm:text-base">
-                This site is our favorite way to revisit the celebration, and it only feels
-                complete because you were part of it. Come back anytime to watch, browse,
-                read, or add your side of the story.
+                The simplest way through is still the best one: watch the film, open the
+                gallery when you want to linger, and leave a note only if you still have
+                something to say before you go.
               </p>
 
               <div className="mt-8 flex flex-wrap items-center gap-3 text-[11px] uppercase tracking-[0.28em] text-[#f2dfba]">
@@ -58,7 +58,7 @@ export function Footer() {
               </div>
             </div>
 
-            <div className="grid gap-3 sm:grid-cols-3">
+            <div className="grid gap-3 lg:grid-cols-3">
               {footerLinks.map(({ title, description, to, icon: Icon }) => (
                 <Link
                   key={to}

@@ -1,52 +1,21 @@
-import { type ElementType, useState, useEffect, useMemo, useRef } from 'react'
+import { type ElementType, useState, useEffect, useRef } from 'react'
 import { motion, useScroll, useTransform, useMotionValueEvent } from 'framer-motion'
 import { Link } from 'react-router-dom'
-import { Heart, ChevronDown, Sparkles, Clock3, Rows3, Images, BookHeart } from 'lucide-react'
+import { ChevronDown, Clapperboard, Heart } from 'lucide-react'
 import { LoveTimeline } from '@/components/timeline/LoveTimeline'
 import { publicNavLinks } from '@/components/layout/publicNav'
 import { HomeSEO } from '@/components/seo/SEOHead'
-import { MAIN_FILM_CHAPTERS_FALLBACK, MAIN_FILM_RUNTIME_LABEL, loadMainFilmChapters } from '@/data/film'
-import { CURATED_GALLERY_PHOTO_COUNT } from '@/data/gallery'
-import { supabase } from '@/lib/supabase'
+import { Button } from '@/components/ui/Button'
 import { cn } from '@/lib/utils'
-import { getMediaPath } from '@/utils/media'
+import {
+  MAIN_FILM_PROGRESS_KEY,
+  formatVideoProgressLabel,
+  readSavedVideoProgress,
+} from '@/utils/videoProgress'
 
 const HERO_POSTER = '/images/home/intro-video-poster.png'
-const HERO_VIDEO = getMediaPath('/video/edited_background_cut.mp4')
-
-interface HomeStat {
-  icon: ElementType
-  number: string
-  label: string
-  detail: string
-}
-
-const DEFAULT_HOME_STATS: HomeStat[] = [
-  {
-    icon: Clock3,
-    number: MAIN_FILM_RUNTIME_LABEL,
-    label: 'Feature film',
-    detail: 'The full ceremony-to-dance-floor cut, all in one watch.',
-  },
-  {
-    icon: Rows3,
-    number: MAIN_FILM_CHAPTERS_FALLBACK.length.toString(),
-    label: 'Chapter jumps',
-    detail: 'Mapped to the real edit so every moment starts exactly where it should.',
-  },
-  {
-    icon: Images,
-    number: '0',
-    label: 'Gallery photos',
-    detail: 'Approved portraits, candids, and guest favorites gathered in one archive.',
-  },
-  {
-    icon: BookHeart,
-    number: '0',
-    label: 'Guestbook notes',
-    detail: 'Messages from the people who were there and still want to tell it back to us.',
-  },
-]
+const HERO_VIDEO_WEBM = '/video/home-hero.webm'
+const HERO_VIDEO_MP4 = '/video/home-hero.mp4'
 
 // Nav item component
 function NavItem({ 
@@ -84,9 +53,8 @@ function NavItem({
 export default function Home() {
   const [showUI, setShowUI] = useState(false)
   const [scrolled, setScrolled] = useState(false)
-  const [videoReady, setVideoReady] = useState(false)
-  const [videoErrored, setVideoErrored] = useState(false)
-  const [homeStats, setHomeStats] = useState<HomeStat[]>(DEFAULT_HOME_STATS)
+  const [heroMateriallyVisible, setHeroMateriallyVisible] = useState(true)
+  const [resumeTime, setResumeTime] = useState<number | null>(null)
   const heroRef = useRef<HTMLDivElement>(null)
   const containerRef = useRef<HTMLDivElement>(null)
   const videoRef = useRef<HTMLVideoElement>(null)
@@ -106,68 +74,42 @@ export default function Home() {
   }, [])
 
   useEffect(() => {
-    let isMounted = true
-
-    const loadHomeStats = async () => {
-      const [chaptersResult, photoCountResult, guestbookCountResult] = await Promise.allSettled([
-        loadMainFilmChapters(),
-        supabase.from('photos').select('id', { count: 'exact', head: true }),
-        supabase.from('guestbook_messages').select('id', { count: 'exact', head: true }),
-      ])
-
-      if (!isMounted) {
-        return
-      }
-
-      const chapterCount =
-        chaptersResult.status === 'fulfilled'
-          ? chaptersResult.value.length
-          : MAIN_FILM_CHAPTERS_FALLBACK.length
-
-      const livePhotoCount =
-        photoCountResult.status === 'fulfilled'
-          ? photoCountResult.value.count ?? 0
-          : 0
-      const photoCount = CURATED_GALLERY_PHOTO_COUNT + livePhotoCount
-
-      const guestbookCount =
-        guestbookCountResult.status === 'fulfilled'
-          ? guestbookCountResult.value.count ?? 0
-          : 0
-
-      setHomeStats([
-        DEFAULT_HOME_STATS[0],
-        {
-          ...DEFAULT_HOME_STATS[1],
-          number: chapterCount.toString(),
-        },
-        {
-          ...DEFAULT_HOME_STATS[2],
-          number: photoCount.toString(),
-          detail:
-            photoCount > 0
-              ? 'Curated portraits, approved guest favorites, and the in-between shots all gathered in one archive.'
-              : 'The archive is ready for the first approved moments to land.',
-        },
-        {
-          ...DEFAULT_HOME_STATS[3],
-          number: guestbookCount.toString(),
-          detail:
-            guestbookCount > 0
-              ? 'Messages from the people who were there and still want to tell it back to us.'
-              : 'A clean slate for the first note, memory, or blessing from our guests.',
-        },
-      ])
+    const syncResumeTime = () => {
+      setResumeTime(readSavedVideoProgress(MAIN_FILM_PROGRESS_KEY))
     }
 
-    void loadHomeStats()
+    syncResumeTime()
+    document.addEventListener('visibilitychange', syncResumeTime)
+    window.addEventListener('focus', syncResumeTime)
 
     return () => {
-      isMounted = false
+      document.removeEventListener('visibilitychange', syncResumeTime)
+      window.removeEventListener('focus', syncResumeTime)
     }
   }, [])
 
-  const homeStatsColumn = useMemo(() => homeStats, [homeStats])
+  useEffect(() => {
+    const hero = heroRef.current
+
+    if (!hero) {
+      return
+    }
+
+    const observer = new IntersectionObserver(
+      ([entry]) => {
+        setHeroMateriallyVisible(entry.isIntersecting && entry.intersectionRatio > 0.35)
+      },
+      {
+        threshold: [0, 0.35, 0.5, 1],
+      }
+    )
+
+    observer.observe(hero)
+
+    return () => {
+      observer.disconnect()
+    }
+  }, [])
 
   useEffect(() => {
     const video = videoRef.current
@@ -182,6 +124,7 @@ export default function Home() {
       video.playsInline = true
       video.setAttribute('playsinline', '')
       video.setAttribute('webkit-playsinline', '')
+      video.load()
 
       const playback = video.play()
       if (playback && typeof playback.catch === 'function') {
@@ -205,7 +148,7 @@ export default function Home() {
   }, [])
 
   const scrollToContent = () => {
-    document.getElementById('welcome-panel')?.scrollIntoView({ behavior: 'smooth', block: 'start' })
+    document.getElementById('love-timeline')?.scrollIntoView({ behavior: 'smooth', block: 'start' })
   }
 
   return (
@@ -215,14 +158,17 @@ export default function Home() {
       {/* Sticky Nav Bar - Always Visible */}
       <motion.nav
         initial={{ opacity: 0, y: -20 }}
-        animate={{ opacity: showUI ? 1 : 0, y: showUI ? 0 : -20 }}
+        animate={{ opacity: showUI && !heroMateriallyVisible ? 1 : 0, y: showUI && !heroMateriallyVisible ? 0 : -20 }}
         transition={{ duration: 0.6, delay: 0.3 }}
         data-testid="home-nav"
-        className="fixed top-3 left-1/2 z-50 w-[calc(100vw-1rem)] max-w-[42rem] -translate-x-1/2 sm:top-6"
+        className={cn(
+          "fixed top-3 left-1/2 z-50 w-[calc(100vw-0.75rem)] max-w-[40rem] -translate-x-1/2 sm:top-6 sm:w-[calc(100vw-1rem)] sm:max-w-[42rem]",
+          heroMateriallyVisible && "pointer-events-none"
+        )}
       >
         <motion.div 
           className={cn(
-            "flex w-full items-center gap-1 overflow-x-auto rounded-full px-2 py-1.5 transition-all duration-500 hide-scrollbar max-[360px]:px-1.5 sm:justify-between sm:gap-0 sm:px-2 sm:py-2",
+            "flex w-full items-center gap-1 overflow-x-auto rounded-full px-1.5 py-1.5 transition-all duration-500 hide-scrollbar sm:justify-between sm:gap-0 sm:px-2 sm:py-2",
             scrolled 
               ? "bg-gradient-to-r from-cream-100/95 via-gold-50/95 to-cream-100/95 backdrop-blur-md border border-gold-300/50 shadow-lg" 
               : "bg-[linear-gradient(135deg,rgba(41,29,23,0.9),rgba(58,42,33,0.9))] backdrop-blur-md border border-gold-200/18 shadow-2xl"
@@ -285,18 +231,13 @@ export default function Home() {
             playsInline
             preload="auto"
             poster={HERO_POSTER}
-            onCanPlay={() => setVideoReady(true)}
-            onCanPlayThrough={() => setVideoReady(true)}
-            onLoadedData={() => setVideoReady(true)}
-            onPlaying={() => setVideoReady(true)}
-            onError={() => setVideoErrored(true)}
             className={cn(
-              "h-full w-full transition-opacity duration-700",
-              "object-cover object-[58%_center] sm:object-center",
-              videoReady && !videoErrored ? "opacity-100" : "opacity-0"
+              "h-full w-full",
+              "object-cover object-[58%_center] sm:object-center"
             )}
           >
-            <source src={HERO_VIDEO} type="video/mp4" />
+            <source src={HERO_VIDEO_WEBM} type="video/webm" />
+            <source src={HERO_VIDEO_MP4} type="video/mp4" />
           </video>
         </motion.div>
 
@@ -308,152 +249,91 @@ export default function Home() {
           animate={{ opacity: showUI ? 1 : 0, y: showUI ? 0 : 20 }}
           transition={{ duration: 0.6, delay: 0.5 }}
           style={{ opacity: heroOpacity }}
-          className="absolute bottom-8 left-1/2 -translate-x-1/2 z-10"
+          className="absolute bottom-6 left-1/2 -translate-x-1/2 z-10 sm:bottom-8"
         >
           <motion.button
             onClick={scrollToContent}
-            whileHover={{ scale: 1.05, y: -5 }}
+            animate={{ y: [0, -3, 0] }}
+            transition={{ duration: 4, repeat: Infinity, ease: 'easeInOut' }}
+            whileHover={{ scale: 1.03, y: -6 }}
             whileTap={{ scale: 0.95 }}
-            className="flex items-center gap-2 rounded-full border border-gold-200/18 bg-[linear-gradient(135deg,rgba(41,29,23,0.92),rgba(58,42,33,0.92))] px-5 py-2.5 text-[#f7efe3] shadow-xl transition-colors hover:text-gold-300"
+            className="group relative overflow-hidden rounded-full border border-white/55 bg-[linear-gradient(135deg,rgba(255,251,245,0.88),rgba(247,239,227,0.9)_54%,rgba(236,219,191,0.88))] px-3.5 py-2.5 text-charcoal-800 shadow-[0_18px_40px_-22px_rgba(41,29,23,0.65)] backdrop-blur-md transition-colors hover:border-gold-300/80 sm:px-4"
           >
-            <span className="text-[10px] uppercase tracking-widest">Explore</span>
-            <motion.div
-              animate={{ y: [0, 3, 0] }}
-              transition={{ repeat: Infinity, duration: 1.5 }}
-            >
-              <ChevronDown className="w-4 h-4" />
-            </motion.div>
+            <motion.span
+              aria-hidden="true"
+              animate={{ x: ['-120%', '120%'] }}
+              transition={{ duration: 3.6, repeat: Infinity, ease: 'easeInOut' }}
+              className="pointer-events-none absolute inset-y-0 left-0 w-16 bg-gradient-to-r from-transparent via-white/55 to-transparent blur-md"
+            />
+            <span className="relative flex items-center gap-2.5">
+              <span className="flex items-center gap-1.5 rounded-full border border-gold-200/80 bg-white/72 px-2.5 py-1 text-gold-700 shadow-sm">
+                <Heart className="h-3.5 w-3.5 fill-gold-300/35 text-gold-500" />
+                <span className="text-[10px] uppercase tracking-[0.3em]">Explore</span>
+              </span>
+              <span className="flex h-7 w-7 items-center justify-center rounded-full border border-gold-200/80 bg-white/76 text-gold-700 shadow-sm transition-transform duration-300 group-hover:translate-y-0.5">
+                <ChevronDown className="h-4 w-4" />
+              </span>
+            </span>
           </motion.button>
         </motion.div>
       </section>
 
-      {/* Welcome Section - Editorial landing panel */}
-      <section id="content" className="relative overflow-hidden px-4 pb-24 pt-16 sm:pt-20">
-        <div className="absolute inset-0 bg-gradient-to-b from-cream-50 via-cream-100 to-cream-50" />
+      <LoveTimeline />
+
+      <section className="relative overflow-hidden px-4 pb-24 pt-10 sm:pt-14">
+        <div className="absolute inset-0 bg-gradient-to-b from-cream-100 via-cream-50 to-cream-100" />
 
         <div className="absolute inset-0 pointer-events-none overflow-hidden">
           <motion.div
-            animate={{
-              x: [0, 50, 0],
-              y: [0, 30, 0],
-            }}
+            animate={{ x: [0, 36, 0], y: [0, 24, 0] }}
             transition={{ duration: 18, repeat: Infinity, ease: 'linear' }}
-            className="absolute -top-10 right-0 h-72 w-72 rounded-full bg-gold-200/30 blur-3xl"
+            className="absolute right-0 top-0 h-64 w-64 rounded-full bg-gold-200/25 blur-3xl"
           />
           <motion.div
-            animate={{
-              x: [0, -40, 0],
-              y: [0, 40, 0],
-            }}
-            transition={{ duration: 22, repeat: Infinity, ease: 'linear' }}
-            className="absolute bottom-0 left-0 h-64 w-64 rounded-full bg-blush-200/35 blur-3xl"
+            animate={{ x: [0, -32, 0], y: [0, 28, 0] }}
+            transition={{ duration: 20, repeat: Infinity, ease: 'linear' }}
+            className="absolute bottom-0 left-0 h-56 w-56 rounded-full bg-blush-200/35 blur-3xl"
           />
-          {[...Array(2)].map((_, i) => (
-            <motion.div
-              key={i}
-              initial={{ opacity: 0, scale: 0.4 }}
-              whileInView={{ opacity: 0.05, scale: 1 }}
-              viewport={{ once: true }}
-              transition={{ delay: i * 0.25, duration: 0.8 }}
-              className="absolute text-gold-500"
-              style={{
-                left: `${10 + i * 68}%`,
-                top: `${12 + i * 42}%`,
-              }}
-            >
-              <Heart className="h-24 w-24 fill-current" />
-            </motion.div>
-          ))}
         </div>
 
         <motion.div
-          id="welcome-panel"
           initial={{ opacity: 0, y: 30 }}
           whileInView={{ opacity: 1, y: 0 }}
-          viewport={{ once: true, amount: 0.3 }}
+          viewport={{ once: true, amount: 0.25 }}
           transition={{ duration: 0.7 }}
-          className="relative z-10 mx-auto max-w-6xl scroll-mt-24 sm:scroll-mt-28"
+          className="relative z-10 mx-auto max-w-5xl"
         >
-          <div className="relative overflow-hidden rounded-[2rem] border border-white/70 bg-[linear-gradient(135deg,rgba(255,255,255,0.92),rgba(250,248,244,0.98)_58%,rgba(246,239,226,0.92))] p-6 shadow-[0_35px_90px_-45px_rgba(46,33,13,0.45)] backdrop-blur-xl sm:p-8 lg:p-10">
-            <div className="absolute -right-14 top-8 h-40 w-40 rounded-full bg-gold-200/35 blur-3xl" />
-            <div className="absolute -left-10 bottom-0 h-32 w-32 rounded-full bg-blush-200/45 blur-3xl" />
+          <div className="relative overflow-hidden rounded-[2rem] border border-white/70 bg-[linear-gradient(135deg,rgba(255,255,255,0.94),rgba(250,248,244,0.98)_58%,rgba(246,239,226,0.92))] p-5 shadow-[0_35px_90px_-45px_rgba(46,33,13,0.45)] backdrop-blur-xl sm:p-8 lg:p-10">
+            <div className="absolute -right-12 top-6 h-36 w-36 rounded-full bg-gold-200/30 blur-3xl" />
+            <div className="absolute -left-8 bottom-0 h-28 w-28 rounded-full bg-blush-200/35 blur-3xl" />
 
-            <div className="relative grid gap-8 xl:grid-cols-[minmax(0,1.08fr)_minmax(0,0.92fr)] xl:items-start">
+            <div className="relative">
               <div className="max-w-2xl">
-                <motion.div
-                  initial={{ opacity: 0, y: 16 }}
-                  whileInView={{ opacity: 1, y: 0 }}
-                  viewport={{ once: true }}
-                  transition={{ duration: 0.5, delay: 0.05 }}
-                  className="mb-5 inline-flex items-center gap-2 rounded-full border border-gold-300/60 bg-white/75 px-4 py-2 text-[10px] uppercase tracking-[0.35em] text-gold-700 shadow-sm"
-                >
-                  <Sparkles className="h-3.5 w-3.5" />
-                  Welcome to our wedding hub
-                </motion.div>
+                <div className="mb-5 inline-flex items-center gap-2 rounded-full border border-gold-300/60 bg-white/80 px-4 py-2 text-[10px] uppercase tracking-[0.35em] text-gold-700 shadow-sm">
+                  <Clapperboard className="h-3.5 w-3.5" />
+                  Watch next
+                </div>
 
-                <motion.h2
-                  initial={{ opacity: 0, y: 20 }}
-                  whileInView={{ opacity: 1, y: 0 }}
-                  viewport={{ once: true }}
-                  transition={{ duration: 0.55, delay: 0.1 }}
-                  className="max-w-xl text-[2.8rem] leading-[0.96] tracking-[-0.035em] text-charcoal-900 sm:text-[4.1rem]"
-                >
-                  Every chapter, all in one place.
-                </motion.h2>
+                <h2 className="max-w-xl text-[2.2rem] leading-[0.98] tracking-[-0.035em] text-charcoal-900 min-[380px]:text-[2.5rem] sm:text-[4rem]">
+                  When you are ready, the film is waiting.
+                </h2>
 
-                <motion.p
-                  initial={{ opacity: 0, y: 20 }}
-                  whileInView={{ opacity: 1, y: 0 }}
-                  viewport={{ once: true }}
-                  transition={{ duration: 0.55, delay: 0.18 }}
-                  className="mt-5 max-w-xl text-base leading-8 text-charcoal-700 sm:text-[1.15rem]"
-                >
-                  Relive every part of the celebration from whichever doorway feels right:
-                  the full film, the portrait gallery, the notes from everyone we love, and
-                  the photos still coming in from your side of the day.
-                </motion.p>
+                <p className="mt-5 max-w-2xl text-base leading-7 text-charcoal-700 sm:text-[1.08rem] sm:leading-8">
+                  The timeline gives the shape of the story. The film lets you settle into the
+                  ceremony, the speeches, and the rest of the night at an easy pace.
+                </p>
+
+                <div className="mt-8 flex flex-wrap gap-3">
+                  <Button size="lg" to={resumeTime ? `/film?resume=1` : '/film'} className="min-w-[14rem] justify-center">
+                    {resumeTime ? `Resume the Film at ${formatVideoProgressLabel(resumeTime)}` : 'Watch the Film'}
+                  </Button>
+                </div>
               </div>
-
-              <div className="grid gap-3 sm:grid-cols-2 xl:grid-cols-1">
-                {homeStatsColumn.map((item, index) => {
-                  const Icon = item.icon
-
-                  return (
-                  <motion.div
-                    key={item.label}
-                    initial={{ opacity: 0, y: 24 }}
-                    whileInView={{ opacity: 1, y: 0 }}
-                    viewport={{ once: true }}
-                    transition={{ duration: 0.45, delay: 0.24 + index * 0.07 }}
-                    className="rounded-[1.5rem] border border-white/75 bg-white/82 p-5 shadow-sm backdrop-blur-sm"
-                  >
-                    <div className="flex items-start gap-4">
-                      <div className="mt-0.5 flex h-11 w-11 shrink-0 items-center justify-center rounded-2xl border border-gold-200/70 bg-gold-50 text-gold-600">
-                        <Icon className="h-5 w-5" />
-                      </div>
-                      <div className="min-w-0">
-                        <p className="font-display text-4xl leading-none text-gold-600 sm:text-[2.75rem]">
-                          {item.number}
-                        </p>
-                        <p className="mt-3 text-xs uppercase tracking-[0.28em] text-charcoal-600">
-                          {item.label}
-                        </p>
-                        <p className="mt-3 text-[0.95rem] leading-7 text-charcoal-700">
-                          {item.detail}
-                        </p>
-                      </div>
-                    </div>
-                  </motion.div>
-                )})}
-              </div>
-
             </div>
           </div>
         </motion.div>
       </section>
 
-      {/* Timeline Section - Love Story */}
-      <LoveTimeline />
     </div>
   )
 }

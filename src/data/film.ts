@@ -5,6 +5,13 @@ export interface FilmChapter {
   time: number
 }
 
+export interface FilmGalleryTarget {
+  album: 'Engagement' | 'Bach+ette' | 'Wedding Day' | 'Guest Uploads'
+  searchQuery?: string
+  person?: string
+  ctaLabel?: string
+}
+
 export interface FamilyFilm {
   id: string
   label: string
@@ -12,6 +19,7 @@ export interface FamilyFilm {
   duration: string
   thumbnail: string
   videoSrc: string
+  captionsSrc: string
   previewFrameTimestamps: number[]
 }
 
@@ -30,6 +38,7 @@ export interface FilmWatchPath {
   description: string
   momentSlug?: string
   clipId?: FamilyFilm['id']
+  galleryTarget?: FilmGalleryTarget
 }
 
 export const MAIN_FILM_RUNTIME_LABEL = '45:53'
@@ -53,17 +62,29 @@ export const familyFilms: FamilyFilm[] = [
     label: 'Austin & Heather',
     description: 'The mother-son dance from Austin and Heather, full of the warmth and nerves that made the room go quiet for a second.',
     duration: '5:09',
-    thumbnail: '/images/parents/heather.webp',
+    thumbnail: '/images/parent-film-cards/heather.webp',
     videoSrc: '/video/mom.mp4',
+    captionsSrc: '/video/mom.vtt',
     previewFrameTimestamps: [8, 26, 44, 63],
   },
   {
+    id: 'melony',
+    label: 'Austin & Melony',
+    description: 'Austin and Melony sharing one of the most personal pauses of the reception before the dance floor opened all the way up again.',
+    duration: '4:00',
+    thumbnail: '/images/parent-film-cards/melony.webp',
+    videoSrc: '/video/melony.mp4',
+    captionsSrc: '/video/melony.vtt',
+    previewFrameTimestamps: [6, 18, 31, 44],
+  },
+  {
     id: 'christine',
-    label: 'Jordyn & Chrintine',
-    description: 'Jordyn and Chrintine getting their turn in the spotlight, with the kind of smiles that tell the whole story without a speech.',
+    label: 'Jordyn & Christine',
+    description: 'Jordyn and Christine getting their turn in the spotlight, with the kind of smiles that tell the whole story without a speech.',
     duration: '4:36',
-    thumbnail: '/images/parents/christine.webp',
+    thumbnail: '/images/parent-film-cards/christine.webp',
     videoSrc: '/video/christine.mp4',
+    captionsSrc: '/video/christine.vtt',
     previewFrameTimestamps: [7, 22, 39, 55],
   },
   {
@@ -71,18 +92,10 @@ export const familyFilms: FamilyFilm[] = [
     label: 'Jordyn & Jerame',
     description: 'A father-daughter dance that feels exactly like the heart of the day: proud, emotional, and impossible not to watch all the way through.',
     duration: '4:11',
-    thumbnail: '/images/parents/jerame.webp',
+    thumbnail: '/images/parent-film-cards/jerame.webp',
     videoSrc: '/video/jerame.mp4',
+    captionsSrc: '/video/jerame.vtt',
     previewFrameTimestamps: [6, 19, 34, 48],
-  },
-  {
-    id: 'melony',
-    label: 'Austin & Melony',
-    description: 'Austin and Melony sharing one of the most personal pauses of the reception before the dance floor opened all the way up again.',
-    duration: '4:00',
-    thumbnail: '/images/parents/melony.webp',
-    videoSrc: '/video/melony.mp4',
-    previewFrameTimestamps: [6, 18, 31, 44],
   },
 ]
 
@@ -127,32 +140,69 @@ export const filmWatchPaths: FilmWatchPath[] = [
     label: 'Full film',
     description: 'Start at the beginning and let the whole day unfold without skipping ahead.',
     momentSlug: 'start',
+    galleryTarget: {
+      album: 'Wedding Day',
+      ctaLabel: 'Browse wedding day photos',
+    },
   },
   {
     id: 'ceremony-only',
     label: 'Ceremony only',
     description: 'Jump right into the walk, vows, and the official heartbeat of the day.',
     momentSlug: 'the-ceremony',
+    galleryTarget: {
+      album: 'Wedding Day',
+      searchQuery: 'ceremony vows',
+      ctaLabel: 'Browse ceremony photos',
+    },
   },
   {
     id: 'speeches',
     label: 'Speeches',
     description: 'Go straight to the words people still quote back to us.',
     momentSlug: 'the-reception',
+    galleryTarget: {
+      album: 'Wedding Day',
+      searchQuery: 'reception speeches toast',
+      ctaLabel: 'Browse speech and reception photos',
+    },
   },
   {
     id: 'dancing',
     label: 'Dancing',
     description: 'Start where the floor loosens up and the party starts carrying the night.',
     momentSlug: 'first-dance',
+    galleryTarget: {
+      album: 'Wedding Day',
+      searchQuery: 'first dance dance floor celebration',
+      ctaLabel: 'Browse dance floor photos',
+    },
   },
   {
     id: 'family-moments',
     label: 'Family moments',
     description: 'Open the parent dances first, then move into the quieter emotional beats.',
     clipId: 'mom',
+    galleryTarget: {
+      album: 'Wedding Day',
+      searchQuery: 'family parents dance portraits',
+      ctaLabel: 'Browse family photos',
+    },
   },
 ]
+
+const filmMomentGalleryTargets = new Map<string, FilmGalleryTarget>([
+  ['start', { album: 'Wedding Day', ctaLabel: 'Browse the wedding day gallery' }],
+  ['bachelor-ette', { album: 'Bach+ette', ctaLabel: 'Browse bach+ette photos' }],
+  ['who-is-it', { album: 'Bach+ette', ctaLabel: 'Browse pre-wedding photos' }],
+  ['wedding-party', { album: 'Wedding Day', searchQuery: 'wedding party portraits', ctaLabel: 'Browse wedding party photos' }],
+  ['our-vows', { album: 'Wedding Day', searchQuery: 'vows ceremony', ctaLabel: 'Browse vows and ceremony photos' }],
+  ['the-ceremony', { album: 'Wedding Day', searchQuery: 'ceremony', ctaLabel: 'Browse ceremony photos' }],
+  ['the-reception', { album: 'Wedding Day', searchQuery: 'reception speeches toast', ctaLabel: 'Browse reception photos' }],
+  ['first-dance', { album: 'Wedding Day', searchQuery: 'first dance', ctaLabel: 'Browse first dance photos' }],
+  ['bloopers', { album: 'Guest Uploads', ctaLabel: 'Browse guest uploads' }],
+  ['the-party', { album: 'Guest Uploads', searchQuery: 'dance floor party', ctaLabel: 'Browse guest party photos' }],
+])
 
 function parseTimecode(value: string) {
   const segments = value.trim().split(':').map((segment) => Number.parseFloat(segment))
@@ -205,4 +255,12 @@ export async function loadMainFilmChapters() {
   const parsed = parseMainFilmChapters(text)
 
   return parsed.length > 0 ? parsed : MAIN_FILM_CHAPTERS_FALLBACK
+}
+
+export function getFilmGalleryTargetByMomentSlug(momentSlug?: string | null) {
+  if (!momentSlug) {
+    return null
+  }
+
+  return filmMomentGalleryTargets.get(momentSlug) ?? null
 }

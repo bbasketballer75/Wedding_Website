@@ -195,8 +195,7 @@ export const defaultShortcuts: KeyboardShortcut[] = [
     description: 'Show keyboard shortcuts',
     category: 'Help',
     action: () => {
-      // Would open shortcuts modal
-      console.log('Keyboard shortcuts modal')
+      window.dispatchEvent(new CustomEvent('show-keyboard-shortcuts'))
     },
   },
   {

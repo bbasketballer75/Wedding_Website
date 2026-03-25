@@ -1,6 +1,7 @@
 const OFFLOADED_MEDIA_PREFIXES = ['/video/', '/background_audio/', '/media/']
 const STORAGE_MEDIA_PREFIX = '/media/'
 const DEFAULT_MEDIA_BUCKET = 'wedding-media'
+const DEV_MEDIA_PROXY_PREFIX = '/__media_proxy'
 
 function trimTrailingSlash(value: string): string {
   return value.replace(/\/+$/, '')
@@ -57,6 +58,10 @@ export function getMediaPath(path: string): string {
 
   if (!mediaBaseUrl || !shouldOffload) {
     return path
+  }
+
+  if (import.meta.env.DEV) {
+    return `${DEV_MEDIA_PROXY_PREFIX}/${toRemoteMediaPath(path)}`
   }
 
   return `${mediaBaseUrl}/${toRemoteMediaPath(path)}`

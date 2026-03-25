@@ -53,7 +53,7 @@ async function fetchPhotosByUrls(urls) {
   for (const urlChunk of chunk(urls, PHOTO_LOOKUP_CHUNK_SIZE)) {
     const { data, error } = await supabase
       .from('photos')
-      .select('id, url, album, category, is_professional, album_sort_order')
+      .select('id, url, album, category, is_professional, album_sort_order, download_url')
       .in('url', urlChunk)
 
     if (error) {
@@ -69,7 +69,7 @@ async function fetchPhotosByUrls(urls) {
 async function fetchAllPhotos() {
   const { data, error } = await supabase
     .from('photos')
-    .select('id, url, album, category, is_professional, album_sort_order, created_at')
+    .select('id, url, album, category, is_professional, album_sort_order, created_at, download_url')
 
   if (error) {
     throw error
@@ -128,6 +128,7 @@ async function main() {
       return {
         album,
         url: toSiteMediaPath(row.photoRowDraft.url),
+        download_url: toSiteMediaPath(row.photoRowDraft.download_url ?? row.photoRowDraft.url),
         sourceRelativePath: row.sourceRelativePath,
       }
     })
@@ -183,6 +184,7 @@ async function main() {
       id: existing.id,
       album: manifestEntry.album,
       category: manifestEntry.album,
+      download_url: manifestEntry.download_url,
       album_sort_order:
         currentAlbum === manifestEntry.album && hasSortOrder
           ? existing.album_sort_order
@@ -221,6 +223,7 @@ async function main() {
       id: liveRow.id,
       album: fallbackAlbum,
       category: fallbackAlbum,
+      download_url: liveRow.download_url ?? liveRow.url,
       album_sort_order:
         normalizeAlbum(liveRow.album) === fallbackAlbum && hasSortOrder
           ? liveRow.album_sort_order

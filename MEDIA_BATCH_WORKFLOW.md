@@ -208,23 +208,26 @@ Use this when you want face detection, grouping, and naming to happen outside th
 
 ## Guest Upload Tagging Loop
 
-Use this when approved guest-upload photos should go through the same digiKam workflow and sync back into the live gallery without re-uploading media.
+Use this when approved guest-upload photos should go through the guest face-tagging workflow and then stage a cleanup pass in `/admin/review` without re-uploading media.
 
 1. Approve guest uploads into the gallery from `/admin/photos`.
-2. Use the `Guest Face Tagging` panel in `/admin/photos` to download a zipped guest tagging batch from the live gallery.
-3. Extract that zip locally and open the `organized/` folder in digiKam.
+2. Run `npm run media:guest:tag:export -- "<working-root>"` or use the `Guest Face Tagging` panel in `/admin/photos` to download a guest tagging batch.
+3. Open the extracted `organized/` folder in digiKam.
 4. Detect and recognize faces, confirm names in `People`, and run `Album -> Write Metadata to Files`.
-5. Back in `/admin/photos`, choose the extracted batch files and run the browser-side sync.
-6. Reload the gallery to verify the updated guest face tags and people filters.
+5. Run `npm run media:batch:faces:digikam -- "<working-root>"`.
+6. Run `npm run media:guest:review:push -- "<working-root>"`.
+7. Open `/admin/review` and use the staged guest-upload batch to review, confirm, or clean up names.
+8. Use `Apply Confirmed Faces` in `/admin/review` to write the confirmed names back into the live `photos.faces` metadata.
 
 ### Guest Loop Notes
 
 - the browser export downloads photos from approved `guest_uploads`, not the full wedding archive.
 - the export cross-references the live `photos` table by URL when those guest uploads are already published, so professional imports stay out of this queue.
 - duplicate-only and video-only approvals are skipped automatically.
-- the browser sync updates only the `faces` field on existing guest `photos` rows.
+- `media:guest:review:push` stages guest-upload face review into the same admin review tables used by `/admin/review`.
+- `Apply Confirmed Faces` is now the primary path for pushing confirmed guest names back into the live gallery.
 - this loop is metadata-only; it does not re-upload optimized media objects.
-- the local `media:guest:tag:export`, `media:batch:faces:digikam`, and `media:guest:tag:sync` commands still exist as a fallback path if you ever need them.
+- the local `media:guest:tag:sync` command still exists as a fallback path if you need to bypass `/admin/review` and sync digiKam metadata directly.
 
 ## Notes
 

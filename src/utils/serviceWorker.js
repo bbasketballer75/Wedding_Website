@@ -5,6 +5,7 @@ export class ServiceWorkerManager {
   constructor() {
     this.isOnline = navigator.onLine
     this.listeners = new Map()
+    this.updateHandler = null
 
     // Listen for messages from SW
     if ('serviceWorker' in navigator) {
@@ -68,6 +69,23 @@ export class ServiceWorkerManager {
     this.isOnline = navigator.onLine
     this.notifyListeners('connection-change', { online: this.isOnline })
     return this.isOnline
+  }
+
+  setUpdateHandler(handler) {
+    this.updateHandler = typeof handler === 'function' ? handler : null
+  }
+
+  signalUpdateAvailable() {
+    this.notifyListeners('update-available', { hasUpdate: true })
+  }
+
+  async skipWaiting() {
+    if (this.updateHandler) {
+      await this.updateHandler(true)
+      return
+    }
+
+    window.location.reload()
   }
 
   // Subscribe to push notifications

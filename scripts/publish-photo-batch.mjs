@@ -145,6 +145,7 @@ function normalizePhotoDraft(row) {
   return {
     url: toSiteMediaPath(row.photoRowDraft.url),
     thumbnail: toSiteMediaPath(row.photoRowDraft.thumbnail),
+    download_url: toSiteMediaPath(row.photoRowDraft.download_url ?? row.photoRowDraft.url),
     caption: row.photoRowDraft.caption ?? null,
     album,
     category: album,
@@ -161,6 +162,7 @@ function normalizeExistingPhoto(row) {
   return {
     url: row.url,
     thumbnail: row.thumbnail,
+    download_url: row.download_url ?? row.url,
     caption: row.caption ?? null,
     album: normalizeAlbum(row.album),
     category: row.category ?? null,
@@ -199,7 +201,7 @@ async function fetchExistingPhotos(urls) {
 async function fetchAlbumSortTracker() {
   const { data, error } = await supabase
     .from('photos')
-    .select('album, category, album_sort_order')
+      .select('album, category, album_sort_order')
 
   if (error) {
     throw error

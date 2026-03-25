@@ -3,8 +3,10 @@ import { AnimatePresence, motion } from 'framer-motion'
 import { Suspense, lazy, useEffect } from 'react'
 import { Header } from '@/components/layout/Header'
 import { Footer } from '@/components/layout/Footer'
+import OfflineIndicator from '@/components/ui/OfflineIndicator'
 import { PageLoader } from '@/components/ui/PageLoader'
 import { SkipLink } from '@/components/accessibility/SkipLink'
+import { KeyboardShortcutsModal } from '@/components/accessibility/KeyboardShortcutsModal'
 import { AccessibilityProvider, useAccessibility } from '@/accessibility/AccessibilityProvider'
 import { trackPageView } from '@/services/AnalyticsService'
 
@@ -87,11 +89,13 @@ function AppContent() {
     <div className="min-h-screen bg-cream-50">
       {/* Skip Link for keyboard navigation */}
       <SkipLink />
+      <KeyboardShortcutsModal />
       
       {/* Header with navigation role */}
       {!isHome && !isAdminRoute && (
         <Header />
       )}
+      {!isAdminRoute && <OfflineIndicator />}
       
       {/* Main content area with proper ARIA landmarks */}
       <main

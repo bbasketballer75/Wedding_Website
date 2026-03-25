@@ -3,12 +3,9 @@ import {
   CheckCircle2,
   Eye,
   FolderOpen,
-  Image as ImageIcon,
   RefreshCw,
   Save,
   Tags,
-  Users,
-  UserRoundSearch,
 } from 'lucide-react'
 import { Button } from '@/components/ui/Button'
 import { Input } from '@/components/ui/Input'
@@ -21,6 +18,7 @@ import {
   downloadMediaReviewArtifact,
   fetchMediaReviewBatches,
   fetchMediaReviewFaces,
+  fetchKnownPeopleNames,
   supabase,
   type MediaReviewBatch,
   type MediaReviewBatchStatus,
@@ -28,7 +26,6 @@ import {
   type MediaReviewFaceStatus,
   type Photo as SupabasePhoto,
   type PhotoFace,
-  updateManyMediaReviewFaces,
   updateMediaReviewBatchStatus,
   updateMediaReviewFace,
 } from '@/lib/supabase'
@@ -99,13 +96,21 @@ interface PersonGroup {
   confirmedCount: number
   ignoredCount: number
   clusterCount: number
+  averageQuality: number
 }
 
 const PHOTO_LOOKUP_CHUNK_SIZE = 40
-const PHOTO_LIST_LIMIT = 250
 const PERSON_GROUP_SAMPLE_LIMIT = 60
 
+function isGuestReviewBatch(batch: MediaReviewBatch) {
+  return batch.batch_key.startsWith('guest-review-batch-') || batch.notes === 'Guest upload face review batch'
+}
+
 function toSiteMediaPath(relativePath: string) {
+  if (!relativePath) return ''
+  if (/^https?:\/\//i.test(relativePath) || relativePath.startsWith('/')) {
+    return relativePath
+  }
   return `/media/${relativePath.replace(/^\/+/, '')}`
 }
 
@@ -142,6 +147,10 @@ function getFaceLabel(face: MediaReviewFace) {
 
 function getFacePhotoStatus(face: MediaReviewFace, draft?: FaceDraft) {
   return draft?.reviewStatus || face.review_status
+}
+
+function getDraftFaceLabel(face: MediaReviewFace, draft?: FaceDraft) {
+  return draft?.confirmedName?.trim() || getFaceLabel(face)
 }
 
 function normalizeFaceDraft(face: MediaReviewFace): FaceDraft {
@@ -310,6 +319,7 @@ function buildPersonGroups(faces: MediaReviewFace[]) {
       confirmedCount: 0,
       ignoredCount: 0,
       clusterCount: 0,
+      averageQuality: 0,
     }
 
     current.faceIds.push(face.id)
@@ -326,6 +336,9 @@ function buildPersonGroups(faces: MediaReviewFace[]) {
       ...group,
       faces: [...group.faces].sort(sortFaces),
       clusterCount: new Set(group.faces.map((face) => face.cluster_id).filter(Boolean)).size,
+      averageQuality:
+        group.faces.reduce((total, face) => total + (face.quality_score ?? 0), 0) /
+        Math.max(group.faces.length, 1),
     }))
     .sort((left, right) => {
       if (left.pendingCount !== right.pendingCount) {
@@ -334,6 +347,10 @@ function buildPersonGroups(faces: MediaReviewFace[]) {
 
       if (left.faces.length !== right.faces.length) {
         return right.faces.length - left.faces.length
+      }
+
+      if (left.averageQuality !== right.averageQuality) {
+        return right.averageQuality - left.averageQuality
       }
 
       return left.label.localeCompare(right.label)
@@ -383,23 +400,25 @@ function getOverlayStyle(face: MediaReviewFace) {
 export function MediaReviewPanel() {
   const [batches, setBatches] = useState<MediaReviewBatch[]>([])
   const [faces, setFaces] = useState<MediaReviewFace[]>([])
+  const [knownPeople, setKnownPeople] = useState<string[]>([])
   const [faceDrafts, setFaceDrafts] = useState<Record<string, FaceDraft>>({})
   const [selectedBatchId, setSelectedBatchId] = useState<string | null>(null)
   const [selectedPhotoKey, setSelectedPhotoKey] = useState<string | null>(null)
   const [selectedFaceId, setSelectedFaceId] = useState<string | null>(null)
   const [selectedGroupKey, setSelectedGroupKey] = useState<string | null>(null)
-  const [photoSearch, setPhotoSearch] = useState('')
+  const [selectedGroupFaceId, setSelectedGroupFaceId] = useState<string | null>(null)
   const [personSearch, setPersonSearch] = useState('')
-  const [photoStatusFilter, setPhotoStatusFilter] = useState<'all' | MediaReviewFaceStatus>('pending')
-  const [mode, setMode] = useState<'photos' | 'people'>('photos')
   const [loading, setLoading] = useState(true)
   const [savingKey, setSavingKey] = useState<string | null>(null)
   const [syncingBatchId, setSyncingBatchId] = useState<string | null>(null)
   const [importRows, setImportRows] = useState<ReviewImportManifestRow[]>([])
   const [cropPreviewUrls, setCropPreviewUrls] = useState<Record<string, string>>({})
+  const [showAllGroupSamples, setShowAllGroupSamples] = useState(false)
+  const [showAdvancedTools, setShowAdvancedTools] = useState(false)
+  const [lastSavedSummary, setLastSavedSummary] = useState<string | null>(null)
+  const [photoInspectorOpen, setPhotoInspectorOpen] = useState(false)
   const { addToast } = useToast()
 
-  const deferredPhotoSearch = useDeferredValue(photoSearch)
   const deferredPersonSearch = useDeferredValue(personSearch)
 
   const selectedBatch = useMemo(
@@ -407,52 +426,24 @@ export function MediaReviewPanel() {
     [batches, selectedBatchId],
   )
 
-  const knownPeople = useMemo(
-    () => Array.from(
-      new Set(
-        faces
-          .map((face) => face.confirmed_name?.trim())
-          .filter((value): value is string => Boolean(value)),
-      ),
-    ).sort((left, right) => left.localeCompare(right)),
-    [faces],
-  )
-
   const photoRecords = useMemo(
     () => buildPhotoRecords(faces, importRows),
     [faces, importRows],
   )
 
-  const filteredPhotos = useMemo(() => {
-    const query = deferredPhotoSearch.trim().toLowerCase()
-
-    return photoRecords.filter((photo) => {
-      const matchesStatus =
-        photoStatusFilter === 'all'
-          ? true
-          : photo.faces.some((face) => getFacePhotoStatus(face, faceDrafts[face.id]) === photoStatusFilter)
-
-      if (!matchesStatus) return false
-      if (!query) return true
-
-      return [
-        photo.sourceRelativePath,
-        photo.collection,
-        photo.storyLaneSuggestion,
-      ]
-        .filter(Boolean)
-        .some((value) => String(value).toLowerCase().includes(query))
+  const photoRecordByFaceId = useMemo(() => {
+    const entries: Array<[string, ReviewPhotoRecord]> = []
+    photoRecords.forEach((photo) => {
+      photo.faces.forEach((face) => {
+        entries.push([face.id, photo])
+      })
     })
-  }, [deferredPhotoSearch, faceDrafts, photoRecords, photoStatusFilter])
-
-  const visiblePhotos = useMemo(
-    () => filteredPhotos.slice(0, PHOTO_LIST_LIMIT),
-    [filteredPhotos],
-  )
+    return new Map(entries)
+  }, [photoRecords])
 
   const selectedPhoto = useMemo(
-    () => visiblePhotos.find((photo) => photo.key === selectedPhotoKey) || filteredPhotos.find((photo) => photo.key === selectedPhotoKey) || null,
-    [filteredPhotos, selectedPhotoKey, visiblePhotos],
+    () => photoRecords.find((photo) => photo.key === selectedPhotoKey) || null,
+    [photoRecords, selectedPhotoKey],
   )
 
   const selectedFace = useMemo(
@@ -483,10 +474,20 @@ export function MediaReviewPanel() {
     [filteredGroups, personGroups, selectedGroupKey],
   )
 
+  const selectedGroupFace = useMemo(
+    () => selectedGroup?.faces.find((face) => face.id === selectedGroupFaceId) || selectedGroup?.faces[0] || null,
+    [selectedGroup, selectedGroupFaceId],
+  )
+
+  const selectedGroupPhoto = useMemo(
+    () => (selectedGroupFace ? photoRecordByFaceId.get(selectedGroupFace.id) || null : null),
+    [photoRecordByFaceId, selectedGroupFace],
+  )
+
   const selectedGroupDraft = useMemo(() => {
     if (!selectedGroup) return null
 
-    const firstFace = selectedGroup.faces[0]
+    const firstFace = selectedGroupFace || selectedGroup.faces[0]
     const firstDraft = faceDrafts[firstFace.id] || normalizeFaceDraft(firstFace)
 
     return {
@@ -494,7 +495,43 @@ export function MediaReviewPanel() {
       personKey: firstDraft.personKey || (firstDraft.confirmedName ? slugifyPerson(firstDraft.confirmedName) : ''),
       notes: firstDraft.notes,
     }
-  }, [faceDrafts, selectedGroup])
+  }, [faceDrafts, selectedGroup, selectedGroupFace])
+
+  const changedFaceIds = useMemo(
+    () => faces
+      .filter((face) => {
+        const draft = faceDrafts[face.id]
+        return draft ? draftChanged(face, draft) : false
+      })
+      .map((face) => face.id),
+    [faceDrafts, faces],
+  )
+
+  const changedFaceIdSet = useMemo(
+    () => new Set(changedFaceIds),
+    [changedFaceIds],
+  )
+
+  const changedGroupCount = useMemo(
+    () =>
+      personGroups.filter((group) => group.faceIds.some((faceId) => changedFaceIdSet.has(faceId))).length,
+    [changedFaceIdSet, personGroups],
+  )
+
+  const selectedPhotoChangedFaceIds = useMemo(
+    () => selectedPhoto?.faces.map((face) => face.id).filter((faceId) => changedFaceIdSet.has(faceId)) || [],
+    [changedFaceIdSet, selectedPhoto],
+  )
+
+  const selectedGroupChangedFaceIds = useMemo(
+    () => selectedGroup?.faceIds.filter((faceId) => changedFaceIdSet.has(faceId)) || [],
+    [changedFaceIdSet, selectedGroup],
+  )
+
+  const groupFacesForDisplay = useMemo(() => {
+    if (!selectedGroup) return []
+    return showAllGroupSamples ? selectedGroup.faces : selectedGroup.faces.slice(0, 12)
+  }, [selectedGroup, showAllGroupSamples])
 
   const loadBatches = useCallback(async () => {
     setLoading(true)
@@ -506,9 +543,14 @@ export function MediaReviewPanel() {
       return
     }
 
-    const nextBatches = data || []
+    const nextBatches = (data || []).filter(isGuestReviewBatch)
     setBatches(nextBatches)
-    setSelectedBatchId((current) => current || nextBatches[0]?.id || null)
+    setSelectedBatchId((current) => {
+      if (current && nextBatches.some((batch) => batch.id === current)) {
+        return current
+      }
+      return nextBatches[0]?.id || null
+    })
     setLoading(false)
   }, [addToast])
 
@@ -534,6 +576,9 @@ export function MediaReviewPanel() {
     setSelectedPhotoKey((current) => current || nextPhotos[0]?.key || null)
     setSelectedFaceId((current) => current || nextPhotos[0]?.faces[0]?.id || null)
     setSelectedGroupKey((current) => current || nextGroups[0]?.key || null)
+    setSelectedGroupFaceId((current) => current || nextGroups[0]?.faces[0]?.id || null)
+    setShowAllGroupSamples(false)
+    setLastSavedSummary(null)
   }, [addToast])
 
   useEffect(() => {
@@ -543,6 +588,21 @@ export function MediaReviewPanel() {
 
     return () => window.clearTimeout(timeoutId)
   }, [loadBatches])
+
+  useEffect(() => {
+    const timeoutId = window.setTimeout(() => {
+      async function loadKnownPeople() {
+        const { data, error } = await fetchKnownPeopleNames()
+        if (!error && data) {
+          setKnownPeople(data)
+        }
+      }
+
+      void loadKnownPeople()
+    }, 0)
+
+    return () => window.clearTimeout(timeoutId)
+  }, [])
 
   useEffect(() => {
     if (!selectedBatch) return
@@ -555,7 +615,7 @@ export function MediaReviewPanel() {
   }, [loadBatchDetails, selectedBatch])
 
   useEffect(() => {
-    const facesToPreview = mode === 'photos'
+    const facesToPreview = photoInspectorOpen
       ? selectedPhoto?.faces || []
       : selectedGroup?.faces.slice(0, PERSON_GROUP_SAMPLE_LIMIT) || []
 
@@ -596,20 +656,31 @@ export function MediaReviewPanel() {
       disposed = true
       window.clearTimeout(timeoutId)
     }
-  }, [mode, selectedBatch, selectedGroup, selectedPhoto])
+  }, [photoInspectorOpen, selectedBatch, selectedGroup, selectedPhoto])
 
   useEffect(() => {
-    if (!selectedPhoto && filteredPhotos[0]) {
-      setSelectedPhotoKey(filteredPhotos[0].key)
-      setSelectedFaceId(filteredPhotos[0].faces[0]?.id || null)
+    if (!selectedPhoto && photoRecords[0]) {
+      setSelectedPhotoKey(photoRecords[0].key)
+      setSelectedFaceId(photoRecords[0].faces[0]?.id || null)
     }
-  }, [filteredPhotos, selectedPhoto])
+  }, [photoRecords, selectedPhoto])
 
   useEffect(() => {
     if (!selectedGroup && filteredGroups[0]) {
       setSelectedGroupKey(filteredGroups[0].key)
     }
   }, [filteredGroups, selectedGroup])
+
+  useEffect(() => {
+    if (!selectedGroup) {
+      setSelectedGroupFaceId(null)
+      return
+    }
+
+    if (!selectedGroupFace || !selectedGroup.faces.some((face) => face.id === selectedGroupFace.id)) {
+      setSelectedGroupFaceId(selectedGroup.faces[0]?.id || null)
+    }
+  }, [selectedGroup, selectedGroupFace])
 
   function updateDraft(faceId: string, patch: Partial<FaceDraft>) {
     const face = faces.find((item) => item.id === faceId)
@@ -627,6 +698,24 @@ export function MediaReviewPanel() {
     }))
   }
 
+  function updateFacesDrafts(faceIds: string[], patch: Partial<FaceDraft>) {
+    faceIds.forEach((faceId) => {
+      updateDraft(faceId, patch)
+    })
+  }
+
+  function resetFaces(faceIds: string[]) {
+    setFaceDrafts((prev) => ({
+      ...prev,
+      ...Object.fromEntries(
+        faceIds
+          .map((faceId) => faces.find((face) => face.id === faceId))
+          .filter((face): face is MediaReviewFace => Boolean(face))
+          .map((face) => [face.id, normalizeFaceDraft(face)]),
+      ),
+    }))
+  }
+
   function replaceFaces(updatedFaces: MediaReviewFace[]) {
     const updatedById = new Map(updatedFaces.map((face) => [face.id, face]))
     setFaces((prev) => prev.map((face) => updatedById.get(face.id) || face))
@@ -634,6 +723,23 @@ export function MediaReviewPanel() {
       ...prev,
       ...Object.fromEntries(updatedFaces.map((face) => [face.id, normalizeFaceDraft(face)])),
     }))
+  }
+
+  function stageGroupStatus(status: MediaReviewFaceStatus) {
+    if (!selectedGroup) return
+
+    updateFacesDrafts(
+      selectedGroup.faceIds,
+      {
+        reviewStatus: status,
+      },
+    )
+  }
+
+  function openFaceInPhotoReview(face: MediaReviewFace) {
+    setSelectedPhotoKey(face.source_record_id || face.photo_url || face.face_id)
+    setSelectedFaceId(face.id)
+    setPhotoInspectorOpen(true)
   }
 
   async function saveFaces(faceIds: string[]) {
@@ -682,42 +788,15 @@ export function MediaReviewPanel() {
       }
 
       replaceFaces(savedFaces)
+      setLastSavedSummary(
+        `Saved ${savedFaces.length} change${savedFaces.length === 1 ? '' : 's'} at ${new Date().toLocaleTimeString([], { hour: 'numeric', minute: '2-digit' })}.`,
+      )
       addToast(`Saved ${savedFaces.length} face review change${savedFaces.length === 1 ? '' : 's'}.`, 'success')
     } catch {
       addToast('Could not save those face review changes.', 'error')
     } finally {
       setSavingKey(null)
     }
-  }
-
-  async function handleApplyGroupDecision(status: MediaReviewFaceStatus) {
-    if (!selectedGroup || !selectedGroupDraft) return
-
-    if (status === 'confirmed' && !selectedGroupDraft.confirmedName.trim()) {
-      addToast('Confirmed people groups need a person name before saving.', 'warning')
-      return
-    }
-
-    const confirmedName = selectedGroupDraft.confirmedName.trim()
-    const personKey = selectedGroupDraft.personKey.trim() || (confirmedName ? slugifyPerson(confirmedName) : '')
-
-    setSavingKey(selectedGroup.key)
-    const { data, error } = await updateManyMediaReviewFaces(selectedGroup.faceIds, {
-      reviewStatus: status,
-      confirmedName: confirmedName || null,
-      personKey: personKey || null,
-      notes: selectedGroupDraft.notes.trim() || null,
-    })
-
-    if (error || !data) {
-      addToast('Could not apply the bulk group change.', 'error')
-      setSavingKey(null)
-      return
-    }
-
-    replaceFaces(data)
-    addToast(`Updated ${data.length} face${data.length === 1 ? '' : 's'} in this group.`, 'success')
-    setSavingKey(null)
   }
 
   async function handleBatchStatusChange(batch: MediaReviewBatch, status: MediaReviewBatchStatus) {
@@ -881,275 +960,496 @@ export function MediaReviewPanel() {
     setSyncingBatchId(null)
   }
 
+  const pendingFaceCount = faces.filter((face) => face.review_status === 'pending').length
+  const selectedFaceDraft = selectedFace ? faceDrafts[selectedFace.id] || normalizeFaceDraft(selectedFace) : null
+  const selectedPhotoSaveKey = selectedPhoto?.faces.map((face) => face.id).join(':') || null
+  const selectedGroupSaveKey = selectedGroup?.faceIds.join(':') || null
+
   if (loading) {
     return <div className="rounded-xl border border-gold-100 bg-white p-8 text-center text-charcoal-500">Loading review batches…</div>
   }
 
   return (
-    <div className="space-y-6">
-      <div className="space-y-2">
-        <h2 className="text-2xl font-display text-charcoal-900">People Review</h2>
-        <p className="max-w-3xl text-sm leading-6 text-charcoal-500">
-          Review faces by photo first, then clean up person groups in bulk. Confirmed names stay private until you intentionally apply them back into the live gallery.
-        </p>
-      </div>
-
-      <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-4">
-        <div className="rounded-xl border border-gold-100 bg-white p-5 shadow-sm">
-          <p className="text-sm text-charcoal-500">Review batches</p>
-          <p className="mt-2 text-3xl font-display text-charcoal-900">{batches.length}</p>
-        </div>
-        <div className="rounded-xl border border-gold-100 bg-white p-5 shadow-sm">
-          <p className="text-sm text-charcoal-500">Photos in batch</p>
-          <p className="mt-2 text-3xl font-display text-charcoal-900">{photoRecords.length}</p>
-        </div>
-        <div className="rounded-xl border border-gold-100 bg-white p-5 shadow-sm">
-          <p className="text-sm text-charcoal-500">Pending faces</p>
-          <p className="mt-2 text-3xl font-display text-charcoal-900">
-            {faces.filter((face) => face.review_status === 'pending').length}
-          </p>
-        </div>
-        <div className="rounded-xl border border-gold-100 bg-white p-5 shadow-sm">
-          <p className="text-sm text-charcoal-500">Confirmed people</p>
-          <p className="mt-2 text-3xl font-display text-charcoal-900">{knownPeople.length}</p>
-        </div>
-      </div>
-
-      <div className="grid gap-6 xl:grid-cols-[18rem_minmax(0,1fr)]">
-        <div className="rounded-xl border border-gold-100 bg-white p-4 shadow-sm">
-          <div className="mb-4 flex items-center justify-between">
-            <h3 className="text-lg font-medium text-charcoal-900">Batches</h3>
-            <Button size="sm" variant="secondary" onClick={() => void loadBatches()}>
-              <RefreshCw className="mr-2 h-4 w-4" />
-              Refresh
-            </Button>
-          </div>
-
-          <div className="space-y-3">
-            {batches.map((batch) => {
-              const isActive = batch.id === selectedBatchId
-
-              return (
-                <button
-                  key={batch.id}
-                  type="button"
-                  onClick={() => {
-                    setSelectedBatchId(batch.id)
-                    setSelectedPhotoKey(null)
-                    setSelectedFaceId(null)
-                    setSelectedGroupKey(null)
-                    setCropPreviewUrls({})
-                  }}
-                  className={cn(
-                    'w-full rounded-xl border p-4 text-left transition-colors',
-                    isActive
-                      ? 'border-gold-400 bg-gold-50'
-                      : 'border-gold-100 bg-white hover:bg-cream-50',
-                  )}
-                >
-                  <div className="flex items-start justify-between gap-3">
-                    <div>
-                      <p className="text-sm font-medium text-charcoal-900">{batch.label}</p>
-                      <p className="mt-1 text-xs uppercase tracking-[0.22em] text-charcoal-400">{batch.status.replace('_', ' ')}</p>
-                    </div>
-                    <Users className="h-4 w-4 text-charcoal-400" />
-                  </div>
-                  <p className="mt-3 text-xs text-charcoal-500">
-                    {batch.cluster_count} clusters · {batch.detection_count} detections
-                  </p>
-                </button>
-              )
-            })}
-
-            {batches.length === 0 && (
-              <div className="rounded-xl border border-dashed border-gold-200 p-5 text-sm text-charcoal-500">
-                No staged review batches yet. Run `npm run media:batch:review:push -- &lt;working-root&gt;` after the face-enrichment and export steps.
-              </div>
-            )}
-          </div>
-        </div>
-
-        <div className="space-y-6">
-          {selectedBatch ? (
-            <>
-              <div className="rounded-xl border border-gold-100 bg-white p-5 shadow-sm">
-                <div className="flex flex-col gap-4 lg:flex-row lg:items-start lg:justify-between">
-                  <div>
-                    <h3 className="text-lg font-medium text-charcoal-900">{selectedBatch.label}</h3>
-                    <p className="mt-1 text-sm text-charcoal-500">
-                      {faces.length} staged faces across {photoRecords.length} photos. Use photo review for accuracy, then clean up people groups in bulk.
-                    </p>
-                  </div>
-
-                  <div className="flex flex-wrap gap-2">
-                    <Button
-                      size="sm"
-                      variant="secondary"
-                      onClick={() => void handleBatchStatusChange(selectedBatch, 'pending')}
+    <div className="space-y-4">
+      {selectedBatch ? (
+        <>
+          <section className="rounded-[1.4rem] border border-gold-100 bg-white p-4 shadow-sm">
+            <div className="flex flex-col gap-4 xl:flex-row xl:items-center xl:justify-between">
+              <div className="grid gap-4 lg:grid-cols-[18rem_minmax(0,1fr)] xl:min-w-0 xl:flex-1">
+                <div>
+                  <label htmlFor="review-batch-picker" className="mb-2 block text-[11px] uppercase tracking-[0.28em] text-charcoal-500">
+                    Review batch
+                  </label>
+                  <div className="flex gap-2">
+                    <select
+                      id="review-batch-picker"
+                      value={selectedBatchId || ''}
+                      onChange={(event) => {
+                        setSelectedBatchId(event.target.value || null)
+                        setSelectedPhotoKey(null)
+                        setSelectedFaceId(null)
+                        setSelectedGroupKey(null)
+                        setSelectedGroupFaceId(null)
+                        setCropPreviewUrls({})
+                        setPhotoInspectorOpen(false)
+                      }}
+                      className="h-11 min-w-0 flex-1 rounded-full border border-gold-200/70 bg-white px-4 text-sm text-charcoal-900 outline-none transition focus:border-gold-500 focus:ring-2 focus:ring-gold-500/20"
                     >
-                      <Eye className="mr-2 h-4 w-4" />
-                      Mark Pending
-                    </Button>
-                    <Button
-                      size="sm"
-                      variant="secondary"
-                      onClick={() => void handleSyncManifestMetadata(selectedBatch)}
-                      disabled={syncingBatchId === selectedBatch.id}
-                    >
-                      <Tags className="mr-2 h-4 w-4" />
-                      Sync Metadata
-                    </Button>
-                    <Button
-                      size="sm"
-                      onClick={() => void handleApplyConfirmedFaces(selectedBatch)}
-                      disabled={syncingBatchId === selectedBatch.id}
-                    >
-                      <CheckCircle2 className="mr-2 h-4 w-4" />
-                      Apply Confirmed Faces
+                      {batches.map((batch) => (
+                        <option key={batch.id} value={batch.id}>
+                          {batch.label}
+                        </option>
+                      ))}
+                    </select>
+                    <Button size="sm" variant="secondary" onClick={() => void loadBatches()}>
+                      <RefreshCw className="mr-2 h-4 w-4" />
+                      Refresh
                     </Button>
                   </div>
                 </div>
+
+                <div className="grid gap-3 rounded-[1rem] border border-gold-100 bg-cream-50/70 px-4 py-3 text-sm text-charcoal-600 sm:grid-cols-2 xl:grid-cols-4">
+                  <div>
+                    <p className="text-[11px] uppercase tracking-[0.22em] text-charcoal-400">Status</p>
+                    <p className="mt-1 font-medium text-charcoal-900">{selectedBatch.status.replace('_', ' ')}</p>
+                  </div>
+                  <div>
+                    <p className="text-[11px] uppercase tracking-[0.22em] text-charcoal-400">Pending faces</p>
+                    <p className="mt-1 font-medium text-charcoal-900">{pendingFaceCount}</p>
+                  </div>
+                  <div>
+                    <p className="text-[11px] uppercase tracking-[0.22em] text-charcoal-400">Groups touched</p>
+                    <p className="mt-1 font-medium text-charcoal-900">{changedGroupCount}</p>
+                  </div>
+                  <div>
+                    <p className="text-[11px] uppercase tracking-[0.22em] text-charcoal-400">Last save</p>
+                    <p className="mt-1 font-medium text-charcoal-900">{lastSavedSummary || 'No changes saved yet'}</p>
+                  </div>
+                </div>
               </div>
+
+              <div className="flex flex-wrap items-center gap-2 xl:justify-end">
+                <div className="rounded-full border border-gold-200 bg-white px-4 py-2 text-sm text-charcoal-600">
+                  {changedFaceIds.length} unsaved face change{changedFaceIds.length === 1 ? '' : 's'}
+                </div>
+                <Button
+                  size="sm"
+                  onClick={() => {
+                    if (selectedGroup) void saveFaces(selectedGroup.faceIds)
+                  }}
+                  disabled={!selectedGroup || selectedGroupChangedFaceIds.length === 0 || savingKey === selectedGroupSaveKey}
+                >
+                  <Save className="mr-2 h-4 w-4" />
+                  Save Group Changes
+                </Button>
+                <Button
+                  size="sm"
+                  variant="secondary"
+                  onClick={() => {
+                    if (selectedGroup) resetFaces(selectedGroup.faceIds)
+                  }}
+                  disabled={!selectedGroup || selectedGroupChangedFaceIds.length === 0}
+                >
+                  Reset Unsaved Changes
+                </Button>
+              </div>
+            </div>
+
+            <details
+              className="mt-4 rounded-[1rem] border border-gold-100 bg-cream-50/70 p-4"
+              open={showAdvancedTools}
+              onToggle={(event) => setShowAdvancedTools(event.currentTarget.open)}
+            >
+              <summary className="cursor-pointer list-none text-sm font-medium text-charcoal-900">
+                Advanced batch tools
+              </summary>
+              <div className="mt-4 flex flex-wrap gap-2">
+                <Button size="sm" variant="secondary" onClick={() => void handleBatchStatusChange(selectedBatch, 'pending')}>
+                  <Eye className="mr-2 h-4 w-4" />
+                  Mark Pending
+                </Button>
+                <Button
+                  size="sm"
+                  variant="secondary"
+                  onClick={() => void handleSyncManifestMetadata(selectedBatch)}
+                  disabled={syncingBatchId === selectedBatch.id}
+                >
+                  <Tags className="mr-2 h-4 w-4" />
+                  Sync Metadata
+                </Button>
+                <Button
+                  size="sm"
+                  onClick={() => void handleApplyConfirmedFaces(selectedBatch)}
+                  disabled={syncingBatchId === selectedBatch.id}
+                >
+                  <CheckCircle2 className="mr-2 h-4 w-4" />
+                  Apply Confirmed Faces
+                </Button>
+              </div>
+            </details>
+          </section>
               {faces.length === 0 ? (
                 <div className="rounded-xl border border-dashed border-gold-200 bg-white p-8 text-sm text-charcoal-500">
-                  This batch does not have staged per-face review rows yet. Re-run the review push after exporting the manifest so the photo-first review workspace has face data to work with.
+                  This batch does not have staged per-face review rows yet. Re-run the review push after exporting the manifest so the people queue has real faces to review.
                 </div>
               ) : (
                 <>
-                  <div className="flex flex-wrap gap-2">
-                    <button
-                      type="button"
-                      onClick={() => setMode('photos')}
-                      className={cn(
-                        'rounded-full px-4 py-2 text-sm transition-colors',
-                        mode === 'photos'
-                          ? 'bg-gold-500 text-white'
-                          : 'border border-gold-200 bg-white text-charcoal-600 hover:bg-gold-50',
-                      )}
-                    >
-                      <ImageIcon className="mr-2 inline h-4 w-4" />
-                      Photo Review
-                    </button>
-                    <button
-                      type="button"
-                      onClick={() => setMode('people')}
-                      className={cn(
-                        'rounded-full px-4 py-2 text-sm transition-colors',
-                        mode === 'people'
-                          ? 'bg-gold-500 text-white'
-                          : 'border border-gold-200 bg-white text-charcoal-600 hover:bg-gold-50',
-                      )}
-                    >
-                      <UserRoundSearch className="mr-2 inline h-4 w-4" />
-                      Person Groups
-                    </button>
-                  </div>
-
-                  {mode === 'photos' ? (
                     <div className="grid gap-6 xl:grid-cols-[21rem_minmax(0,1fr)]">
                       <div className="rounded-xl border border-gold-100 bg-white p-5 shadow-sm">
                         <div className="space-y-4">
                           <div>
-                            <h3 className="text-lg font-medium text-charcoal-900">Photo Queue</h3>
+                            <h3 className="text-lg font-medium text-charcoal-900">People Queue</h3>
                             <p className="mt-1 text-sm text-charcoal-500">
-                              Start with images that still have pending faces. Exact duplicate photos have already been filtered out of this queue.
+                              Start with the biggest pending groups, then open the full photo only when the samples are not enough.
                             </p>
                           </div>
 
                           <Input
-                            value={photoSearch}
-                            onChange={(event) => setPhotoSearch(event.target.value)}
-                            placeholder="Search file path or collection"
+                            value={personSearch}
+                            onChange={(event) => setPersonSearch(event.target.value)}
+                            placeholder="Search person name, cluster, or photo path"
                           />
-
-                          <select
-                            value={photoStatusFilter}
-                            onChange={(event) => setPhotoStatusFilter(event.target.value as 'all' | MediaReviewFaceStatus)}
-                            className="h-11 w-full rounded-full border border-gold-200/70 bg-white px-4 text-sm text-charcoal-900 outline-none transition focus:border-gold-500 focus:ring-2 focus:ring-gold-500/20"
-                          >
-                            <option value="pending">Pending faces first</option>
-                            <option value="confirmed">Confirmed only</option>
-                            <option value="ignored">Ignored only</option>
-                            <option value="all">All photos</option>
-                          </select>
                         </div>
 
                         <div className="mt-5 space-y-3">
-                          {visiblePhotos.map((photo) => {
-                            const isActive = selectedPhoto?.key === photo.key
+                          {filteredGroups.map((group) => {
+                            const isActive = selectedGroup?.key === group.key
 
                             return (
                               <button
-                                key={photo.key}
+                                key={group.key}
                                 type="button"
                                 onClick={() => {
-                                  setSelectedPhotoKey(photo.key)
-                                  setSelectedFaceId(photo.faces[0]?.id || null)
+                                  setSelectedGroupKey(group.key)
+                                  setSelectedGroupFaceId(group.faces[0]?.id || null)
+                                  setShowAllGroupSamples(false)
                                 }}
                                 className={cn(
-                                  'grid w-full gap-3 rounded-xl border p-3 text-left transition-colors md:grid-cols-[4.5rem_minmax(0,1fr)]',
+                                  'w-full rounded-xl border p-4 text-left transition-colors',
                                   isActive
                                     ? 'border-gold-400 bg-gold-50'
                                     : 'border-gold-100 bg-white hover:bg-cream-50',
                                 )}
                               >
-                                <div className="overflow-hidden rounded-lg bg-cream-100">
-                                  {photo.thumbnailUrl ? (
-                                    <img
-                                      src={resolveReviewMediaPath(photo.thumbnailUrl)}
-                                      alt={photo.sourceRelativePath}
-                                      className="h-[4.5rem] w-full object-cover"
-                                      loading="lazy"
-                                    />
-                                  ) : (
-                                    <div className="flex h-[4.5rem] items-center justify-center text-xs text-charcoal-400">No preview</div>
-                                  )}
+                                <div className="flex items-start justify-between gap-3">
+                                  <div>
+                                    <p className="text-sm font-medium text-charcoal-900">{group.label}</p>
+                                    <p className="mt-1 text-xs text-charcoal-500">
+                                      {group.pendingCount} pending · {group.faces.length} faces · quality {group.averageQuality.toFixed(1)}
+                                    </p>
+                                  </div>
+                                  <FolderOpen className="h-4 w-4 text-charcoal-400" />
                                 </div>
-                                <div className="min-w-0">
-                                  <p className="truncate text-sm font-medium text-charcoal-900">{photo.sourceRelativePath}</p>
-                                  <p className="mt-1 text-xs text-charcoal-500">
-                                    {photo.pendingCount} pending · {photo.confirmedCount} confirmed · {photo.ignoredCount} ignored
-                                  </p>
-                                  <p className="mt-2 text-[11px] uppercase tracking-[0.24em] text-charcoal-400">
-                                    {photo.collection}
-                                  </p>
+                                <div className="mt-3 flex flex-wrap gap-2 text-[11px] uppercase tracking-[0.18em] text-charcoal-400">
+                                  <span>{group.clusterCount} cluster{group.clusterCount === 1 ? '' : 's'}</span>
+                                  {group.faceIds.some((faceId) => changedFaceIdSet.has(faceId)) ? <span>unsaved edits</span> : null}
                                 </div>
                               </button>
                             )
                           })}
-
-                          {filteredPhotos.length > PHOTO_LIST_LIMIT && (
-                            <p className="rounded-xl border border-dashed border-gold-200 px-4 py-3 text-xs text-charcoal-500">
-                              Showing the first {PHOTO_LIST_LIMIT} photos that match this filter. Narrow the search to focus the queue further.
-                            </p>
-                          )}
                         </div>
                       </div>
-
                       <div className="rounded-xl border border-gold-100 bg-white p-5 shadow-sm">
-                        {selectedPhoto ? (
+                        {selectedGroup && selectedGroupDraft ? (
                           <div className="space-y-5">
                             <div className="flex flex-col gap-3 lg:flex-row lg:items-start lg:justify-between">
                               <div>
-                                <h3 className="text-lg font-medium text-charcoal-900">{selectedPhoto.sourceRelativePath}</h3>
+                                <h3 className="text-lg font-medium text-charcoal-900">{selectedGroup.label}</h3>
                                 <p className="mt-1 text-sm text-charcoal-500">
-                                  {selectedPhoto.collection}
-                                  {selectedPhoto.storyLaneSuggestion ? ` · ${selectedPhoto.storyLaneSuggestion}` : ''}
-                                  {selectedPhoto.duplicateGroupId ? ' · deduped source group kept' : ''}
+                                  {selectedGroup.faces.length} faces grouped here across {selectedGroup.clusterCount} suggested cluster{selectedGroup.clusterCount === 1 ? '' : 's'}.
                                 </p>
                               </div>
 
-                              <Button
-                                size="sm"
-                                onClick={() => void saveFaces(selectedPhoto.faces.map((face) => face.id))}
-                                disabled={savingKey === selectedPhoto.faces.map((face) => face.id).join(':')}
-                              >
-                                <Save className="mr-2 h-4 w-4" />
-                                Save Photo Faces
-                              </Button>
+                              <div className="flex flex-wrap gap-2">
+                                <Button
+                                  size="sm"
+                                  variant="secondary"
+                                  onClick={() => stageGroupStatus('pending')}
+                                >
+                                  Return To Pending
+                                </Button>
+                                <Button
+                                  size="sm"
+                                  variant="secondary"
+                                  onClick={() => stageGroupStatus('ignored')}
+                                >
+                                  Ignore
+                                </Button>
+                                <Button
+                                  size="sm"
+                                  onClick={() => stageGroupStatus('confirmed')}
+                                >
+                                  Confirm
+                                </Button>
+                              </div>
                             </div>
 
-                            <div className="overflow-hidden rounded-[1.5rem] border border-gold-100 bg-charcoal-950">
+                            <div className="grid gap-6">
+                              <div className="space-y-5">
+                                <div className="grid gap-4 md:grid-cols-[10rem_minmax(0,1fr)]">
+                                  <div className="overflow-hidden rounded-[1.4rem] border border-gold-100 bg-cream-50">
+                                    {selectedGroupFace && cropPreviewUrls[selectedGroupFace.id] ? (
+                                      <img
+                                        src={cropPreviewUrls[selectedGroupFace.id]}
+                                        alt={getDraftFaceLabel(selectedGroupFace, faceDrafts[selectedGroupFace.id])}
+                                        className="aspect-square h-full w-full object-cover"
+                                      />
+                                    ) : (
+                                      <div className="flex aspect-square items-center justify-center text-xs text-charcoal-400">No crop</div>
+                                    )}
+                                  </div>
+
+                                  <div className="space-y-4 rounded-[1.4rem] border border-gold-100 bg-cream-50/70 p-4">
+                                    <div className="grid gap-4 md:grid-cols-2">
+                                      <div>
+                                        <label htmlFor="group-name" className="mb-2 block text-xs uppercase tracking-[0.22em] text-charcoal-500">
+                                          Confirmed name
+                                        </label>
+                                        <Input
+                                          id="group-name"
+                                          list="known-people-options"
+                                          value={selectedGroupDraft.confirmedName}
+                                          onChange={(event) => {
+                                            const confirmedName = event.target.value
+                                            updateFacesDrafts(selectedGroup.faceIds, {
+                                              confirmedName,
+                                              personKey: confirmedName ? slugifyPerson(confirmedName) : '',
+                                            })
+                                          }}
+                                          placeholder="Austin"
+                                        />
+                                      </div>
+
+                                      <div className="rounded-xl border border-gold-100 bg-white px-4 py-3 text-sm text-charcoal-500">
+                                        <p className="text-xs uppercase tracking-[0.22em] text-charcoal-400">Unsaved in this group</p>
+                                        <p className="mt-1 text-lg font-medium text-charcoal-900">{selectedGroupChangedFaceIds.length}</p>
+                                      </div>
+                                    </div>
+
+                                    <div className="flex flex-wrap gap-2">
+                                      <Button
+                                        size="sm"
+                                        onClick={() => void saveFaces(selectedGroup.faceIds)}
+                                        disabled={savingKey === selectedGroup.faceIds.join(':')}
+                                      >
+                                        <Save className="mr-2 h-4 w-4" />
+                                        Save Group Changes
+                                      </Button>
+                                      <Button
+                                        size="sm"
+                                        variant="secondary"
+                                        onClick={() => resetFaces(selectedGroup.faceIds)}
+                                        disabled={selectedGroupChangedFaceIds.length === 0}
+                                      >
+                                        Reset Unsaved Changes
+                                      </Button>
+                                      {selectedGroupFace ? (
+                                        <Button size="sm" variant="secondary" onClick={() => openFaceInPhotoReview(selectedGroupFace)}>
+                                          Open Photo Inspector
+                                        </Button>
+                                      ) : null}
+                                    </div>
+                                  </div>
+                                </div>
+
+                                <div className="rounded-[1.4rem] border border-gold-100 bg-white p-4">
+                                  <div className="flex flex-wrap items-center justify-between gap-3">
+                                    <div>
+                                      <h4 className="text-sm font-medium text-charcoal-900">Sample Faces</h4>
+                                      <p className="mt-1 text-xs text-charcoal-500">
+                                        Review the strongest examples first, then open the full photo only for ambiguous faces.
+                                      </p>
+                                    </div>
+                                    <div className="flex flex-wrap gap-2">
+                                      <Button
+                                        size="sm"
+                                        variant="secondary"
+                                        onClick={() => {
+                                          if (!selectedGroupFace) return
+                                          const currentIndex = selectedGroup.faces.findIndex((face) => face.id === selectedGroupFace.id)
+                                          const previousFace = selectedGroup.faces[Math.max(0, currentIndex - 1)]
+                                          if (previousFace) setSelectedGroupFaceId(previousFace.id)
+                                        }}
+                                      >
+                                        Previous
+                                      </Button>
+                                      <Button
+                                        size="sm"
+                                        variant="secondary"
+                                        onClick={() => {
+                                          if (!selectedGroupFace) return
+                                          const currentIndex = selectedGroup.faces.findIndex((face) => face.id === selectedGroupFace.id)
+                                          const nextFace = selectedGroup.faces[Math.min(selectedGroup.faces.length - 1, currentIndex + 1)]
+                                          if (nextFace) setSelectedGroupFaceId(nextFace.id)
+                                        }}
+                                      >
+                                        Next
+                                      </Button>
+                                      {selectedGroup.faces.length > 12 ? (
+                                        <Button size="sm" variant="secondary" onClick={() => setShowAllGroupSamples((current) => !current)}>
+                                          {showAllGroupSamples ? 'Show Fewer' : `View More (${selectedGroup.faces.length})`}
+                                        </Button>
+                                      ) : null}
+                                    </div>
+                                  </div>
+
+                                  <div className="mt-4 grid gap-4 sm:grid-cols-2 xl:grid-cols-3">
+                                    {groupFacesForDisplay.map((face) => {
+                                      const draft = faceDrafts[face.id] || normalizeFaceDraft(face)
+                                      const isActive = selectedGroupFace?.id === face.id
+                                      const samplePhoto = photoRecordByFaceId.get(face.id) || null
+
+                                      return (
+                                        <button
+                                          key={face.id}
+                                          type="button"
+                                          onClick={() => setSelectedGroupFaceId(face.id)}
+                                          className={cn(
+                                            'overflow-hidden rounded-[1.3rem] border text-left transition-colors',
+                                            isActive ? 'border-gold-400 bg-gold-50' : 'border-gold-100 bg-cream-50/60 hover:bg-cream-50',
+                                          )}
+                                        >
+                                          <div className="aspect-square overflow-hidden bg-white">
+                                            {cropPreviewUrls[face.id] ? (
+                                              <img
+                                                src={cropPreviewUrls[face.id]}
+                                                alt={getDraftFaceLabel(face, draft)}
+                                                className="h-full w-full object-cover"
+                                              />
+                                            ) : samplePhoto?.thumbnailUrl || samplePhoto?.photoUrl ? (
+                                              <img
+                                                src={resolveReviewMediaPath(samplePhoto.thumbnailUrl || samplePhoto.photoUrl)}
+                                                alt={samplePhoto?.sourceRelativePath || getDraftFaceLabel(face, draft)}
+                                                className="h-full w-full object-cover"
+                                              />
+                                            ) : (
+                                              <div className="flex h-full items-center justify-center text-xs text-charcoal-400">No preview</div>
+                                            )}
+                                          </div>
+                                          <div className="space-y-2 p-4">
+                                            <div className="flex items-start justify-between gap-2">
+                                              <p className="truncate text-sm font-medium text-charcoal-900">{getDraftFaceLabel(face, draft)}</p>
+                                              <span className={cn('inline-flex rounded-full border px-2 py-1 text-[10px] uppercase tracking-[0.18em]', getStatusBadgeClasses(draft.reviewStatus))}>
+                                                {draft.reviewStatus}
+                                              </span>
+                                            </div>
+                                            <p className="text-[11px] uppercase tracking-[0.18em] text-charcoal-400">
+                                              Face crop from confirmed metadata
+                                            </p>
+                                            <p className="truncate text-xs text-charcoal-500">{face.source_relative_path || 'Unknown source'}</p>
+                                          </div>
+                                        </button>
+                                      )
+                                    })}
+                                  </div>
+                                </div>
+                              </div>
+
+                              <div className="space-y-4">
+                                <div className="rounded-[1.4rem] border border-gold-100 bg-cream-50/70 p-4">
+                                  <div className="flex items-start justify-between gap-3">
+                                    <div>
+                                      <h4 className="text-sm font-medium text-charcoal-900">Source Photo</h4>
+                                      <p className="mt-1 text-xs text-charcoal-500">
+                                        Face metadata stays primary here. Use the larger image only when you need extra context for the selected crop.
+                                      </p>
+                                    </div>
+                                    {selectedGroupFace ? (
+                                      <Button size="sm" variant="secondary" onClick={() => openFaceInPhotoReview(selectedGroupFace)}>
+                                        Open Photo Inspector
+                                      </Button>
+                                    ) : null}
+                                  </div>
+                                  <div className="mt-4 overflow-hidden rounded-[1.2rem] border border-gold-100 bg-charcoal-950">
+                                    {selectedGroupPhoto?.photoUrl ? (
+                                      <div className="relative aspect-[4/3] bg-charcoal-900">
+                                        <img
+                                          src={resolveReviewMediaPath(selectedGroupPhoto.photoUrl)}
+                                          alt={selectedGroupPhoto.sourceRelativePath}
+                                          className="h-full w-full object-contain"
+                                        />
+                                        {selectedGroupFace ? (
+                                          <div
+                                            className="absolute rounded-md border-2 border-gold-400 bg-gold-400/15 ring-2 ring-white/90"
+                                            style={getOverlayStyle(selectedGroupFace)}
+                                          />
+                                        ) : null}
+                                      </div>
+                                    ) : (
+                                      <div className="flex aspect-[4/3] items-center justify-center text-xs text-charcoal-400">No source preview</div>
+                                    )}
+                                  </div>
+                                </div>
+
+                                <details className="rounded-[1.4rem] border border-gold-100 bg-white p-4">
+                                  <summary className="cursor-pointer list-none text-sm font-medium text-charcoal-900">
+                                    Details and notes
+                                  </summary>
+                                  <div className="mt-4 space-y-4">
+                                    <div>
+                                      <label htmlFor="group-key" className="mb-2 block text-xs uppercase tracking-[0.22em] text-charcoal-500">
+                                        Person key
+                                      </label>
+                                      <Input
+                                        id="group-key"
+                                        value={selectedGroupDraft.personKey}
+                                        onChange={(event) => updateFacesDrafts(selectedGroup.faceIds, { personKey: event.target.value })}
+                                        placeholder="austin"
+                                      />
+                                    </div>
+
+                                    <div>
+                                      <label htmlFor="group-notes" className="mb-2 block text-xs uppercase tracking-[0.22em] text-charcoal-500">
+                                        Shared notes
+                                      </label>
+                                      <Textarea
+                                        id="group-notes"
+                                        value={selectedGroupDraft.notes}
+                                        onChange={(event) => updateFacesDrafts(selectedGroup.faceIds, { notes: event.target.value })}
+                                        placeholder="Optional notes for this person group."
+                                        className="min-h-[96px]"
+                                      />
+                                    </div>
+
+                                    {selectedGroupFace ? (
+                                      <div className="grid gap-2 rounded-xl border border-gold-100 bg-cream-50/70 p-4 text-sm text-charcoal-500">
+                                        <p><span className="font-medium text-charcoal-900">Cluster:</span> {selectedGroupFace.cluster_id || 'None'}</p>
+                                        <p><span className="font-medium text-charcoal-900">Quality:</span> {selectedGroupFace.quality_score ?? 'n/a'}</p>
+                                        <p><span className="font-medium text-charcoal-900">Source:</span> {selectedGroupFace.source_relative_path || 'Unknown source'}</p>
+                                      </div>
+                                    ) : null}
+                                  </div>
+                                </details>
+                              </div>
+                            </div>
+                          </div>
+                        ) : (
+                          <div className="rounded-xl border border-dashed border-gold-200 p-6 text-sm text-charcoal-500">
+                            Select a person group to rename, confirm, or ignore matching faces in bulk.
+                          </div>
+                        )}
+                      </div>
+                    </div>
+                  </>
+                )}
+
+                {photoInspectorOpen && selectedPhoto ? (
+                  <div className="fixed inset-0 z-50 flex items-center justify-center bg-charcoal-950/60 p-4 backdrop-blur-sm">
+                    <div className="flex max-h-[92vh] w-full max-w-7xl flex-col overflow-hidden rounded-[1.6rem] border border-gold-100 bg-white shadow-2xl">
+                      <div className="flex items-center justify-between gap-3 border-b border-gold-100 px-5 py-4">
+                        <div className="min-w-0">
+                          <p className="text-[11px] uppercase tracking-[0.28em] text-charcoal-500">Photo inspector</p>
+                          <h3 className="mt-1 truncate text-lg font-medium text-charcoal-900">{selectedPhoto.sourceRelativePath}</h3>
+                        </div>
+                        <Button size="sm" variant="secondary" onClick={() => setPhotoInspectorOpen(false)}>
+                          Close
+                        </Button>
+                      </div>
+
+                      <div className="grid min-h-0 flex-1 gap-0 xl:grid-cols-[minmax(0,1fr)_22rem]">
+                        <div className="min-h-0 overflow-y-auto border-b border-gold-100 p-5 xl:border-b-0 xl:border-r">
+                          <div className="space-y-4">
+                            <div className="overflow-hidden rounded-[1.4rem] border border-gold-100 bg-charcoal-950">
                               <div className="relative aspect-[4/3] bg-charcoal-900">
                                 {selectedPhoto.photoUrl ? (
                                   <img
@@ -1186,364 +1486,192 @@ export function MediaReviewPanel() {
                               </div>
                             </div>
 
-                            <div className="grid gap-4">
+                            <div className="flex flex-wrap gap-2">
+                              <Button
+                                size="sm"
+                                variant="secondary"
+                                onClick={() => {
+                                  if (!selectedFace) return
+                                  const currentIndex = selectedPhoto.faces.findIndex((face) => face.id === selectedFace.id)
+                                  const previousFace = selectedPhoto.faces[Math.max(0, currentIndex - 1)]
+                                  if (previousFace) setSelectedFaceId(previousFace.id)
+                                }}
+                              >
+                                Previous Face
+                              </Button>
+                              <Button
+                                size="sm"
+                                variant="secondary"
+                                onClick={() => {
+                                  if (!selectedFace) return
+                                  const currentIndex = selectedPhoto.faces.findIndex((face) => face.id === selectedFace.id)
+                                  const nextFace = selectedPhoto.faces[Math.min(selectedPhoto.faces.length - 1, currentIndex + 1)]
+                                  if (nextFace) setSelectedFaceId(nextFace.id)
+                                }}
+                              >
+                                Next Face
+                              </Button>
+                            </div>
+
+                            <div className="grid gap-3 sm:grid-cols-3 xl:grid-cols-4">
                               {selectedPhoto.faces.map((face) => {
                                 const draft = faceDrafts[face.id] || normalizeFaceDraft(face)
-                                const previewUrl = cropPreviewUrls[face.id]
                                 const isSelected = selectedFace?.id === face.id
 
                                 return (
-                                  <div
+                                  <button
                                     key={face.id}
+                                    type="button"
+                                    onClick={() => setSelectedFaceId(face.id)}
                                     className={cn(
-                                      'rounded-[1.4rem] border p-4 transition-colors',
-                                      isSelected ? 'border-gold-400 bg-gold-50/70' : 'border-gold-100 bg-cream-50/40',
+                                      'overflow-hidden rounded-[1rem] border text-left transition-colors',
+                                      isSelected ? 'border-gold-400 bg-gold-50' : 'border-gold-100 bg-cream-50/50 hover:bg-cream-50',
                                     )}
                                   >
-                                    <div className="grid gap-4 lg:grid-cols-[7rem_minmax(0,1fr)]">
-                                      <button
-                                        type="button"
-                                        onClick={() => setSelectedFaceId(face.id)}
-                                        className="overflow-hidden rounded-xl border border-gold-100 bg-white"
-                                      >
-                                        {previewUrl ? (
-                                          <img src={previewUrl} alt={getFaceLabel(face)} className="h-28 w-full object-cover" />
-                                        ) : (
-                                          <div className="flex h-28 items-center justify-center text-xs text-charcoal-400">No crop</div>
-                                        )}
-                                      </button>
-
-                                      <div className="space-y-4">
-                                        <div className="flex flex-wrap items-start justify-between gap-3">
-                                          <div>
-                                            <p className="text-sm font-medium text-charcoal-900">{getFaceLabel(face)}</p>
-                                            <p className="mt-1 text-xs text-charcoal-500">
-                                              {face.cluster_id || 'No cluster'} · quality {face.quality_score ?? 'n/a'}
-                                            </p>
-                                          </div>
-                                          <span className={cn('rounded-full border px-3 py-1 text-[10px] uppercase tracking-[0.22em]', getStatusBadgeClasses(draft.reviewStatus))}>
-                                            {draft.reviewStatus}
-                                          </span>
-                                        </div>
-
-                                        <div className="grid gap-4 md:grid-cols-2">
-                                          <div>
-                                            <label htmlFor={`face-name-${face.id}`} className="mb-2 block text-xs uppercase tracking-[0.22em] text-charcoal-500">
-                                              Person name
-                                            </label>
-                                            <Input
-                                              id={`face-name-${face.id}`}
-                                              list="known-people-options"
-                                              value={draft.confirmedName}
-                                              onChange={(event) => {
-                                                const confirmedName = event.target.value
-                                                updateDraft(face.id, {
-                                                  confirmedName,
-                                                  personKey: confirmedName ? slugifyPerson(confirmedName) : '',
-                                                  reviewStatus: confirmedName ? 'confirmed' : draft.reviewStatus,
-                                                })
-                                              }}
-                                              placeholder="Austin"
-                                            />
-                                          </div>
-
-                                          <div>
-                                            <label htmlFor={`face-person-key-${face.id}`} className="mb-2 block text-xs uppercase tracking-[0.22em] text-charcoal-500">
-                                              Group key
-                                            </label>
-                                            <Input
-                                              id={`face-person-key-${face.id}`}
-                                              value={draft.personKey}
-                                              onChange={(event) => updateDraft(face.id, { personKey: event.target.value })}
-                                              placeholder="austin"
-                                            />
-                                          </div>
-                                        </div>
-
-                                        <div className="flex flex-wrap gap-2">
-                                          {([
-                                            ['pending', 'Pending'],
-                                            ['confirmed', 'Confirm'],
-                                            ['ignored', 'Ignore'],
-                                          ] as const).map(([value, label]) => (
-                                            <button
-                                              key={value}
-                                              type="button"
-                                              onClick={() => updateDraft(face.id, { reviewStatus: value })}
-                                              className={cn(
-                                                'rounded-full px-3 py-2 text-sm transition-colors',
-                                                draft.reviewStatus === value
-                                                  ? 'bg-gold-500 text-white'
-                                                  : 'border border-gold-200 bg-white text-charcoal-600 hover:bg-gold-50',
-                                              )}
-                                            >
-                                              {label}
-                                            </button>
-                                          ))}
-                                          <Button
-                                            size="sm"
-                                            variant="secondary"
-                                            onClick={() => void saveFaces([face.id])}
-                                            disabled={savingKey === face.id}
-                                          >
-                                            <Save className="mr-2 h-4 w-4" />
-                                            Save Face
-                                          </Button>
-                                        </div>
-
-                                        <div>
-                                          <label htmlFor={`face-notes-${face.id}`} className="mb-2 block text-xs uppercase tracking-[0.22em] text-charcoal-500">
-                                            Notes
-                                          </label>
-                                          <Textarea
-                                            id={`face-notes-${face.id}`}
-                                            value={draft.notes}
-                                            onChange={(event) => updateDraft(face.id, { notes: event.target.value })}
-                                            placeholder="Optional review notes for this face."
-                                            className="min-h-[96px]"
-                                          />
-                                        </div>
-                                      </div>
+                                    <div className="aspect-square overflow-hidden bg-white">
+                                      {cropPreviewUrls[face.id] ? (
+                                        <img src={cropPreviewUrls[face.id]} alt={getDraftFaceLabel(face, draft)} className="h-full w-full object-cover" />
+                                      ) : (
+                                        <div className="flex h-full items-center justify-center text-xs text-charcoal-400">No crop</div>
+                                      )}
                                     </div>
-                                  </div>
+                                    <div className="space-y-1 p-3">
+                                      <p className="truncate text-sm font-medium text-charcoal-900">{getDraftFaceLabel(face, draft)}</p>
+                                      <span className={cn('inline-flex rounded-full border px-2 py-1 text-[10px] uppercase tracking-[0.18em]', getStatusBadgeClasses(draft.reviewStatus))}>
+                                        {draft.reviewStatus}
+                                      </span>
+                                    </div>
+                                  </button>
                                 )
                               })}
                             </div>
                           </div>
-                        ) : (
-                          <div className="rounded-xl border border-dashed border-gold-200 p-6 text-sm text-charcoal-500">
-                            Select a photo to review every detected face in context.
-                          </div>
-                        )}
-                      </div>
-                    </div>
-                  ) : (
-                    <div className="grid gap-6 xl:grid-cols-[21rem_minmax(0,1fr)]">
-                      <div className="rounded-xl border border-gold-100 bg-white p-5 shadow-sm">
-                        <div className="space-y-4">
-                          <div>
-                            <h3 className="text-lg font-medium text-charcoal-900">People Groups</h3>
-                            <p className="mt-1 text-sm text-charcoal-500">
-                              Use this cleanup pass to rename whole groups, confirm them in bulk, or ignore misfires together.
-                            </p>
-                          </div>
-
-                          <Input
-                            value={personSearch}
-                            onChange={(event) => setPersonSearch(event.target.value)}
-                            placeholder="Search person name, cluster, or photo path"
-                          />
                         </div>
 
-                        <div className="mt-5 space-y-3">
-                          {filteredGroups.map((group) => {
-                            const isActive = selectedGroup?.key === group.key
-
-                            return (
-                              <button
-                                key={group.key}
-                                type="button"
-                                onClick={() => setSelectedGroupKey(group.key)}
-                                className={cn(
-                                  'w-full rounded-xl border p-4 text-left transition-colors',
-                                  isActive
-                                    ? 'border-gold-400 bg-gold-50'
-                                    : 'border-gold-100 bg-white hover:bg-cream-50',
-                                )}
-                              >
-                                <div className="flex items-start justify-between gap-3">
-                                  <div>
-                                    <p className="text-sm font-medium text-charcoal-900">{group.label}</p>
-                                    <p className="mt-1 text-xs text-charcoal-500">
-                                      {group.faces.length} faces · {group.clusterCount} suggested cluster{group.clusterCount === 1 ? '' : 's'}
-                                    </p>
-                                  </div>
-                                  <FolderOpen className="h-4 w-4 text-charcoal-400" />
-                                </div>
-                                <div className="mt-3 flex flex-wrap gap-2 text-[11px] text-charcoal-500">
-                                  <span>{group.pendingCount} pending</span>
-                                  <span>{group.confirmedCount} confirmed</span>
-                                  <span>{group.ignoredCount} ignored</span>
-                                </div>
-                              </button>
-                            )
-                          })}
-                        </div>
-                      </div>
-                      <div className="rounded-xl border border-gold-100 bg-white p-5 shadow-sm">
-                        {selectedGroup && selectedGroupDraft ? (
-                          <div className="space-y-5">
-                            <div className="flex flex-col gap-3 lg:flex-row lg:items-start lg:justify-between">
+                        <div className="min-h-0 overflow-y-auto bg-cream-50/70 p-5">
+                          {selectedFace && selectedFaceDraft ? (
+                            <div className="space-y-4">
                               <div>
-                                <h3 className="text-lg font-medium text-charcoal-900">{selectedGroup.label}</h3>
+                                <p className="text-[11px] uppercase tracking-[0.28em] text-charcoal-500">Selected face</p>
+                                <h4 className="mt-2 text-lg font-medium text-charcoal-900">{getDraftFaceLabel(selectedFace, selectedFaceDraft)}</h4>
                                 <p className="mt-1 text-sm text-charcoal-500">
-                                  {selectedGroup.faces.length} faces grouped here across {selectedGroup.clusterCount} suggested cluster{selectedGroup.clusterCount === 1 ? '' : 's'}.
+                                  {selectedFace.cluster_id || 'No cluster'} · quality {selectedFace.quality_score ?? 'n/a'}
                                 </p>
                               </div>
 
-                              <div className="flex flex-wrap gap-2">
-                                <Button
-                                  size="sm"
-                                  variant="secondary"
-                                  onClick={() => void handleApplyGroupDecision('pending')}
-                                  disabled={savingKey === selectedGroup.key}
-                                >
-                                  Mark Pending
-                                </Button>
-                                <Button
-                                  size="sm"
-                                  variant="secondary"
-                                  onClick={() => void handleApplyGroupDecision('ignored')}
-                                  disabled={savingKey === selectedGroup.key}
-                                >
-                                  Ignore Group
-                                </Button>
-                                <Button
-                                  size="sm"
-                                  onClick={() => void handleApplyGroupDecision('confirmed')}
-                                  disabled={savingKey === selectedGroup.key}
-                                >
-                                  <Save className="mr-2 h-4 w-4" />
-                                  Confirm Group
-                                </Button>
+                              <div className="overflow-hidden rounded-[1.1rem] border border-gold-100 bg-white">
+                                {cropPreviewUrls[selectedFace.id] ? (
+                                  <img src={cropPreviewUrls[selectedFace.id]} alt={getDraftFaceLabel(selectedFace, selectedFaceDraft)} className="aspect-square h-full w-full object-cover" />
+                                ) : (
+                                  <div className="flex aspect-square items-center justify-center text-xs text-charcoal-400">No crop</div>
+                                )}
                               </div>
-                            </div>
 
-                            <div className="grid gap-4 md:grid-cols-2">
                               <div>
-                                <label htmlFor="group-name" className="mb-2 block text-xs uppercase tracking-[0.22em] text-charcoal-500">
-                                  Confirmed name
+                                <label htmlFor={`face-name-${selectedFace.id}`} className="mb-2 block text-xs uppercase tracking-[0.22em] text-charcoal-500">
+                                  Person name
                                 </label>
                                 <Input
-                                  id="group-name"
+                                  id={`face-name-${selectedFace.id}`}
                                   list="known-people-options"
-                                  value={selectedGroupDraft.confirmedName}
+                                  value={selectedFaceDraft.confirmedName}
                                   onChange={(event) => {
                                     const confirmedName = event.target.value
-                                    selectedGroup.faces.forEach((face) => {
-                                      updateDraft(face.id, {
-                                        confirmedName,
-                                        personKey: confirmedName ? slugifyPerson(confirmedName) : '',
-                                      })
+                                    updateDraft(selectedFace.id, {
+                                      confirmedName,
+                                      personKey: confirmedName ? slugifyPerson(confirmedName) : '',
+                                      reviewStatus: confirmedName ? 'confirmed' : selectedFaceDraft.reviewStatus,
                                     })
                                   }}
                                   placeholder="Austin"
                                 />
                               </div>
 
-                              <div>
-                                <label htmlFor="group-key" className="mb-2 block text-xs uppercase tracking-[0.22em] text-charcoal-500">
-                                  Group key
-                                </label>
-                                <Input
-                                  id="group-key"
-                                  value={selectedGroupDraft.personKey}
-                                  onChange={(event) => {
-                                    const personKey = event.target.value
-                                    selectedGroup.faces.forEach((face) => {
-                                      updateDraft(face.id, { personKey })
-                                    })
-                                  }}
-                                  placeholder="austin"
-                                />
+                              <div className="flex flex-wrap gap-2">
+                                {([
+                                  ['pending', 'Pending'],
+                                  ['confirmed', 'Confirm'],
+                                  ['ignored', 'Ignore'],
+                                ] as const).map(([value, label]) => (
+                                  <button
+                                    key={value}
+                                    type="button"
+                                    onClick={() => updateDraft(selectedFace.id, { reviewStatus: value })}
+                                    className={cn(
+                                      'rounded-full px-3 py-2 text-sm transition-colors',
+                                      selectedFaceDraft.reviewStatus === value
+                                        ? 'bg-gold-500 text-white'
+                                        : 'border border-gold-200 bg-white text-charcoal-600 hover:bg-gold-50',
+                                    )}
+                                  >
+                                    {label}
+                                  </button>
+                                ))}
                               </div>
-                            </div>
 
-                            <div>
-                              <label htmlFor="group-notes" className="mb-2 block text-xs uppercase tracking-[0.22em] text-charcoal-500">
-                                Shared notes
-                              </label>
-                              <Textarea
-                                id="group-notes"
-                                value={selectedGroupDraft.notes}
-                                onChange={(event) => {
-                                  const notes = event.target.value
-                                  selectedGroup.faces.forEach((face) => {
-                                    updateDraft(face.id, { notes })
-                                  })
-                                }}
-                                placeholder="Optional notes for this person group."
-                                className="min-h-[96px]"
-                              />
-                            </div>
+                              <div className="flex flex-wrap gap-2">
+                                <Button
+                                  size="sm"
+                                  onClick={() => void saveFaces(selectedPhoto.faces.map((face) => face.id))}
+                                  disabled={savingKey === selectedPhotoSaveKey || selectedPhotoChangedFaceIds.length === 0}
+                                >
+                                  <Save className="mr-2 h-4 w-4" />
+                                  Save Photo Changes
+                                </Button>
+                                <Button
+                                  size="sm"
+                                  variant="secondary"
+                                  onClick={() => resetFaces(selectedPhoto.faces.map((face) => face.id))}
+                                  disabled={selectedPhotoChangedFaceIds.length === 0}
+                                >
+                                  Reset Photo Changes
+                                </Button>
+                              </div>
 
-                            <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-3">
-                              {selectedGroup.faces.slice(0, PERSON_GROUP_SAMPLE_LIMIT).map((face) => {
-                                const draft = faceDrafts[face.id] || normalizeFaceDraft(face)
-
-                                return (
-                                  <div key={face.id} className="overflow-hidden rounded-[1.3rem] border border-gold-100 bg-cream-50/60">
-                                    <div className="aspect-square overflow-hidden bg-white">
-                                      {cropPreviewUrls[face.id] ? (
-                                        <img
-                                          src={cropPreviewUrls[face.id]}
-                                          alt={getFaceLabel(face)}
-                                          className="h-full w-full object-cover"
-                                        />
-                                      ) : (
-                                        <div className="flex h-full items-center justify-center text-xs text-charcoal-400">No crop</div>
-                                      )}
-                                    </div>
-                                    <div className="space-y-3 p-4">
-                                      <div>
-                                        <p className="truncate text-sm font-medium text-charcoal-900">
-                                          {face.source_relative_path || 'Unknown source'}
-                                        </p>
-                                        <p className="mt-1 text-xs text-charcoal-500">
-                                          {face.cluster_id || 'No cluster'}
-                                        </p>
-                                      </div>
-
-                                      <span className={cn('inline-flex rounded-full border px-3 py-1 text-[10px] uppercase tracking-[0.22em]', getStatusBadgeClasses(draft.reviewStatus))}>
-                                        {draft.reviewStatus}
-                                      </span>
-
-                                      <div className="flex flex-wrap gap-2">
-                                        <Button
-                                          size="sm"
-                                          variant="secondary"
-                                          onClick={() => {
-                                            setMode('photos')
-                                            const targetPhotoKey = face.source_record_id || face.photo_url || face.face_id
-                                            setSelectedPhotoKey(targetPhotoKey)
-                                            setSelectedFaceId(face.id)
-                                          }}
-                                        >
-                                          Open Photo
-                                        </Button>
-                                        <Button
-                                          size="sm"
-                                          variant="secondary"
-                                          onClick={() => void saveFaces([face.id])}
-                                          disabled={savingKey === face.id}
-                                        >
-                                          Save Face
-                                        </Button>
-                                      </div>
-                                    </div>
+                              <details className="rounded-[1rem] border border-gold-100 bg-white p-4">
+                                <summary className="cursor-pointer list-none text-sm font-medium text-charcoal-900">
+                                  Details and notes
+                                </summary>
+                                <div className="mt-4 space-y-4">
+                                  <div>
+                                    <label htmlFor={`face-person-key-${selectedFace.id}`} className="mb-2 block text-xs uppercase tracking-[0.22em] text-charcoal-500">
+                                      Group key
+                                    </label>
+                                    <Input
+                                      id={`face-person-key-${selectedFace.id}`}
+                                      value={selectedFaceDraft.personKey}
+                                      onChange={(event) => updateDraft(selectedFace.id, { personKey: event.target.value })}
+                                      placeholder="austin"
+                                    />
                                   </div>
-                                )
-                              })}
+
+                                  <div>
+                                    <label htmlFor={`face-notes-${selectedFace.id}`} className="mb-2 block text-xs uppercase tracking-[0.22em] text-charcoal-500">
+                                      Notes
+                                    </label>
+                                    <Textarea
+                                      id={`face-notes-${selectedFace.id}`}
+                                      value={selectedFaceDraft.notes}
+                                      onChange={(event) => updateDraft(selectedFace.id, { notes: event.target.value })}
+                                      placeholder="Optional review notes for this face."
+                                      className="min-h-[96px]"
+                                    />
+                                  </div>
+                                </div>
+                              </details>
                             </div>
-                          </div>
-                        ) : (
-                          <div className="rounded-xl border border-dashed border-gold-200 p-6 text-sm text-charcoal-500">
-                            Select a person group to rename, confirm, or ignore matching faces in bulk.
-                          </div>
-                        )}
+                          ) : null}
+                        </div>
                       </div>
                     </div>
-                  )}
-                </>
-              )}
-            </>
-          ) : (
-            <div className="rounded-xl border border-dashed border-gold-200 bg-white p-8 text-sm text-charcoal-500">
-              Push a review bundle first, then this page will list staged batches for admin review.
-            </div>
-          )}
-        </div>
-      </div>
+                  </div>
+                ) : null}
+              </>
+            ) : (
+              <div className="rounded-xl border border-dashed border-gold-200 bg-white p-8 text-sm text-charcoal-500">
+                The guest-upload review queue is empty. Export and tag approved guest uploads, then push a guest review batch to stage the next people-review pass.
+              </div>
+            )}
 
       <datalist id="known-people-options">
         {knownPeople.map((person) => (
