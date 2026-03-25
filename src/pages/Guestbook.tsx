@@ -238,7 +238,7 @@ function MessageCard({
     >
       <div className="flex items-start justify-between gap-4">
         <div className="flex min-w-0 items-center gap-3">
-          <Avatar fallback={message.name} size="lg" />
+          <Avatar fallback={message.name} size="lg" className="ring-2 ring-gold-400/30" />
           <div className="min-w-0">
             <h3 className="truncate text-lg font-semibold text-white">{message.name}</h3>
             <p className="mt-1 text-sm text-white/45">{message.timestamp}</p>
@@ -254,7 +254,7 @@ function MessageCard({
       <div className="mt-5 space-y-4">
         {message.type === 'video' &&
           (message.mediaUrl ? (
-            <div className="overflow-hidden rounded-[1.5rem] border border-gold-200/14 bg-[linear-gradient(145deg,rgba(44,32,25,0.96),rgba(58,42,33,0.98)_52%,rgba(77,58,44,0.94))] shadow-[0_24px_56px_-32px_rgba(21,20,19,0.72)]">
+            <div className="overflow-hidden rounded-2xl border border-gold-200/14 bg-[linear-gradient(145deg,rgba(44,32,25,0.96),rgba(58,42,33,0.98)_52%,rgba(77,58,44,0.94))] shadow-[0_24px_56px_-32px_rgba(21,20,19,0.72)]">
               <video
                 src={message.mediaUrl}
                 controls
