@@ -709,10 +709,10 @@ export default function Guestbook() {
 
           {/* Sidebar */}
           <div className="grid gap-4 2xl:sticky 2xl:top-28">
-            <motion.div initial={{ opacity: 0, y: 18 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.08 }} className="editorial-card px-5 py-5">
-              <p className="text-[10px] uppercase tracking-[0.3em] text-gold-700">Leave a note</p>
-              <h2 className="mt-4 text-2xl text-charcoal-900">Something to remember us by.</h2>
-              <p className="mt-3 text-sm leading-6 text-charcoal-500">A few words is plenty. Write what came to mind on the drive home.</p>
+            <motion.div initial={{ opacity: 0, y: 18 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.08 }} className="relative overflow-hidden rounded-2xl bg-white/5 backdrop-blur-sm border border-gold-200/12 px-5 py-5">
+              <p className="text-[10px] uppercase tracking-[0.3em] text-gold-400">Leave a note</p>
+              <h2 className="mt-4 text-2xl text-white">Something to remember us by.</h2>
+              <p className="mt-3 text-sm leading-6 text-white/55">A few words is plenty. Write what came to mind on the drive home.</p>
               <Button
                 type="button"
                 size="lg"
@@ -725,37 +725,37 @@ export default function Guestbook() {
               </Button>
             </motion.div>
 
-            <motion.div initial={{ opacity: 0, y: 18 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.14 }} className="editorial-card px-5 py-5">
-              <p className="text-[10px] uppercase tracking-[0.3em] text-gold-700">Newest note</p>
+            <motion.div initial={{ opacity: 0, y: 18 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.14 }} className="relative overflow-hidden rounded-2xl bg-white/5 backdrop-blur-sm border border-gold-200/12 px-5 py-5">
+              <p className="text-[10px] uppercase tracking-[0.3em] text-gold-400">Newest note</p>
               {featuredMessage ? (
                 <>
-                  <p className="mt-3 text-lg font-semibold text-charcoal-900">{featuredMessage.name}</p>
-                  <p className="mt-2 text-sm text-charcoal-500">{featuredMessage.timestamp}</p>
-                  <p className="mt-4 text-sm leading-6 text-charcoal-600">
+                  <p className="mt-3 text-lg font-semibold text-white">{featuredMessage.name}</p>
+                  <p className="mt-2 text-sm text-white/45">{featuredMessage.timestamp}</p>
+                  <p className="mt-4 text-sm leading-6 text-white/60">
                     {getDisplayContent(featuredMessage).slice(0, 120)}
                     {getDisplayContent(featuredMessage).length > 120 ? '…' : ''}
                   </p>
                 </>
               ) : (
-                <p className="mt-3 text-sm leading-6 text-charcoal-500">
+                <p className="mt-3 text-sm leading-6 text-white/55">
                   The first note will appear here once someone leaves a memory from the day.
                 </p>
               )}
             </motion.div>
 
-            <motion.div initial={{ opacity: 0, y: 18 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.18 }} data-testid="guestbook-filters" className="editorial-card px-5 py-5">
-              <p className="text-[10px] uppercase tracking-[0.3em] text-gold-700">Browse</p>
+            <motion.div initial={{ opacity: 0, y: 18 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.18 }} data-testid="guestbook-filters" className="relative overflow-hidden rounded-2xl bg-white/5 backdrop-blur-sm border border-gold-200/12 px-5 py-5">
+              <p className="text-[10px] uppercase tracking-[0.3em] text-gold-400">Browse</p>
               <div className="mt-4 flex flex-wrap gap-2">
                 {([{ key: 'all', label: 'Everything' }, { key: 'text', label: 'Written' }, { key: 'voice', label: 'Voice' }, { key: 'video', label: 'Video' }] as const).map((option) => (
                   <button
                     key={option.key}
                     type="button"
                     onClick={() => setFilter(option.key)}
-                    className={cn('inline-flex items-center gap-2 rounded-full px-4 py-2 text-sm transition-all', filter === option.key ? 'cinematic-toggle-active' : 'bg-cream-50 text-charcoal-600 hover:bg-gold-50/80 hover:text-charcoal-800')}
+                    className={cn('inline-flex items-center gap-2 rounded-full px-4 py-2 text-sm transition-all', filter === option.key ? 'bg-gold-500/15 border border-gold-400/30 text-gold-300' : 'bg-white/5 text-white/55 hover:bg-white/10 hover:text-white')}
                     aria-pressed={filter === option.key}
                   >
                     <span>{option.label}</span>
-                    <span className={cn('text-xs', filter === option.key ? 'text-charcoal-700/80' : 'text-charcoal-400')}>{counts[option.key]}</span>
+                    <span className={cn('text-xs', filter === option.key ? 'text-white/60' : 'text-white/30')}>{counts[option.key]}</span>
                   </button>
                 ))}
               </div>
