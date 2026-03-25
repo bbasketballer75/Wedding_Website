@@ -673,6 +673,10 @@ export default function Guestbook() {
 
   return (
     <div className="min-h-screen bg-[linear-gradient(to_b,rgba(12,8,5,1),rgba(22,14,6,1))] pb-20 pt-28 sm:pt-32">
+      <div className="pointer-events-none fixed inset-0 overflow-hidden" aria-hidden="true">
+        <div className="absolute -top-32 left-1/4 h-96 w-96 rounded-full bg-gold-500/4 blur-[120px]" />
+        <div className="absolute bottom-1/4 right-1/4 h-64 w-64 rounded-full bg-gold-400/3 blur-[100px]" />
+      </div>
       <GuestbookSEO />
 
       {/* Hero */}
@@ -849,27 +853,27 @@ export default function Guestbook() {
             </AnimatePresence>
 
             {loadError && (
-              <motion.div initial={{ opacity: 0, y: -10 }} animate={{ opacity: 1, y: 0 }} className="rounded-[1.5rem] border border-amber-200/80 bg-amber-50/90 px-5 py-4 text-sm text-amber-700">
+              <motion.div initial={{ opacity: 0, y: -10 }} animate={{ opacity: 1, y: 0 }} className="rounded-xl border border-amber-400/25 bg-amber-500/8 px-4 py-3 text-sm text-amber-300">
                 {loadError}
               </motion.div>
             )}
 
-            <motion.div initial={{ opacity: 0, y: 18 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.18 }} data-testid="guestbook-feed" className="editorial-card px-5 py-5">
+            <motion.div initial={{ opacity: 0, y: 18 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.18 }} data-testid="guestbook-feed" className="relative overflow-hidden rounded-2xl bg-white/5 backdrop-blur-sm border border-gold-200/12 px-5 py-5">
               <div className="flex flex-col gap-4 2xl:flex-row 2xl:items-end 2xl:justify-between">
                 <div>
-                  <p className="text-[10px] uppercase tracking-[0.3em] text-gold-700">Notes from the day</p>
-                  <h2 className="mt-3 text-3xl text-charcoal-900 sm:text-4xl">
+                  <p className="text-[10px] uppercase tracking-[0.3em] text-gold-400">Notes from the day</p>
+                  <h2 className="mt-3 text-3xl text-white sm:text-4xl">
                     {filter === 'all' ? 'Everyone who left a note' : filter === 'text' ? 'Written notes' : filter === 'voice' ? 'Voice messages' : 'Video messages'}
                   </h2>
                 </div>
                 <div className="flex flex-wrap gap-2">
-                  <div className="inline-flex items-center gap-2 rounded-full border border-gold-200/70 bg-white/80 px-4 py-2 text-sm text-charcoal-500">
-                    <BookHeart className="h-4 w-4 text-gold-500" />
+                  <div className="inline-flex items-center gap-2 rounded-full border border-white/12 bg-white/8 px-4 py-2 text-sm text-white/60">
+                    <BookHeart className="h-4 w-4 text-gold-400" />
                     {filteredMessages.length} {filteredMessages.length === 1 ? 'note' : 'notes'}
                   </div>
                   {totalReplies > 0 && (
-                    <div className="inline-flex items-center gap-2 rounded-full border border-gold-200/70 bg-white/80 px-4 py-2 text-sm text-charcoal-500">
-                      <MessageCircle className="h-4 w-4 text-gold-500" />
+                    <div className="inline-flex items-center gap-2 rounded-full border border-white/12 bg-white/8 px-4 py-2 text-sm text-white/60">
+                      <MessageCircle className="h-4 w-4 text-gold-400" />
                       {totalReplies} {totalReplies === 1 ? 'reply' : 'replies'}
                     </div>
                   )}
@@ -878,12 +882,12 @@ export default function Guestbook() {
             </motion.div>
 
             {isLoading ? (
-              <div className="editorial-panel px-6 py-12 text-center">
-                <div className="mx-auto flex h-16 w-16 items-center justify-center rounded-full bg-gold-100 text-gold-600">
+              <div className="relative overflow-hidden rounded-2xl bg-white/5 backdrop-blur-sm border border-white/8 px-6 py-12 text-center">
+                <div className="mx-auto flex h-16 w-16 items-center justify-center rounded-full bg-white/8 text-gold-400">
                   <Loader2 className="h-7 w-7 animate-spin" />
                 </div>
-                <p className="mt-6 font-display text-2xl text-charcoal-900">Gathering the notes</p>
-                <p className="mt-2 text-charcoal-500">Just a moment while we bring in everything from the day.</p>
+                <p className="mt-6 font-display text-2xl text-white">Gathering the notes</p>
+                <p className="mt-2 text-white/40">Just a moment while we bring in everything from the day.</p>
               </div>
             ) : filteredMessages.length > 0 ? (
               <>
@@ -900,28 +904,32 @@ export default function Guestbook() {
                 </div>
                 {hasMoreMessages && (
                   <div className="flex justify-center pt-2">
-                    <Button variant="secondary" size="lg" onClick={() => setVisibleCount((current) => current + INITIAL_VISIBLE_MESSAGES)}>
+                    <button
+                      type="button"
+                      onClick={() => setVisibleCount((current) => current + INITIAL_VISIBLE_MESSAGES)}
+                      className="border border-white/12 bg-white/5 text-white/60 hover:text-white hover:bg-white/10 rounded-full px-6 py-2.5 text-sm transition-all"
+                    >
                       Read more notes
-                    </Button>
+                    </button>
                   </div>
                 )}
               </>
             ) : messages.length > 0 ? (
-              <div className="editorial-panel px-6 py-12 text-center">
-                <div className="mx-auto flex h-16 w-16 items-center justify-center rounded-full bg-gold-100 text-gold-600">
+              <div className="relative overflow-hidden rounded-2xl bg-white/5 backdrop-blur-sm border border-white/8 px-6 py-12 text-center">
+                <div className="mx-auto flex h-16 w-16 items-center justify-center rounded-full bg-white/8 text-gold-400">
                   <BookHeart className="h-7 w-7" />
                 </div>
-                <p className="mt-6 font-display text-2xl text-charcoal-900">Nothing here for this filter.</p>
-                <p className="mx-auto mt-2 max-w-md text-charcoal-500">Switch to everything to read all the way through.</p>
+                <p className="mt-6 font-display text-2xl text-white">Nothing here for this filter.</p>
+                <p className="mx-auto mt-2 max-w-md text-white/40">Switch to everything to read all the way through.</p>
                 <Button className="mt-6" size="lg" variant="secondary" onClick={() => setFilter('all')}>Show everything</Button>
               </div>
             ) : (
-              <div className="editorial-panel px-6 py-12 text-center">
-                <div className="mx-auto flex h-16 w-16 items-center justify-center rounded-full bg-gold-100 text-gold-600">
+              <div className="relative overflow-hidden rounded-2xl bg-white/5 backdrop-blur-sm border border-white/8 px-6 py-12 text-center">
+                <div className="mx-auto flex h-16 w-16 items-center justify-center rounded-full bg-white/8 text-gold-400">
                   <BookHeart className="h-7 w-7" />
                 </div>
-                <p className="mt-6 font-display text-2xl text-charcoal-900">No notes yet — yours could be the first.</p>
-                <p className="mx-auto mt-2 max-w-md text-charcoal-500">Leave something small. It doesn't need to be a speech.</p>
+                <p className="mt-6 font-display text-2xl text-white">No notes yet — yours could be the first.</p>
+                <p className="mx-auto mt-2 max-w-md text-white/40">Leave something small. It doesn't need to be a speech.</p>
                 <Button className="mt-6" size="lg" onClick={() => openComposer('text')}>Leave the first note</Button>
               </div>
             )}
