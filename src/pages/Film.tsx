@@ -832,6 +832,47 @@ export default function Film() {
         </div>
       </section>
 
+      {guestHighlights.length > 0 && (
+        <section className="px-4 pb-16">
+          <div className="mx-auto max-w-6xl">
+            <motion.div
+              initial={{ opacity: 0, y: 20 }}
+              whileInView={{ opacity: 1, y: 0 }}
+              viewport={{ once: true }}
+              transition={{ duration: 0.6 }}
+              className="mb-8 max-w-3xl"
+            >
+              <span className="eyebrow-chip">
+                <Smartphone className="h-3.5 w-3.5" />
+                From your phones
+              </span>
+              <h2 className="mt-5 text-3xl text-charcoal-900 sm:text-4xl">
+                Guest angles, if you want the room back from another point of view.
+              </h2>
+              <p className="mt-4 text-base text-charcoal-600 sm:text-lg">
+                These are optional after the main film: quick table laughs, dance-floor blur, and the small in-between clips no single camera can catch from every side.
+              </p>
+              <div className="mt-5 flex flex-wrap gap-2">
+                {memoryTrails.slice(0, 3).map((trail) => (
+                  <span
+                    key={trail.id}
+                    className="rounded-full border border-gold-200/70 bg-white/76 px-3 py-1.5 text-xs uppercase tracking-[0.2em] text-gold-700"
+                  >
+                    {trail.label}
+                  </span>
+                ))}
+              </div>
+            </motion.div>
+
+            <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-3">
+                {guestHighlights.map((clip) => (
+                  <GuestVideoHighlightCard key={clip.id} clip={clip} onOpen={setActiveGuestHighlight} />
+                ))}
+            </div>
+          </div>
+        </section>
+      )}
+
       <section className="px-4 pb-20">
         <div className="mx-auto max-w-5xl">
           <motion.div
@@ -884,47 +925,6 @@ export default function Film() {
           </motion.div>
         </div>
       </section>
-
-      {guestHighlights.length > 0 && (
-        <section className="px-4 pb-16">
-          <div className="mx-auto max-w-6xl">
-            <motion.div
-              initial={{ opacity: 0, y: 20 }}
-              whileInView={{ opacity: 1, y: 0 }}
-              viewport={{ once: true }}
-              transition={{ duration: 0.6 }}
-              className="mb-8 max-w-3xl"
-            >
-              <span className="eyebrow-chip">
-                <Smartphone className="h-3.5 w-3.5" />
-                From your phones
-              </span>
-              <h2 className="mt-5 text-3xl text-charcoal-900 sm:text-4xl">
-                Guest angles, if you want the room back from another point of view.
-              </h2>
-              <p className="mt-4 text-base text-charcoal-600 sm:text-lg">
-                These are optional after the main film: quick table laughs, dance-floor blur, and the small in-between clips no single camera can catch from every side.
-              </p>
-              <div className="mt-5 flex flex-wrap gap-2">
-                {memoryTrails.slice(0, 3).map((trail) => (
-                  <span
-                    key={trail.id}
-                    className="rounded-full border border-gold-200/70 bg-white/76 px-3 py-1.5 text-xs uppercase tracking-[0.2em] text-gold-700"
-                  >
-                    {trail.label}
-                  </span>
-                ))}
-              </div>
-            </motion.div>
-
-            <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-3">
-                {guestHighlights.map((clip) => (
-                  <GuestVideoHighlightCard key={clip.id} clip={clip} onOpen={setActiveGuestHighlight} />
-                ))}
-            </div>
-          </div>
-        </section>
-      )}
 
       <ParentDanceModal
         film={activeParentDance}
