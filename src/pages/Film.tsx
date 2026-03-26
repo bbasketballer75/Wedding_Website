@@ -645,7 +645,7 @@ export default function Film() {
     <div className="min-h-screen bg-cream-50">
       <FilmSEO />
 
-      <section className="px-4 pb-16 pt-32 sm:pt-36">
+      <section className="px-4 pb-10 pt-32 sm:pt-36">
         <div className="mx-auto max-w-6xl">
           <motion.div
             initial={{ opacity: 0, y: 24 }}
@@ -657,140 +657,143 @@ export default function Film() {
             <div className="absolute -right-16 top-8 h-44 w-44 rounded-full bg-gold-200/30 blur-3xl" />
             <div className="absolute -left-10 bottom-0 h-32 w-32 rounded-full bg-blush-200/35 blur-3xl" />
 
-            <div className="relative">
-              <div className="max-w-3xl">
-                <span className="eyebrow-chip">
-                  <Sparkles className="h-3.5 w-3.5" />
-                  Our wedding film
+            <div className="relative max-w-3xl">
+              <span className="eyebrow-chip">
+                <Sparkles className="h-3.5 w-3.5" />
+                Our wedding film
+              </span>
+
+              <h1 className="mt-6 max-w-3xl text-5xl text-charcoal-900 sm:text-6xl lg:text-7xl">
+                The day as it felt, not just as it looked.
+              </h1>
+
+              <p className="mt-5 max-w-2xl text-base text-charcoal-600 sm:text-lg">
+                Start here if you are only opening one page. This is the full arc of May 10, 2025:
+                the nerves, the vows, the speeches, the laughter, and the dance floor blur that still
+                feels impossible to forget.
+              </p>
+
+              <div className="mt-8 flex flex-wrap items-center gap-3 text-sm text-charcoal-500">
+                <span className="rounded-full border border-white/80 bg-white/78 px-4 py-2">
+                  Saturday, May 10, 2025
                 </span>
-
-                <h1 className="mt-6 max-w-3xl text-5xl text-charcoal-900 sm:text-6xl lg:text-7xl">
-                  The day as it felt, not just as it looked.
-                </h1>
-
-                <p className="mt-5 max-w-2xl text-base text-charcoal-600 sm:text-lg">
-                  Start here if you are only opening one page. This is the full arc of May 10, 2025:
-                  the nerves, the vows, the speeches, the laughter, and the dance floor blur that still
-                  feels impossible to forget.
-                </p>
-
-                <div className="mt-8 flex flex-wrap items-center gap-3 text-sm text-charcoal-500">
-                  <span className="rounded-full border border-white/80 bg-white/78 px-4 py-2">
-                    Saturday, May 10, 2025
-                  </span>
-                  <span className="rounded-full border border-white/80 bg-white/78 px-4 py-2">
-                    The Lodge at Indian Lake
-                  </span>
-                  <span className="rounded-full border border-white/80 bg-white/78 px-4 py-2">
-                    {MAIN_FILM_RUNTIME_LABEL} feature film
-                  </span>
-                </div>
-              </div>
-
-              <motion.div
-                initial={{ opacity: 0, y: 24 }}
-                whileInView={{ opacity: 1, y: 0 }}
-                viewport={{ once: true, amount: 0.3 }}
-                transition={{ duration: 0.6 }}
-                className="mt-10"
-              >
-                <div className="editorial-panel px-6 py-6 sm:px-8">
-                  <div>
-                    <span className="eyebrow-chip">Meet the family and friends</span>
-                    <h2 className="mt-5 text-4xl text-charcoal-900 sm:text-5xl">
-                      The people who held the day together.
-                    </h2>
-                    <p className="mt-4 max-w-2xl text-base text-charcoal-600 sm:text-lg">
-                      Before you hit play, take a moment to meet the family and friends woven into every
-                      chapter of the film. It makes the speeches, reactions, and little glances land even harder.
-                    </p>
-                  </div>
-                </div>
-
-                <div className="mt-5 editorial-panel px-2 py-4 sm:px-4">
-                  <FamilyTree />
-                </div>
-              </motion.div>
-
-              <div
-                id="wedding-video"
-                data-testid="film-player-section"
-                className="mt-10 cinematic-panel px-5 py-6 sm:px-7 sm:py-8 lg:px-8 lg:py-9"
-              >
-                <div className="grid gap-6">
-                  <p className="text-sm text-cinematic-muted">
-                    {MAIN_FILM_RUNTIME_LABEL} feature film
-                    <span className="mx-2 text-gold-300/55">•</span>
-                    {chapters.length} chapters
-                    <span className="mx-2 text-gold-300/55">•</span>
-                    Captions available
-                  </p>
-
-                  <motion.div
-                    id="wedding-film-player"
-                    initial={{ opacity: 0, scale: 0.985 }}
-                    whileInView={{ opacity: 1, scale: 1 }}
-                    viewport={{ once: true }}
-                    transition={{ duration: 0.7, ease: [0.16, 1, 0.3, 1] }}
-                    className="scroll-mt-28"
-                  >
-                    <VideoPlayer
-                      src={getMediaPath('/video/main.mp4')}
-                      title="Austin & Jordyn's Wedding"
-                      chapters={chapters}
-                      poster={MAIN_FILM_POSTER}
-                      captionsSrc={getMediaPath('/video/main.vtt')}
-                      previewStartTime={44}
-                      storageKey={MAIN_FILM_PROGRESS_KEY}
-                      onEnded={() => setDidFinishMainFilm(true)}
-                      className="aspect-video ring-1 ring-white/10"
-                      requireLandscapeOnPhone
-                    />
-                  </motion.div>
-
-                  <motion.div
-                    initial={{ opacity: 0, y: 20 }}
-                    whileInView={{ opacity: 1, y: 0 }}
-                    viewport={{ once: true }}
-                    transition={{ duration: 0.55, delay: 0.15 }}
-                  >
-                    <div className="mb-4 flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between sm:gap-4">
-                      <h3 className="text-sm uppercase tracking-[0.28em] text-gold-300/82">
-                        Chapter guide
-                      </h3>
-                      <p className="text-sm text-cinematic-muted">
-                        Jump back in only when you need a specific section.
-                      </p>
-                    </div>
-                    <div className="overflow-x-auto pb-2 hide-scrollbar">
-                      <div className="grid grid-cols-2 gap-2.5 sm:grid-cols-3 lg:grid-cols-5">
-                        {chapters.map((chapter) => (
-                          <button
-                            key={chapter.label}
-                            type="button"
-                            onClick={() => jumpToChapter(chapter.time)}
-                            className="group cinematic-card min-h-[4.8rem] px-3 py-2.5 text-left transition-colors duration-200 hover:border-gold-300/35 hover:bg-white/8 sm:min-h-[5.1rem] sm:px-3.5 sm:py-3"
-                          >
-                            <div className="flex items-start justify-between gap-3">
-                              <div>
-                                <p className="text-[10px] uppercase tracking-[0.28em] text-gold-300/72">
-                                  {formatChapterTime(chapter.time)}
-                                </p>
-                                <p className="mt-1.5 text-[0.9rem] font-semibold leading-5 text-cinematic-primary sm:text-[0.96rem]">
-                                  {chapter.label}
-                                </p>
-                              </div>
-                              <ArrowRight className="mt-0.5 h-4 w-4 shrink-0 text-gold-300/72 transition-transform duration-200 group-hover:translate-x-0.5" />
-                            </div>
-                          </button>
-                        ))}
-                      </div>
-                    </div>
-                  </motion.div>
-                </div>
+                <span className="rounded-full border border-white/80 bg-white/78 px-4 py-2">
+                  The Lodge at Indian Lake
+                </span>
+                <span className="rounded-full border border-white/80 bg-white/78 px-4 py-2">
+                  {MAIN_FILM_RUNTIME_LABEL} feature film
+                </span>
               </div>
             </div>
           </motion.div>
+        </div>
+      </section>
+
+      <section className="px-4 pb-10">
+        <div className="mx-auto max-w-6xl">
+          <motion.div
+            initial={{ opacity: 0, y: 24 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            viewport={{ once: true, amount: 0.3 }}
+            transition={{ duration: 0.6 }}
+          >
+            <div className="editorial-panel px-6 py-6 sm:px-8">
+              <span className="eyebrow-chip">Meet the family and friends</span>
+              <h2 className="mt-5 text-4xl text-charcoal-900 sm:text-5xl">
+                The people who held the day together.
+              </h2>
+              <p className="mt-4 max-w-2xl text-base text-charcoal-600 sm:text-lg">
+                Before you hit play, take a moment to meet the family and friends woven into every
+                chapter of the film. It makes the speeches, reactions, and little glances land even harder.
+              </p>
+            </div>
+
+            <div className="mt-5 editorial-panel px-2 py-4 sm:px-4">
+              <FamilyTree />
+            </div>
+          </motion.div>
+        </div>
+      </section>
+
+      <section className="px-4 pb-16">
+        <div className="mx-auto max-w-6xl">
+          <div
+            id="wedding-video"
+            data-testid="film-player-section"
+            className="cinematic-panel px-5 py-6 sm:px-7 sm:py-8 lg:px-8 lg:py-9"
+          >
+            <div className="grid gap-6">
+              <p className="text-sm text-cinematic-muted">
+                {MAIN_FILM_RUNTIME_LABEL} feature film
+                <span className="mx-2 text-gold-300/55">•</span>
+                {chapters.length} chapters
+                <span className="mx-2 text-gold-300/55">•</span>
+                Captions available
+              </p>
+
+              <motion.div
+                id="wedding-film-player"
+                initial={{ opacity: 0, scale: 0.985 }}
+                whileInView={{ opacity: 1, scale: 1 }}
+                viewport={{ once: true }}
+                transition={{ duration: 0.7, ease: [0.16, 1, 0.3, 1] }}
+                className="scroll-mt-28"
+              >
+                <VideoPlayer
+                  src={getMediaPath('/video/main.mp4')}
+                  title="Austin & Jordyn's Wedding"
+                  chapters={chapters}
+                  poster={MAIN_FILM_POSTER}
+                  captionsSrc={getMediaPath('/video/main.vtt')}
+                  previewStartTime={44}
+                  storageKey={MAIN_FILM_PROGRESS_KEY}
+                  onEnded={() => setDidFinishMainFilm(true)}
+                  className="aspect-video ring-1 ring-white/10"
+                  requireLandscapeOnPhone
+                />
+              </motion.div>
+
+              <motion.div
+                initial={{ opacity: 0, y: 20 }}
+                whileInView={{ opacity: 1, y: 0 }}
+                viewport={{ once: true }}
+                transition={{ duration: 0.55, delay: 0.15 }}
+              >
+                <div className="mb-4 flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between sm:gap-4">
+                  <h3 className="text-sm uppercase tracking-[0.28em] text-gold-300/82">
+                    Chapter guide
+                  </h3>
+                  <p className="text-sm text-cinematic-muted">
+                    Jump back in only when you need a specific section.
+                  </p>
+                </div>
+                <div className="overflow-x-auto pb-2 hide-scrollbar">
+                  <div className="grid grid-cols-2 gap-2.5 sm:grid-cols-3 lg:grid-cols-5">
+                    {chapters.map((chapter) => (
+                      <button
+                        key={chapter.label}
+                        type="button"
+                        onClick={() => jumpToChapter(chapter.time)}
+                        className="group cinematic-card min-h-[4.8rem] px-3 py-2.5 text-left transition-colors duration-200 hover:border-gold-300/35 hover:bg-white/8 sm:min-h-[5.1rem] sm:px-3.5 sm:py-3"
+                      >
+                        <div className="flex items-start justify-between gap-3">
+                          <div>
+                            <p className="text-[10px] uppercase tracking-[0.28em] text-gold-300/72">
+                              {formatChapterTime(chapter.time)}
+                            </p>
+                            <p className="mt-1.5 text-[0.9rem] font-semibold leading-5 text-cinematic-primary sm:text-[0.96rem]">
+                              {chapter.label}
+                            </p>
+                          </div>
+                          <ArrowRight className="mt-0.5 h-4 w-4 shrink-0 text-gold-300/72 transition-transform duration-200 group-hover:translate-x-0.5" />
+                        </div>
+                      </button>
+                    ))}
+                  </div>
+                </div>
+              </motion.div>
+            </div>
+          </div>
         </div>
       </section>
 
