@@ -26,9 +26,6 @@ interface Message {
   name: string
   content: string
   type: 'text' | 'voice' | 'video'
-  mediaUrl?: string
-  reactions: Array<{ type: string; count: number; isActive: boolean }>
-  comments: Array<{ id: string; author: string; content: string; timestamp: string }>
   timestamp: string
 }
 
@@ -45,30 +42,12 @@ function formatGuestbookDate(timestamp?: string) {
   })
 }
 
-function mapSupabaseMessage(message: SupabaseMessage & { comments?: Array<{ id: string; author: string; content: string; timestamp?: string; created_at?: string }> }): Message {
-  const reactions: Message['reactions'] = []
-
-  if (message.reactions) {
-    Object.entries(message.reactions).forEach(([type, count]) => {
-      if (typeof count === 'number' && count > 0) {
-        reactions.push({ type, count, isActive: false })
-      }
-    })
-  }
-
+function mapSupabaseMessage(message: SupabaseMessage): Message {
   return {
     id: message.id,
     name: message.name,
     content: message.content,
     type: message.type,
-    mediaUrl: message.media_url || undefined,
-    reactions,
-    comments: (message.comments || []).map((comment) => ({
-      id: comment.id,
-      author: comment.author,
-      content: comment.content,
-      timestamp: formatGuestbookDate(comment.created_at ?? comment.timestamp),
-    })),
     timestamp: formatGuestbookDate(message.created_at),
   }
 }
@@ -229,7 +208,7 @@ export default function Guestbook() {
         }
 
         setMessages((previous) => [
-          { id: result.message_id, name, content: normalizedContent, type: 'text', mediaUrl: undefined, reactions: [], comments: [], timestamp: 'Just now' },
+          { id: result.message_id, name, content: normalizedContent, type: 'text', timestamp: 'Just now' },
           ...previous,
         ])
       } else {
