@@ -87,7 +87,7 @@ export interface GuestUpload {
 export interface GuestbookMessage {
   id: string
   name: string
-  email: string
+  email?: string
   content: string
   type: 'text' | 'voice' | 'video'
   media_url?: string
