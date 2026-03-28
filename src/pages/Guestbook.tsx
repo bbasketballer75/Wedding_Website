@@ -187,7 +187,7 @@ export default function Guestbook() {
         p_email: email,
         p_content: normalizedContent,
         p_type: 'text',
-        p_media_url: undefined,
+        p_media_url: null,
         p_max_requests: 3,
         p_window_minutes: 1,
       })
