@@ -23,6 +23,7 @@ export default [
       '.gemini/**',
       '.windsurf/**',
       '.agent/**',
+      'supabase/**',
     ],
   },
   // JavaScript/JSX files
