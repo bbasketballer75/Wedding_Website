@@ -463,7 +463,7 @@ export default function UploadPage() {
           </div>
         </motion.section>
 
-        <form onSubmit={handleSubmit} className="mt-8 grid gap-8 2xl:grid-cols-[minmax(0,1fr)_23rem]">
+        <form onSubmit={handleSubmit} className="mt-8 grid gap-8 xl:grid-cols-[minmax(0,1fr)_23rem]">
           <div className="grid gap-6">
             <motion.section
               initial={{ opacity: 0, y: 20 }}
@@ -665,7 +665,7 @@ export default function UploadPage() {
             )}
           </div>
 
-          <div className="grid gap-6 2xl:sticky 2xl:top-28 2xl:self-start">
+          <div className="grid gap-6 xl:sticky xl:top-28 xl:self-start">
             <motion.section
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
