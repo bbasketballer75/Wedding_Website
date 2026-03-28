@@ -768,7 +768,7 @@ export default function Film() {
                   </p>
                 </div>
                 <div className="overflow-x-auto pb-2 hide-scrollbar">
-                  <div className="grid grid-cols-2 gap-2.5 sm:grid-cols-3 lg:grid-cols-5">
+                  <div className="grid grid-cols-1 gap-2.5 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-5">
                     {chapters.map((chapter) => (
                       <button
                         key={chapter.label}
