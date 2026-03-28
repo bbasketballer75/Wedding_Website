@@ -9,6 +9,7 @@ import { SkipLink } from '@/components/accessibility/SkipLink'
 import { KeyboardShortcutsModal } from '@/components/accessibility/KeyboardShortcutsModal'
 import { AccessibilityProvider, useAccessibility } from '@/accessibility/AccessibilityProvider'
 import { trackPageView } from '@/services/AnalyticsService'
+import { RouteErrorBoundary } from '@/components/error/ErrorBoundary'
 
 // Lazy load pages for code splitting
 const Home = lazy(() => import('@/pages/Home'))
@@ -105,74 +106,76 @@ function AppContent() {
         tabIndex={-1}
         className="outline-none"
       >
-        <AnimatePresence mode="wait">
-          <Routes location={location} key={location.pathname}>
-            <Route 
-              path="/" 
-              element={
-                <LazyPage title="Home">
-                  <Home />
-                </LazyPage>
-              } 
-            />
-            <Route 
-              path="/film" 
-              element={
-                <LazyPage title="Wedding Film">
-                  <Film />
-                </LazyPage>
-              } 
-            />
-            <Route 
-              path="/gallery" 
-              element={
-                <LazyPage title="Photo Gallery">
-                  <Gallery />
-                </LazyPage>
-              } 
-            />
-            <Route 
-              path="/upload" 
-              element={
-                <LazyPage title="Share Memories">
-                  <Upload />
-                </LazyPage>
-              } 
-            />
-            <Route 
-              path="/guestbook" 
-              element={
-                <LazyPage title="Guestbook">
-                  <Guestbook />
-                </LazyPage>
-              } 
-            />
-            <Route 
-              path="/admin/login"
-              element={
-                <LazyPage title="Admin Login">
-                  <AdminLogin />
-                </LazyPage>
-              }
-            />
-            <Route 
-              path="/admin/*" 
-              element={
-                <LazyPage title="Admin Dashboard">
-                  <Admin />
-                </LazyPage>
-              } 
-            />
-            <Route 
-              path="*" 
-              element={
-                <LazyPage title="Page Not Found">
-                  <NotFound />
-                </LazyPage>
-              } 
-            />
-          </Routes>
-        </AnimatePresence>
+        <RouteErrorBoundary>
+          <AnimatePresence mode="wait">
+            <Routes location={location} key={location.pathname}>
+              <Route
+                path="/"
+                element={
+                  <LazyPage title="Home">
+                    <Home />
+                  </LazyPage>
+                }
+              />
+              <Route
+                path="/film"
+                element={
+                  <LazyPage title="Wedding Film">
+                    <Film />
+                  </LazyPage>
+                }
+              />
+              <Route
+                path="/gallery"
+                element={
+                  <LazyPage title="Photo Gallery">
+                    <Gallery />
+                  </LazyPage>
+                }
+              />
+              <Route
+                path="/upload"
+                element={
+                  <LazyPage title="Share Memories">
+                    <Upload />
+                  </LazyPage>
+                }
+              />
+              <Route
+                path="/guestbook"
+                element={
+                  <LazyPage title="Guestbook">
+                    <Guestbook />
+                  </LazyPage>
+                }
+              />
+              <Route
+                path="/admin/login"
+                element={
+                  <LazyPage title="Admin Login">
+                    <AdminLogin />
+                  </LazyPage>
+                }
+              />
+              <Route
+                path="/admin/*"
+                element={
+                  <LazyPage title="Admin Dashboard">
+                    <Admin />
+                  </LazyPage>
+                }
+              />
+              <Route
+                path="*"
+                element={
+                  <LazyPage title="Page Not Found">
+                    <NotFound />
+                  </LazyPage>
+                }
+              />
+            </Routes>
+          </AnimatePresence>
+        </RouteErrorBoundary>
       </main>
 
       {/* Footer with contentinfo role */}
