@@ -91,7 +91,6 @@ export interface GuestbookMessage {
   content: string
   type: 'text' | 'voice' | 'video'
   media_url?: string
-  reactions: Record<string, number>
   created_at: string
 }
 
