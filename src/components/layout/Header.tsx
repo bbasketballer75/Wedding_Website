@@ -85,7 +85,7 @@ function HeaderContent() {
           data-testid="public-header"
           className="fixed left-1/2 top-3 z-50 w-[calc(100vw-0.75rem)] max-w-[40rem] -translate-x-1/2 px-0 sm:top-6 sm:w-[calc(100vw-1rem)] sm:max-w-[42rem]"
         >
-          <div className="flex w-full items-center gap-1 overflow-x-auto rounded-full border border-gold-300/45 bg-gradient-to-r from-cream-100/92 via-gold-50/92 to-cream-100/92 px-1.5 py-1.5 shadow-[0_18px_40px_-28px_rgba(46,33,13,0.42)] backdrop-blur-xl hide-scrollbar sm:justify-between sm:gap-0 sm:px-2 sm:py-2">
+          <div className="flex w-full items-center gap-0.5 overflow-x-auto scroll-smooth rounded-full border border-gold-300/45 bg-gradient-to-r from-cream-100/92 via-gold-50/92 to-cream-100/92 px-1 py-1.5 shadow-[0_18px_40px_-28px_rgba(46,33,13,0.42)] backdrop-blur-xl hide-scrollbar sm:justify-between sm:gap-0 sm:px-2 sm:py-2">
             <Link
               to="/"
               className="shrink-0 px-3 py-2 font-display text-lg text-charcoal-900 transition-colors hover:text-gold-600 max-[360px]:px-2.5 max-[360px]:text-base sm:px-4 sm:text-xl"

@@ -50,9 +50,11 @@ function PhotoLikeButton({
   )
 }
 
+const MASONRY_COLUMNS = { base: 1, sm: 2, md: 3, lg: 4 } as const
+
 function MasonryPhotoGrid({ photos, onPhotoClick, onLike }: PhotoGridProps) {
   return (
-    <MasonryGrid columns={{ base: 1, sm: 2, md: 3, lg: 4 }}>
+    <MasonryGrid columns={MASONRY_COLUMNS}>
       {photos.map((photo, index) => (
         <motion.div
           key={photo.id}
