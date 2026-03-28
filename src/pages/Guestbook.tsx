@@ -117,15 +117,9 @@ export default function Guestbook() {
         setIsLoading(true)
         setLoadError(null)
 
-        const { data: rpcData, error: rpcError } = await supabase.rpc('get_guestbook_messages_with_comments')
-        if (!rpcError && Array.isArray(rpcData)) {
-          setMessages(rpcData.map(mapSupabaseMessage))
-          return
-        }
-
         const { data, error } = await supabase
           .from('guestbook_messages')
-          .select('*')
+          .select('id, name, content, type, created_at')
           .order('created_at', { ascending: false })
 
         if (error) {
@@ -134,7 +128,7 @@ export default function Guestbook() {
           return
         }
 
-        setMessages((data || []).map((message) => mapSupabaseMessage({ ...message, comments: [] })))
+        setMessages((data || []).map((row) => mapSupabaseMessage(row as SupabaseMessage)))
       } catch {
         setLoadError('Having trouble reaching the guestbook — your note will still go through below.')
         setMessages([])
@@ -214,7 +208,7 @@ export default function Guestbook() {
       } else {
         const { data, error } = await supabase
           .from('guestbook_messages')
-          .insert([{ name, email, content: normalizedContent, type: 'text', media_url: null, reactions: {} }])
+          .insert([{ name, email, content: normalizedContent, type: 'text', media_url: null }])
           .select()
 
         if (error) throw error
