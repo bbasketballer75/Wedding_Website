@@ -372,7 +372,7 @@ export function PhotoLightbox({
                   initial={{ x: typeof window !== 'undefined' && window.innerWidth < 640 ? 0 : 300, y: typeof window !== 'undefined' && window.innerWidth < 640 ? 300 : 0, opacity: 0 }}
                   animate={{ x: 0, y: 0, opacity: 1 }}
                   exit={{ x: typeof window !== 'undefined' && window.innerWidth < 640 ? 0 : 300, y: typeof window !== 'undefined' && window.innerWidth < 640 ? 300 : 0, opacity: 0 }}
-                  className="fixed inset-x-0 bottom-0 z-20 flex h-[min(72vh,34rem)] flex-col rounded-t-[1.5rem] border-t border-charcoal-800 bg-charcoal-900 sm:relative sm:inset-auto sm:h-auto sm:w-80 sm:rounded-none sm:border-l sm:border-t-0"
+                  className="fixed inset-x-0 bottom-0 z-20 flex h-[min(72vh,34rem)] flex-col rounded-t-[1.5rem] border-t border-charcoal-800 bg-charcoal-900 landscape:h-[min(55vh,28rem)] sm:relative sm:inset-auto sm:h-auto sm:w-80 sm:rounded-none sm:border-l sm:border-t-0 sm:landscape:h-auto"
                   onClick={(e) => e.stopPropagation()}
                 >
                   {/* Tabs */}
