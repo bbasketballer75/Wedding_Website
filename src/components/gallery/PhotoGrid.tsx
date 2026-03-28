@@ -1,7 +1,7 @@
-import { useEffect, useState } from 'react'
 import { motion } from 'framer-motion'
 import { Heart, Images } from 'lucide-react'
 import { cn } from '@/lib/utils'
+import MasonryGrid from './components/MasonryGrid'
 
 interface Photo {
   id: string
@@ -21,12 +21,6 @@ interface PhotoGridProps {
   onPhotoClick?: (photo: Photo, index: number) => void
   onLike?: (photoId: string) => void
   className?: string
-}
-
-const getMasonryColumns = (width: number) => {
-  if (width >= 1280) return 4
-  if (width >= 768) return 3
-  return 2
 }
 
 function PhotoLikeButton({
@@ -56,74 +50,39 @@ function PhotoLikeButton({
   )
 }
 
-function MasonryGrid({ photos, onPhotoClick, onLike }: PhotoGridProps) {
-  const [columnCount, setColumnCount] = useState(() =>
-    typeof window === 'undefined' ? 2 : getMasonryColumns(window.innerWidth)
-  )
-
-  useEffect(() => {
-    const onResize = () => setColumnCount(getMasonryColumns(window.innerWidth))
-
-    onResize()
-    window.addEventListener('resize', onResize)
-
-    return () => window.removeEventListener('resize', onResize)
-  }, [])
-
-  const distributePhotos = (items: Photo[], columns: number) => {
-    const cols: Photo[][] = Array.from({ length: columns }, () => [])
-    const colHeights = Array(columns).fill(0)
-
-    items.forEach((photo) => {
-      const shortestCol = colHeights.indexOf(Math.min(...colHeights))
-      cols[shortestCol].push(photo)
-      colHeights[shortestCol] += photo.aspectRatio || 1.5
-    })
-
-    return cols
-  }
-
-  const columns = distributePhotos(photos, columnCount)
-
+function MasonryPhotoGrid({ photos, onPhotoClick, onLike }: PhotoGridProps) {
   return (
-    <div
-      className="grid gap-4 md:gap-5"
-      style={{ gridTemplateColumns: `repeat(${columnCount}, minmax(0, 1fr))` }}
-    >
-      {columns.map((column, colIndex) => (
-        <div key={colIndex} className="flex flex-col gap-4 md:gap-5">
-          {column.map((photo, photoIndex) => (
-            <motion.div
-              key={photo.id}
-              initial={{ opacity: 0, y: 20 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.5, delay: colIndex * 0.08 + photoIndex * 0.04 }}
-              className="group relative overflow-hidden rounded-[1.8rem] border border-white/80 bg-white p-1 text-left shadow-[0_26px_60px_-42px_rgba(46,33,13,0.24)] transition-all duration-300 hover:-translate-y-1 hover:shadow-[0_34px_80px_-46px_rgba(46,33,13,0.34)]"
-              onClick={() => onPhotoClick?.(photo, photos.indexOf(photo))}
-              onKeyDown={(event) => {
-                if (event.key === 'Enter' || event.key === ' ') {
-                  event.preventDefault()
-                  onPhotoClick?.(photo, photos.indexOf(photo))
-                }
-              }}
-              role="button"
-              tabIndex={0}
-              aria-label={photo.caption ? `Open photo: ${photo.caption}` : 'Open photo'}
-            >
-              <div className="relative overflow-hidden rounded-[1.45rem] bg-charcoal-200">
-                <img
-                  src={photo.thumbnail || photo.url}
-                  alt={photo.caption || 'Wedding photo'}
-                  className="w-full h-auto object-cover transition-transform duration-700 group-hover:scale-[1.04]"
-                  loading="lazy"
-                />
-                <PhotoLikeButton photo={photo} onLike={onLike} />
-              </div>
-            </motion.div>
-          ))}
-        </div>
+    <MasonryGrid columns={{ base: 1, sm: 2, md: 3, lg: 4 }}>
+      {photos.map((photo, index) => (
+        <motion.div
+          key={photo.id}
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.5, delay: Math.min(index * 0.04, 0.5) }}
+          className="group relative overflow-hidden rounded-[1.8rem] border border-white/80 bg-white p-1 text-left shadow-[0_26px_60px_-42px_rgba(46,33,13,0.24)] transition-all duration-300 hover:-translate-y-1 hover:shadow-[0_34px_80px_-46px_rgba(46,33,13,0.34)]"
+          onClick={() => onPhotoClick?.(photo, index)}
+          onKeyDown={(event) => {
+            if (event.key === 'Enter' || event.key === ' ') {
+              event.preventDefault()
+              onPhotoClick?.(photo, index)
+            }
+          }}
+          role="button"
+          tabIndex={0}
+          aria-label={photo.caption ? `Open photo: ${photo.caption}` : 'Open photo'}
+        >
+          <div className="relative overflow-hidden rounded-[1.45rem] bg-charcoal-200">
+            <img
+              src={photo.thumbnail || photo.url}
+              alt={photo.caption || 'Wedding photo'}
+              className="w-full h-auto object-cover transition-transform duration-700 group-hover:scale-[1.04]"
+              loading="lazy"
+            />
+            <PhotoLikeButton photo={photo} onLike={onLike} />
+          </div>
+        </motion.div>
       ))}
-    </div>
+    </MasonryGrid>
   )
 }
 
@@ -189,7 +148,7 @@ export function PhotoGrid({
   return (
     <div className={cn('w-full', className)}>
       {viewMode === 'masonry' ? (
-        <MasonryGrid photos={photos} onPhotoClick={onPhotoClick} onLike={onLike} />
+        <MasonryPhotoGrid photos={photos} onPhotoClick={onPhotoClick} onLike={onLike} />
       ) : (
         <StandardGrid photos={photos} onPhotoClick={onPhotoClick} onLike={onLike} />
       )}
