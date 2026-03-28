@@ -16,7 +16,6 @@ import {
   type FilmChapter,
 } from '@/data/film'
 import { getMemoryTrailById, memoryTrails } from '@/data/memoryTrails'
-import { cn } from '@/lib/utils'
 import { getMediaPath } from '@/utils/media'
 import {
   Play,
@@ -24,6 +23,7 @@ import {
   Sparkles,
   Smartphone,
   X,
+  RotateCcw,
 } from 'lucide-react'
 import {
   MAIN_FILM_PROGRESS_KEY,
@@ -273,38 +273,30 @@ function ParentDanceModal({
               </button>
             </div>
 
-            <div className="grid gap-6 p-5 sm:p-6 lg:grid-cols-[minmax(0,1.15fr)_minmax(18rem,0.85fr)]">
-              <div className="relative overflow-hidden rounded-[1.75rem] border border-gold-200/16 bg-black/20">
-                <video
-                  ref={videoRef}
-                  src={getMediaPath(film.videoSrc)}
-                  controls
-                  poster={film.thumbnail}
-                  playsInline
-                  className={cn(
-                    'aspect-video w-full object-cover transition-[filter,transform] duration-500',
-                    shouldRequireLandscape && 'scale-[1.03] blur-[10px] saturate-[0.82] brightness-[0.68]'
-                  )}
-                >
-                  <track
-                    kind="captions"
-                    src={getMediaPath(film.captionsSrc)}
-                    srcLang="en"
-                    label="English captions"
-                    default
-                  />
-                </video>
+            <div className="grid gap-6 p-5 sm:p-6 md:grid-cols-[minmax(0,1fr)_16rem] lg:grid-cols-[minmax(0,1.15fr)_minmax(18rem,0.85fr)]">
+              <div className="flex flex-col gap-3">
+                <div className="relative overflow-hidden rounded-[1.75rem] border border-gold-200/16 bg-black/20">
+                  <video
+                    ref={videoRef}
+                    src={getMediaPath(film.videoSrc)}
+                    controls
+                    poster={film.thumbnail}
+                    playsInline
+                    className="aspect-video w-full object-cover"
+                  >
+                    <track
+                      kind="captions"
+                      src={getMediaPath(film.captionsSrc)}
+                      srcLang="en"
+                      label="English captions"
+                      default
+                    />
+                  </video>
+                </div>
                 {shouldRequireLandscape && (
-                  <div className="absolute inset-0 flex items-center justify-center bg-[radial-gradient(circle_at_center,rgba(255,247,235,0.08),rgba(18,13,10,0.66)_42%,rgba(18,13,10,0.9))] px-5 text-center">
-                    <div className="max-w-sm rounded-[1.4rem] border border-gold-200/20 bg-[linear-gradient(145deg,rgba(38,28,22,0.94),rgba(54,39,31,0.95))] px-5 py-6 shadow-[0_24px_60px_-32px_rgba(21,20,19,0.72)] backdrop-blur-xl">
-                      <p className="text-[10px] uppercase tracking-[0.32em] text-gold-300/82">Best in landscape</p>
-                      <h4 className="mt-3 font-display text-3xl text-cinematic-primary">
-                        Rotate your phone to watch.
-                      </h4>
-                      <p className="mt-3 text-sm leading-6 text-cinematic-secondary">
-                        These longer clips use the same landscape-only phone view as the main film.
-                      </p>
-                    </div>
+                  <div className="flex items-center justify-center gap-3 rounded-xl bg-white/8 px-4 py-3 text-sm text-white/70">
+                    <RotateCcw className="h-4 w-4 shrink-0 text-gold-400" />
+                    Rotate your phone for the best view
                   </div>
                 )}
               </div>
