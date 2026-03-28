@@ -293,10 +293,10 @@ export default function Guestbook() {
 
       {/* Main content */}
       <section className="px-4">
-        <div className="mx-auto grid max-w-6xl gap-6 2xl:grid-cols-[minmax(0,18rem)_minmax(0,1fr)] 2xl:items-start">
+        <div className="mx-auto grid max-w-6xl gap-6 xl:grid-cols-[minmax(0,18rem)_minmax(0,1fr)] xl:items-start">
 
           {/* Sidebar */}
-          <div className="grid gap-4 2xl:sticky 2xl:top-28">
+          <div className="grid gap-4 xl:sticky xl:top-28">
             <motion.div initial={{ opacity: 0, y: 18 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.08 }} className="relative overflow-hidden rounded-2xl bg-white/5 backdrop-blur-sm border border-gold-200/12 px-5 py-5">
               <p className="text-[10px] uppercase tracking-[0.3em] text-gold-400">Leave a note</p>
               <h2 className="mt-4 text-2xl text-white">Something to remember us by.</h2>
@@ -425,7 +425,7 @@ export default function Guestbook() {
             )}
 
             <motion.div initial={{ opacity: 0, y: 18 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.18 }} data-testid="guestbook-feed" className="relative overflow-hidden rounded-2xl bg-white/5 backdrop-blur-sm border border-gold-200/12 px-5 py-5">
-              <div className="flex flex-col gap-4 2xl:flex-row 2xl:items-end 2xl:justify-between">
+              <div className="flex flex-col gap-4 xl:flex-row xl:items-end xl:justify-between">
                 <div>
                   <p className="text-[10px] uppercase tracking-[0.3em] text-gold-400">Notes from the day</p>
                   <h2 className="mt-3 text-3xl text-white sm:text-4xl">
@@ -451,7 +451,7 @@ export default function Guestbook() {
               </div>
             ) : messages.length > 0 ? (
               <>
-                <div className="grid gap-5 2xl:grid-cols-2">
+                <div className="grid gap-5 xl:grid-cols-2">
                   {visibleMessages.map((message) => (
                     <MessageCard
                       key={message.id}
