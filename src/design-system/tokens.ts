@@ -198,7 +198,11 @@ export const shadows = {
   '2xl': '0 25px 50px -12px rgba(0, 0, 0, 0.25)',
   inner: 'inset 0 2px 4px 0 rgba(0, 0, 0, 0.06)',
   none: 'none',
-}
+  soft: '0 2px 8px rgba(46,33,13,0.08)',
+  glass: '0 8px 32px rgba(46,33,13,0.12)',
+  gold: '0 4px 14px rgba(201,160,92,0.4)',
+  goldHover: '0 8px 25px rgba(201,160,92,0.5)',
+} as const
 
 export const borderRadius = {
   none: '0',
@@ -306,6 +310,19 @@ export const animation = {
   },
 }
 
+export const radii = {
+  sm: '0.5rem',
+  md: '0.75rem',
+  lg: '1rem',
+  xl: '1.5rem',
+  full: '9999px',
+} as const
+
+export const focus = {
+  ring: 'focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-gold-500 focus-visible:ring-offset-2',
+  ringInset: 'focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-gold-500',
+} as const
+
 /**
  * Design tokens export
  */
@@ -316,6 +333,8 @@ export const tokens = {
   breakpoints,
   shadows,
   borderRadius,
+  radii,
+  focus,
   transitions,
   zIndex,
   animation,
