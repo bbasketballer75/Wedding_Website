@@ -4,15 +4,22 @@ import { cn } from '@/lib/utils'
 // Base Card
 const Card = React.forwardRef<
   HTMLDivElement,
-  React.HTMLAttributes<HTMLDivElement>
->(({ className, ...props }, ref) => (
+  React.HTMLAttributes<HTMLDivElement> & { interactive?: boolean }
+>(({ className, interactive, ...props }, ref) => (
   <div
     ref={ref}
     className={cn(
       'rounded-2xl bg-cream-100 text-charcoal-900 shadow-soft',
       'transition-all duration-500 ease-out',
+      interactive && [
+        'cursor-pointer',
+        'hover:-translate-y-0.5 hover:shadow-md',
+        'focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-gold-500 focus-visible:ring-offset-2',
+      ],
       className
     )}
+    role={interactive ? 'button' : undefined}
+    tabIndex={interactive ? 0 : undefined}
     {...props}
   />
 ))
@@ -21,8 +28,8 @@ Card.displayName = 'Card'
 // Glass Card (frosted effect)
 const GlassCard = React.forwardRef<
   HTMLDivElement,
-  React.HTMLAttributes<HTMLDivElement>
->(({ className, ...props }, ref) => (
+  React.HTMLAttributes<HTMLDivElement> & { interactive?: boolean }
+>(({ className, interactive, ...props }, ref) => (
   <div
     ref={ref}
     className={cn(
@@ -30,8 +37,14 @@ const GlassCard = React.forwardRef<
       'border border-white/50 shadow-glass',
       'transition-all duration-500 ease-out',
       'hover:shadow-lg hover:-translate-y-1',
+      interactive && [
+        'cursor-pointer',
+        'focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-gold-500 focus-visible:ring-offset-2',
+      ],
       className
     )}
+    role={interactive ? 'button' : undefined}
+    tabIndex={interactive ? 0 : undefined}
     {...props}
   />
 ))
@@ -60,8 +73,8 @@ PolaroidCard.displayName = 'PolaroidCard'
 // Memory Card (for guestbook)
 const MemoryCard = React.forwardRef<
   HTMLDivElement,
-  React.HTMLAttributes<HTMLDivElement>
->(({ className, ...props }, ref) => (
+  React.HTMLAttributes<HTMLDivElement> & { interactive?: boolean }
+>(({ className, interactive, ...props }, ref) => (
   <div
     ref={ref}
     className={cn(
@@ -69,8 +82,14 @@ const MemoryCard = React.forwardRef<
       'p-6 shadow-sm',
       'transition-all duration-300',
       'hover:border-gold-300 hover:shadow-md',
+      interactive && [
+        'cursor-pointer',
+        'focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-gold-500 focus-visible:ring-offset-2',
+      ],
       className
     )}
+    role={interactive ? 'button' : undefined}
+    tabIndex={interactive ? 0 : undefined}
     {...props}
   />
 ))

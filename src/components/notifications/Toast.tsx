@@ -136,7 +136,12 @@ export const ToastContainer: React.FC = () => {
   const { toasts } = useUIStore()
 
   return (
-    <div className='fixed top-4 right-4 z-50 flex flex-col gap-2 pointer-events-none'>
+    <div
+      className='fixed top-4 right-4 z-50 flex flex-col gap-2 pointer-events-none'
+      aria-live="polite"
+      aria-label="Notifications"
+      role="region"
+    >
       <AnimatePresence>
         {toasts.map(toast => (
           <div key={toast.id} className='pointer-events-auto'>
