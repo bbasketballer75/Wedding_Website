@@ -278,9 +278,10 @@ This allows Claude Code to read Figma files directly for design reference and co
 
 **Setup:** Requires a Figma Personal Access Token in `.mcp.json` under `mcpServers.figma.env.FIGMA_ACCESS_TOKEN`.
 Generate one at Figma → Settings → Security → Personal access tokens.
+Copy `.mcp.json.example` to `.mcp.json` and replace the token value.
 
 **Usage:** In any Claude Code session, share a Figma file URL and the MCP will read component specs,
 variables, and annotations without leaving the terminal.
 
-**Design system mapping:** Figma variable names should match keys in `src/tokens/designTokens.ts`
+**Design system mapping:** Figma variable names should match keys in `src/design-system/tokens.ts`
 so design tokens stay in sync between Figma and code.
