@@ -10,7 +10,7 @@ import { Input } from '@/components/ui/Input'
 import { downloadFile } from '@/utils/download'
 import { getMediaPath } from '@/utils/media'
 import { useInfiniteScroll } from '@/hooks/useInfiniteScroll'
-import { Search, Grid3X3, LayoutGrid, Filter, Loader2, Images, X } from 'lucide-react'
+import { Search, Grid3X3, LayoutGrid, Filter, Loader2, Images, X, CheckSquare, Download, Share2 } from 'lucide-react'
 import { cn } from '@/lib/utils'
 import {
   addPhotoComment,
@@ -469,6 +469,9 @@ export default function Gallery() {
   const [photos, setPhotos] = useState<Photo[]>(() => curatedPhotos.map(normalizeGalleryPhoto))
   const [downloadingId, setDownloadingId] = useState<string | null>(null)
   const [isLoading, setIsLoading] = useState(true)
+  const [selectMode, setSelectMode] = useState(false)
+  const [selectedPhotoIds, setSelectedPhotoIds] = useState<Set<string>>(new Set())
+  const [isDownloadingPack, setIsDownloadingPack] = useState(false)
   const [loadError, setLoadError] = useState<string | null>(null)
   const [engagementSessionId] = useState(getPhotoEngagementSessionId)
   const [submittingCommentPhotoId, setSubmittingCommentPhotoId] = useState<string | null>(null)
@@ -765,6 +768,51 @@ export default function Gallery() {
     setDownloadingId(null)
   }
 
+  const handleToggleSelect = (photoId: string) => {
+    setSelectedPhotoIds((prev) => {
+      const next = new Set(prev)
+      if (next.has(photoId)) next.delete(photoId)
+      else next.add(photoId)
+      return next
+    })
+  }
+
+  const handleExitSelectMode = () => {
+    setSelectMode(false)
+    setSelectedPhotoIds(new Set())
+  }
+
+  const handleDownloadPack = async () => {
+    if (selectedPhotoIds.size === 0) return
+    setIsDownloadingPack(true)
+    try {
+      const res = await fetch('/.netlify/functions/download-pack', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ photoIds: [...selectedPhotoIds] }),
+      })
+      if (!res.ok) throw new Error(await res.text())
+      const blob = await res.blob()
+      const url = URL.createObjectURL(blob)
+      const a = document.createElement('a')
+      a.href = url
+      a.download = 'theporadas-photos.zip'
+      a.click()
+      URL.revokeObjectURL(url)
+    } catch {
+      addToast({ type: 'error', message: 'Download failed. Please try again.' })
+    }
+    setIsDownloadingPack(false)
+  }
+
+  const handleShareSelection = () => {
+    if (selectedPhotoIds.size === 0) return
+    const ids = [...selectedPhotoIds].join(',')
+    const shareUrl = `${window.location.origin}/gallery?share=${ids}`
+    void navigator.clipboard?.writeText(shareUrl)
+    addToast({ type: 'success', message: 'Share link copied to clipboard' })
+  }
+
   const handleAddComment = async (photoId: string, payload: { author: string; content: string }) => {
     const normalizedContent = payload.content.trim()
     const normalizedAuthor = payload.author.trim() || 'Guest'
@@ -991,29 +1039,46 @@ export default function Gallery() {
                     )}
                   </div>
 
-                  <div className="inline-flex items-center gap-2 rounded-full border border-gold-200/70 bg-cream-50/90 p-1">
-                    {viewOptions.map((option) => {
-                      const Icon = option.icon
-                      const isActive = viewMode === option.key
+                  <div className="flex items-center gap-2">
+                    <div className="inline-flex items-center gap-2 rounded-full border border-gold-200/70 bg-cream-50/90 p-1">
+                      {viewOptions.map((option) => {
+                        const Icon = option.icon
+                        const isActive = viewMode === option.key
 
-                      return (
-                        <button
-                          key={option.key}
-                          type="button"
-                          onClick={() => setViewMode(option.key)}
-                          aria-pressed={isActive}
-                          className={cn(
-                            'inline-flex items-center gap-2 rounded-full px-4 py-2 text-sm transition-all',
-                            isActive
-                              ? 'bg-gold-500 text-white shadow-sm'
-                              : 'text-charcoal-500 hover:bg-white hover:text-charcoal-700'
-                          )}
-                        >
-                          <Icon className="h-4 w-4" />
-                          {option.label}
-                        </button>
-                      )
-                    })}
+                        return (
+                          <button
+                            key={option.key}
+                            type="button"
+                            onClick={() => setViewMode(option.key)}
+                            aria-pressed={isActive}
+                            className={cn(
+                              'inline-flex items-center gap-2 rounded-full px-4 py-2 text-sm transition-all',
+                              isActive
+                                ? 'bg-gold-500 text-white shadow-sm'
+                                : 'text-charcoal-500 hover:bg-white hover:text-charcoal-700'
+                            )}
+                          >
+                            <Icon className="h-4 w-4" />
+                            {option.label}
+                          </button>
+                        )
+                      })}
+                    </div>
+
+                    <button
+                      type="button"
+                      onClick={() => selectMode ? handleExitSelectMode() : setSelectMode(true)}
+                      aria-pressed={selectMode}
+                      className={cn(
+                        'inline-flex items-center gap-2 rounded-full border px-4 py-2 text-sm transition-all',
+                        selectMode
+                          ? 'border-gold-400 bg-gold-500 text-white shadow-sm'
+                          : 'border-gold-200/70 bg-cream-50/90 text-charcoal-500 hover:bg-white hover:text-charcoal-700'
+                      )}
+                    >
+                      <CheckSquare className="h-4 w-4" />
+                      Select
+                    </button>
                   </div>
 
                 </div>
@@ -1063,6 +1128,46 @@ export default function Gallery() {
         </div>
       </section>
 
+      {/* Selection action bar */}
+      {selectMode && selectedPhotoIds.size > 0 && (
+        <div className="sticky top-20 z-40 px-4 pb-2">
+          <div className="mx-auto max-w-7xl">
+            <motion.div
+              initial={{ opacity: 0, y: -8 }}
+              animate={{ opacity: 1, y: 0 }}
+              className="flex items-center justify-between rounded-2xl border border-gold-300/60 bg-gradient-to-r from-cream-100/95 via-gold-50/95 to-cream-100/95 px-4 py-3 shadow-lg backdrop-blur-md"
+            >
+              <span className="text-sm font-medium text-charcoal-700">
+                {selectedPhotoIds.size} photo{selectedPhotoIds.size !== 1 ? 's' : ''} selected
+              </span>
+              <div className="flex items-center gap-2">
+                <button
+                  type="button"
+                  onClick={handleShareSelection}
+                  className="inline-flex items-center gap-1.5 rounded-full border border-gold-200/80 bg-white/80 px-4 py-2 text-sm text-charcoal-600 transition-colors hover:text-charcoal-800"
+                >
+                  <Share2 className="h-3.5 w-3.5" />
+                  Copy link
+                </button>
+                <button
+                  type="button"
+                  onClick={() => void handleDownloadPack()}
+                  disabled={isDownloadingPack}
+                  className="inline-flex items-center gap-1.5 rounded-full bg-gold-500 px-4 py-2 text-sm font-medium text-white shadow-sm transition-colors hover:bg-gold-600 disabled:opacity-60"
+                >
+                  {isDownloadingPack ? (
+                    <Loader2 className="h-3.5 w-3.5 animate-spin" />
+                  ) : (
+                    <Download className="h-3.5 w-3.5" />
+                  )}
+                  Download zip
+                </button>
+              </div>
+            </motion.div>
+          </div>
+        </div>
+      )}
+
       <section className="flex-1 min-h-0 px-4 pb-8">
         <div className="mx-auto max-w-7xl">
           {loadError && (
@@ -1106,8 +1211,11 @@ export default function Gallery() {
                 <PhotoGrid
                   photos={displayedItems}
                   viewMode={viewMode}
-                  onPhotoClick={(_, index) => openLightbox(index)}
-                  onLike={handleLike}
+                  onPhotoClick={selectMode ? undefined : (_, index) => openLightbox(index)}
+                  onLike={selectMode ? undefined : handleLike}
+                  selectMode={selectMode}
+                  selectedIds={selectedPhotoIds}
+                  onToggleSelect={handleToggleSelect}
                 />
 
                 {hasMore && (
