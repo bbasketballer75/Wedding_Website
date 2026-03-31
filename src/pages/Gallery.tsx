@@ -563,9 +563,19 @@ export default function Gallery() {
     const requestedCollection = searchParams.get('collection') as CollectionTab | null
     const requestedPhotoId = searchParams.get('photo')
     const requestedPerson = searchParams.get('person')
+    const requestedShare = searchParams.get('share')
 
     setSearchQuery((current) => (current !== requestedQuery ? requestedQuery : current))
     setFaceFilter((current) => (current !== requestedPerson ? requestedPerson : current))
+
+    if (requestedShare && photos.length > 0) {
+      const ids = requestedShare.split(',').filter(Boolean)
+      const validIds = ids.filter((id) => photos.some((p) => p.id === id))
+      if (validIds.length > 0) {
+        setSelectMode(true)
+        setSelectedPhotoIds(new Set(validIds))
+      }
+    }
 
     if (requestedCollection && collectionTabs.includes(requestedCollection)) {
       setSelectedCollection((current) => (current !== requestedCollection ? requestedCollection : current))
@@ -959,9 +969,14 @@ export default function Gallery() {
     }
   }, [filteredPhotos, lightboxIndex])
 
+  const shareParam = searchParams.get('share')
+  const shareImageUrl = shareParam
+    ? photos.find((p) => p.id === shareParam.split(',')[0])?.thumbnail
+    : undefined
+
   return (
     <div className="min-h-screen bg-cream-50 pt-24 pb-20">
-      <GallerySEO />
+      <GallerySEO shareImage={shareImageUrl} />
 
       <section className="px-4 pb-6">
         <div className="mx-auto max-w-7xl">
