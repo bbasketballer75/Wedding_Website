@@ -30,7 +30,7 @@ test.describe('Upload Page', () => {
     await expect(page.getByText('Uploaded and ready')).toBeVisible()
 
     await page.getByLabel('Your Name').fill('Taylor Guest')
-    await page.getByLabel('Email').fill('taylor@example.com')
+    await page.locator('#email').fill('taylor@example.com')
     await page.getByLabel('Add a Note (Optional)').fill('A few favorites from our table.')
     await page.getByRole('button', { name: /Submit 1 photo/i }).click()
 
@@ -48,7 +48,7 @@ for (const viewport of Object.keys(viewports) as Array<keyof typeof viewports>) 
     await fileInput.setInputFiles([{ name: 'table-candid.png', mimeType: 'image/png', buffer: tinyPng }])
     await expect(page.getByText('Uploaded and ready')).toBeVisible()
     await page.getByLabel('Your Name').fill('Taylor Guest')
-    await page.getByLabel('Email').fill('taylor@example.com')
+    await page.locator('#email').fill('taylor@example.com')
     await page.getByLabel('Add a Note (Optional)').fill('A few favorites from our table.')
     await page.getByRole('button', { name: /Submit 1 photo/i }).click()
 

@@ -15,21 +15,49 @@ import {
   BookHeart,
   CheckCircle,
   Loader2,
+  MessageSquare,
   PenSquare,
   Send,
+  Smile,
   Sparkles,
   X,
 } from 'lucide-react'
+
+type MessageType = 'text' | 'voice' | 'video'
+type ActiveFilter = 'all' | MessageType
+
+interface Comment {
+  id: string
+  author: string
+  content: string
+  created_at: string
+}
 
 interface Message {
   id: string
   name: string
   content: string
-  type: 'text' | 'voice' | 'video'
+  type: MessageType
   timestamp: string
+  reactions: Record<string, number>
+  comments: Comment[]
 }
 
 const INITIAL_VISIBLE_MESSAGES = 8
+
+const REACTION_TYPES = [
+  { key: 'love', label: 'Love', emoji: '\u2764\uFE0F' },
+  { key: 'clap', label: 'Clap', emoji: '\uD83D\uDC4F' },
+  { key: 'laugh', label: 'Laugh', emoji: '\uD83D\uDE02' },
+  { key: 'wow', label: 'Wow', emoji: '\uD83D\uDE2E' },
+]
+
+const FILTER_HEADING: Record<ActiveFilter, string> = {
+  all: 'Every guestbook entry',
+  text: 'Text messages',
+  voice: 'Voice messages',
+  video: 'Video messages',
+}
 
 function formatGuestbookDate(timestamp?: string) {
   if (!timestamp) return 'Just now'
@@ -43,12 +71,18 @@ function formatGuestbookDate(timestamp?: string) {
 }
 
 function mapSupabaseMessage(message: SupabaseMessage): Message {
+  const raw = message as SupabaseMessage & {
+    reactions?: Record<string, number>
+    comments?: Comment[]
+  }
   return {
     id: message.id,
     name: message.name,
     content: message.content,
     type: message.type,
     timestamp: formatGuestbookDate(message.created_at),
+    reactions: raw.reactions ?? {},
+    comments: raw.comments ?? [],
   }
 }
 
@@ -61,11 +95,34 @@ function getDisplayContent(message: Message) {
 function MessageCard({
   message,
   isHighlighted = false,
+  localReactions,
+  onAddReaction,
+  extraComments,
+  onSubmitReply,
 }: {
   message: Message
   isHighlighted?: boolean
+  localReactions?: Record<string, number>
+  onAddReaction: (messageId: string) => void
+  extraComments?: Comment[]
+  onSubmitReply: (messageId: string, content: string) => Promise<void>
 }) {
   const displayContent = getDisplayContent(message)
+  const reactions = localReactions ?? message.reactions
+  const allComments = [...message.comments, ...(extraComments ?? [])]
+  const [replyOpen, setReplyOpen] = useState(false)
+  const [replyText, setReplyText] = useState('')
+  const [isSubmittingReply, setIsSubmittingReply] = useState(false)
+
+  const handleSendReply = async () => {
+    if (!replyText.trim()) return
+    const text = replyText.trim()
+    setReplyText('')
+    setReplyOpen(false)
+    setIsSubmittingReply(true)
+    await onSubmitReply(message.id, text)
+    setIsSubmittingReply(false)
+  }
 
   return (
     <motion.article
@@ -91,9 +148,88 @@ function MessageCard({
           <p className="text-base leading-7 text-white/75">{displayContent}</p>
         </div>
       )}
+
+      {Object.keys(reactions).length > 0 && (
+        <div className="mt-4 flex flex-wrap gap-2">
+          {Object.entries(reactions).map(([key, count]) => {
+            const rType = REACTION_TYPES.find((r) => r.key === key)
+            return (
+              <button
+                key={key}
+                type="button"
+                aria-label={`${rType?.label ?? key} reaction, ${count} votes`}
+                className="inline-flex items-center gap-1.5 rounded-full border border-white/12 bg-white/8 px-3 py-1 text-sm text-white/70 transition-colors hover:bg-white/12"
+              >
+                <span aria-hidden="true">{rType?.emoji ?? key}</span>
+                <span>{count}</span>
+              </button>
+            )
+          })}
+        </div>
+      )}
+
+      <div className="mt-4 flex items-center gap-3 border-t border-white/8 pt-4">
+        <button
+          type="button"
+          onClick={() => onAddReaction(message.id)}
+          className="inline-flex items-center gap-1.5 rounded-full border border-white/12 bg-white/5 px-3 py-1.5 text-xs text-white/55 transition-colors hover:bg-white/10 hover:text-white/80"
+        >
+          <Smile className="h-3.5 w-3.5" />
+          Add a reaction
+        </button>
+        <button
+          type="button"
+          onClick={() => setReplyOpen((prev) => !prev)}
+          className="inline-flex items-center gap-1.5 rounded-full border border-white/12 bg-white/5 px-3 py-1.5 text-xs text-white/55 transition-colors hover:bg-white/10 hover:text-white/80"
+        >
+          <MessageSquare className="h-3.5 w-3.5" />
+          {allComments.length > 0 ? `Reply (${allComments.length})` : 'Reply'}
+        </button>
+      </div>
+
+      {allComments.length > 0 && (
+        <div className="mt-4 space-y-3">
+          {allComments.map((comment) => (
+            <div key={comment.id} className="flex gap-3 rounded-xl bg-white/4 px-3 py-3">
+              <Avatar fallback={comment.author} size="sm" />
+              <div>
+                <p className="text-sm font-medium text-white/80">{comment.author}</p>
+                <p className="mt-1 text-sm text-white/60">{comment.content}</p>
+              </div>
+            </div>
+          ))}
+        </div>
+      )}
+
+      {replyOpen && (
+        <div className="mt-4 rounded-xl bg-white/4 px-4 py-4">
+          <Label htmlFor={`reply-${message.id}`} className="sr-only">Add a reply</Label>
+          <Textarea
+            id={`reply-${message.id}`}
+            aria-label="Add a reply"
+            value={replyText}
+            onChange={(e) => setReplyText(e.target.value)}
+            placeholder="Add a reply..."
+            rows={2}
+            className="bg-white/8 border-white/12 text-white placeholder:text-white/30 focus:border-gold-400/50"
+          />
+          <div className="mt-3 flex justify-end">
+            <button
+              type="button"
+              onClick={() => void handleSendReply()}
+              disabled={isSubmittingReply || !replyText.trim()}
+              className="inline-flex items-center gap-1.5 rounded-full bg-gold-500 px-4 py-2 text-sm font-medium text-white disabled:opacity-50"
+            >
+              {isSubmittingReply ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : <Send className="h-3.5 w-3.5" />}
+              Send
+            </button>
+          </div>
+        </div>
+      )}
     </motion.article>
   )
 }
+
 export default function Guestbook() {
   const [searchParams] = useSearchParams()
   const [messages, setMessages] = useState<Message[]>([])
@@ -108,6 +244,10 @@ export default function Guestbook() {
   const [submitError, setSubmitError] = useState<string | null>(null)
   const [visibleCount, setVisibleCount] = useState(INITIAL_VISIBLE_MESSAGES)
   const [highlightedMessageId, setHighlightedMessageId] = useState<string | null>(null)
+  const [activeFilter, setActiveFilter] = useState<ActiveFilter>('all')
+  const [reactionPickerForId, setReactionPickerForId] = useState<string | null>(null)
+  const [localReactions, setLocalReactions] = useState<Record<string, Record<string, number>>>({})
+  const [extraComments, setExtraComments] = useState<Record<string, Comment[]>>({})
   const composerRef = useRef<HTMLDivElement | null>(null)
   const { addToast } = useToast()
 
@@ -119,7 +259,7 @@ export default function Guestbook() {
 
         const { data, error } = await supabase
           .from('guestbook_messages')
-          .select('id, name, content, type, created_at')
+          .select('id, name, content, type, created_at, reactions, comments')
           .order('created_at', { ascending: false })
 
         if (error) {
@@ -165,6 +305,37 @@ export default function Guestbook() {
     setIsSubmitted(false)
   }
 
+  const handleAddReaction = async (messageId: string, reactionKey: string) => {
+    setReactionPickerForId(null)
+    setLocalReactions((prev) => {
+      const current = prev[messageId] ?? { ...(messages.find((m) => m.id === messageId)?.reactions ?? {}) }
+      return { ...prev, [messageId]: { ...current, [reactionKey]: (current[reactionKey] ?? 0) + 1 } }
+    })
+    try {
+      const msg = messages.find((m) => m.id === messageId)
+      if (!msg) return
+      const updated = { ...msg.reactions, ...localReactions[messageId], [reactionKey]: ((localReactions[messageId]?.[reactionKey] ?? msg.reactions[reactionKey] ?? 0) + 1) }
+      await supabase.from('guestbook_messages').update({ reactions: updated }).eq('id', messageId)
+    } catch {
+      // optimistic update already applied
+    }
+  }
+
+  const handleSubmitReply = async (messageId: string, replyContent: string): Promise<void> => {
+    const newComment: Comment = {
+      id: `local-${Date.now()}`,
+      author: 'You',
+      content: replyContent,
+      created_at: new Date().toISOString(),
+    }
+    setExtraComments((prev) => ({ ...prev, [messageId]: [...(prev[messageId] ?? []), newComment] }))
+    try {
+      await supabase.from('guestbook_comments').insert([{ message_id: messageId, author: 'Guest', content: replyContent }])
+    } catch {
+      // optimistic update already applied
+    }
+  }
+
   const handleSubmit = async (event: React.FormEvent) => {
     event.preventDefault()
 
@@ -202,7 +373,7 @@ export default function Guestbook() {
         }
 
         setMessages((previous) => [
-          { id: result.message_id, name, content: normalizedContent, type: 'text', timestamp: 'Just now' },
+          { id: result.message_id, name, content: normalizedContent, type: 'text', timestamp: 'Just now', reactions: {}, comments: [] },
           ...previous,
         ])
       } else {
@@ -232,14 +403,14 @@ export default function Guestbook() {
     }
   }
 
-  const visibleMessages = messages.slice(0, visibleCount)
-  const hasMoreMessages = messages.length > visibleCount
-  const featuredMessage = messages[0]
+  const filteredMessages = activeFilter === 'all' ? messages : messages.filter((m) => m.type === activeFilter)
+  const visibleMessages = filteredMessages.slice(0, visibleCount)
+  const hasMoreMessages = filteredMessages.length > visibleCount
 
   useEffect(() => {
     if (!highlightedMessageId) return
 
-    const highlightedIndex = messages.findIndex((message) => message.id === highlightedMessageId)
+    const highlightedIndex = filteredMessages.findIndex((message) => message.id === highlightedMessageId)
     if (highlightedIndex === -1) return
 
     if (highlightedIndex >= visibleCount) {
@@ -253,7 +424,7 @@ export default function Guestbook() {
     }, 220)
 
     return () => window.clearTimeout(timeoutId)
-  }, [messages, highlightedMessageId, visibleCount])
+  }, [filteredMessages, highlightedMessageId, visibleCount])
 
   return (
     <div className="min-h-screen bg-[linear-gradient(to_bottom,rgba(12,8,5,1),rgba(22,14,6,1))] pb-20 pt-28 sm:pt-32">
@@ -262,6 +433,37 @@ export default function Guestbook() {
         <div className="absolute bottom-1/4 right-1/4 h-64 w-64 rounded-full bg-gold-400/3 blur-[100px]" />
       </div>
       <GuestbookSEO />
+
+      {/* Global reaction picker */}
+      {reactionPickerForId !== null && (
+        <div
+          id="reaction-picker"
+          className="fixed bottom-24 left-1/2 z-50 -translate-x-1/2 rounded-2xl border border-white/15 bg-[rgba(22,14,6,0.95)] px-4 py-3 shadow-2xl backdrop-blur-md"
+        >
+          <div className="flex items-center gap-2">
+            {REACTION_TYPES.map((r) => (
+              <button
+                key={r.key}
+                type="button"
+                onClick={() => void handleAddReaction(reactionPickerForId, r.key)}
+                aria-label={r.label}
+                className="flex flex-col items-center gap-1 rounded-xl px-3 py-2 text-2xl transition-transform hover:scale-110 hover:bg-white/8"
+              >
+                {r.emoji}
+                <span className="text-[10px] text-white/50">{r.label}</span>
+              </button>
+            ))}
+            <button
+              type="button"
+              onClick={() => setReactionPickerForId(null)}
+              aria-label="Close reaction picker"
+              className="ml-2 rounded-full border border-white/15 bg-white/8 p-1.5 text-white/50 hover:text-white"
+            >
+              <X className="h-3.5 w-3.5" />
+            </button>
+          </div>
+        </div>
+      )}
 
       {/* Hero */}
       <section className="px-4 pb-10">
@@ -281,7 +483,7 @@ export default function Guestbook() {
                 The guestbook is where the day settles. Whatever you felt, what you remember, or what you want us to carry forward — leave it here.
               </p>
               <div className="mt-8 flex flex-wrap items-center gap-4">
-                <Button size="lg" onClick={() => openComposer()}>Leave a note</Button>
+                <Button size="lg" onClick={() => openComposer()}>Start your message</Button>
                 {messages.length > 0 && (
                   <span className="text-sm text-white/35">{messages.length} {messages.length === 1 ? 'note' : 'notes'} so far</span>
                 )}
@@ -302,39 +504,19 @@ export default function Guestbook() {
               <h2 className="mt-4 text-2xl text-white">Something to remember us by.</h2>
               <p className="mt-3 text-sm leading-6 text-white/55">A few words is plenty. Write what came to mind on the drive home.</p>
               <Button
-                type="button"
-                size="lg"
-                variant={showForm ? 'secondary' : 'primary'}
-                onClick={() => (showForm ? setShowForm(false) : openComposer())}
+                onClick={() => { setShowForm((prev) => !prev) }}
+                variant="secondary"
                 className="mt-5 w-full"
                 aria-expanded={showForm}
               >
                 {showForm ? <><X className="h-4 w-4" />Close</> : <><Send className="h-4 w-4" />Write a note</>}
               </Button>
             </motion.div>
-
-            <motion.div initial={{ opacity: 0, y: 18 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.14 }} className="relative overflow-hidden rounded-2xl bg-white/5 backdrop-blur-sm border border-gold-200/12 px-5 py-5">
-              <p className="text-[10px] uppercase tracking-[0.3em] text-gold-400">Newest note</p>
-              {featuredMessage ? (
-                <>
-                  <p className="mt-3 text-lg font-semibold text-white">{featuredMessage.name}</p>
-                  <p className="mt-2 text-sm text-white/45">{featuredMessage.timestamp}</p>
-                  <p className="mt-4 text-sm leading-6 text-white/60">
-                    {getDisplayContent(featuredMessage).slice(0, 120)}
-                    {getDisplayContent(featuredMessage).length > 120 ? '…' : ''}
-                  </p>
-                </>
-              ) : (
-                <p className="mt-3 text-sm leading-6 text-white/55">
-                  The first note will appear here once someone leaves a memory from the day.
-                </p>
-              )}
-            </motion.div>
           </div>
 
           {/* Feed */}
-          <div className="space-y-6">
-            <AnimatePresence initial={false}>
+          <div className="grid gap-5">
+            <AnimatePresence>
               {showForm && (
                 <motion.div
                   ref={composerRef}
@@ -350,7 +532,7 @@ export default function Guestbook() {
                         <CheckCircle className="h-10 w-10 text-green-400" />
                       </div>
                       <span className="flex items-center justify-center gap-1.5 text-[10px] uppercase tracking-[0.3em] text-gold-400 mt-6"><Sparkles className="h-3.5 w-3.5" />Sent</span>
-                      <h2 className="mt-6 text-4xl text-white sm:text-5xl">Your note is in the book.</h2>
+                      <h2 className="mt-6 text-4xl text-white sm:text-5xl">Your note is part of the book now.</h2>
                       <p className="mx-auto mt-4 max-w-2xl text-base text-white/55 sm:text-lg">
                         Thank you for leaving something with us. We'll carry it forward.
                       </p>
@@ -366,7 +548,8 @@ export default function Guestbook() {
                           type="button"
                           onClick={() => setShowForm(false)}
                           className="rounded-full border border-white/15 bg-white/8 p-2 text-white/50 shadow-sm transition-colors hover:text-white hover:bg-white/12"
-                          aria-label="Close"
+                          aria-label="Close composer"
+                          aria-expanded="true"
                         >
                           <X className="h-5 w-5" />
                         </button>
@@ -409,7 +592,7 @@ export default function Guestbook() {
                         <Button type="submit" size="lg" disabled={isSubmitting || !name || !content.trim()}>
                           {isSubmitting
                             ? <><Loader2 className="h-4 w-4 animate-spin" />Sending…</>
-                            : <><Send className="h-4 w-4" />Send your note</>}
+                            : <><Send className="h-4 w-4" />Post to the guestbook</>}
                         </Button>
                       </div>
                     </form>
@@ -429,13 +612,34 @@ export default function Guestbook() {
                 <div>
                   <p className="text-[10px] uppercase tracking-[0.3em] text-gold-400">Notes from the day</p>
                   <h2 className="mt-3 text-3xl text-white sm:text-4xl">
-                    Everyone who left a note
+                    {FILTER_HEADING[activeFilter]}
                   </h2>
                 </div>
                 <div className="flex flex-wrap gap-2">
+                  <div
+                    data-testid="guestbook-filters"
+                    className="inline-flex items-center gap-1 rounded-full border border-white/12 bg-white/5 p-1"
+                  >
+                    {(['all', 'text', 'voice', 'video'] as ActiveFilter[]).map((filter) => (
+                      <button
+                        key={filter}
+                        type="button"
+                        onClick={() => { setActiveFilter(filter); setVisibleCount(INITIAL_VISIBLE_MESSAGES) }}
+                        aria-pressed={activeFilter === filter}
+                        className={cn(
+                          'rounded-full px-3 py-1.5 text-xs font-medium capitalize transition-all',
+                          activeFilter === filter
+                            ? 'bg-gold-500 text-white'
+                            : 'text-white/55 hover:text-white hover:bg-white/8'
+                        )}
+                      >
+                        {filter === 'all' ? 'All' : filter.charAt(0).toUpperCase() + filter.slice(1)}
+                      </button>
+                    ))}
+                  </div>
                   <div className="inline-flex items-center gap-2 rounded-full border border-white/12 bg-white/8 px-4 py-2 text-sm text-white/60">
                     <BookHeart className="h-4 w-4 text-gold-400" />
-                    {messages.length} {messages.length === 1 ? 'note' : 'notes'}
+                    {filteredMessages.length} {filteredMessages.length === 1 ? 'note' : 'notes'}
                   </div>
                 </div>
               </div>
@@ -449,7 +653,7 @@ export default function Guestbook() {
                 <p className="mt-6 font-display text-2xl text-white">Gathering the notes</p>
                 <p className="mt-2 text-white/40">Just a moment while we bring in everything from the day.</p>
               </div>
-            ) : messages.length > 0 ? (
+            ) : visibleMessages.length > 0 ? (
               <>
                 <div className="grid gap-5 xl:grid-cols-2">
                   {visibleMessages.map((message) => (
@@ -457,6 +661,10 @@ export default function Guestbook() {
                       key={message.id}
                       message={message}
                       isHighlighted={highlightedMessageId === message.id}
+                      localReactions={localReactions[message.id]}
+                      onAddReaction={setReactionPickerForId}
+                      extraComments={extraComments[message.id]}
+                      onSubmitReply={handleSubmitReply}
                     />
                   ))}
                 </div>

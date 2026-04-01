@@ -14,7 +14,7 @@ test.describe('Film Page', () => {
     await page.getByRole('button', { name: /25:37 The Ceremony/i }).click()
     await page.waitForTimeout(600)
 
-    const currentTime = await page.locator('#wedding-film-player video').evaluate((node) => {
+    const currentTime = await page.locator('#wedding-film-player video:not([aria-hidden])').evaluate((node) => {
       const video = node as HTMLVideoElement
       return video.currentTime
     })
