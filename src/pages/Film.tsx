@@ -581,7 +581,7 @@ export default function Film() {
     scrollToVideo()
 
     window.setTimeout(() => {
-      const video = document.querySelector<HTMLVideoElement>('#wedding-film-player video')
+      const video = document.querySelector<HTMLVideoElement>('#wedding-film-player video:not([aria-hidden])')
       if (!video) {
         return
       }
@@ -665,7 +665,11 @@ export default function Film() {
                 feels impossible to forget.
               </p>
 
-              <div className="mt-8 flex flex-wrap items-center gap-3 text-sm text-charcoal-500">
+              <div className="mt-8">
+                <Button onClick={scrollToVideo} size="lg">Watch Now</Button>
+              </div>
+
+              <div className="mt-6 flex flex-wrap items-center gap-3 text-sm text-charcoal-500">
                 <span className="rounded-full border border-white/80 bg-white/78 px-4 py-2">
                   Saturday, May 10, 2025
                 </span>
@@ -911,6 +915,14 @@ export default function Film() {
                   to="/guestbook"
                 >
                   Leave a Note
+                </Button>
+                <Button
+                  size="md"
+                  variant="ghost"
+                  className="min-w-[10rem] px-4 py-2.5 sm:min-w-[10.5rem] sm:px-5"
+                  to="/upload"
+                >
+                  Share Your Angle
                 </Button>
               </div>
             </div>

@@ -3,6 +3,8 @@ import { motion, useScroll, useTransform, useMotionValueEvent } from 'framer-mot
 import { Link } from 'react-router-dom'
 import { ChevronDown } from 'lucide-react'
 import { LoveTimeline } from '@/components/timeline/LoveTimeline'
+import { AnniversaryCountdown } from '@/components/sections/AnniversaryCountdown'
+import { GuestHighlightReel } from '@/components/sections/GuestHighlightReel'
 import { publicNavLinks } from '@/components/layout/publicNav'
 import { HomeSEO } from '@/components/seo/SEOHead'
 import { cn } from '@/lib/utils'
@@ -127,7 +129,7 @@ export default function Home() {
   }, [])
 
   const scrollToContent = () => {
-    document.getElementById('love-timeline')?.scrollIntoView({ behavior: 'smooth', block: 'start' })
+    document.getElementById('welcome-panel')?.scrollIntoView({ behavior: 'smooth', block: 'start' })
   }
 
   return (
@@ -248,7 +250,13 @@ export default function Home() {
         </motion.div>
       </section>
 
+      <div id="welcome-panel">
+        <AnniversaryCountdown />
+      </div>
+
       <LoveTimeline />
+
+      <GuestHighlightReel />
 
     </div>
   )

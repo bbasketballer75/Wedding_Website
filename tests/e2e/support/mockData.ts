@@ -115,7 +115,7 @@ export const guestbookMessagesWithComments = [
       'Your vows made the whole room disappear for a second. It felt like all of us were holding our breath with you.',
     type: 'text',
     media_url: null,
-    reactions: { heart: 12, clap: 4 },
+    reactions: { love: 12, clap: 4 },
     created_at: '2025-05-12T18:00:00.000Z',
     comments: [
       {
@@ -144,7 +144,7 @@ export const guestbookMessagesWithComments = [
     content: 'We sent a quick video hello from our table right after the toasts.',
     type: 'video',
     media_url: null,
-    reactions: { heart: 9 },
+    reactions: { love: 9 },
     created_at: '2025-05-14T18:00:00.000Z',
     comments: [],
   },

@@ -58,6 +58,11 @@ export async function installPublicSiteMocks(page: Page) {
       return
     }
 
+    if (url.pathname.includes('/rest/v1/guestbook_messages') && request.method() === 'GET') {
+      await fulfillJson(route, guestbookMessagesWithComments)
+      return
+    }
+
     if (url.pathname.includes('/rest/v1/guestbook_messages') && request.method() === 'PATCH') {
       await fulfillJson(route, [])
       return

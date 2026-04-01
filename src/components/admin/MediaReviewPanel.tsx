@@ -1,4 +1,5 @@
 import { useCallback, useDeferredValue, useEffect, useMemo, useState } from 'react'
+import React from 'react'
 import {
   CheckCircle2,
   Eye,
@@ -6,10 +7,14 @@ import {
   RefreshCw,
   Save,
   Tags,
+  Users,
+  Inbox,
 } from 'lucide-react'
 import { Button } from '@/components/ui/Button'
 import { Input } from '@/components/ui/Input'
 import { Textarea } from '@/components/ui/Textarea'
+import { ListSkeleton } from '@/components/ui/Skeleton'
+import { ComponentErrorBoundary } from '@/components/error/ErrorBoundary'
 import { useToast } from '@/context/ToastContext'
 import { cn } from '@/lib/utils'
 import { getMediaPath } from '@/utils/media'
@@ -395,6 +400,20 @@ function getOverlayStyle(face: MediaReviewFace) {
     height: '1.25rem',
     transform: 'translate(-50%, -50%)',
   }
+}
+
+function EmptyState({ icon: Icon, title, description }: {
+  icon: React.ElementType
+  title: string
+  description: string
+}) {
+  return (
+    <div className="flex flex-col items-center gap-3 py-16 text-center text-charcoal-500">
+      <Icon className="h-12 w-12 opacity-30" />
+      <p className="font-medium text-charcoal-700">{title}</p>
+      <p className="text-sm">{description}</p>
+    </div>
+  )
 }
 
 export function MediaReviewPanel() {
@@ -966,10 +985,15 @@ export function MediaReviewPanel() {
   const selectedGroupSaveKey = selectedGroup?.faceIds.join(':') || null
 
   if (loading) {
-    return <div className="rounded-xl border border-gold-100 bg-white p-8 text-center text-charcoal-500">Loading review batches…</div>
+    return (
+      <div className="rounded-xl border border-gold-100 bg-white p-8">
+        <ListSkeleton count={5} />
+      </div>
+    )
   }
 
   return (
+    <ComponentErrorBoundary componentName="Media Review Panel">
     <div className="space-y-4">
       {selectedBatch ? (
         <>
@@ -1089,8 +1113,12 @@ export function MediaReviewPanel() {
             </details>
           </section>
               {faces.length === 0 ? (
-                <div className="rounded-xl border border-dashed border-gold-200 bg-white p-8 text-sm text-charcoal-500">
-                  This batch does not have staged per-face review rows yet. Re-run the review push after exporting the manifest so the people queue has real faces to review.
+                <div className="rounded-xl border border-dashed border-gold-200 bg-white">
+                  <EmptyState
+                    icon={Users}
+                    title="No face review rows staged"
+                    description="This batch does not have staged per-face review rows yet. Re-run the review push after exporting the manifest so the people queue has real faces to review."
+                  />
                 </div>
               ) : (
                 <>
@@ -1668,8 +1696,12 @@ export function MediaReviewPanel() {
                 ) : null}
               </>
             ) : (
-              <div className="rounded-xl border border-dashed border-gold-200 bg-white p-8 text-sm text-charcoal-500">
-                The guest-upload review queue is empty. Export and tag approved guest uploads, then push a guest review batch to stage the next people-review pass.
+              <div className="rounded-xl border border-dashed border-gold-200 bg-white">
+                <EmptyState
+                  icon={Inbox}
+                  title="Guest-upload review queue is empty"
+                  description="Export and tag approved guest uploads, then push a guest review batch to stage the next people-review pass."
+                />
               </div>
             )}
 
@@ -1679,5 +1711,6 @@ export function MediaReviewPanel() {
         ))}
       </datalist>
     </div>
+    </ComponentErrorBoundary>
   )
 }

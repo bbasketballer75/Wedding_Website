@@ -230,13 +230,7 @@ export default defineConfig(({ mode }) => {
       chunkSizeWarningLimit: 500,
       assetsInlineLimit: 4096,
       reportCompressedSize: true,
-      minify: 'terser',
-      terserOptions: {
-        compress: {
-          drop_console: false,
-          drop_debugger: true,
-        },
-      },
+      minify: 'esbuild',
     },
     server: {
       port: 5173,
