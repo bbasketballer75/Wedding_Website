@@ -9,7 +9,7 @@ test.describe('Gallery Page', () => {
 
     await page.getByPlaceholder('Search by caption, location, photographer, or tags').fill('first look')
     await waitForPageReady(page)
-    await expect(page.getByText('Search: “first look”')).toBeVisible()
+    await expect(page.getByText('Search: "first look"')).toBeVisible()
 
     await page.getByRole('button', { name: 'Timeline' }).click()
     await expect(page.getByRole('heading', { name: 'Timeline view' })).toBeVisible()

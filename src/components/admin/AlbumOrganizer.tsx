@@ -1,4 +1,5 @@
 import { useEffect, useMemo, useState } from 'react'
+import React from 'react'
 import {
   closestCenter,
   DndContext,
@@ -29,6 +30,8 @@ import {
 import { useToast } from '@/context/ToastContext'
 import { Button } from '@/components/ui/Button'
 import { Input } from '@/components/ui/Input'
+import { GallerySkeleton } from '@/components/ui/Skeleton'
+import { ComponentErrorBoundary } from '@/components/error/ErrorBoundary'
 import { cn } from '@/lib/utils'
 import { getMediaPath } from '@/utils/media'
 import {
@@ -264,6 +267,20 @@ function SortablePhotoCard({
         </div>
       </div>
     </article>
+  )
+}
+
+function EmptyState({ icon: Icon, title, description }: {
+  icon: React.ElementType
+  title: string
+  description: string
+}) {
+  return (
+    <div className="flex flex-col items-center gap-3 py-16 text-center text-charcoal-500">
+      <Icon className="h-12 w-12 opacity-30" />
+      <p className="font-medium text-charcoal-700">{title}</p>
+      <p className="text-sm">{description}</p>
+    </div>
   )
 }
 
@@ -734,6 +751,7 @@ export function AlbumOrganizer() {
   }
 
   return (
+    <ComponentErrorBoundary componentName="Album Organizer">
     <div className="space-y-4">
       <section className="rounded-[1.2rem] border border-gold-100 bg-white/95 p-4 shadow-sm">
         <div className="flex flex-col gap-4 xl:flex-row xl:items-end xl:justify-between">
@@ -951,17 +969,15 @@ export function AlbumOrganizer() {
 
       <section className="rounded-[1.25rem] border border-gold-100 bg-white/95 p-4 shadow-sm">
         {loadingAlbum === selectedAlbum && !savedByAlbum[selectedAlbum] ? (
-          <div className="flex min-h-[22rem] flex-col items-center justify-center text-center">
-            <Loader2 className="h-8 w-8 animate-spin text-gold-500" />
-            <p className="mt-4 text-charcoal-600">Loading the {selectedAlbum} album...</p>
+          <div className="min-h-[22rem] p-6">
+            <GallerySkeleton count={12} />
           </div>
         ) : filteredDraft.length === 0 ? (
-          <div className="flex min-h-[22rem] flex-col items-center justify-center text-center">
-            <Images className="h-8 w-8 text-gold-500" />
-            <p className="mt-4 font-medium text-charcoal-800">
-              {searchQuery.trim() ? 'No photos match that search.' : `No photos in ${selectedAlbum} yet.`}
-            </p>
-          </div>
+          <EmptyState
+            icon={Images}
+            title={searchQuery.trim() ? 'No photos match that search.' : `No photos in ${selectedAlbum} yet.`}
+            description={searchQuery.trim() ? 'Try a different search term or clear the filter.' : 'Add photos to this album to get started.'}
+          />
         ) : (
           <div className="h-[72vh] min-h-[32rem] overflow-y-auto pr-1">
             {canDrag ? (
@@ -1003,5 +1019,6 @@ export function AlbumOrganizer() {
         )}
       </section>
     </div>
+    </ComponentErrorBoundary>
   )
 }

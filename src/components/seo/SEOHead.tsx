@@ -219,13 +219,17 @@ export function FilmSEO() {
   )
 }
 
-export function GallerySEO() {
+export function GallerySEO({ shareImage }: { shareImage?: string }) {
   return (
     <SEOHead
-      title="Photo Gallery"
-      description="Browse our wedding photos and share your own. A collection of memories from our special day."
+      title={shareImage ? "Shared Wedding Photos" : "Photo Gallery"}
+      description={
+        shareImage
+          ? "Check out these wedding photos from Austin & Jordyn's special day."
+          : "Browse our wedding photos and share your own. A collection of memories from our special day."
+      }
       canonical="/gallery"
-      image={DEFAULT_SOCIAL_IMAGE}
+      image={shareImage ?? DEFAULT_SOCIAL_IMAGE}
       structuredData={{
         '@context': 'https://schema.org',
         '@type': 'ImageGallery',
