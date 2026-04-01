@@ -10,7 +10,7 @@ import { Input } from '@/components/ui/Input'
 import { downloadFile } from '@/utils/download'
 import { getMediaPath } from '@/utils/media'
 import { useInfiniteScroll } from '@/hooks/useInfiniteScroll'
-import { Search, Grid3X3, LayoutGrid, Filter, Loader2, Images, X, CheckSquare, Download, Share2 } from 'lucide-react'
+import { Search, Grid3X3, LayoutGrid, CalendarDays, Filter, Loader2, Images, X, CheckSquare, Download, Share2 } from 'lucide-react'
 import { cn } from '@/lib/utils'
 import {
   addPhotoComment,
@@ -315,6 +315,11 @@ const viewOptions = [
     label: 'Grid',
     icon: Grid3X3,
   },
+  {
+    key: 'timeline',
+    label: 'Timeline',
+    icon: CalendarDays,
+  },
 ] as const
 
 const normalizeGalleryMediaPath = (path?: string | null): string => {
@@ -463,7 +468,7 @@ export default function Gallery() {
   const [searchParams] = useSearchParams()
   const [searchQuery, setSearchQuery] = useState('')
   const [selectedCollection, setSelectedCollection] = useState<CollectionTab>('All')
-  const [viewMode, setViewMode] = useState<'masonry' | 'grid'>('masonry')
+  const [viewMode, setViewMode] = useState<'masonry' | 'grid' | 'timeline'>('masonry')
   const [lightboxIndex, setLightboxIndex] = useState<number | null>(null)
   const [faceFilter, setFaceFilter] = useState<string | null>(null)
   const [photos, setPhotos] = useState<Photo[]>(() => curatedPhotos.map(normalizeGalleryPhoto))
@@ -1037,7 +1042,7 @@ export default function Gallery() {
                     <Search className="pointer-events-none absolute left-4 top-1/2 h-4 w-4 -translate-y-1/2 text-charcoal-400" />
                     <Input
                       type="text"
-                      placeholder="Search the archive"
+                      placeholder="Search by caption, location, photographer, or tags"
                       value={searchQuery}
                       onChange={(event) => setSearchQuery(event.target.value)}
                       className="h-12 rounded-full border-gold-200/70 bg-cream-50/85 pl-11 pr-11 shadow-none"
@@ -1114,7 +1119,7 @@ export default function Gallery() {
                     )}
                     {searchQuery && (
                       <span className="inline-flex items-center gap-2 rounded-full bg-cream-50 px-3 py-1.5 text-sm text-charcoal-600">
-                        “{searchQuery}”
+                        {`Search: "${searchQuery}"`}
                       </span>
                     )}
                     {faceFilter && (
@@ -1223,15 +1228,30 @@ export default function Gallery() {
               </div>
             ) : filteredPhotos.length > 0 ? (
               <>
+                {viewMode === 'timeline' ? (
+                  <div>
+                    <h2 className="mb-4 font-display text-2xl text-charcoal-900">Timeline view</h2>
+                    <PhotoGrid
+                      photos={displayedItems}
+                      viewMode="masonry"
+                      onPhotoClick={selectMode ? undefined : (_, index) => openLightbox(index)}
+                      onLike={selectMode ? undefined : handleLike}
+                      selectMode={selectMode}
+                      selectedIds={selectedPhotoIds}
+                      onToggleSelect={handleToggleSelect}
+                    />
+                  </div>
+                ) : (
                 <PhotoGrid
                   photos={displayedItems}
-                  viewMode={viewMode}
+                  viewMode={viewMode as 'masonry' | 'grid'}
                   onPhotoClick={selectMode ? undefined : (_, index) => openLightbox(index)}
                   onLike={selectMode ? undefined : handleLike}
                   selectMode={selectMode}
                   selectedIds={selectedPhotoIds}
                   onToggleSelect={handleToggleSelect}
                 />
+                )}
 
                 {hasMore && (
                   <div ref={observerRef} className="flex justify-center py-8">

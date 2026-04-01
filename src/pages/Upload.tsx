@@ -58,7 +58,7 @@ function describeSubmitLabel(photoCount: number, videoCount: number) {
     return 'Choose your files first'
   }
 
-  return `Send ${describeUploadSummary(photoCount, videoCount)}`
+  return `Submit ${describeUploadSummary(photoCount, videoCount)}`
 }
 
 function createUploadId() {
@@ -632,7 +632,7 @@ export default function UploadPage() {
                           <div className="space-y-2">
                             <div className="inline-flex items-center gap-2 rounded-full border border-rose-400/20 bg-rose-500/10 px-3 py-1.5 text-xs font-medium text-rose-300">
                               <AlertCircle className="h-3.5 w-3.5" />
-                              Didn't upload
+                              Needs retry
                             </div>
                             <p className="text-xs leading-5 text-rose-300">
                               {file.errorMessage || 'This one didn\'t upload — try again or skip it'}

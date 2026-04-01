@@ -129,7 +129,7 @@ export default function Home() {
   }, [])
 
   const scrollToContent = () => {
-    document.getElementById('love-timeline')?.scrollIntoView({ behavior: 'smooth', block: 'start' })
+    document.getElementById('welcome-panel')?.scrollIntoView({ behavior: 'smooth', block: 'start' })
   }
 
   return (
@@ -250,7 +250,9 @@ export default function Home() {
         </motion.div>
       </section>
 
-      <AnniversaryCountdown />
+      <div id="welcome-panel">
+        <AnniversaryCountdown />
+      </div>
 
       <LoveTimeline />
 
