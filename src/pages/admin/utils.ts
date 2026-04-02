@@ -1,6 +1,7 @@
 import { useAuthStore } from '@/stores/authStore'
 import {
   type GuestUpload,
+  type ModerationAuditAction,
   type ModerationAuditLog,
   type RecordModerationAuditInput,
 } from '@/lib/supabase'
@@ -400,4 +401,15 @@ export function formatAuditTimestamp(timestamp: string) {
 
 export function getAuditActorLabel(entry: ModerationAuditLog) {
   return entry.actor_name || entry.actor_email || 'Admin'
+}
+
+export const auditActionLabels: Record<ModerationAuditAction, string> = {
+  upload_moved_to_pending: 'Moved to pending review',
+  upload_approved_unpublished: 'Approved, not public',
+  upload_approved_published: 'Approved + published',
+  upload_removed_from_gallery: 'Removed from gallery',
+  upload_rejected: 'Rejected',
+  upload_bulk_rejected: 'Bulk rejected',
+  guestbook_message_deleted: 'Deleted message',
+  guestbook_bulk_deleted: 'Bulk deleted message',
 }

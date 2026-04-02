@@ -7,7 +7,8 @@ import {
 } from '@/lib/supabase'
 import { Input } from '@/components/ui/Input'
 import { useToast } from '@/context/ToastContext'
-import { AuditTrailList, auditActionLabels } from './shared'
+import { AuditTrailList } from './shared'
+import { auditActionLabels } from './utils'
 
 export function AuditLogView() {
   const [entries, setEntries] = useState<ModerationAuditLog[]>([])
