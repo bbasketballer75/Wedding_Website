@@ -1,22 +1,6 @@
 import { useState } from 'react'
-import {
-  type ModerationAuditAction,
-  type ModerationAuditLog,
-} from '@/lib/supabase'
-import { getAuditActorLabel, formatAuditTimestamp } from './utils'
-
-// ─── Audit action display labels ─────────────────────────────────────────────
-
-export const auditActionLabels: Record<ModerationAuditAction, string> = {
-  upload_moved_to_pending: 'Moved to pending review',
-  upload_approved_unpublished: 'Approved, not public',
-  upload_approved_published: 'Approved + published',
-  upload_removed_from_gallery: 'Removed from gallery',
-  upload_rejected: 'Rejected',
-  upload_bulk_rejected: 'Bulk rejected',
-  guestbook_message_deleted: 'Deleted message',
-  guestbook_bulk_deleted: 'Bulk deleted message',
-}
+import { type ModerationAuditLog } from '@/lib/supabase'
+import { getAuditActorLabel, formatAuditTimestamp, auditActionLabels } from './utils'
 
 // ─── StatCard ─────────────────────────────────────────────────────────────────
 
