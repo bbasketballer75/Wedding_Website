@@ -215,7 +215,15 @@ export default defineConfig(({ mode }) => {
       rollupOptions: {
         output: {
           manualChunks(id) {
-            return getVendorChunkName(id)
+            const vendorChunk = getVendorChunkName(id)
+            if (vendorChunk) return vendorChunk
+
+            // Force app-level supabase wrapper into a dedicated chunk so that
+            // PHOTO_ALBUMS and other constants are always co-located with the
+            // functions that reference them, preventing live-binding split errors.
+            if (id.includes('src/lib/supabase')) return 'app-supabase'
+
+            return undefined
           },
           chunkFileNames: 'assets/[name]-[hash].js',
         },

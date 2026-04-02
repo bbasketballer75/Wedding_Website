@@ -1,4 +1,4 @@
-import { useAuthStore } from '@/stores/authStore'
+import type { User } from '@supabase/supabase-js'
 import {
   type GuestUpload,
   type ModerationAuditAction,
@@ -361,7 +361,7 @@ export function formatMemoryTrailLabel(trail: MemoryTrailId | '' | null | undefi
   return fallback || 'Editorial lane'
 }
 
-export function getAdminAuditActor(user: ReturnType<typeof useAuthStore.getState>['user']): AuditActor {
+export function getAdminAuditActor(user: User | null): AuditActor {
   const metadataName = user?.user_metadata?.name
   const fallbackName =
     typeof metadataName === 'string' && metadataName.trim().length > 0
