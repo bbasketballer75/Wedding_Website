@@ -24,10 +24,11 @@ import { Dashboard } from './admin/Dashboard'
 import { PhotoModeration } from './admin/PhotoModeration'
 import { GuestbookModeration } from './admin/GuestbookModeration'
 import { AuditLogView } from './admin/AuditLogView'
+import { FeaturedContentManager } from './admin/FeaturedContentManager'
 import { StatCard } from './admin/shared'
 
 /* Legacy spotlight editor retired.
-function FeaturedContentManager() {
+function _FeaturedContentManagerLegacy() {
   const [featuresBySlot, setFeaturesBySlot] = useState<Record<SiteEditorialFeatureSlot, SiteEditorialFeature | null>>(() =>
     editorialSlotDefinitions.reduce(
       (acc, definition) => ({ ...acc, [definition.slot]: null }),
@@ -756,10 +757,6 @@ function FeaturedContentManager() {
   )
 }
 */
-
-function FeaturedContentManager() {
-  return <Navigate to="/admin/photos" replace />
-}
 
 // Analytics Dashboard Component
 function Analytics() {
