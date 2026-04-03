@@ -24,6 +24,8 @@ export default [
       '.windsurf/**',
       '.agent/**',
       'supabase/**',
+      '.worktrees/**',
+      'netlify/**',
     ],
   },
   // JavaScript/JSX files
