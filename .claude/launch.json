@@ -1,0 +1,35 @@
+{
+  "version": "0.0.1",
+  "configurations": [
+    {
+      "name": "Vite Dev Server",
+      "runtimeExecutable": "npm",
+      "runtimeArgs": ["run", "dev"],
+      "port": 5173
+    },
+    {
+      "name": "Vite Preview",
+      "runtimeExecutable": "npm",
+      "runtimeArgs": ["run", "preview"],
+      "port": 4173
+    },
+    {
+      "name": "Vitest UI",
+      "runtimeExecutable": "npm",
+      "runtimeArgs": ["run", "test:ui"],
+      "port": 51204
+    },
+    {
+      "name": "Supabase Local",
+      "runtimeExecutable": "npm",
+      "runtimeArgs": ["run", "supabase:start"],
+      "port": 54321
+    },
+    {
+      "name": "Worktree Dev",
+      "runtimeExecutable": "npm",
+      "runtimeArgs": ["--prefix", ".worktrees/site-overhaul", "run", "dev", "--", "--port", "5174"],
+      "port": 5174
+    }
+  ]
+}

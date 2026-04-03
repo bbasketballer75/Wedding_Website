@@ -75,3 +75,4 @@ supabase/.branches/
 /blob-report/
 /playwright/.cache/
 /playwright/.auth/
+busybox.exe

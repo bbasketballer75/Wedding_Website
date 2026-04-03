@@ -437,11 +437,11 @@ export default function UploadPage() {
           <div className="relative">
             <span className="flex items-center gap-1.5 text-[10px] uppercase tracking-[0.3em] text-gold-400">
               <Sparkles className="h-3.5 w-3.5" />
-              Add your side of the day
+              Contribute to the Archive
             </span>
 
             <h1 className="mt-6 text-5xl text-white sm:text-6xl">
-              Help us fill in the corners we could not see.
+              Preserve the moments from your perspective.
             </h1>
 
             <p className="mt-5 max-w-2xl text-base text-white/55 sm:text-lg">

@@ -1,0 +1,21 @@
+{
+  "permissions": {
+    "allow": [
+      "mcp__Claude_Preview__preview_start",
+      "mcp__plugin_playwright_playwright__browser_navigate",
+      "mcp__plugin_playwright_playwright__browser_take_screenshot",
+      "mcp__plugin_playwright_playwright__browser_network_requests",
+      "mcp__plugin_playwright_playwright__browser_wait_for",
+      "Bash(npx tsc:*)",
+      "Bash(git push:*)",
+      "Bash(curl -s http://localhost:5174/)",
+      "Bash(netstat -ano)",
+      "Bash(npx playwright:*)",
+      "Bash(grep -v \"^$\")",
+      "Bash(grep -v \"^\\\\s*$\")",
+      "Bash(npm test:*)",
+      "Bash(python3 -c \":*)",
+      "Bash(python -c \"import json,sys; d=json.load\\(sys.stdin\\); print\\(''''playwright:'''', d.get\\(''''devDependencies'''',{}\\).get\\(''''@playwright/test'''',''''?''''\\)\\)\")"
+    ]
+  }
+}

@@ -89,15 +89,15 @@ const collectionMeta: Record<
 > = {
   All: {
     eyebrow: 'Full archive',
-    title: 'Everything we have so far',
-    description: 'The full wedding archive in one place.',
-    supporting: 'Use this when you want every published moment in one pass.',
+    title: 'The Complete Collection',
+    description: 'Every captured moment from our celebration, preserved in one place.',
+    supporting: 'The definitive timeline of the wedding day and engagement.',
     sourceHint: 'Mixed source',
   },
   'Guest Uploads': {
     eyebrow: 'From family and friends',
-    title: 'Guest uploads',
-    description: 'Approved uploads and camera-roll angles from everyone who was there.',
+    title: 'Guest Perspectives',
+    description: 'A collection of memories and angles shared by our loved ones.',
     supporting: 'This stays separate from the photographer coverage on purpose.',
     sourceHint: 'Guest album',
   },

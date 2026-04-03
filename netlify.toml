@@ -13,6 +13,10 @@
   force = true
   conditions = {Host = ["wedding.theporadas.com"]}
 
+[[edge_functions]]
+  path = "/gallery"
+  function = "gallery-share"
+
 [[redirects]]
   from = "/*"
   to = "/index.html"

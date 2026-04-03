@@ -124,9 +124,9 @@ const pwaIcons = [
 ]
 
 const pwaManifest = {
-  name: "Austin & Jordyn's Wedding",
-  short_name: 'A&J Wedding',
-  description: 'Join us in celebrating our wedding. View our story, photos, and share your memories.',
+  name: 'Austin & Jordyn | Wedding Archive',
+  short_name: 'A&J Archive',
+  description: 'A permanent digital archive of our wedding day. Relive our story, browse the films, and view the galleries.',
   start_url: '/',
   scope: '/',
   display: 'standalone',
@@ -140,7 +140,7 @@ const pwaManifest = {
     {
       name: 'View Gallery',
       short_name: 'Gallery',
-      description: 'Browse our wedding photos',
+      description: 'Explore the full wedding collection',
       url: '/gallery',
       icons: [{ src: '/icons/icon-96x96.png', sizes: '96x96', type: 'image/png' }],
     },
