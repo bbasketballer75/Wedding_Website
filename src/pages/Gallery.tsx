@@ -1,5 +1,5 @@
 import { useState, useMemo, useEffect, useDeferredValue, useRef } from 'react'
-import { motion } from 'framer-motion'
+import { AnimatePresence, motion } from 'framer-motion'
 import { useSearchParams } from 'react-router-dom'
 import { GallerySEO } from '@/components/seo/SEOHead'
 import { PhotoGrid } from '@/components/gallery/PhotoGrid'
@@ -1212,46 +1212,56 @@ export default function Gallery() {
           >
             <div
               ref={galleryScrollRef}
-              className="overflow-visible lg:h-[calc(100vh-18rem)] lg:min-h-[32rem] lg:overflow-y-auto lg:pr-1"
+              className="overflow-visible lg:h-[calc(100vh-18rem)] lg:min-h-[32rem] lg:overflow-y-auto lg:pr-2 [&::-webkit-scrollbar]:w-1.5 [&::-webkit-scrollbar-track]:rounded-full [&::-webkit-scrollbar-track]:bg-gold-100/40 [&::-webkit-scrollbar-thumb]:rounded-full [&::-webkit-scrollbar-thumb]:bg-gold-400/50 hover:[&::-webkit-scrollbar-thumb]:bg-gold-500/70"
             >
             {isLoading ? (
-              <div className="flex min-h-[20rem] flex-col items-center justify-center text-center">
-                <div className="flex h-16 w-16 items-center justify-center rounded-full bg-gold-100 text-gold-600">
-                  <Loader2 className="h-7 w-7 animate-spin" />
-                </div>
-                <p className="mt-6 font-display text-2xl text-charcoal-900">
-                  Gathering the gallery
-                </p>
-                <p className="mt-2 max-w-md text-charcoal-500">
-                  Pulling in curated collections, approved uploads, and the latest archive updates.
-                </p>
+              <div className="grid grid-cols-2 gap-3 sm:grid-cols-3 xl:grid-cols-4">
+                {Array.from({ length: 12 }).map((_, i) => (
+                  <div
+                    key={i}
+                    className={`animate-pulse rounded-[1.8rem] bg-gold-100/60 ${
+                      i % 5 === 0 ? 'aspect-[3/4]' : i % 3 === 0 ? 'aspect-[4/3]' : 'aspect-square'
+                    }`}
+                    style={{ animationDelay: `${i * 0.05}s` }}
+                  />
+                ))}
               </div>
             ) : filteredPhotos.length > 0 ? (
               <>
-                {viewMode === 'timeline' ? (
-                  <div>
-                    <h2 className="mb-4 font-display text-2xl text-charcoal-900">Timeline view</h2>
-                    <PhotoGrid
-                      photos={displayedItems}
-                      viewMode="masonry"
-                      onPhotoClick={selectMode ? undefined : (_, index) => openLightbox(index)}
-                      onLike={selectMode ? undefined : handleLike}
-                      selectMode={selectMode}
-                      selectedIds={selectedPhotoIds}
-                      onToggleSelect={handleToggleSelect}
-                    />
-                  </div>
-                ) : (
-                <PhotoGrid
-                  photos={displayedItems}
-                  viewMode={viewMode as 'masonry' | 'grid'}
-                  onPhotoClick={selectMode ? undefined : (_, index) => openLightbox(index)}
-                  onLike={selectMode ? undefined : handleLike}
-                  selectMode={selectMode}
-                  selectedIds={selectedPhotoIds}
-                  onToggleSelect={handleToggleSelect}
-                />
-                )}
+                <AnimatePresence mode="wait">
+                  <motion.div
+                    key={viewMode}
+                    initial={{ opacity: 0 }}
+                    animate={{ opacity: 1 }}
+                    exit={{ opacity: 0 }}
+                    transition={{ duration: 0.2 }}
+                  >
+                    {viewMode === 'timeline' ? (
+                      <div>
+                        <h2 className="mb-4 font-display text-2xl text-charcoal-900">Timeline view</h2>
+                        <PhotoGrid
+                          photos={displayedItems}
+                          viewMode="masonry"
+                          onPhotoClick={selectMode ? undefined : (_, index) => openLightbox(index)}
+                          onLike={selectMode ? undefined : handleLike}
+                          selectMode={selectMode}
+                          selectedIds={selectedPhotoIds}
+                          onToggleSelect={handleToggleSelect}
+                        />
+                      </div>
+                    ) : (
+                      <PhotoGrid
+                        photos={displayedItems}
+                        viewMode={viewMode as 'masonry' | 'grid'}
+                        onPhotoClick={selectMode ? undefined : (_, index) => openLightbox(index)}
+                        onLike={selectMode ? undefined : handleLike}
+                        selectMode={selectMode}
+                        selectedIds={selectedPhotoIds}
+                        onToggleSelect={handleToggleSelect}
+                      />
+                    )}
+                  </motion.div>
+                </AnimatePresence>
 
                 {hasMore && (
                   <div ref={observerRef} className="flex justify-center py-8">

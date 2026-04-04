@@ -1,4 +1,4 @@
-import { useRef } from 'react'
+import { useRef, useState } from 'react'
 import { motion, useScroll, useTransform, useSpring } from 'framer-motion'
 import { Heart, MapPin, Calendar, Clapperboard, Play, Sparkles } from 'lucide-react'
 
@@ -432,9 +432,13 @@ function TimelineCard({ event, index }: { event: TimelineEvent; index: number })
   return <StandardTimelineCard event={event} index={index} />
 }
 
+const DESCRIPTION_TRUNCATE_THRESHOLD = 120
+
 function StandardTimelineCard({ event, index }: { event: TimelineEvent; index: number }) {
   const cardRef = useRef<HTMLDivElement>(null)
+  const [descExpanded, setDescExpanded] = useState(false)
   const isMobile = typeof window !== 'undefined' && window.innerWidth < 768
+  const descIsLong = event.description.length > DESCRIPTION_TRUNCATE_THRESHOLD
 
   const { scrollYProgress } = useScroll({
     target: cardRef,
@@ -542,9 +546,22 @@ function StandardTimelineCard({ event, index }: { event: TimelineEvent; index: n
           </h3>
 
           {/* Description */}
-          <p className="text-charcoal-600 text-sm md:text-base leading-relaxed mb-4">
-            {event.description}
-          </p>
+          <div className="mb-4">
+            <p className="text-charcoal-600 text-sm md:text-base leading-relaxed">
+              {descIsLong && !descExpanded
+                ? `${event.description.slice(0, DESCRIPTION_TRUNCATE_THRESHOLD).trimEnd()}…`
+                : event.description}
+            </p>
+            {descIsLong && (
+              <button
+                type="button"
+                onClick={() => setDescExpanded((prev) => !prev)}
+                className="mt-1.5 text-xs font-medium text-gold-600 hover:text-gold-700 transition-colors"
+              >
+                {descExpanded ? 'Read less' : 'Read more'}
+              </button>
+            )}
+          </div>
 
           {/* Location */}
           {event.location && (
