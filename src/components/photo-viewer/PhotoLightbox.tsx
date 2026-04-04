@@ -1,4 +1,4 @@
-import { useState, useEffect, useCallback } from 'react'
+import { useState, useEffect, useCallback, useRef } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
 import { Button } from '@/components/ui/Button'
 import { Avatar } from '@/components/ui/Avatar'
@@ -125,28 +125,61 @@ export function PhotoLightbox({
     }
   }, [currentIndex, photos.length, onNavigate])
 
-  const handleKeyDown = useCallback((e: KeyboardEvent) => {
-    if (!isOpen) return
-    switch (e.key) {
-      case 'Escape':
-        onClose()
-        break
-      case 'ArrowLeft':
-        handlePrevious()
-        break
-      case 'ArrowRight':
-        handleNext()
-        break
-      case 'l':
-        currentPhoto && onLike?.(currentPhoto.id)
-        break
-    }
-  }, [isOpen, onClose, handlePrevious, handleNext, currentPhoto, onLike])
+  const lightboxRef = useRef<HTMLDivElement>(null)
 
   useEffect(() => {
-    window.addEventListener('keydown', handleKeyDown)
-    return () => window.removeEventListener('keydown', handleKeyDown)
-  }, [handleKeyDown])
+    if (!isOpen) return
+    const container = lightboxRef.current
+    if (!container) return
+
+    const trigger = document.activeElement as HTMLElement | null
+
+    const focusable = () =>
+      Array.from(
+        container.querySelectorAll<HTMLElement>(
+          'button:not([disabled]),[href],input:not([disabled]),select:not([disabled]),textarea:not([disabled]),[tabindex]:not([tabindex="-1"])'
+        )
+      )
+
+    focusable()[0]?.focus()
+
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (e.key === 'Escape') {
+        onClose()
+        return
+      }
+      if (e.key === 'ArrowLeft') {
+        handlePrevious()
+        return
+      }
+      if (e.key === 'ArrowRight') {
+        handleNext()
+        return
+      }
+      if (e.key === 'l') {
+        currentPhoto && onLike?.(currentPhoto.id)
+        return
+      }
+      if (e.key !== 'Tab') return
+      const els = focusable()
+      if (els.length === 0) return
+      const first = els[0]
+      const last = els[els.length - 1]
+      if (e.shiftKey && document.activeElement === first) {
+        e.preventDefault()
+        last.focus()
+      } else if (!e.shiftKey && document.activeElement === last) {
+        e.preventDefault()
+        first.focus()
+      }
+    }
+
+    document.addEventListener('keydown', handleKeyDown)
+    return () => {
+      document.removeEventListener('keydown', handleKeyDown)
+      trigger?.focus()
+    }
+  }, [isOpen, onClose, handlePrevious, handleNext, currentPhoto, onLike])
 
   const handleSubmitComment = async (e: React.FormEvent) => {
     e.preventDefault()
@@ -183,7 +216,13 @@ export function PhotoLightbox({
             }}
           >
             {/* Main Image Area */}
-            <div className="flex-1 flex flex-col relative">
+            <div
+              ref={lightboxRef}
+              role="dialog"
+              aria-modal="true"
+              aria-label="Photo viewer"
+              className="flex-1 flex flex-col relative"
+            >
               {/* Toolbar */}
               <div className="absolute left-0 right-0 top-0 z-10 flex items-center justify-between bg-gradient-to-b from-black/55 to-transparent p-2.5 sm:p-4">
                 <div className="flex items-center gap-2">
