@@ -1,5 +1,5 @@
 import { swManager } from '@/utils/serviceWorker'
-import { SignalSlashIcon } from '@heroicons/react/24/outline'
+import { WifiOff } from 'lucide-react'
 import { AnimatePresence, motion } from 'framer-motion'
 import { useEffect, useState } from 'react'
 
@@ -55,7 +55,7 @@ const OfflineIndicator = () => {
             {' '}
             <div className='container mx-auto flex items-center justify-between'>
               <div className='flex items-center space-x-3'>
-                <SignalSlashIcon className='w-5 h-5' />
+                <WifiOff className='w-5 h-5' />
                 <span className='font-medium'>You're offline</span>
                 <span className='text-sm opacity-90'>Some features may be limited</span>
               </div>
@@ -106,7 +106,7 @@ const OfflineIndicator = () => {
             exit={{ scale: 0, opacity: 0 }}
             className='fixed bottom-4 right-4 z-40 bg-gray-900 text-white px-4 py-2 rounded-full shadow-lg flex items-center space-x-2'
           >
-            <SignalSlashIcon className='w-4 h-4' />
+            <WifiOff className='w-4 h-4' />
             <span className='text-sm font-medium'>Offline Mode</span>
           </motion.div>
         )}

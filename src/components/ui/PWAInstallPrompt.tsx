@@ -1,4 +1,4 @@
-import { DevicePhoneMobileIcon, XMarkIcon } from '@heroicons/react/24/outline'
+import { Smartphone, X } from 'lucide-react'
 import { AnimatePresence, motion } from 'framer-motion'
 import React, { useEffect, useState } from 'react'
 
@@ -104,7 +104,7 @@ const PWAInstallPrompt: React.FC = () => {
         <div className='bg-white dark:bg-gray-800 rounded-2xl shadow-2xl border border-gray-200 dark:border-gray-700 p-4'>
           <div className='flex items-start space-x-3'>
             <div className='flex-shrink-0'>
-              <DevicePhoneMobileIcon className='w-6 h-6 text-gold' />
+              <Smartphone className='w-6 h-6 text-gold' />
             </div>
             <div className='flex-1 min-w-0'>
               <h3 className='text-lg font-semibold text-gray-900 dark:text-white'>
@@ -137,7 +137,7 @@ const PWAInstallPrompt: React.FC = () => {
               className='flex-shrink-0 p-1 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors'
               aria-label='Dismiss installation prompt'
             >
-              <XMarkIcon className='w-5 h-5 text-gray-500 dark:text-gray-400' />
+              <X className='w-5 h-5 text-gray-500 dark:text-gray-400' />
             </button>
           </div>
         </div>

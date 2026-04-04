@@ -50,6 +50,7 @@ function PhotoLikeButton({
     >
       <Heart className={cn('h-4 w-4', photo.liked && 'fill-current')} />
     </button>
+
   )
 }
 
@@ -71,12 +72,16 @@ function SelectOverlay({ selected, onToggle }: { selected: boolean; onToggle: ()
       )}>
         <CheckCircle2 className="h-4 w-4" />
       </span>
+
       {selected && <span className="absolute inset-0 rounded-[inherit] ring-2 ring-gold-400 ring-offset-1" />}
     </button>
+
   )
+
 }
 
 function MasonryPhotoGrid({ photos, onPhotoClick, onLike, selectMode, selectedIds, onToggleSelect }: PhotoGridProps) {
+
   return (
     <MasonryGrid columns={MASONRY_COLUMNS}>
       {photos.map((photo, index) => {
@@ -86,14 +91,28 @@ function MasonryPhotoGrid({ photos, onPhotoClick, onLike, selectMode, selectedId
             key={photo.id}
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
+            whileHover={!selectMode ? { y: -6, scale: 1.02 } : {}}
             transition={{ duration: 0.5, delay: Math.min(index * 0.04, 0.5) }}
             className={cn(
-              'group relative overflow-hidden rounded-[1.8rem] border bg-white p-1 text-left shadow-[0_26px_60px_-42px_rgba(46,33,13,0.24)] transition-all duration-300',
-              selectMode ? 'cursor-default' : 'hover:-translate-y-1 hover:shadow-[0_34px_80px_-46px_rgba(46,33,13,0.34)]',
+              'group relative overflow-hidden rounded-[1.8rem] border bg-white p-1 text-left',
+              selectMode ? 'cursor-default' : 'cursor-pointer',
               isSelected ? 'border-gold-400/80' : 'border-white/80'
             )}
+            style={{
+              boxShadow: '0 26px 60px -42px rgba(46,33,13,0.24)',
+              transition: 'box-shadow 0.3s ease'
+            }}
+            onMouseEnter={(e) => {
+              if (!selectMode) {
+                e.currentTarget.style.boxShadow = '0 34px 80px -46px rgba(201,160,92,0.35), 0 8px 20px -10px rgba(201,160,92,0.2)'
+              }
+            }}
+            onMouseLeave={(e) => {
+              e.currentTarget.style.boxShadow = '0 26px 60px -42px rgba(46,33,13,0.24)'
+            }}
             onClick={() => selectMode ? onToggleSelect?.(photo.id) : onPhotoClick?.(photo, index)}
             onKeyDown={(event) => {
+
               if (event.key === 'Enter' || event.key === ' ') {
                 event.preventDefault()
                 selectMode ? onToggleSelect?.(photo.id) : onPhotoClick?.(photo, index)
@@ -105,17 +124,22 @@ function MasonryPhotoGrid({ photos, onPhotoClick, onLike, selectMode, selectedId
             aria-pressed={selectMode ? isSelected : undefined}
           >
             <div className="relative overflow-hidden rounded-[1.45rem] bg-charcoal-200">
-              <img
+              <motion.img
                 src={photo.thumbnail || photo.url}
                 alt={photo.caption || 'Wedding photo'}
-                className="w-full h-auto object-cover transition-transform duration-700 group-hover:scale-[1.04]"
+                className="w-full h-auto object-cover"
                 loading="lazy"
+                whileHover={{ scale: 1.08 }}
+                transition={{ duration: 0.6, ease: 'easeOut' }}
               />
+              {/* Gradient overlay on hover */}
+              <div className="absolute inset-0 bg-gradient-to-t from-black/30 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
               {selectMode
                 ? <SelectOverlay selected={isSelected} onToggle={() => onToggleSelect?.(photo.id)} />
                 : <PhotoLikeButton photo={photo} onLike={onLike} />
               }
             </div>
+
           </motion.div>
         )
       })}
@@ -124,6 +148,7 @@ function MasonryPhotoGrid({ photos, onPhotoClick, onLike, selectMode, selectedId
 }
 
 function StandardGrid({ photos, onPhotoClick, onLike, selectMode, selectedIds, onToggleSelect }: PhotoGridProps) {
+
   return (
     <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 xl:grid-cols-4">
       {photos.map((photo, index) => {
@@ -133,14 +158,28 @@ function StandardGrid({ photos, onPhotoClick, onLike, selectMode, selectedIds, o
             key={photo.id}
             initial={{ opacity: 0, scale: 0.96 }}
             animate={{ opacity: 1, scale: 1 }}
+            whileHover={!selectMode ? { y: -6, scale: 1.03 } : {}}
             transition={{ duration: 0.4, delay: index * 0.03 }}
             className={cn(
-              'group overflow-hidden rounded-[1.8rem] border bg-white p-2 text-left shadow-[0_22px_58px_-44px_rgba(46,33,13,0.22)] transition-all duration-300',
-              selectMode ? 'cursor-default' : 'hover:-translate-y-1 hover:shadow-[0_32px_75px_-44px_rgba(46,33,13,0.32)]',
+              'group overflow-hidden rounded-[1.8rem] border bg-white p-2 text-left',
+              selectMode ? 'cursor-default' : 'cursor-pointer',
               isSelected ? 'border-gold-400/80' : 'border-white/80'
             )}
+            style={{
+              boxShadow: '0 22px 58px -44px rgba(46,33,13,0.22)',
+              transition: 'box-shadow 0.3s ease'
+            }}
+            onMouseEnter={(e) => {
+              if (!selectMode) {
+                e.currentTarget.style.boxShadow = '0 32px 75px -44px rgba(201,160,92,0.32), 0 8px 20px -10px rgba(201,160,92,0.2)'
+              }
+            }}
+            onMouseLeave={(e) => {
+              e.currentTarget.style.boxShadow = '0 22px 58px -44px rgba(46,33,13,0.22)'
+            }}
             onClick={() => selectMode ? onToggleSelect?.(photo.id) : onPhotoClick?.(photo, index)}
             onKeyDown={(event) => {
+
               if (event.key === 'Enter' || event.key === ' ') {
                 event.preventDefault()
                 selectMode ? onToggleSelect?.(photo.id) : onPhotoClick?.(photo, index)
@@ -152,21 +191,27 @@ function StandardGrid({ photos, onPhotoClick, onLike, selectMode, selectedIds, o
             aria-pressed={selectMode ? isSelected : undefined}
           >
             <div className="relative aspect-square overflow-hidden rounded-[1.35rem] bg-charcoal-200">
-              <img
+              <motion.img
                 src={photo.thumbnail || photo.url}
                 alt={photo.caption || 'Wedding photo'}
-                className="h-full w-full object-cover transition-transform duration-500 group-hover:scale-[1.06]"
+                className="h-full w-full object-cover"
                 loading="lazy"
+                whileHover={{ scale: 1.1 }}
+                transition={{ duration: 0.5, ease: 'easeOut' }}
               />
+              {/* Gradient overlay on hover */}
+              <div className="absolute inset-0 bg-gradient-to-t from-black/30 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
               {selectMode
                 ? <SelectOverlay selected={isSelected} onToggle={() => onToggleSelect?.(photo.id)} />
                 : <PhotoLikeButton photo={photo} onLike={onLike} />
               }
             </div>
+
           </motion.div>
         )
       })}
     </div>
+
   )
 }
 
@@ -174,25 +219,32 @@ export function PhotoGrid({
   photos,
   onPhotoClick,
   onLike,
+
   className,
   viewMode = 'masonry',
   selectMode,
   selectedIds,
   onToggleSelect,
+
 }: PhotoGridProps & { viewMode?: 'masonry' | 'grid' }) {
+
   if (photos.length === 0) {
     return (
       <div className="flex min-h-[18rem] flex-col items-center justify-center rounded-[1.9rem] border border-dashed border-gold-200 bg-[linear-gradient(180deg,rgba(255,255,255,0.7),rgba(247,241,232,0.9))] px-6 py-14 text-center">
         <div className="flex h-16 w-16 items-center justify-center rounded-full bg-gold-100 text-gold-600 shadow-sm">
           <Images className="h-7 w-7" />
         </div>
+
         <p className="mt-6 font-display text-2xl text-charcoal-900">
           No photos to display
         </p>
+
         <p className="mt-2 max-w-md text-sm leading-6 text-charcoal-500">
           Try another chapter or widen the filters to bring more moments back into view.
         </p>
+
       </div>
+
     )
   }
 
@@ -204,5 +256,6 @@ export function PhotoGrid({
         <StandardGrid photos={photos} onPhotoClick={onPhotoClick} onLike={onLike} selectMode={selectMode} selectedIds={selectedIds} onToggleSelect={onToggleSelect} />
       )}
     </div>
+
   )
 }
