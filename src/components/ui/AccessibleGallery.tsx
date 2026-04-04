@@ -1,4 +1,4 @@
-import { ChevronLeftIcon, ChevronRightIcon, XMarkIcon } from '@heroicons/react/24/outline'
+import { ChevronLeft, ChevronRight, X } from 'lucide-react'
 import { AnimatePresence, motion } from 'framer-motion'
 import React, { useCallback, useEffect, useRef, useState } from 'react'
 import LazyImage from './LazyImage'
@@ -121,7 +121,7 @@ const AccessibleGallery = React.memo<AccessibleGalleryProps>(({ images, classNam
               className='absolute top-4 right-4 text-white hover:text-gray-300 transition-colors z-10 p-2 rounded-full bg-black bg-opacity-50'
               aria-label='Close lightbox'
             >
-              <XMarkIcon className='w-6 h-6' />
+              <X className='w-6 h-6' />
             </button>
 
             {/* Image counter */}
@@ -158,14 +158,14 @@ const AccessibleGallery = React.memo<AccessibleGalleryProps>(({ images, classNam
                   className='absolute left-4 top-1/2 -translate-y-1/2 text-white hover:text-gray-300 transition-colors p-2 rounded-full bg-black bg-opacity-50'
                   aria-label='Previous image'
                 >
-                  <ChevronLeftIcon className='w-8 h-8' />
+                  <ChevronLeft className='w-8 h-8' />
                 </button>
                 <button
                   onClick={() => navigateImage('next')}
                   className='absolute right-4 top-1/2 -translate-y-1/2 text-white hover:text-gray-300 transition-colors p-2 rounded-full bg-black bg-opacity-50'
                   aria-label='Next image'
                 >
-                  <ChevronRightIcon className='w-8 h-8' />
+                  <ChevronRight className='w-8 h-8' />
                 </button>
               </>
             )}

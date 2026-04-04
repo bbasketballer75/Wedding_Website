@@ -1,7 +1,7 @@
 import { useRef } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
 import ReactDOM from 'react-dom'
-import { XMarkIcon } from '@heroicons/react/24/outline'
+import { X } from 'lucide-react'
 import { WeddingPartyPerson } from '@/data/weddingParty'
 
 interface PartyMemberModalProps {
@@ -39,7 +39,7 @@ const PartyMemberModal = ({ selectedMember, onClose }: PartyMemberModalProps) =>
               aria-label='Close'
               className='absolute top-6 right-6 w-11 h-11 rounded-full bg-black/5 flex items-center justify-center cursor-pointer z-10 text-dark-500 hover:bg-black/10 hover:scale-110 transition-all duration-300'
             >
-              <XMarkIcon className='w-6 h-6' />
+              <X className='w-6 h-6' />
             </button>
 
             {/* Modal Content */}

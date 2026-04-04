@@ -2,7 +2,7 @@ import React, { useEffect } from 'react'
 import Lenis from 'lenis'
 import 'lenis/dist/lenis.css'
 import NoiseOverlay from '../ui/NoiseOverlay'
-import SkipLink from '../ui/SkipLink'
+import { SkipLink } from '../accessibility/SkipLink'
 
 interface LayoutProps {
   children: React.ReactNode

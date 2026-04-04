@@ -103,7 +103,7 @@ const timelineEvents: TimelineEvent[] = [
     media: {
       type: 'carousel',
       config: {
-        folder: 'engagemnet',
+        folder: 'engagement',
         alt: 'Engagement Photos',
         count: 35
       }
@@ -163,7 +163,7 @@ const mediaFiles: Record<string, string[]> = {
     'PXL_20231220_151659126~2.jpg',
     'PXL_20230825_171945218.jpg'
   ],
-  engagemnet: [
+  engagement: [
     'PoradaProposal-316.webp',
     'PoradaProposal-458.webp',
     'PoradaProposal-277.webp',
@@ -216,7 +216,7 @@ function HalloweenCard({ event, index }: { event: TimelineEvent; index: number }
   const x = useTransform(scrollYProgress, [0, 1], isMobile ? [0, 0] : [event.side === 'left' ? -100 : 100, 0])
 
   // Get engagement photos
-  const engagementImages = getImagePaths('engagemnet', 8)
+  const engagementImages = getImagePaths('engagement', 8)
 
   return (
     <motion.div

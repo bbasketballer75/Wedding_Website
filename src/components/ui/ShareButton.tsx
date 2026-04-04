@@ -1,5 +1,5 @@
 import React, { useState } from 'react'
-import { EnvelopeIcon, LinkIcon, PhotoIcon, ShareIcon } from '@heroicons/react/24/outline'
+import { Mail, Link, Image, Share2 } from 'lucide-react'
 import { motion } from 'framer-motion'
 
 interface ShareButtonProps {
@@ -95,7 +95,7 @@ const ShareButton: React.FC<ShareButtonProps> = ({
   return (
     <div className={`relative ${className}`}>
       <button onClick={handleNativeShare} className={getButtonClasses()}>
-        <ShareIcon className='w-5 h-5 mr-2' />
+        <Share2 className='w-5 h-5 mr-2' />
         Share
       </button>
 
@@ -117,7 +117,7 @@ const ShareButton: React.FC<ShareButtonProps> = ({
                   onClick={handleNativeShare}
                   className='w-full flex items-center px-3 py-2 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors'
                 >
-                  <ShareIcon className='w-5 h-5 mr-3 text-gray-600 dark:text-gray-400' />
+                  <Share2 className='w-5 h-5 mr-3 text-gray-600 dark:text-gray-400' />
                   <span className='text-gray-900 dark:text-white'>Share...</span>
                 </button>
               )}
@@ -127,7 +127,7 @@ const ShareButton: React.FC<ShareButtonProps> = ({
                 onClick={handleCopyLink}
                 className='w-full flex items-center px-3 py-2 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors'
               >
-                <LinkIcon className='w-5 h-5 mr-3 text-gray-600 dark:text-gray-400' />
+                <Link className='w-5 h-5 mr-3 text-gray-600 dark:text-gray-400' />
                 <span className='text-gray-900 dark:text-white'>
                   {copied ? 'Copied!' : 'Copy link'}
                 </span>
@@ -138,7 +138,7 @@ const ShareButton: React.FC<ShareButtonProps> = ({
                 onClick={handleEmailShare}
                 className='w-full flex items-center px-3 py-2 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors'
               >
-                <EnvelopeIcon className='w-5 h-5 mr-3 text-gray-600 dark:text-gray-400' />
+                <Mail className='w-5 h-5 mr-3 text-gray-600 dark:text-gray-400' />
                 <span className='text-gray-900 dark:text-white'>Email</span>
               </button>
 
@@ -165,7 +165,7 @@ const ShareButton: React.FC<ShareButtonProps> = ({
                 onClick={handlePinterestShare}
                 className='w-full flex items-center px-3 py-2 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors'
               >
-                <PhotoIcon className='w-5 h-5 mr-3 text-red-600' />
+                <Image className='w-5 h-5 mr-3 text-red-600' />
                 <span className='text-gray-900 dark:text-white'>Pinterest</span>
               </button>
             </div>
