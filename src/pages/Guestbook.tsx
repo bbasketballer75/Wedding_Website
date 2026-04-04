@@ -99,6 +99,7 @@ function MessageCard({
   onAddReaction,
   extraComments,
   onSubmitReply,
+  staggerIndex = 0,
 }: {
   message: Message
   isHighlighted?: boolean
@@ -106,6 +107,7 @@ function MessageCard({
   onAddReaction: (messageId: string) => void
   extraComments?: Comment[]
   onSubmitReply: (messageId: string, content: string) => Promise<void>
+  staggerIndex?: number
 }) {
   const displayContent = getDisplayContent(message)
   const reactions = localReactions ?? message.reactions
@@ -130,6 +132,7 @@ function MessageCard({
       initial={{ opacity: 0, y: 18 }}
       whileInView={{ opacity: 1, y: 0 }}
       viewport={{ once: true, amount: 0.2 }}
+      transition={{ duration: 0.45, delay: Math.min(staggerIndex * 0.06, 0.4) }}
       className={cn(
         'relative overflow-hidden rounded-2xl bg-white/5 backdrop-blur-sm border border-gold-200/12 px-5 py-5 transition-all duration-300 sm:px-6 sm:py-6',
         isHighlighted && 'ring-2 ring-gold-400/40 shadow-[0_0_40px_-10px_rgba(198,156,78,0.25)]'
@@ -172,6 +175,8 @@ function MessageCard({
         <button
           type="button"
           onClick={() => onAddReaction(message.id)}
+          aria-haspopup="dialog"
+          aria-controls="reaction-picker"
           className="inline-flex items-center gap-1.5 rounded-full border border-white/12 bg-white/5 px-3 py-1.5 text-xs text-white/55 transition-colors hover:bg-white/10 hover:text-white/80"
         >
           <Smile className="h-3.5 w-3.5" />
@@ -211,6 +216,8 @@ function MessageCard({
             onChange={(e) => setReplyText(e.target.value)}
             placeholder="Add a reply..."
             rows={2}
+            // eslint-disable-next-line jsx-a11y/no-autofocus
+            autoFocus
             className="bg-white/8 border-white/12 text-white placeholder:text-white/30 focus:border-gold-400/50"
           />
           <div className="mt-3 flex justify-end">
@@ -570,14 +577,20 @@ export default function Guestbook() {
                       </div>
 
                       <div className="mt-6">
-                        <Label htmlFor="guestbook-message" className="text-white/70">Your message</Label>
+                        <div className="flex items-baseline justify-between">
+                          <Label htmlFor="guestbook-message" className="text-white/70">Your message</Label>
+                          <span className={`text-xs tabular-nums transition-colors ${content.length > 900 ? 'text-amber-400' : 'text-white/30'}`}>
+                            {content.length}/1000
+                          </span>
+                        </div>
                         <Textarea
                           id="guestbook-message"
-                          className="bg-white/8 border-white/12 text-white placeholder:text-white/30 focus:border-gold-400/50"
+                          className="mt-1.5 bg-white/8 border-white/12 text-white placeholder:text-white/30 focus:border-gold-400/50"
                           value={content}
-                          onChange={(event) => setContent(event.target.value)}
+                          onChange={(event) => setContent(event.target.value.slice(0, 1000))}
                           placeholder="Tell us what you felt, what you remember, or what you hope for us next."
                           rows={6}
+                          maxLength={1000}
                           required
                         />
                       </div>
@@ -656,7 +669,7 @@ export default function Guestbook() {
             ) : visibleMessages.length > 0 ? (
               <>
                 <div className="grid gap-5 xl:grid-cols-2">
-                  {visibleMessages.map((message) => (
+                  {visibleMessages.map((message, index) => (
                     <MessageCard
                       key={message.id}
                       message={message}
@@ -665,6 +678,7 @@ export default function Guestbook() {
                       onAddReaction={setReactionPickerForId}
                       extraComments={extraComments[message.id]}
                       onSubmitReply={handleSubmitReply}
+                      staggerIndex={index}
                     />
                   ))}
                 </div>

@@ -1,0 +1,75 @@
+- generic [active] [ref=e1]:
+  - generic [ref=e3]:
+    - link "Skip to main content" [ref=e4] [cursor=pointer]:
+      - /url: "#main-content"
+    - banner [ref=e5]:
+      - generic [ref=e6]:
+        - link "A&J" [ref=e7] [cursor=pointer]:
+          - /url: /
+        - link "Watch Film" [ref=e10] [cursor=pointer]:
+          - /url: /film
+          - img [ref=e11]
+          - generic [ref=e13]: Watch Film
+        - link "Gallery" [ref=e16] [cursor=pointer]:
+          - /url: /gallery
+          - img [ref=e17]
+          - generic [ref=e22]: Gallery
+        - link "Guestbook" [ref=e25] [cursor=pointer]:
+          - /url: /guestbook
+          - img [ref=e26]
+          - generic [ref=e29]: Guestbook
+        - link "Share" [ref=e32] [cursor=pointer]:
+          - /url: /upload
+          - img [ref=e33]
+          - generic [ref=e35]: Share
+    - main "Photo Gallery" [ref=e36]:
+      - paragraph [ref=e42]: Loading...
+    - contentinfo [ref=e43]:
+      - generic [ref=e48]:
+        - generic [ref=e49]:
+          - generic [ref=e50]:
+            - paragraph [ref=e51]: Austin and Jordyn
+            - heading "Thanks for helping us keep the day alive." [level=2] [ref=e52]
+            - paragraph [ref=e53]: "The simplest way through is still the best one: watch the film, open the gallery when you want to linger, and leave a note only if you still have something to say before you go."
+            - generic [ref=e54]:
+              - generic [ref=e55]: May 10, 2025
+              - generic [ref=e57]: The Lodge at Indian Lake
+          - generic [ref=e58]:
+            - link "Watch the film Revisit the ceremony, speeches, and the whole dance floor arc." [ref=e59] [cursor=pointer]:
+              - /url: /film
+              - generic [ref=e60]:
+                - img [ref=e62]
+                - img [ref=e64]
+              - paragraph [ref=e67]: Watch the film
+              - paragraph [ref=e68]: Revisit the ceremony, speeches, and the whole dance floor arc.
+            - link "Browse the gallery Portraits, candids, and every little detail we never want to forget." [ref=e69] [cursor=pointer]:
+              - /url: /gallery
+              - generic [ref=e70]:
+                - img [ref=e72]
+                - img [ref=e77]
+              - paragraph [ref=e80]: Browse the gallery
+              - paragraph [ref=e81]: Portraits, candids, and every little detail we never want to forget.
+            - link "Leave a note A quiet last stop for one message, blessing, or little memory from the day." [ref=e82] [cursor=pointer]:
+              - /url: /guestbook
+              - generic [ref=e83]:
+                - img [ref=e85]
+                - img [ref=e88]
+              - paragraph [ref=e91]: Leave a note
+              - paragraph [ref=e92]: A quiet last stop for one message, blessing, or little memory from the day.
+        - generic [ref=e93]:
+          - generic [ref=e94]:
+            - generic [ref=e95]:
+              - link "Watch Film" [ref=e96] [cursor=pointer]:
+                - /url: /film
+              - link "Gallery" [ref=e97] [cursor=pointer]:
+                - /url: /gallery
+              - link "Guestbook" [ref=e98] [cursor=pointer]:
+                - /url: /guestbook
+              - link "Share" [ref=e99] [cursor=pointer]:
+                - /url: /upload
+            - paragraph [ref=e100]:
+              - generic [ref=e101]: Made with
+              - img [ref=e102]
+              - generic [ref=e104]: for the people who shared it with us
+          - paragraph [ref=e105]: © 2026 Austin & Jordyn
+  - status [ref=e106]: Navigated to Photo Gallery
