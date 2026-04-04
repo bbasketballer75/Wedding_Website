@@ -10,7 +10,7 @@ interface MobileMenuProps {
 
 const MobileMenu = ({ isOpen, onClose }: MobileMenuProps) => {
   const location = useLocation()
-  const panelRef = useRef(null)
+  const panelRef = useRef<HTMLDivElement>(null)
 
   useEffect(() => {
     if (!isOpen || !panelRef.current) return
@@ -18,13 +18,13 @@ const MobileMenu = ({ isOpen, onClose }: MobileMenuProps) => {
     const panel = panelRef.current
     const focusableSelectors =
       'a[href], button:not([disabled]), [tabindex]:not([tabindex="-1"])'
-    const focusableElements = Array.from(panel.querySelectorAll(focusableSelectors))
+    const focusableElements = Array.from(panel.querySelectorAll<HTMLElement>(focusableSelectors))
 
     if (focusableElements.length > 0) {
       focusableElements[0].focus()
     }
 
-    const handleKeyDown = (e) => {
+    const handleKeyDown = (e: KeyboardEvent) => {
       if (e.key === 'Escape') {
         onClose()
         return
