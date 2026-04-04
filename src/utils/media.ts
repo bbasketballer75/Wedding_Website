@@ -64,6 +64,13 @@ export function getMediaPath(path: string): string {
     return `${DEV_MEDIA_PROXY_PREFIX}/${toRemoteMediaPath(path)}`
   }
 
+  // In production, VTT caption/subtitle files must be same-origin to satisfy the
+  // browser's cross-origin track restriction. Route through a Netlify proxy so the
+  // URL stays on www.theporadas.com instead of pointing to the media CDN directly.
+  if (path.endsWith('.vtt')) {
+    return `/__vtt_proxy/${toRemoteMediaPath(path)}`
+  }
+
   return `${mediaBaseUrl}/${toRemoteMediaPath(path)}`
 }
 
