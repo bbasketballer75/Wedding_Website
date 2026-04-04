@@ -815,7 +815,7 @@ export default function Gallery() {
       a.click()
       URL.revokeObjectURL(url)
     } catch {
-      addToast({ type: 'error', message: 'Download failed. Please try again.' })
+      addToast('Download failed. Please try again.', 'error')
     }
     setIsDownloadingPack(false)
   }
@@ -825,7 +825,7 @@ export default function Gallery() {
     const ids = [...selectedPhotoIds].join(',')
     const shareUrl = `${window.location.origin}/gallery?share=${ids}`
     void navigator.clipboard?.writeText(shareUrl)
-    addToast({ type: 'success', message: 'Share link copied to clipboard' })
+    addToast('Share link copied to clipboard', 'success')
   }
 
   const handleAddComment = async (photoId: string, payload: { author: string; content: string }) => {
