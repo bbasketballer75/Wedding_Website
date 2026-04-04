@@ -1,10 +1,10 @@
 import type { Context } from "https://edge.netlify.com";
 
-interface GalleryItem {
+interface PhotoRow {
   id: string;
-  title: string | null;
-  description: string | null;
-  image_url: string;
+  caption: string | null;
+  url: string;
+  thumbnail: string | null;
 }
 
 export default async (request: Request, context: Context) => {
@@ -25,11 +25,11 @@ export default async (request: Request, context: Context) => {
     return context.next();
   }
 
-  let photoData: GalleryItem | null = null;
+  let photoData: PhotoRow | null = null;
 
   try {
-    const supabaseEndpoint = `${supabaseUrl}/rest/v1/wedding_gallery?id=eq.${shareId}&select=id,title,description,image_url`;
-    
+    const supabaseEndpoint = `${supabaseUrl}/rest/v1/photos?id=eq.${shareId}&select=id,caption,url,thumbnail`;
+
     const apiResponse = await fetch(supabaseEndpoint, {
       headers: {
         apikey: supabaseKey,
@@ -50,7 +50,7 @@ export default async (request: Request, context: Context) => {
   const response = await context.next();
 
   // If we couldn't get the photo data, return the original response
-  if (!photoData || !photoData.image_url) {
+  if (!photoData || !photoData.url) {
     return response;
   }
 
@@ -61,9 +61,12 @@ export default async (request: Request, context: Context) => {
   }
 
   const siteTitle = "Porada Wedding Gallery";
-  const ogTitle = photoData.title ? `${photoData.title} | ${siteTitle}` : `Beautiful Memory | ${siteTitle}`;
-  const ogDesc = photoData.description || "Check out this beautiful moment from our wedding gallery.";
-  
+  const ogTitle = photoData.caption
+    ? `${photoData.caption} | ${siteTitle}`
+    : `A wedding photo | ${siteTitle}`;
+  const ogDesc = "A photo from Austin & Jordyn's wedding";
+  const ogImage = photoData.url;
+
   // Create HTMLRewriter instance to update metas
   // HTMLRewriter is available globally in Netlify Edge Functions
   return new HTMLRewriter()
@@ -89,12 +92,12 @@ export default async (request: Request, context: Context) => {
     })
     .on('meta[property="og:image"]', {
       element(element: any) {
-        element.setAttribute("content", photoData!.image_url);
+        element.setAttribute("content", ogImage);
       },
     })
     .on('meta[name="twitter:image"]', {
       element(element: any) {
-        element.setAttribute("content", photoData!.image_url);
+        element.setAttribute("content", ogImage);
       },
     })
     .transform(response);
