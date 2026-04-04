@@ -17,6 +17,10 @@ dev-dist
 # MCP config (contains API tokens)
 .mcp.json
 
+# Local tool caches
+.minimax/
+.playwright-mcp/
+
 # Git worktrees
 .worktrees/
 
