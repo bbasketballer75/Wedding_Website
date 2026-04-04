@@ -17,6 +17,15 @@
   path = "/gallery"
   function = "gallery-share"
 
+# Proxy VTT caption files through the same origin to satisfy browser cross-origin
+# track restrictions. The media CDN has no CORS headers so the <track> element
+# would otherwise be blocked with "Domains, protocols and ports must match".
+[[redirects]]
+  from = "/__vtt_proxy/*"
+  to = "https://media.wedding.theporadas.com/:splat"
+  status = 200
+  force = true
+
 [[redirects]]
   from = "/*"
   to = "/index.html"
