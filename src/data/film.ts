@@ -252,6 +252,12 @@ export async function loadMainFilmChapters() {
   }
 
   const text = await response.text()
+
+  // Guard against SPA catch-all returning HTML instead of VTT (e.g. in local preview)
+  if (!text.trimStart().startsWith('WEBVTT')) {
+    throw new Error('Response is not a valid VTT file')
+  }
+
   const parsed = parseMainFilmChapters(text)
 
   return parsed.length > 0 ? parsed : MAIN_FILM_CHAPTERS_FALLBACK

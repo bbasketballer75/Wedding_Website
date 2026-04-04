@@ -5,6 +5,7 @@ import { ChevronDown } from 'lucide-react'
 import { LoveTimeline } from '@/components/timeline/LoveTimeline'
 import { AnniversaryCountdown } from '@/components/sections/AnniversaryCountdown'
 import { GuestHighlightReel } from '@/components/sections/GuestHighlightReel'
+import { MomentOfTheWeekSection } from '@/components/sections/MomentOfTheWeekSection'
 import { publicNavLinks } from '@/components/layout/publicNav'
 import { HomeSEO } from '@/components/seo/SEOHead'
 import { cn } from '@/lib/utils'
@@ -257,6 +258,8 @@ export default function Home() {
       <LoveTimeline />
 
       <GuestHighlightReel />
+
+      <MomentOfTheWeekSection />
 
     </div>
   )
