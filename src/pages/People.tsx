@@ -5,8 +5,21 @@ import { Users } from 'lucide-react'
 import { fetchPhotosWithFaces } from '@/lib/supabase'
 import type { Photo } from '@/lib/supabase'
 import { getMediaPath } from '@/utils/media'
+import { partyData } from '@/data/weddingParty'
 import { SEOHead } from '@/components/seo/SEOHead'
 import { cn } from '@/lib/utils'
+
+// Portrait photos curated for the couple, parents, and wedding party keyed by full name.
+const CURATED_PORTRAITS: Record<string, string> = (() => {
+  const map: Record<string, string> = {}
+  const all = [...partyData.couple, ...partyData.parents, ...partyData.groomsmen, ...partyData.bridesmaids]
+  for (const person of all) {
+    if (person.fullName && person.image) {
+      map[person.fullName] = person.image
+    }
+  }
+  return map
+})()
 
 const PROFESSIONAL_ALBUMS = ['Engagement', 'Bach+ette', 'Wedding Day']
 
@@ -17,6 +30,7 @@ interface PersonCard {
   faceX: number
   faceY: number
   faceBoxWidth: number | null
+  curatedPortrait: string | null  // pre-selected portrait from weddingParty data
   collections: string[]
   professionalCount: number
   guestCount: number
@@ -109,6 +123,7 @@ function buildPeopleFromPhotos(photos: Photo[]): PersonCard[] {
       faceX: best?.faceX ?? 0.5,
       faceY: best?.faceY ?? 0.4,
       faceBoxWidth: best?.boxWidth ?? null,
+      curatedPortrait: CURATED_PORTRAITS[name] ?? null,
       collections: accum.collections,
       professionalCount: accum.professionalCount,
       guestCount: accum.guestCount,
@@ -225,11 +240,20 @@ export default function People() {
                 )}
                 aria-label={`Browse photos of ${person.name}`}
               >
-                {/* Avatar — zoomed to show just the named face */}
-                <div
-                  className="h-20 w-20 rounded-full border-2 border-cream-200 shrink-0"
-                  style={faceAvatarStyle(person.thumbnail, person.faceX, person.faceY, person.faceBoxWidth)}
-                />
+                {/* Avatar — curated portrait if available, otherwise face-cropped thumbnail */}
+                {person.curatedPortrait ? (
+                  <img
+                    src={person.curatedPortrait}
+                    alt=""
+                    className="h-20 w-20 rounded-full border-2 border-cream-200 object-cover shrink-0"
+                    loading="lazy"
+                  />
+                ) : (
+                  <div
+                    className="h-20 w-20 rounded-full border-2 border-cream-200 shrink-0"
+                    style={faceAvatarStyle(person.thumbnail, person.faceX, person.faceY, person.faceBoxWidth)}
+                  />
+                )}
 
                 {/* Name */}
                 <p className="font-display text-base text-charcoal-800 text-center leading-tight">
