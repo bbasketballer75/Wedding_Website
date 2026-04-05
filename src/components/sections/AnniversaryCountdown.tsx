@@ -138,6 +138,12 @@ export function AnniversaryCountdown() {
         <p className="mt-3 text-charcoal-500">
           {COUPLE.person1.name} &amp; {COUPLE.person2.name} · September 20, 2025
         </p>
+        <a
+          href="/anniversary"
+          className="mt-6 inline-flex items-center gap-1.5 text-sm text-gold-600 hover:text-gold-700 transition-colors"
+        >
+          Our anniversary memories →
+        </a>
       </motion.div>
     </section>
   )

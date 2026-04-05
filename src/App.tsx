@@ -19,6 +19,9 @@ const Upload = lazy(() => import('@/pages/Upload'))
 const Guestbook = lazy(() => import('@/pages/Guestbook'))
 const Admin = lazy(() => import('@/pages/Admin'))
 const AdminLogin = lazy(() => import('@/pages/AdminLogin'))
+const GuestMemories = lazy(() => import('@/pages/GuestMemories'))
+const People = lazy(() => import('@/pages/People'))
+const Anniversary = lazy(() => import('@/pages/Anniversary'))
 const NotFound = lazy(() => import('@/pages/NotFound'))
 
 // Page transition wrapper
@@ -67,6 +70,9 @@ function AppContent() {
       '/gallery': 'Photo Gallery',
       '/upload': 'Share Memories',
       '/guestbook': 'Guestbook',
+      '/guest-photos': 'Guest Memories',
+      '/people': 'People',
+      '/anniversary': 'Our Anniversary',
       '/admin/login': 'Admin Login',
       '/admin': 'Admin Dashboard',
     }
@@ -146,6 +152,30 @@ function AppContent() {
                 element={
                   <LazyPage title="Guestbook">
                     <Guestbook />
+                  </LazyPage>
+                }
+              />
+              <Route
+                path="/guest-photos"
+                element={
+                  <LazyPage title="Guest Memories">
+                    <GuestMemories />
+                  </LazyPage>
+                }
+              />
+              <Route
+                path="/people"
+                element={
+                  <LazyPage title="People">
+                    <People />
+                  </LazyPage>
+                }
+              />
+              <Route
+                path="/anniversary"
+                element={
+                  <LazyPage title="Our Anniversary">
+                    <Anniversary />
                   </LazyPage>
                 }
               />

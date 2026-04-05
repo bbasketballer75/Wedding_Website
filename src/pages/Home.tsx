@@ -146,7 +146,7 @@ export default function Home() {
         transition={{ duration: 0.6, delay: 0.3 }}
         data-testid="home-nav"
         className={cn(
-          "fixed top-3 left-1/2 z-50 w-[calc(100vw-0.75rem)] max-w-[40rem] -translate-x-1/2 sm:top-6 sm:w-[calc(100vw-1rem)] sm:max-w-[42rem]",
+          "fixed top-3 left-1/2 z-50 w-[calc(100vw-0.75rem)] max-w-[40rem] -translate-x-1/2 sm:top-6 sm:w-[calc(100vw-1rem)] sm:max-w-[52rem]",
           heroMateriallyVisible && "pointer-events-none"
         )}
       >
