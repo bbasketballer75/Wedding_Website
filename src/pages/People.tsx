@@ -4,6 +4,7 @@ import { useNavigate } from 'react-router-dom'
 import { Users } from 'lucide-react'
 import { fetchPhotosWithFaces } from '@/lib/supabase'
 import type { Photo } from '@/lib/supabase'
+import { getMediaPath } from '@/utils/media'
 import { SEOHead } from '@/components/seo/SEOHead'
 import { cn } from '@/lib/utils'
 
@@ -40,7 +41,7 @@ function buildPeopleFromPhotos(photos: Photo[]): PersonCard[] {
         map.set(face.name, {
           name: face.name,
           photoCount: 1,
-          thumbnail: photo.thumbnail || photo.url,
+          thumbnail: getMediaPath(photo.thumbnail || photo.url),
           collections: photo.album ? [photo.album] : [],
           professionalCount: isPro ? 1 : 0,
           guestCount: isGuest ? 1 : 0,

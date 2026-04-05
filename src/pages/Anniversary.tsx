@@ -4,6 +4,7 @@ import { CalendarHeart, ChevronRight } from 'lucide-react'
 import { AnniversaryCountdown } from '@/components/sections/AnniversaryCountdown'
 import { fetchPublishedAnniversaryEntries, fetchWeddingDayPhotos } from '@/lib/supabase'
 import type { AnniversaryEntry, Photo } from '@/lib/supabase'
+import { getMediaPath } from '@/utils/media'
 import { PhotoLightbox } from '@/components/photo-viewer/PhotoLightbox'
 import { SEOHead } from '@/components/seo/SEOHead'
 import { cn } from '@/lib/utils'
@@ -49,7 +50,7 @@ export default function Anniversary() {
 
   const lightboxPhotos = weddingPhotos.map((p) => ({
     id: p.id,
-    url: p.url,
+    url: getMediaPath(p.url),
     caption: p.caption,
   }))
 
@@ -207,7 +208,7 @@ export default function Anniversary() {
                   aria-label={`View wedding day photo ${i + 1}`}
                 >
                   <img
-                    src={photo.thumbnail || photo.url}
+                    src={getMediaPath(photo.thumbnail || photo.url)}
                     alt=""
                     className="h-48 w-36 object-cover hover:opacity-90 transition-opacity sm:h-56 sm:w-44"
                     loading="lazy"

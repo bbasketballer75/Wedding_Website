@@ -136,7 +136,7 @@ export function AnniversaryCountdown() {
           {years === 0 && days === 0 && 'Today!'}
         </p>
         <p className="mt-3 text-charcoal-500">
-          {COUPLE.person1.name} &amp; {COUPLE.person2.name} · September 20, 2025
+          {COUPLE.person1.name} &amp; {COUPLE.person2.name} · May 10, 2025
         </p>
         <a
           href="/anniversary"
