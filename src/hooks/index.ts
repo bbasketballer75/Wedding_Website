@@ -8,5 +8,4 @@ export { useTouchGestures } from './useTouchGestures.js'
 
 // Shipping-route hooks
 export { default as useInfiniteScroll } from './useInfiniteScroll'
-export { default as usePagination } from './usePagination'
 export { useImageProcessor, default as useWorkers } from './useWorkers'

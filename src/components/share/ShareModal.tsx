@@ -3,6 +3,7 @@ import { motion, AnimatePresence } from 'framer-motion'
 import { Button } from '@/components/ui/Button'
 import { X, Link2, Check, Facebook, Twitter, Mail, Share2 } from 'lucide-react'
 import { cn } from '@/lib/utils'
+import { focusManager } from '@/accessibility/focusManagement'
 
 interface ShareModalProps {
   isOpen: boolean
@@ -25,44 +26,20 @@ export function ShareModal({
   const containerRef = useRef<HTMLDivElement>(null)
 
   useEffect(() => {
-    if (!isOpen) return
-    const container = containerRef.current
-    if (!container) return
+    if (!isOpen || !containerRef.current) return
+    const previousFocus = document.activeElement as HTMLElement
 
-    const trigger = document.activeElement as HTMLElement | null
+    const release = focusManager.trapFocus(containerRef.current)
 
-    const focusable = () =>
-      Array.from(
-        container.querySelectorAll<HTMLElement>(
-          'button:not([disabled]),[href],input:not([disabled]),select:not([disabled]),textarea:not([disabled]),[tabindex]:not([tabindex="-1"])'
-        )
-      )
-
-    focusable()[0]?.focus()
-
-    const handleKeyDown = (e: KeyboardEvent) => {
-      if (e.key === 'Escape') {
-        onClose()
-        return
-      }
-      if (e.key !== 'Tab') return
-      const els = focusable()
-      if (els.length === 0) return
-      const first = els[0]
-      const last = els[els.length - 1]
-      if (e.shiftKey && document.activeElement === first) {
-        e.preventDefault()
-        last.focus()
-      } else if (!e.shiftKey && document.activeElement === last) {
-        e.preventDefault()
-        first.focus()
-      }
+    const handleEscape = (e: KeyboardEvent) => {
+      if (e.key === 'Escape') onClose()
     }
+    document.addEventListener('keydown', handleEscape)
 
-    document.addEventListener('keydown', handleKeyDown)
     return () => {
-      document.removeEventListener('keydown', handleKeyDown)
-      trigger?.focus()
+      release()
+      previousFocus?.focus()
+      document.removeEventListener('keydown', handleEscape)
     }
   }, [isOpen, onClose])
 
@@ -122,7 +99,8 @@ export function ShareModal({
             ref={containerRef}
             role="dialog"
             aria-modal="true"
-            aria-label="Share"
+            aria-labelledby="share-modal-title"
+            tabIndex={-1}
             initial={{ scale: 0.95, opacity: 0 }}
             animate={{ scale: 1, opacity: 1 }}
             exit={{ scale: 0.95, opacity: 0 }}
@@ -136,7 +114,7 @@ export function ShareModal({
                   <Share2 className="w-5 h-5 text-gold-600" />
                 </div>
                 <div>
-                  <h3 className="font-display text-xl text-charcoal-900">Share</h3>
+                  <h3 id="share-modal-title" className="font-display text-xl text-charcoal-900">Share</h3>
                   <p className="text-charcoal-500 text-sm">Spread the love!</p>
                 </div>
               </div>

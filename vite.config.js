@@ -53,10 +53,6 @@ function getVendorChunkName(id) {
     return 'vendor-supabase'
   }
 
-  if (packageName === 'leaflet' || packageName === 'react-leaflet') {
-    return 'vendor-map'
-  }
-
   if (packageName === 'framer-motion') {
     return 'vendor-motion'
   }
@@ -239,6 +235,11 @@ export default defineConfig(({ mode }) => {
       assetsInlineLimit: 4096,
       reportCompressedSize: true,
       minify: 'esbuild',
+    },
+    esbuild: {
+      // Strip console.* and debugger statements from production bundles.
+      // Sentry captures errors in production; browser console output is not needed.
+      drop: mode === 'production' ? ['console', 'debugger'] : [],
     },
     server: {
       port: 5173,

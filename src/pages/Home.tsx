@@ -6,6 +6,8 @@ import { LoveTimeline } from '@/components/timeline/LoveTimeline'
 import { AnniversaryCountdown } from '@/components/sections/AnniversaryCountdown'
 import { GuestHighlightReel } from '@/components/sections/GuestHighlightReel'
 import { MomentOfTheWeekSection } from '@/components/sections/MomentOfTheWeekSection'
+import { StandoutUploadSection } from '@/components/sections/StandoutUploadSection'
+import { FeaturedNoteSection } from '@/components/sections/FeaturedNoteSection'
 import { publicNavLinks } from '@/components/layout/publicNav'
 import { HomeSEO } from '@/components/seo/SEOHead'
 import { cn } from '@/lib/utils'
@@ -260,6 +262,10 @@ export default function Home() {
       <GuestHighlightReel />
 
       <MomentOfTheWeekSection />
+
+      <StandoutUploadSection />
+
+      <FeaturedNoteSection />
 
     </div>
   )
