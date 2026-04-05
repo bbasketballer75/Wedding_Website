@@ -93,8 +93,8 @@ export const partyData: {
     },
     {
       id: 'gm2',
-      name: 'Brosonan',
-      fullName: 'Brosonan McCray',
+      name: 'Brosnan',
+      fullName: 'Brosnan McCray',
       role: 'Groomsman',
       side: 'groom',
       image: '/images/wedding-party/groomsmen/brosonan-mccray.webp',
