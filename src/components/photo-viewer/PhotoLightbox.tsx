@@ -9,6 +9,7 @@ import {
   MessageCircle, Send, ZoomIn, ZoomOut, Tag, User, Loader2, Clock
 } from 'lucide-react'
 import { cn } from '@/lib/utils'
+import { focusManager } from '@/accessibility/focusManagement'
 
 interface FaceTag {
   id: string
@@ -128,56 +129,23 @@ export function PhotoLightbox({
   const lightboxRef = useRef<HTMLDivElement>(null)
 
   useEffect(() => {
-    if (!isOpen) return
-    const container = lightboxRef.current
-    if (!container) return
+    if (!isOpen || !lightboxRef.current) return
+    const previousFocus = document.activeElement as HTMLElement
 
-    const trigger = document.activeElement as HTMLElement | null
-
-    const focusable = () =>
-      Array.from(
-        container.querySelectorAll<HTMLElement>(
-          'button:not([disabled]),[href],input:not([disabled]),select:not([disabled]),textarea:not([disabled]),[tabindex]:not([tabindex="-1"])'
-        )
-      )
-
-    focusable()[0]?.focus()
+    const release = focusManager.trapFocus(lightboxRef.current)
 
     const handleKeyDown = (e: KeyboardEvent) => {
-      if (e.key === 'Escape') {
-        onClose()
-        return
-      }
-      if (e.key === 'ArrowLeft') {
-        handlePrevious()
-        return
-      }
-      if (e.key === 'ArrowRight') {
-        handleNext()
-        return
-      }
-      if (e.key === 'l') {
-        currentPhoto && onLike?.(currentPhoto.id)
-        return
-      }
-      if (e.key !== 'Tab') return
-      const els = focusable()
-      if (els.length === 0) return
-      const first = els[0]
-      const last = els[els.length - 1]
-      if (e.shiftKey && document.activeElement === first) {
-        e.preventDefault()
-        last.focus()
-      } else if (!e.shiftKey && document.activeElement === last) {
-        e.preventDefault()
-        first.focus()
-      }
+      if (e.key === 'Escape') { onClose(); return }
+      if (e.key === 'ArrowLeft') { handlePrevious(); return }
+      if (e.key === 'ArrowRight') { handleNext(); return }
+      if (e.key === 'l') { currentPhoto && onLike?.(currentPhoto.id) }
     }
-
     document.addEventListener('keydown', handleKeyDown)
+
     return () => {
+      release()
+      previousFocus?.focus()
       document.removeEventListener('keydown', handleKeyDown)
-      trigger?.focus()
     }
   }, [isOpen, onClose, handlePrevious, handleNext, currentPhoto, onLike])
 
@@ -220,9 +188,13 @@ export function PhotoLightbox({
               ref={lightboxRef}
               role="dialog"
               aria-modal="true"
-              aria-label="Photo viewer"
+              aria-labelledby="lightbox-title"
+              tabIndex={-1}
               className="flex-1 flex flex-col relative"
             >
+              <span id="lightbox-title" className="sr-only">
+                Photo viewer — {currentPhoto.caption || `Photo ${currentIndex + 1} of ${photos.length}`}
+              </span>
               {/* Toolbar */}
               <div className="absolute left-0 right-0 top-0 z-10 flex items-center justify-between bg-gradient-to-b from-black/55 to-transparent p-2.5 sm:p-4">
                 <div className="flex items-center gap-2">

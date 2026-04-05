@@ -2,6 +2,7 @@ import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import { AnimatePresence, motion } from 'framer-motion'
 import { useSearchParams } from 'react-router-dom'
 import { FamilyTree } from '@/components/family-tree/FamilyTree'
+import { FilmFeatureSection } from '@/components/sections/FilmFeatureSection'
 import { FilmSEO } from '@/components/seo/SEOHead'
 import { VideoPlayer } from '@/components/video/VideoPlayer'
 import { Button } from '@/components/ui/Button'
@@ -827,6 +828,8 @@ export default function Film() {
           </div>
         </div>
       </section>
+
+      <FilmFeatureSection />
 
       {guestHighlights.length > 0 && (
         <section className="px-4 pb-16">
