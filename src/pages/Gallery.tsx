@@ -1103,8 +1103,14 @@ export default function Gallery() {
 
                 </div>
 
-                <div className="mt-3 flex items-center border-t border-charcoal-900/6 pt-3">
+                <div className="mt-3 flex items-center justify-between border-t border-charcoal-900/6 pt-3">
                   <FaceRecognition onPhotoFilter={handleFaceFilter} detectedFaces={detectedFaces} />
+                  <a
+                    href="/people"
+                    className="text-xs text-charcoal-400 hover:text-gold-600 transition-colors"
+                  >
+                    People page →
+                  </a>
                 </div>
 
                 {hasActiveFilters && (

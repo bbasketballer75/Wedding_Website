@@ -14,6 +14,7 @@ const PhotoModeration = lazy(() => import('./PhotoModeration').then(m => ({ defa
 const GuestbookModeration = lazy(() => import('./GuestbookModeration').then(m => ({ default: m.GuestbookModeration })))
 const AuditLogView = lazy(() => import('./AuditLogView').then(m => ({ default: m.AuditLogView })))
 const FeaturedContentManager = lazy(() => import('./FeaturedContentManager').then(m => ({ default: m.FeaturedContentManager })))
+const AnniversaryManager = lazy(() => import('./AnniversaryManager'))
 const Analytics = lazy(() => import('./Analytics').then(m => ({ default: m.Analytics })))
 const Settings = lazy(() => import('./Settings').then(m => ({ default: m.Settings })))
 
@@ -113,6 +114,7 @@ export function AdminLayout() {
                 <Route path="review" element={<MediaReviewPanel />} />
                 <Route path="guestbook" element={<GuestbookModeration />} />
                 <Route path="featured" element={<FeaturedContentManager />} />
+                <Route path="anniversary" element={<AnniversaryManager />} />
                 <Route path="audit" element={<AuditLogView />} />
                 <Route path="analytics" element={<Analytics />} />
                 <Route path="settings" element={<Settings />} />
@@ -181,6 +183,7 @@ export function AdminLayout() {
                 <Route path="review" element={<MediaReviewPanel />} />
                 <Route path="guestbook" element={<GuestbookModeration />} />
                 <Route path="featured" element={<FeaturedContentManager />} />
+                <Route path="anniversary" element={<AnniversaryManager />} />
                 <Route path="audit" element={<AuditLogView />} />
                 <Route path="analytics" element={<Analytics />} />
                 <Route path="settings" element={<Settings />} />
