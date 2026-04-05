@@ -25,10 +25,10 @@ interface PersonCard {
 // Returns CSS background-* styles that zoom the thumbnail to show just the face,
 // centered in the circular avatar container.
 function faceAvatarStyle(thumbnail: string, faceX: number, faceY: number, faceBoxWidth: number | null) {
-  // Target: face should occupy ~40% of the container height.
-  const targetRatio = 0.4
-  const rawScale = faceBoxWidth && faceBoxWidth > 0 ? targetRatio / faceBoxWidth : 3
-  const scale = Math.min(Math.max(rawScale, 1.5), 8)
+  // Target: face box fills ~70% of the container — tight enough to isolate one face.
+  const targetRatio = 0.7
+  const rawScale = faceBoxWidth && faceBoxWidth > 0 ? targetRatio / faceBoxWidth : 4
+  const scale = Math.min(Math.max(rawScale, 2), 8)
 
   // To center the face in the container:
   // posX = (faceX * scale - 0.5) / (scale - 1)  (clamped 0–1)
@@ -43,17 +43,25 @@ function faceAvatarStyle(thumbnail: string, faceX: number, faceY: number, faceBo
   }
 }
 
+interface PersonAccum {
+  photoCount: number
+  collections: string[]
+  professionalCount: number
+  guestCount: number
+  appearances: Array<{ thumbnail: string; faceX: number; faceY: number; boxWidth: number }>
+}
+
 function buildPeopleFromPhotos(photos: Photo[]): PersonCard[] {
-  const map = new Map<string, PersonCard>()
+  const map = new Map<string, PersonAccum>()
 
   for (const photo of photos) {
     if (!Array.isArray(photo.faces)) continue
     for (const face of photo.faces) {
       if (!face.name) continue
-      const existing = map.get(face.name)
       const isPro = photo.album ? PROFESSIONAL_ALBUMS.includes(photo.album) : false
       const isGuest = photo.album === 'Guest Uploads'
 
+      const existing = map.get(face.name)
       if (existing) {
         existing.photoCount++
         if (isPro) existing.professionalCount++
@@ -63,21 +71,51 @@ function buildPeopleFromPhotos(photos: Photo[]): PersonCard[] {
         }
       } else {
         map.set(face.name, {
-          name: face.name,
           photoCount: 1,
-          thumbnail: getMediaPath(photo.thumbnail || photo.url),
-          faceX: face.x,
-          faceY: face.y,
-          faceBoxWidth: face.box?.width ?? null,
           collections: photo.album ? [photo.album] : [],
           professionalCount: isPro ? 1 : 0,
           guestCount: isGuest ? 1 : 0,
+          appearances: [],
+        })
+      }
+
+      // Record every face appearance for avatar selection below.
+      // face.x / face.y are 0–100 percentage values; normalize to 0–1 here.
+      if (face.box?.width) {
+        map.get(face.name)!.appearances.push({
+          thumbnail: getMediaPath(photo.thumbnail || photo.url),
+          faceX: face.x / 100,
+          faceY: face.y / 100,
+          boxWidth: face.box.width / 100,
         })
       }
     }
   }
 
-  return Array.from(map.values()).sort((a, b) => b.photoCount - a.photoCount)
+  const result: PersonCard[] = []
+  for (const [name, accum] of map) {
+    // Prefer the largest face box where the face is well-positioned:
+    // not too close to horizontal edges, and in the upper 2/3 of the image (no feet shots)
+    const candidates = accum.appearances
+      .filter(a => a.faceX > 0.15 && a.faceX < 0.85 && a.faceY > 0.1 && a.faceY < 0.68)
+      .sort((a, b) => b.boxWidth - a.boxWidth)
+
+    const best = candidates[0] ?? accum.appearances.sort((a, b) => b.boxWidth - a.boxWidth)[0]
+
+    result.push({
+      name,
+      photoCount: accum.photoCount,
+      thumbnail: best?.thumbnail ?? '',
+      faceX: best?.faceX ?? 0.5,
+      faceY: best?.faceY ?? 0.4,
+      faceBoxWidth: best?.boxWidth ?? null,
+      collections: accum.collections,
+      professionalCount: accum.professionalCount,
+      guestCount: accum.guestCount,
+    })
+  }
+
+  return result.sort((a, b) => b.photoCount - a.photoCount)
 }
 
 function SkeletonCard() {
