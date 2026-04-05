@@ -14,9 +14,33 @@ interface PersonCard {
   name: string
   photoCount: number
   thumbnail: string
+  faceX: number
+  faceY: number
+  faceBoxWidth: number | null
   collections: string[]
   professionalCount: number
   guestCount: number
+}
+
+// Returns CSS background-* styles that zoom the thumbnail to show just the face,
+// centered in the circular avatar container.
+function faceAvatarStyle(thumbnail: string, faceX: number, faceY: number, faceBoxWidth: number | null) {
+  // Target: face should occupy ~40% of the container height.
+  const targetRatio = 0.4
+  const rawScale = faceBoxWidth && faceBoxWidth > 0 ? targetRatio / faceBoxWidth : 3
+  const scale = Math.min(Math.max(rawScale, 1.5), 8)
+
+  // To center the face in the container:
+  // posX = (faceX * scale - 0.5) / (scale - 1)  (clamped 0–1)
+  const posX = Math.min(Math.max((faceX * scale - 0.5) / (scale - 1), 0), 1)
+  const posY = Math.min(Math.max((faceY * scale - 0.5) / (scale - 1), 0), 1)
+
+  return {
+    backgroundImage: `url(${thumbnail})`,
+    backgroundSize: `${scale * 100}%`,
+    backgroundPosition: `${posX * 100}% ${posY * 100}%`,
+    backgroundRepeat: 'no-repeat' as const,
+  }
 }
 
 function buildPeopleFromPhotos(photos: Photo[]): PersonCard[] {
@@ -42,6 +66,9 @@ function buildPeopleFromPhotos(photos: Photo[]): PersonCard[] {
           name: face.name,
           photoCount: 1,
           thumbnail: getMediaPath(photo.thumbnail || photo.url),
+          faceX: face.x,
+          faceY: face.y,
+          faceBoxWidth: face.box?.width ?? null,
           collections: photo.album ? [photo.album] : [],
           professionalCount: isPro ? 1 : 0,
           guestCount: isGuest ? 1 : 0,
@@ -160,15 +187,11 @@ export default function People() {
                 )}
                 aria-label={`Browse photos of ${person.name}`}
               >
-                {/* Avatar */}
-                <div className="relative">
-                  <img
-                    src={person.thumbnail}
-                    alt=""
-                    className="h-20 w-20 rounded-full object-cover border-2 border-cream-200"
-                    loading="lazy"
-                  />
-                </div>
+                {/* Avatar — zoomed to show just the named face */}
+                <div
+                  className="h-20 w-20 rounded-full border-2 border-cream-200 shrink-0"
+                  style={faceAvatarStyle(person.thumbnail, person.faceX, person.faceY, person.faceBoxWidth)}
+                />
 
                 {/* Name */}
                 <p className="font-display text-base text-charcoal-800 text-center leading-tight">
