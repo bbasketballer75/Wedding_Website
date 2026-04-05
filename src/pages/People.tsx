@@ -9,13 +9,26 @@ import { partyData } from '@/data/weddingParty'
 import { SEOHead } from '@/components/seo/SEOHead'
 import { cn } from '@/lib/utils'
 
+const ALL_PARTY = [...partyData.couple, ...partyData.parents, ...partyData.groomsmen, ...partyData.bridesmaids]
+
 // Portrait photos curated for the couple, parents, and wedding party keyed by full name.
 const CURATED_PORTRAITS: Record<string, string> = (() => {
   const map: Record<string, string> = {}
-  const all = [...partyData.couple, ...partyData.parents, ...partyData.groomsmen, ...partyData.bridesmaids]
-  for (const person of all) {
+  for (const person of ALL_PARTY) {
     if (person.fullName && person.image) {
       map[person.fullName] = person.image
+    }
+  }
+  return map
+})()
+
+// Maps first-name-only tags (e.g. "Austin") to full names (e.g. "Austin Porada")
+// so duplicate cards aren't created when the same person is tagged both ways.
+const NAME_ALIASES: Record<string, string> = (() => {
+  const map: Record<string, string> = {}
+  for (const person of ALL_PARTY) {
+    if (person.name && person.fullName && person.name !== person.fullName) {
+      map[person.name] = person.fullName
     }
   }
   return map
@@ -72,10 +85,11 @@ function buildPeopleFromPhotos(photos: Photo[]): PersonCard[] {
     if (!Array.isArray(photo.faces)) continue
     for (const face of photo.faces) {
       if (!face.name) continue
+      const faceName = NAME_ALIASES[face.name] ?? face.name
       const isPro = photo.album ? PROFESSIONAL_ALBUMS.includes(photo.album) : false
       const isGuest = photo.album === 'Guest Uploads'
 
-      const existing = map.get(face.name)
+      const existing = map.get(faceName)
       if (existing) {
         existing.photoCount++
         if (isPro) existing.professionalCount++
@@ -84,7 +98,7 @@ function buildPeopleFromPhotos(photos: Photo[]): PersonCard[] {
           existing.collections.push(photo.album)
         }
       } else {
-        map.set(face.name, {
+        map.set(faceName, {
           photoCount: 1,
           collections: photo.album ? [photo.album] : [],
           professionalCount: isPro ? 1 : 0,
@@ -96,7 +110,7 @@ function buildPeopleFromPhotos(photos: Photo[]): PersonCard[] {
       // Record every face appearance for avatar selection below.
       // face.x / face.y are 0–100 percentage values; normalize to 0–1 here.
       if (face.box?.width) {
-        map.get(face.name)!.appearances.push({
+        map.get(faceName)!.appearances.push({
           thumbnail: getMediaPath(photo.thumbnail || photo.url),
           faceX: face.x / 100,
           faceY: face.y / 100,
