@@ -67,7 +67,7 @@ export const partyData: {
     {
       id: 'bride-mom',
       name: 'Christine',
-      fullName: 'Chrintine Pringle',
+      fullName: 'Christine Pringle',
       role: 'Mother of the Bride',
       side: 'bride',
       image: '/images/parents/christine.webp',
