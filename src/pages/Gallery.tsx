@@ -22,6 +22,23 @@ import {
   Photo as SupabasePhoto,
 } from '@/lib/supabase'
 import { useToast } from '@/context/ToastContext'
+import { partyData } from '@/data/weddingParty'
+
+// Maps first-name-only face tags to full names so "Austin" and "Austin Porada"
+// are treated as the same person in filters and the detected-faces widget.
+const FACE_NAME_ALIASES: Record<string, string> = (() => {
+  const map: Record<string, string> = {}
+  for (const person of [...partyData.couple, ...partyData.parents, ...partyData.groomsmen, ...partyData.bridesmaids]) {
+    if (person.name && person.fullName && person.name !== person.fullName) {
+      map[person.name] = person.fullName
+    }
+  }
+  return map
+})()
+
+function resolveAlias(name: string): string {
+  return FACE_NAME_ALIASES[name] ?? name
+}
 
 // Extended photo type with faces and comments
 interface Photo {
@@ -645,7 +662,7 @@ export default function Gallery() {
         .toLowerCase()
 
       const matchesSearch = !normalizedQuery || searchableText.includes(normalizedQuery)
-      const matchesFace = !faceFilter || photo.faces?.some(f => f.name === faceFilter)
+      const matchesFace = !faceFilter || photo.faces?.some(f => resolveAlias(f.name) === resolveAlias(faceFilter))
       
       return matchesSearch && matchesFace
     })
@@ -681,7 +698,8 @@ export default function Gallery() {
       Array.from(
         photos.reduce<Map<string, DetectedFace>>((acc, photo) => {
           for (const face of photo.faces || []) {
-            const existing = acc.get(face.name)
+            const resolvedName = resolveAlias(face.name)
+            const existing = acc.get(resolvedName)
             if (existing) {
               existing.photoCount += 1
               if (!existing.thumbnail) {
@@ -699,9 +717,9 @@ export default function Gallery() {
                 existing.guestCount = (existing.guestCount || 0) + 1
               }
             } else {
-              acc.set(face.name, {
-                id: face.id || face.name.toLowerCase().replace(/\s+/g, '-'),
-                name: face.name,
+              acc.set(resolvedName, {
+                id: face.id || resolvedName.toLowerCase().replace(/\s+/g, '-'),
+                name: resolvedName,
                 photoCount: 1,
                 thumbnail: photo.thumbnail || photo.url,
                 latestMoment: photo.caption,
