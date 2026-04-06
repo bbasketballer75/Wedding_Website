@@ -19,14 +19,14 @@ test.describe('Home Page', () => {
   test('routes top-level home nav links into the public experience', async ({ page }) => {
     await gotoPublicPage(page, '/')
     // The home-nav becomes interactive only after scrolling past the hero
-    await page.evaluate(() => window.scrollBy(0, window.innerHeight))
+    await page.evaluate(() => window.scrollBy(0, window.innerHeight * 1.5))
     await page.waitForTimeout(600)
 
     await page.getByTestId('home-nav').getByRole('link', { name: 'Watch Film' }).click()
     await expect(page).toHaveURL(/\/film$/)
 
     await gotoPublicPage(page, '/')
-    await page.evaluate(() => window.scrollBy(0, window.innerHeight))
+    await page.evaluate(() => window.scrollBy(0, window.innerHeight * 1.5))
     await page.waitForTimeout(600)
     await page.getByTestId('home-nav').getByRole('link', { name: 'Guestbook' }).click()
     await expect(page).toHaveURL(/\/guestbook$/)
