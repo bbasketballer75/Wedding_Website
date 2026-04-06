@@ -26,6 +26,21 @@ test.describe('Smoke Tests', () => {
     await expect(page.locator('body')).toBeVisible()
   })
 
+  test('@smoke people page loads', async ({ page }) => {
+    await gotoPublicPage(page, '/people')
+    await expect(page.locator('body')).toBeVisible()
+  })
+
+  test('@smoke anniversary page loads', async ({ page }) => {
+    await gotoPublicPage(page, '/anniversary')
+    await expect(page.locator('body')).toBeVisible()
+  })
+
+  test('@smoke guest-photos page loads', async ({ page }) => {
+    await gotoPublicPage(page, '/guest-photos')
+    await expect(page.locator('body')).toBeVisible()
+  })
+
   test('@smoke 404 page loads', async ({ page }) => {
     await gotoPublicPage(page, '/nonexistent')
     await expect(page.locator('body')).toBeVisible()

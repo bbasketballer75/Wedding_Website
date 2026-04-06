@@ -1,6 +1,6 @@
 import AxeBuilder from '@axe-core/playwright'
 import { expect, type Locator, type Page, type Route, test as base } from '@playwright/test'
-import { galleryPhotos, guestUploadInsertResponse, guestbookMessagesWithComments, guestbookSubmitResponse } from './mockData'
+import { anniversaryEntries, approvedGuestUploads, galleryPhotos, guestUploadInsertResponse, guestbookMessagesWithComments, guestbookSubmitResponse } from './mockData'
 
 type JsonValue = null | boolean | number | string | readonly JsonValue[] | { [key: string]: JsonValue }
 
@@ -73,8 +73,18 @@ export async function installPublicSiteMocks(page: Page) {
       return
     }
 
+    if (url.pathname.includes('/rest/v1/guest_uploads') && request.method() === 'GET') {
+      await fulfillJson(route, approvedGuestUploads)
+      return
+    }
+
     if (url.pathname.includes('/rest/v1/guest_uploads') && request.method() === 'POST') {
       await fulfillJson(route, guestUploadInsertResponse, 201)
+      return
+    }
+
+    if (url.pathname.includes('/rest/v1/anniversary_entries')) {
+      await fulfillJson(route, anniversaryEntries)
       return
     }
 
