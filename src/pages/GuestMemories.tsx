@@ -6,7 +6,7 @@ import { fetchApprovedGuestUploads } from '@/lib/supabase'
 import type { GuestUpload } from '@/lib/supabase'
 import { PhotoLightbox } from '@/components/photo-viewer/PhotoLightbox'
 import { Button } from '@/components/ui/Button'
-import { SEOHead } from '@/components/seo/SEOHead'
+import { GuestMemoriesSEO } from '@/components/seo/SEOHead'
 import { cn } from '@/lib/utils'
 
 interface FlatPhoto {
@@ -86,12 +86,8 @@ export default function GuestMemories() {
   }
 
   return (
-    <div className="min-h-screen bg-cream-50">
-      <SEOHead
-        title="Guest Memories — Austin & Jordyn's Wedding"
-        description="Browse photos shared by our guests — candid moments, phone shots, and side-of-the-day captures from the people who were there."
-        canonical="https://www.theporadas.com/guest-photos"
-      />
+    <div data-testid="guest-memories-page" className="min-h-screen bg-cream-50">
+      <GuestMemoriesSEO />
 
       <div className="mx-auto max-w-6xl px-4 pb-20 pt-10 sm:pt-14">
         {/* Header */}

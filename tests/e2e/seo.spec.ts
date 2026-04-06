@@ -6,6 +6,9 @@ const seoExpectations = [
   { route: '/gallery', title: 'Photo Gallery', canonicalSuffix: '/gallery', robots: 'index, follow' },
   { route: '/guestbook', title: 'Guestbook', canonicalSuffix: '/guestbook', robots: 'index, follow' },
   { route: '/upload', title: 'Share Memories', canonicalSuffix: '/upload', robots: 'index, follow' },
+  { route: '/people', title: 'People', canonicalSuffix: '/people', robots: 'index, follow' },
+  { route: '/anniversary', title: 'Anniversary', canonicalSuffix: '/anniversary', robots: 'index, follow' },
+  { route: '/guest-photos', title: 'Guest Memories', canonicalSuffix: '/guest-photos', robots: 'index, follow' },
 ] as const
 
 test.describe('SEO Metadata', () => {

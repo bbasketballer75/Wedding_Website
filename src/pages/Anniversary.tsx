@@ -6,7 +6,7 @@ import { fetchPublishedAnniversaryEntries, fetchWeddingDayPhotos } from '@/lib/s
 import type { AnniversaryEntry, Photo } from '@/lib/supabase'
 import { getMediaPath } from '@/utils/media'
 import { PhotoLightbox } from '@/components/photo-viewer/PhotoLightbox'
-import { SEOHead } from '@/components/seo/SEOHead'
+import { AnniversarySEO } from '@/components/seo/SEOHead'
 import { cn } from '@/lib/utils'
 
 function ordinal(n: number): string {
@@ -55,12 +55,8 @@ export default function Anniversary() {
   }))
 
   return (
-    <div className="min-h-screen bg-cream-50">
-      <SEOHead
-        title="Anniversary — Austin & Jordyn's Wedding"
-        description="Celebrating each year together. Our anniversary countdown, year-by-year memories, and photos from our wedding day."
-        canonical="https://www.theporadas.com/anniversary"
-      />
+    <div data-testid="anniversary-page" className="min-h-screen bg-cream-50">
+      <AnniversarySEO />
 
       {/* Countdown hero */}
       <AnniversaryCountdown />

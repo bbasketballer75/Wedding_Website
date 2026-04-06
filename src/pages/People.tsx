@@ -6,7 +6,7 @@ import { fetchPhotosWithFaces } from '@/lib/supabase'
 import type { Photo } from '@/lib/supabase'
 import { getMediaPath } from '@/utils/media'
 import { partyData } from '@/data/weddingParty'
-import { SEOHead } from '@/components/seo/SEOHead'
+import { PeopleSEO } from '@/components/seo/SEOHead'
 import { cn } from '@/lib/utils'
 
 const ALL_PARTY = [...partyData.couple, ...partyData.parents, ...partyData.groomsmen, ...partyData.bridesmaids]
@@ -185,12 +185,8 @@ export default function People() {
   }
 
   return (
-    <div className="min-h-screen bg-cream-50">
-      <SEOHead
-        title="People — Austin & Jordyn's Wedding"
-        description="Browse photos by person. See who appeared in the engagement session, wedding day, and guest uploads."
-        canonical="https://www.theporadas.com/people"
-      />
+    <div data-testid="people-page" className="min-h-screen bg-cream-50">
+      <PeopleSEO />
 
       <div className="mx-auto max-w-6xl px-4 pb-20 pt-10 sm:pt-14">
         {/* Header */}

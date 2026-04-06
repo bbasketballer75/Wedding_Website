@@ -112,95 +112,118 @@ function AppContent() {
         tabIndex={-1}
         className="outline-none"
       >
+        {/* Outer boundary: last-resort catch-all */}
         <RouteErrorBoundary>
           <AnimatePresence mode="wait">
             <Routes location={location} key={location.pathname}>
               <Route
                 path="/"
                 element={
-                  <LazyPage title="Home">
-                    <Home />
-                  </LazyPage>
+                  <RouteErrorBoundary>
+                    <LazyPage title="Home">
+                      <Home />
+                    </LazyPage>
+                  </RouteErrorBoundary>
                 }
               />
               <Route
                 path="/film"
                 element={
-                  <LazyPage title="Wedding Film">
-                    <Film />
-                  </LazyPage>
+                  <RouteErrorBoundary>
+                    <LazyPage title="Wedding Film">
+                      <Film />
+                    </LazyPage>
+                  </RouteErrorBoundary>
                 }
               />
               <Route
                 path="/gallery"
                 element={
-                  <LazyPage title="Photo Gallery">
-                    <Gallery />
-                  </LazyPage>
+                  <RouteErrorBoundary>
+                    <LazyPage title="Photo Gallery">
+                      <Gallery />
+                    </LazyPage>
+                  </RouteErrorBoundary>
                 }
               />
               <Route
                 path="/upload"
                 element={
-                  <LazyPage title="Share Memories">
-                    <Upload />
-                  </LazyPage>
+                  <RouteErrorBoundary>
+                    <LazyPage title="Share Memories">
+                      <Upload />
+                    </LazyPage>
+                  </RouteErrorBoundary>
                 }
               />
               <Route
                 path="/guestbook"
                 element={
-                  <LazyPage title="Guestbook">
-                    <Guestbook />
-                  </LazyPage>
+                  <RouteErrorBoundary>
+                    <LazyPage title="Guestbook">
+                      <Guestbook />
+                    </LazyPage>
+                  </RouteErrorBoundary>
                 }
               />
               <Route
                 path="/guest-photos"
                 element={
-                  <LazyPage title="Guest Memories">
-                    <GuestMemories />
-                  </LazyPage>
+                  <RouteErrorBoundary>
+                    <LazyPage title="Guest Memories">
+                      <GuestMemories />
+                    </LazyPage>
+                  </RouteErrorBoundary>
                 }
               />
               <Route
                 path="/people"
                 element={
-                  <LazyPage title="People">
-                    <People />
-                  </LazyPage>
+                  <RouteErrorBoundary>
+                    <LazyPage title="People">
+                      <People />
+                    </LazyPage>
+                  </RouteErrorBoundary>
                 }
               />
               <Route
                 path="/anniversary"
                 element={
-                  <LazyPage title="Our Anniversary">
-                    <Anniversary />
-                  </LazyPage>
+                  <RouteErrorBoundary>
+                    <LazyPage title="Our Anniversary">
+                      <Anniversary />
+                    </LazyPage>
+                  </RouteErrorBoundary>
                 }
               />
               <Route
                 path="/admin/login"
                 element={
-                  <LazyPage title="Admin Login">
-                    <AdminLogin />
-                  </LazyPage>
+                  <RouteErrorBoundary>
+                    <LazyPage title="Admin Login">
+                      <AdminLogin />
+                    </LazyPage>
+                  </RouteErrorBoundary>
                 }
               />
               <Route
                 path="/admin/*"
                 element={
-                  <LazyPage title="Admin Dashboard">
-                    <Admin />
-                  </LazyPage>
+                  <RouteErrorBoundary>
+                    <LazyPage title="Admin Dashboard">
+                      <Admin />
+                    </LazyPage>
+                  </RouteErrorBoundary>
                 }
               />
               <Route
                 path="*"
                 element={
-                  <LazyPage title="Page Not Found">
-                    <NotFound />
-                  </LazyPage>
+                  <RouteErrorBoundary>
+                    <LazyPage title="Page Not Found">
+                      <NotFound />
+                    </LazyPage>
+                  </RouteErrorBoundary>
                 }
               />
             </Routes>

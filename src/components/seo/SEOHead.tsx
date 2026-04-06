@@ -274,6 +274,57 @@ export function UploadSEO() {
   )
 }
 
+export function PeopleSEO() {
+  return (
+    <SEOHead
+      title="People"
+      description="Browse photos by person. See who appeared in the engagement session, wedding day, and guest uploads."
+      canonical="/people"
+      image={DEFAULT_SOCIAL_IMAGE}
+      structuredData={{
+        '@context': 'https://schema.org',
+        '@type': 'CollectionPage',
+        name: 'People in the Photos',
+        description: 'A face-tagged index of everyone who appears in the wedding photo collection.',
+      }}
+    />
+  )
+}
+
+export function AnniversarySEO() {
+  return (
+    <SEOHead
+      title="Anniversary"
+      description="Celebrating each year together. Our anniversary countdown, year-by-year memories, and photos from our wedding day."
+      canonical="/anniversary"
+      image={DEFAULT_SOCIAL_IMAGE}
+      structuredData={{
+        '@context': 'https://schema.org',
+        '@type': 'WebPage',
+        name: "Austin & Jordyn's Anniversary",
+        description: 'A year-by-year record of memories and milestones since the wedding.',
+      }}
+    />
+  )
+}
+
+export function GuestMemoriesSEO() {
+  return (
+    <SEOHead
+      title="Guest Memories"
+      description="Browse photos shared by our guests — candid moments, phone shots, and side-of-the-day captures from the people who were there."
+      canonical="/guest-photos"
+      image={DEFAULT_SOCIAL_IMAGE}
+      structuredData={{
+        '@context': 'https://schema.org',
+        '@type': 'ImageGallery',
+        name: 'Guest Memories',
+        description: 'A gallery of approved guest photo and video uploads from the wedding.',
+      }}
+    />
+  )
+}
+
 export function NotFoundSEO() {
   return (
     <SEOHead
