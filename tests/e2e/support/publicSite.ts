@@ -181,7 +181,21 @@ export async function expectSectionScreenshot(locator: Locator, snapshotName: st
     })
     .catch(() => {})
 
+  // Stabilise layout width on Windows BEFORE scrolling: reserve the scrollbar
+  // gutter permanently so it never causes a layout shift that triggers text
+  // reflow and element-height oscillation between screenshot retries.
+  // overflow:auto is required for scrollbar-gutter to take effect; overflow:hidden
+  // would prevent toHaveScreenshot's internal scrollIntoView from working.
+  await page.evaluate(() => {
+    document.documentElement.dataset.prevScrollbarGutter = document.documentElement.style.scrollbarGutter
+    document.documentElement.dataset.prevOverflow = document.documentElement.style.overflow
+    document.documentElement.style.overflow = 'auto'
+    document.documentElement.style.scrollbarGutter = 'stable'
+  })
+
   await locator.scrollIntoViewIfNeeded()
+  // Give the layout one frame to settle after scroll + scrollbar-gutter change.
+  await page.waitForTimeout(100)
 
   try {
     await expect(locator).toHaveScreenshot(snapshotName, {
@@ -191,6 +205,12 @@ export async function expectSectionScreenshot(locator: Locator, snapshotName: st
       scale: 'css',
     })
   } finally {
+    await page.evaluate(() => {
+      document.documentElement.style.scrollbarGutter = document.documentElement.dataset.prevScrollbarGutter ?? ''
+      document.documentElement.style.overflow = document.documentElement.dataset.prevOverflow ?? ''
+      delete document.documentElement.dataset.prevScrollbarGutter
+      delete document.documentElement.dataset.prevOverflow
+    })
     await publicHeader
       .evaluateAll((nodes) => {
         for (const node of nodes) {
