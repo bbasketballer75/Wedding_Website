@@ -189,6 +189,13 @@ export const breakpoints = {
   '2xl': '1536px',
 }
 
+// Touch target sizes for accessibility (WCAG 2.2 AA)
+export const touchTargets = {
+  min: '44px',
+  comfortable: '48px',
+  large: '56px',
+}
+
 export const shadows = {
   sm: '0 1px 2px 0 rgba(0, 0, 0, 0.05)',
   base: '0 1px 3px 0 rgba(0, 0, 0, 0.1), 0 1px 2px 0 rgba(0, 0, 0, 0.06)',
@@ -223,6 +230,9 @@ export const transitions = {
     150: '150ms',
     200: '200ms',
     300: '300ms',
+    fast: '100ms',
+    normal: '200ms',
+    slow: '400ms',
     500: '500ms',
     700: '700ms',
     1000: '1000ms',
