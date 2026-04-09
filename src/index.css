@@ -132,8 +132,8 @@
   }
 
   h1 {
-    font-size: clamp(3rem, 8vw, 6rem);
-    line-height: 0.95;
+    font-size: clamp(2.25rem, 6vw, 5rem);
+    line-height: 1.1;
     @apply text-charcoal-900;
   }
 
@@ -362,6 +362,19 @@
     -webkit-box-orient: vertical;
     overflow: hidden;
   }
+
+  /* Interactive Elements - Touch & Click Targets */
+  .interactive {
+    cursor: pointer;
+    min-height: 44px;
+    min-width: 44px;
+  }
+
+  .touch-target {
+    min-height: 44px;
+    min-width: 44px;
+  }
+
 }
 
 /* ============================================
@@ -495,5 +508,71 @@
     animation-duration: 0.01ms !important;
     animation-iteration-count: 1 !important;
     transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
+}
+
+/* Touch-friendly targets (WCAG 2.2 AA) */
+@media (hover: none) and (pointer: coarse) {
+  .interactive,
+  button,
+  [role="button"],
+  a,
+  input[type="submit"],
+  input[type="button"] {
+    min-height: 44px;
+    min-width: 44px;
+  }
+}
+
+/* ============================================
+   MOBILE PERFORMANCE OPTIMIZATIONS
+   ============================================ */
+
+@media (max-width: 640px) {
+  /* Reduce backdrop blur for better performance */
+  .editorial-panel {
+    box-shadow: 0 12px 40px -20px rgba(46, 33, 13, 0.25);
+    border-radius: 1.5rem;
+    backdrop-filter: blur(10px);
+  }
+
+  .editorial-card {
+    box-shadow: 0 10px 24px -18px rgba(46, 33, 13, 0.25);
+    border-radius: 1rem;
+    backdrop-filter: blur(8px);
+  }
+
+  .cinematic-panel {
+    box-shadow: 0 16px 50px -30px rgba(21, 20, 19, 0.6);
+    border-radius: 1.5rem;
+    backdrop-filter: blur(10px);
+  }
+
+  .cinematic-card {
+    box-shadow: 0 12px 30px -20px rgba(21, 20, 19, 0.65);
+    border-radius: 1rem;
+    backdrop-filter: blur(8px);
+  }
+
+  .glass {
+    backdrop-filter: blur(10px);
+  }
+
+  .eyebrow-chip {
+    box-shadow: 0 6px 16px -12px rgba(46, 33, 13, 0.22);
+    backdrop-filter: blur(10px);
+  }
+
+  .cinematic-overlay-pill,
+  .cinematic-overlay-button {
+    backdrop-filter: blur(10px);
+  }
+
+  /* Reduce animation complexity on mobile */
+  .animate-fade-in,
+  .animate-fade-up,
+  .animate-scale-in {
+    animation-duration: 0.5s;
   }
 }
