@@ -44,7 +44,7 @@ export function AdminLayout() {
   return (
     <div className="min-h-screen bg-[radial-gradient(circle_at_top,_rgba(219,180,92,0.14),_transparent_38%),linear-gradient(180deg,#fffdf9_0%,#f8f2ea_100%)]">
       {/* Admin Header */}
-      <header className="sticky top-0 z-30 border-b border-gold-100/80 bg-white/90 backdrop-blur">
+      <header data-testid="admin-header" className="sticky top-0 z-30 border-b border-gold-100/80 bg-white/90 backdrop-blur">
         <div className="mx-auto flex max-w-7xl flex-col gap-4 px-4 py-4 sm:flex-row sm:items-center sm:justify-between">
           <div className="min-w-0">
             <Link to="/" className="font-display text-xl text-charcoal-900">
@@ -60,7 +60,7 @@ export function AdminLayout() {
                 {user?.email || 'admin'}
               </span>
             </div>
-            <Button size="sm" variant="secondary" onClick={handleSignOut}>
+            <Button data-testid="admin-signout" size="sm" variant="secondary" onClick={handleSignOut}>
               <LogOut className="mr-2 h-4 w-4" />
               Sign Out
             </Button>
@@ -82,7 +82,7 @@ export function AdminLayout() {
         )}
 
         {!isReviewRoute && (
-          <div className="mb-5 flex gap-2 overflow-x-auto pb-1 xl:hidden">
+          <div data-testid="admin-mobile-nav" className="mb-5 flex gap-2 overflow-x-auto pb-1 xl:hidden">
             {adminNavSections.flatMap((section) => section.items).map((item) => {
               const isActive = location.pathname === item.path
 
@@ -124,7 +124,7 @@ export function AdminLayout() {
         ) : (
           <div className="flex flex-col gap-5 xl:flex-row xl:gap-6">
         {/* Sidebar */}
-          <nav className="hidden w-full xl:block xl:w-64 xl:flex-shrink-0" aria-label="Admin navigation">
+          <nav data-testid="admin-sidebar" className="hidden w-full xl:block xl:w-64 xl:flex-shrink-0" aria-label="Admin navigation">
             <div className="overflow-hidden rounded-[1.4rem] border border-gold-100 bg-white/95 shadow-sm xl:sticky xl:top-24">
               <div className="border-b border-gold-100 px-4 py-4">
                 <p className="text-[11px] uppercase tracking-[0.32em] text-charcoal-500">Workspace map</p>
@@ -174,7 +174,7 @@ export function AdminLayout() {
           </nav>
 
           {/* Main Content */}
-          <main className="min-w-0 flex-1">
+          <main data-testid="admin-content" className="min-w-0 flex-1">
             <Suspense fallback={<AdminPageSkeleton />}>
               <Routes>
                 <Route index element={<Dashboard />} />
