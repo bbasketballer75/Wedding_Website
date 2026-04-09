@@ -1106,7 +1106,7 @@ export function PhotoModeration() {
           </p>
         </div>
       ) : (
-        <div className="grid grid-cols-1 gap-5 xl:grid-cols-2">
+        <div data-testid="upload-queue" className="grid grid-cols-1 gap-5 xl:grid-cols-2">
           {filteredUploads.map((photo, photoIndex) => {
             const moderationState = getModerationState(photo, publishedPhotoUrls)
             const isPending = moderationState === 'pending'

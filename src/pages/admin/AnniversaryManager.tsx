@@ -160,7 +160,7 @@ export default function AnniversaryManager() {
           </div>
         </div>
         {editingId === null && (
-          <Button onClick={startNew} size="sm" className="gap-2">
+          <Button data-testid="anniversary-add-btn" onClick={startNew} size="sm" className="gap-2">
             <Plus className="h-4 w-4" />
             Add Year
           </Button>
@@ -198,7 +198,7 @@ export default function AnniversaryManager() {
           </Button>
         </div>
       ) : (
-        <div className="space-y-4">
+        <div data-testid="anniversary-entry-list" className="space-y-4">
           {entries.map((entry) => (
             <div
               key={entry.id}

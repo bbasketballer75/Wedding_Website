@@ -184,7 +184,7 @@ export default function AdminLogin() {
                     />
                   </div>
 
-                  <Button type="submit" size="lg" className="w-full" isLoading={submitting}>
+                  <Button data-testid="admin-login-submit" type="submit" size="lg" className="w-full" isLoading={submitting}>
                     Sign In
                   </Button>
                 </form>

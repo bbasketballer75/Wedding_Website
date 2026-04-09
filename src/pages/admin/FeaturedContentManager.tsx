@@ -244,6 +244,7 @@ export function FeaturedContentManager() {
           {SLOTS.map((meta, i) => (
             <button
               key={meta.slot}
+              data-testid={`featured-slot-${meta.slot}`}
               type="button"
               onClick={() => handleTabClick(i)}
               className={cn(
@@ -319,6 +320,7 @@ export function FeaturedContentManager() {
                 type="button"
                 role="switch"
                 aria-checked={form.isActive}
+                aria-label={form.isActive ? 'Deactivate slot' : 'Activate slot'}
                 onClick={() => setField('isActive', !form.isActive)}
                 className={cn(
                   'relative inline-flex h-6 w-11 shrink-0 cursor-pointer rounded-full border-2 border-transparent transition-colors duration-200',

@@ -172,6 +172,7 @@ export function GuestbookModeration() {
               {(['all', 'text', 'voice', 'video'] as const).map((value) => (
                 <button
                   key={value}
+                  data-testid={`guestbook-filter-${value}`}
                   type="button"
                   onClick={() => {
                     setFilter(value)
@@ -210,7 +211,7 @@ export function GuestbookModeration() {
         </div>
       </div>
 
-      <div className="space-y-4">
+      <div data-testid="guestbook-moderation-list" className="space-y-4">
         {filteredMessages.map((message) => (
           <div key={message.id} className="bg-white rounded-xl p-6 border border-gold-100 shadow-sm">
             <div className="flex items-start justify-between">
@@ -244,6 +245,7 @@ export function GuestbookModeration() {
               <Button
                 size="sm"
                 variant="danger"
+                aria-label="Delete message"
                 onClick={() => handleDelete(message.id)}
               >
                 <Trash2 className="w-4 h-4" />
