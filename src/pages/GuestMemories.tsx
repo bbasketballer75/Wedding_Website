@@ -1,50 +1,41 @@
 import { useState, useEffect } from 'react'
 import { motion } from 'framer-motion'
 import { Link } from 'react-router-dom'
-import { Camera, Heart, Upload } from 'lucide-react'
+import { Camera, Upload } from 'lucide-react'
 import { fetchApprovedGuestUploads } from '@/lib/supabase'
 import type { GuestUpload } from '@/lib/supabase'
+import { PhotoGrid } from '@/components/gallery/PhotoGrid'
 import { PhotoLightbox } from '@/components/photo-viewer/PhotoLightbox'
 import { Button } from '@/components/ui/Button'
 import { GuestMemoriesSEO } from '@/components/seo/SEOHead'
-import { cn } from '@/lib/utils'
 
 interface FlatPhoto {
   id: string
   url: string
+  thumbnail: string
   caption?: string
-  uploadIndex: number
+  photographer?: string
+  source: 'guest'
 }
 
-function formatDate(dateStr: string) {
-  return new Date(dateStr).toLocaleDateString('en-US', {
-    month: 'long',
-    day: 'numeric',
-    year: 'numeric',
-  })
-}
-
-function SkeletonCard() {
-  return (
-    <div className="animate-pulse overflow-hidden rounded-2xl border border-charcoal-200/40 bg-cream-100/60">
-      <div className="grid grid-cols-3 gap-0.5 bg-charcoal-200/20">
-        {[0, 1, 2].map((i) => (
-          <div key={i} className="aspect-square bg-charcoal-200/40" />
-        ))}
-      </div>
-      <div className="p-4 space-y-2">
-        <div className="h-4 w-1/2 rounded bg-charcoal-200/40" />
-        <div className="h-3 w-3/4 rounded bg-charcoal-200/30" />
-      </div>
-    </div>
+function flattenUploads(uploads: GuestUpload[]): FlatPhoto[] {
+  return uploads.flatMap((upload) =>
+    upload.photo_urls.map((url, i) => ({
+      id: `${upload.id}-${i}`,
+      url,
+      thumbnail: url,
+      caption: upload.message ?? undefined,
+      photographer: upload.guest_name,
+      source: 'guest' as const,
+    }))
   )
 }
 
 export default function GuestMemories() {
   const [uploads, setUploads] = useState<GuestUpload[]>([])
   const [loading, setLoading] = useState(true)
-  const [lightboxOpen, setLightboxOpen] = useState(false)
   const [lightboxIndex, setLightboxIndex] = useState(0)
+  const [lightboxOpen, setLightboxOpen] = useState(false)
 
   useEffect(() => {
     let mounted = true
@@ -57,31 +48,13 @@ export default function GuestMemories() {
       }
     }
     void load()
-    return () => {
-      mounted = false
-    }
+    return () => { mounted = false }
   }, [])
 
-  // Build a flat list of all photos across all uploads for lightbox navigation
-  const flatPhotos: FlatPhoto[] = uploads.flatMap((upload, uploadIndex) =>
-    upload.photo_urls.map((url, photoIndex) => ({
-      id: `${upload.id}-${photoIndex}`,
-      url,
-      caption: upload.message ?? undefined,
-      uploadIndex,
-    }))
-  )
+  const photos = flattenUploads(uploads)
 
-  // Map each upload to its starting index in flatPhotos
-  const uploadStartIndex: number[] = []
-  let cursor = 0
-  for (const upload of uploads) {
-    uploadStartIndex.push(cursor)
-    cursor += upload.photo_urls.length
-  }
-
-  function openLightbox(uploadIndex: number, photoIndex: number) {
-    setLightboxIndex(uploadStartIndex[uploadIndex] + photoIndex)
+  function handlePhotoClick(_photo: unknown, index: number) {
+    setLightboxIndex(index)
     setLightboxOpen(true)
   }
 
@@ -89,7 +62,7 @@ export default function GuestMemories() {
     <div data-testid="guest-memories-page" className="min-h-screen bg-cream-50">
       <GuestMemoriesSEO />
 
-      <div className="mx-auto max-w-6xl px-4 pb-20 pt-10 sm:pt-14">
+      <div className="mx-auto max-w-7xl px-4 pb-20 pt-10 sm:pt-14">
         {/* Header */}
         <motion.div
           initial={{ opacity: 0, y: 20 }}
@@ -109,7 +82,12 @@ export default function GuestMemories() {
           <p className="max-w-2xl text-charcoal-500 text-lg leading-relaxed">
             Phone shots, candid moments, and quiet details from the people who were there.
           </p>
-          <div className="mt-6">
+          <div className="mt-6 flex items-center gap-3">
+            {!loading && photos.length > 0 && (
+              <span className="text-sm text-charcoal-400">
+                {photos.length} photo{photos.length === 1 ? '' : 's'}
+              </span>
+            )}
             <Link to="/upload">
               <Button variant="secondary" size="sm" className="gap-2">
                 <Upload className="h-4 w-4" />
@@ -119,27 +97,21 @@ export default function GuestMemories() {
           </div>
         </motion.div>
 
-        {/* Grid */}
+        {/* Gallery */}
         {loading ? (
-          <div className="grid grid-cols-2 gap-4 md:grid-cols-3">
-            {Array.from({ length: 6 }).map((_, i) => (
-              <SkeletonCard key={i} />
+          <div className="grid grid-cols-2 gap-4 sm:grid-cols-3 lg:grid-cols-4 animate-pulse">
+            {Array.from({ length: 8 }).map((_, i) => (
+              <div key={i} className="aspect-[3/4] rounded-[1.8rem] bg-charcoal-100/60" />
             ))}
           </div>
-        ) : uploads.length === 0 ? (
+        ) : photos.length === 0 ? (
           <motion.div
             initial={{ opacity: 0, y: 16 }}
             animate={{ opacity: 1, y: 0 }}
             className="py-24 text-center"
           >
-            <div className="mx-auto mb-6 flex h-16 w-16 items-center justify-center rounded-full border border-gold-200/60 bg-gold-50">
-              <Heart className="h-7 w-7 text-gold-400" />
-            </div>
-            <h2 className="font-display text-2xl text-charcoal-800 mb-3">
-              No guest memories yet
-            </h2>
             <p className="text-charcoal-500 mb-8 max-w-sm mx-auto">
-              Be the first to share your photos from the day.
+              No guest photos yet. Be the first to share a moment from the day.
             </p>
             <Link to="/upload">
               <Button size="lg" className="gap-2">
@@ -149,78 +121,20 @@ export default function GuestMemories() {
             </Link>
           </motion.div>
         ) : (
-          <div className="grid grid-cols-2 gap-4 md:grid-cols-3">
-            {uploads.map((upload, uploadIndex) => (
-              <motion.div
-                key={upload.id}
-                initial={{ opacity: 0, y: 16 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ duration: 0.4, delay: uploadIndex * 0.04 }}
-                className="overflow-hidden rounded-2xl border border-charcoal-200/40 bg-white shadow-sm hover:shadow-md transition-shadow"
-              >
-                {/* Photo thumbnails */}
-                {upload.photo_urls.length > 0 && (
-                  <div
-                    className={cn(
-                      'grid gap-0.5',
-                      upload.photo_urls.length === 1 ? 'grid-cols-1' : 'grid-cols-3'
-                    )}
-                  >
-                    {upload.photo_urls.slice(0, 3).map((url, photoIndex) => (
-                      <button
-                        key={photoIndex}
-                        type="button"
-                        onClick={() => openLightbox(uploadIndex, photoIndex)}
-                        className={cn(
-                          'relative overflow-hidden bg-charcoal-100 hover:opacity-90 transition-opacity focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-gold-400',
-                          upload.photo_urls.length === 1 ? 'aspect-[4/3]' : 'aspect-square'
-                        )}
-                        aria-label={`View photo ${photoIndex + 1} from ${upload.guest_name}`}
-                      >
-                        <img
-                          src={url}
-                          alt=""
-                          className="h-full w-full object-cover"
-                          loading="lazy"
-                        />
-                        {photoIndex === 2 && upload.photo_urls.length > 3 && (
-                          <div className="absolute inset-0 flex items-center justify-center bg-black/50 text-white font-medium text-sm">
-                            +{upload.photo_urls.length - 3} more
-                          </div>
-                        )}
-                      </button>
-                    ))}
-                  </div>
-                )}
-
-                {/* Card footer */}
-                <div className="px-4 py-3">
-                  <p className="font-medium text-charcoal-800 text-sm truncate">{upload.guest_name}</p>
-                  {upload.message && (
-                    <p className="text-charcoal-500 text-xs mt-0.5 line-clamp-2 leading-relaxed">
-                      {upload.message}
-                    </p>
-                  )}
-                  <p className="text-charcoal-400 text-xs mt-1.5">
-                    {formatDate(upload.created_at)}
-                  </p>
-                </div>
-              </motion.div>
-            ))}
-          </div>
+          <PhotoGrid
+            photos={photos}
+            onPhotoClick={handlePhotoClick}
+          />
         )}
       </div>
 
-      {/* Lightbox */}
-      {flatPhotos.length > 0 && (
-        <PhotoLightbox
-          photos={flatPhotos.map((p) => ({ id: p.id, url: p.url, caption: p.caption }))}
-          currentIndex={lightboxIndex}
-          isOpen={lightboxOpen}
-          onClose={() => setLightboxOpen(false)}
-          onNavigate={setLightboxIndex}
-        />
-      )}
+      <PhotoLightbox
+        photos={photos}
+        currentIndex={lightboxIndex}
+        isOpen={lightboxOpen}
+        onClose={() => setLightboxOpen(false)}
+        onNavigate={setLightboxIndex}
+      />
     </div>
   )
 }
