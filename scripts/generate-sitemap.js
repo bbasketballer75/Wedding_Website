@@ -13,6 +13,8 @@ const routes = [
   { url: '/film', changefreq: 'monthly', priority: 0.9 },
   { url: '/gallery', changefreq: 'monthly', priority: 0.8 },
   { url: '/guestbook', changefreq: 'weekly', priority: 0.8 },
+  { url: '/guest-photos', changefreq: 'weekly', priority: 0.7 },
+  { url: '/people', changefreq: 'monthly', priority: 0.6 },
   { url: '/upload', changefreq: 'weekly', priority: 0.7 },
 ]
 
