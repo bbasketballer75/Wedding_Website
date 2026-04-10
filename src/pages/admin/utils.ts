@@ -16,7 +16,6 @@ import {
   BarChart3,
   Users,
   Sparkles,
-  CalendarHeart,
 } from 'lucide-react'
 
 // ─── Local types ─────────────────────────────────────────────────────────────
@@ -86,7 +85,6 @@ export const adminNavSections: AdminNavSection[] = [
     description: 'History, reporting, and operating notes.',
     items: [
       { path: '/admin/featured', label: 'Featured', icon: Sparkles, description: 'Set what appears in the homepage and film page spotlight sections.' },
-      { path: '/admin/anniversary', label: 'Anniversary', icon: CalendarHeart, description: 'Add and publish year-by-year memory cards for the anniversary page.' },
       { path: '/admin/audit', label: 'Audit Trail', icon: History, description: 'See who changed moderation state and when.' },
       { path: '/admin/analytics', label: 'Analytics', icon: BarChart3, description: 'Track verified database activity inside the app.' },
       { path: '/admin/settings', label: 'Settings', icon: SettingsIcon, description: 'Reference the live setup and operating notes.' },
@@ -130,12 +128,6 @@ export const adminRouteMeta: Record<string, { eyebrow: string; title: string; de
     title: 'Control what the public site highlights.',
     description:
       'Each slot maps to a live section on the homepage or film page. Set the content, toggle it on, and guests see it immediately.',
-  },
-  '/admin/anniversary': {
-    eyebrow: 'Anniversary',
-    title: 'Manage anniversary year cards.',
-    description:
-      'Add a new card for each year and publish it when ready. Published cards appear on the /anniversary page for guests to read.',
   },
   '/admin/audit': {
     eyebrow: 'History',
