@@ -64,6 +64,7 @@
     "test:e2e:ui": "playwright test --ui",
     "test:smoke": "playwright test --grep @smoke",
     "test:visual": "playwright test",
+    "perf": "npm run build && lhci autorun",
     "verify:env": "node scripts/verify-release-env.js",
     "verify:launch": "npm run verify:release && node scripts/verify-launch-readiness.js",
     "verify:deployed": "node scripts/verify-deployed-site.js",
@@ -115,6 +116,7 @@
   "devDependencies": {
     "@axe-core/playwright": "4.11.1",
     "@eslint/js": "9.39.4",
+    "@lhci/cli": "^0.15.1",
     "@playwright/test": "^1.58.2",
     "@tensorflow/tfjs": "^4.22.0",
     "@tensorflow/tfjs-backend-wasm": "^4.22.0",
