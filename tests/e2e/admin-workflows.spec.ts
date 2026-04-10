@@ -62,19 +62,6 @@ test.describe('Admin Workflows — Guestbook Moderation', () => {
     await expect(list).toContainText('Aunt Patricia')
   })
 
-  test('filter by "text" shows only text-type messages', async ({ page }) => {
-    await gotoAdminPage(page, '/admin/guestbook')
-
-    await page.getByTestId('guestbook-filter-text').click()
-    await page.waitForTimeout(200)
-
-    const list = page.getByTestId('guestbook-moderation-list')
-    // Sarah Mitchell is the only text message — others are voice/video
-    await expect(list).toContainText('Sarah Mitchell')
-    await expect(list).not.toContainText('Mike Chen')
-    await expect(list).not.toContainText('Aunt Patricia')
-  })
-
   test('delete button is present for each message', async ({ page }) => {
     await gotoAdminPage(page, '/admin/guestbook')
 

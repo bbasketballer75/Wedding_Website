@@ -23,9 +23,6 @@ import {
   X,
 } from 'lucide-react'
 
-type MessageType = 'text' | 'voice' | 'video'
-type ActiveFilter = 'all' | MessageType
-
 interface Comment {
   id: string
   author: string
@@ -37,7 +34,6 @@ interface Message {
   id: string
   name: string
   content: string
-  type: MessageType
   timestamp: string
   reactions: Record<string, number>
   comments: Comment[]
@@ -51,13 +47,6 @@ const REACTION_TYPES = [
   { key: 'laugh', label: 'Laugh', emoji: '\uD83D\uDE02' },
   { key: 'wow', label: 'Wow', emoji: '\uD83D\uDE2E' },
 ]
-
-const FILTER_HEADING: Record<ActiveFilter, string> = {
-  all: 'Every guestbook entry',
-  text: 'Text messages',
-  voice: 'Voice messages',
-  video: 'Video messages',
-}
 
 function formatGuestbookDate(timestamp?: string) {
   if (!timestamp) return 'Just now'
@@ -79,17 +68,10 @@ function mapSupabaseMessage(message: SupabaseMessage): Message {
     id: message.id,
     name: message.name,
     content: message.content,
-    type: message.type,
     timestamp: formatGuestbookDate(message.created_at),
     reactions: raw.reactions ?? {},
     comments: raw.comments ?? [],
   }
-}
-
-function getDisplayContent(message: Message) {
-  if (message.type === 'voice' && message.content === 'Voice message') return ''
-  if (message.type === 'video' && message.content === 'Video message') return ''
-  return message.content
 }
 
 function MessageCard({
@@ -109,7 +91,7 @@ function MessageCard({
   onSubmitReply: (messageId: string, content: string) => Promise<void>
   staggerIndex?: number
 }) {
-  const displayContent = getDisplayContent(message)
+  const displayContent = message.content
   const reactions = localReactions ?? message.reactions
   const allComments = [...message.comments, ...(extraComments ?? [])]
   const [replyOpen, setReplyOpen] = useState(false)
@@ -251,7 +233,6 @@ export default function Guestbook() {
   const [submitError, setSubmitError] = useState<string | null>(null)
   const [visibleCount, setVisibleCount] = useState(INITIAL_VISIBLE_MESSAGES)
   const [highlightedMessageId, setHighlightedMessageId] = useState<string | null>(null)
-  const [activeFilter, setActiveFilter] = useState<ActiveFilter>('all')
   const [reactionPickerForId, setReactionPickerForId] = useState<string | null>(null)
   const [localReactions, setLocalReactions] = useState<Record<string, Record<string, number>>>({})
   const [extraComments, setExtraComments] = useState<Record<string, Comment[]>>({})
@@ -266,7 +247,7 @@ export default function Guestbook() {
 
         const { data, error } = await supabase
           .from('guestbook_messages')
-          .select('id, name, content, type, created_at, reactions, comments')
+          .select('id, name, content, created_at, reactions, comments')
           .order('created_at', { ascending: false })
 
         if (error) {
@@ -364,7 +345,6 @@ export default function Guestbook() {
         p_name: name,
         p_email: email,
         p_content: normalizedContent,
-        p_type: 'text',
         p_media_url: null,
         p_max_requests: 3,
         p_window_minutes: 1,
@@ -380,13 +360,13 @@ export default function Guestbook() {
         }
 
         setMessages((previous) => [
-          { id: result.message_id, name, content: normalizedContent, type: 'text', timestamp: 'Just now', reactions: {}, comments: [] },
+          { id: result.message_id, name, content: normalizedContent, timestamp: 'Just now', reactions: {}, comments: [] },
           ...previous,
         ])
       } else {
         const { data, error } = await supabase
           .from('guestbook_messages')
-          .insert([{ name, email, content: normalizedContent, type: 'text', media_url: null }])
+          .insert([{ name, email, content: normalizedContent, media_url: null }])
           .select()
 
         if (error) throw error
@@ -410,7 +390,7 @@ export default function Guestbook() {
     }
   }
 
-  const filteredMessages = activeFilter === 'all' ? messages : messages.filter((m) => m.type === activeFilter)
+  const filteredMessages = messages
   const visibleMessages = filteredMessages.slice(0, visibleCount)
   const hasMoreMessages = filteredMessages.length > visibleCount
 
@@ -624,36 +604,11 @@ export default function Guestbook() {
               <div className="flex flex-col gap-4 xl:flex-row xl:items-end xl:justify-between">
                 <div>
                   <p className="text-[10px] uppercase tracking-[0.3em] text-gold-400">Notes from the day</p>
-                  <h2 className="mt-3 text-3xl text-white sm:text-4xl">
-                    {FILTER_HEADING[activeFilter]}
-                  </h2>
+                  <h2 className="mt-3 text-3xl text-white sm:text-4xl">Every guestbook entry</h2>
                 </div>
-                <div className="flex flex-wrap gap-2">
-                  <div
-                    data-testid="guestbook-filters"
-                    className="inline-flex items-center gap-1 rounded-full border border-white/12 bg-white/5 p-1"
-                  >
-                    {(['all', 'text', 'voice', 'video'] as ActiveFilter[]).map((filter) => (
-                      <button
-                        key={filter}
-                        type="button"
-                        onClick={() => { setActiveFilter(filter); setVisibleCount(INITIAL_VISIBLE_MESSAGES) }}
-                        aria-pressed={activeFilter === filter}
-                        className={cn(
-                          'rounded-full px-3 py-1.5 text-xs font-medium capitalize transition-all',
-                          activeFilter === filter
-                            ? 'bg-gold-500 text-white'
-                            : 'text-white/55 hover:text-white hover:bg-white/8'
-                        )}
-                      >
-                        {filter === 'all' ? 'All' : filter.charAt(0).toUpperCase() + filter.slice(1)}
-                      </button>
-                    ))}
-                  </div>
-                  <div className="inline-flex items-center gap-2 rounded-full border border-white/12 bg-white/8 px-4 py-2 text-sm text-white/60">
-                    <BookHeart className="h-4 w-4 text-gold-400" />
-                    {filteredMessages.length} {filteredMessages.length === 1 ? 'note' : 'notes'}
-                  </div>
+                <div className="inline-flex items-center gap-2 rounded-full border border-white/12 bg-white/8 px-4 py-2 text-sm text-white/60">
+                  <BookHeart className="h-4 w-4 text-gold-400" />
+                  {filteredMessages.length} {filteredMessages.length === 1 ? 'note' : 'notes'}
                 </div>
               </div>
             </motion.div>

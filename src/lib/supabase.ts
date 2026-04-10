@@ -89,7 +89,6 @@ export interface GuestbookMessage {
   name: string
   email?: string
   content: string
-  type: 'text' | 'voice' | 'video'
   media_url?: string
   created_at: string
 }
