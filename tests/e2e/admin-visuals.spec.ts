@@ -16,11 +16,6 @@ test.describe('Admin Visuals', () => {
     await expectAdminScreenshot(page, 'admin-guestbook-desktop.png')
   })
 
-  test('admin anniversary — desktop', async ({ page }) => {
-    await gotoAdminPage(page, '/admin/anniversary')
-    await expectAdminScreenshot(page, 'admin-anniversary-desktop.png')
-  })
-
   test('admin featured — desktop', async ({ page }) => {
     await gotoAdminPage(page, '/admin/featured')
     await expectAdminScreenshot(page, 'admin-featured-desktop.png')

@@ -92,68 +92,6 @@ test.describe('Admin Workflows — Guestbook Moderation', () => {
   })
 })
 
-// ─── Anniversary Manager ──────────────────────────────────────────────────────
-
-test.describe('Admin Workflows — Anniversary Manager', () => {
-  test('entry list renders published and draft entries', async ({ page }) => {
-    await gotoAdminPage(page, '/admin/anniversary')
-
-    const list = page.getByTestId('anniversary-entry-list')
-    await expect(list).toBeVisible()
-    await expect(list).toContainText('Year One')
-    await expect(list).toContainText('Year Two')
-  })
-
-  test('add entry button is visible', async ({ page }) => {
-    await gotoAdminPage(page, '/admin/anniversary')
-
-    await expect(page.getByTestId('anniversary-add-btn')).toBeVisible()
-  })
-
-  test('clicking add entry button shows inline form with Save button', async ({ page }) => {
-    await gotoAdminPage(page, '/admin/anniversary')
-
-    await page.getByTestId('anniversary-add-btn').click()
-    await page.waitForTimeout(200)
-
-    // EntryForm renders a Save button
-    await expect(page.getByRole('button', { name: /save/i })).toBeVisible()
-  })
-
-  test('filling form and saving triggers upsert request', async ({ page }) => {
-    const upsertRequests: string[] = []
-    page.on('request', (req) => {
-      if (
-        req.url().includes('/rest/v1/anniversary_entries') &&
-        (req.method() === 'POST' || req.method() === 'PATCH')
-      ) {
-        upsertRequests.push(req.url())
-      }
-    })
-
-    await gotoAdminPage(page, '/admin/anniversary')
-    await page.getByTestId('anniversary-add-btn').click()
-    await page.waitForTimeout(200)
-
-    // Fill required fields (year_number has placeholder "1", title has placeholder "Our first year together")
-    await page.locator('input[placeholder="1"]').fill('3')
-    await page.locator('input[placeholder="Our first year together"]').fill('Year Three')
-
-    await page.getByRole('button', { name: /save/i }).click()
-    await page.waitForTimeout(500)
-
-    expect(upsertRequests.length).toBeGreaterThan(0)
-  })
-
-  test('publish toggle button is visible on published entries', async ({ page }) => {
-    await gotoAdminPage(page, '/admin/anniversary')
-
-    const list = page.getByTestId('anniversary-entry-list')
-    // Year One is published — should have a toggle-like button/role
-    await expect(list.getByRole('button').first()).toBeVisible()
-  })
-})
-
 // ─── Featured Content Manager ─────────────────────────────────────────────────
 
 test.describe('Admin Workflows — Featured Content', () => {

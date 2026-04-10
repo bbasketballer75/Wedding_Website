@@ -133,33 +133,6 @@ export const auditLogEntries = [
   },
 ]
 
-// ─── Anniversary Entries (Admin — all, including drafts) ──────────────────────
-
-export const anniversaryEntriesAdmin = [
-  {
-    id: 'anniversary-admin-1',
-    year_number: 1,
-    title: 'Year One',
-    summary: 'Our first full year together as a married couple.',
-    photo_url: null,
-    couple_message: 'Every ordinary day became an adventure.',
-    is_published: true,
-    created_at: '2026-05-10T00:00:00.000Z',
-    updated_at: '2026-05-10T00:00:00.000Z',
-  },
-  {
-    id: 'anniversary-admin-2',
-    year_number: 2,
-    title: 'Year Two (Draft)',
-    summary: null,
-    photo_url: null,
-    couple_message: null,
-    is_published: false,
-    created_at: '2026-05-10T00:00:00.000Z',
-    updated_at: '2026-05-10T00:00:00.000Z',
-  },
-]
-
 // ─── Featured Editorial Slots ─────────────────────────────────────────────────
 
 export const featuredSlots = [

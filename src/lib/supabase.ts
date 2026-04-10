@@ -845,57 +845,6 @@ export async function recordSiteEditorialFeatureHistory(input: RecordSiteEditori
     .single<SiteEditorialFeatureHistoryEntry>()
 }
 
-export interface AnniversaryEntry {
-  id: string
-  year_number: number
-  title: string
-  summary?: string | null
-  photo_url?: string | null
-  couple_message?: string | null
-  is_published: boolean
-  created_at: string
-  updated_at: string
-}
-
-export async function fetchPublishedAnniversaryEntries(): Promise<AnniversaryEntry[]> {
-  const { data, error } = await supabase
-    .from('anniversary_entries')
-    .select('*')
-    .eq('is_published', true)
-    .order('year_number', { ascending: false })
-  if (error) throw error
-  return (data ?? []) as AnniversaryEntry[]
-}
-
-export async function fetchAllAnniversaryEntries(): Promise<AnniversaryEntry[]> {
-  const { data, error } = await supabase
-    .from('anniversary_entries')
-    .select('*')
-    .order('year_number', { ascending: false })
-  if (error) throw error
-  return (data ?? []) as AnniversaryEntry[]
-}
-
-export async function upsertAnniversaryEntry(
-  entry: Omit<AnniversaryEntry, 'id' | 'created_at' | 'updated_at'>
-): Promise<AnniversaryEntry> {
-  const { data, error } = await supabase
-    .from('anniversary_entries')
-    .upsert(
-      { ...entry, updated_at: new Date().toISOString() },
-      { onConflict: 'year_number' }
-    )
-    .select()
-    .single()
-  if (error) throw error
-  return data as AnniversaryEntry
-}
-
-export async function deleteAnniversaryEntry(id: string): Promise<void> {
-  const { error } = await supabase.from('anniversary_entries').delete().eq('id', id)
-  if (error) throw error
-}
-
 export async function fetchWeddingDayPhotos(limit = 6): Promise<Photo[]> {
   // Try fetching photos from the Wedding Day album as a reliable fallback
   const { data, error } = await supabase

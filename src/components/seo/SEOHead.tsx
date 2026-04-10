@@ -291,23 +291,6 @@ export function PeopleSEO() {
   )
 }
 
-export function AnniversarySEO() {
-  return (
-    <SEOHead
-      title="Anniversary"
-      description="Celebrating each year together. Our anniversary countdown, year-by-year memories, and photos from our wedding day."
-      canonical="/anniversary"
-      image={DEFAULT_SOCIAL_IMAGE}
-      structuredData={{
-        '@context': 'https://schema.org',
-        '@type': 'WebPage',
-        name: "Austin & Jordyn's Anniversary",
-        description: 'A year-by-year record of memories and milestones since the wedding.',
-      }}
-    />
-  )
-}
-
 export function GuestMemoriesSEO() {
   return (
     <SEOHead

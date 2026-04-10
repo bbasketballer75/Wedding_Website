@@ -1,6 +1,6 @@
 import { expect, expectNoCriticalViolations, expectVisibleFocus, gotoPublicPage, test } from './support/publicSite'
 
-const defaultRoutes = ['/', '/film', '/gallery', '/upload', '/guestbook', '/people', '/anniversary', '/guest-photos']
+const defaultRoutes = ['/', '/film', '/gallery', '/upload', '/guestbook', '/people', '/guest-photos']
 
 test.describe('Public Route Accessibility', () => {
   for (const route of defaultRoutes) {

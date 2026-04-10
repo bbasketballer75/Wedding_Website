@@ -4,7 +4,6 @@ import {
   adminSession,
   adminUser,
   adminGuestbookMessages,
-  anniversaryEntriesAdmin,
   auditLogEntries,
   dashboardMessagesCount,
   dashboardPhotosCount,
@@ -126,17 +125,6 @@ export async function installAdminMocks(page: Page) {
         return
       }
       await fulfillJson(route, [])
-      return
-    }
-
-    // ── anniversary_entries ─────────────────────────────────────────────────
-    if (path.includes('/rest/v1/anniversary_entries')) {
-      if (request.method() === 'GET') {
-        await fulfillJson(route, anniversaryEntriesAdmin)
-        return
-      }
-      // upsert / delete
-      await fulfillJson(route, anniversaryEntriesAdmin[0])
       return
     }
 
