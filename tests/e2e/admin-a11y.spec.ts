@@ -5,7 +5,6 @@ const a11yRoutes = [
   '/admin/photos',
   '/admin/guestbook',
   '/admin/featured',
-  '/admin/anniversary',
   '/admin/audit',
   '/admin/analytics',
   '/admin/settings',
