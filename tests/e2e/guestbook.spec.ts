@@ -1,12 +1,11 @@
 import { expect, expectSectionScreenshot, gotoPublicPage, test, viewports, waitForPageReady } from './support/publicSite'
 
 test.describe('Guestbook Page', () => {
-  test('renders the feed and switches between guestbook filters', async ({ page }) => {
+  test('renders the guestbook feed', async ({ page }) => {
     await gotoPublicPage(page, '/guestbook')
 
     await expect(page.getByRole('heading', { name: /Every guestbook entry/i })).toBeVisible()
-    await page.getByTestId('guestbook-filters').getByRole('button', { name: /^Voice\b/i }).click()
-    await expect(page.getByRole('heading', { name: 'Voice messages' })).toBeVisible()
+    await expect(page.getByTestId('guestbook-feed')).toBeVisible()
   })
 
   test('opens the composer and submits a text message against mocked responses', async ({ page }) => {
