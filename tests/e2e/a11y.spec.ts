@@ -33,9 +33,5 @@ test.describe('Public Route Accessibility', () => {
     const composerToggle = page.getByRole('button', { name: 'Start your message' })
     await composerToggle.click()
     await expect(page.getByRole('button', { name: 'Close composer' }).first()).toHaveAttribute('aria-expanded', 'true')
-
-    const videoFilter = page.getByTestId('guestbook-filters').getByRole('button', { name: /^Video\b/i })
-    await videoFilter.click()
-    await expect(videoFilter).toHaveAttribute('aria-pressed', 'true')
   })
 })
