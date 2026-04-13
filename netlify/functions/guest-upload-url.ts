@@ -5,11 +5,21 @@ import crypto from 'node:crypto'
 
 const ALLOWED_TYPES = new Set([
   'image/jpeg', 'image/png', 'image/webp', 'image/heic', 'image/heif', 'image/gif',
-  'video/mp4', 'video/quicktime', 'video/webm', 'video/mov',
+  'video/mp4', 'video/quicktime', 'video/webm',
 ])
 
 // Client-side validates 500 MB max; server enforces the same.
 const MAX_SIZE_BYTES = 500 * 1024 * 1024
+
+// Module scope — constructed once and reused across warm invocations.
+const s3 = new S3Client({
+  region: 'auto',
+  endpoint: `https://${process.env.R2_ACCOUNT_ID}.r2.cloudflarestorage.com`,
+  credentials: {
+    accessKeyId: process.env.R2_ACCESS_KEY_ID ?? '',
+    secretAccessKey: process.env.R2_SECRET_ACCESS_KEY ?? '',
+  },
+})
 
 export const handler: Handler = async (event) => {
   if (event.httpMethod !== 'POST') {
@@ -47,12 +57,6 @@ export const handler: Handler = async (event) => {
   const ext = contentType.split('/')[1].replace('quicktime', 'mov').replace('jpeg', 'jpg')
   const objectKey = `guest-uploads/${mediaType}/${crypto.randomUUID()}.${ext}`
 
-  const s3 = new S3Client({
-    region: 'auto',
-    endpoint: `https://${accountId}.r2.cloudflarestorage.com`,
-    credentials: { accessKeyId, secretAccessKey },
-  })
-
   const command = new PutObjectCommand({
     Bucket: bucket,
     Key: objectKey,
@@ -60,12 +64,16 @@ export const handler: Handler = async (event) => {
     ContentLength: contentLength,
   })
 
-  const uploadUrl = await getSignedUrl(s3, command, { expiresIn: 300 })
-  const publicUrl = `${publicBaseUrl}/${objectKey}`
+  try {
+    const uploadUrl = await getSignedUrl(s3, command, { expiresIn: 300 })
+    const publicUrl = `${publicBaseUrl}/${objectKey}`
 
-  return {
-    statusCode: 200,
-    headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({ uploadUrl, publicUrl }),
+    return {
+      statusCode: 200,
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ uploadUrl, publicUrl }),
+    }
+  } catch {
+    return { statusCode: 500, body: 'Failed to generate upload URL' }
   }
 }
