@@ -75,7 +75,7 @@ interface Photo {
   liked?: boolean
   likeCount?: number
   source: 'professional' | 'guest'
-  collection: 'Engagement' | 'Bach+ette' | 'Wedding Day' | 'Guest Uploads'
+  collection: 'Proposal' | 'Bach+ette' | 'Wedding Photos' | 'Guest Photos'
 }
 
 interface DetectedFace {
@@ -90,9 +90,9 @@ interface DetectedFace {
   guestCount?: number
 }
 
-type CollectionTab = 'All' | 'Guest Uploads' | 'Engagement' | 'Bach+ette' | 'Wedding Day'
+type CollectionTab = 'Proposal' | 'Bach+ette' | 'Wedding Photos' | 'Guest Photos'
 
-const collectionTabs: CollectionTab[] = ['All', 'Engagement', 'Bach+ette', 'Wedding Day', 'Guest Uploads']
+const collectionTabs: CollectionTab[] = ['Proposal', 'Bach+ette', 'Wedding Photos', 'Guest Photos']
 
 const collectionMeta: Record<
   CollectionTab,
@@ -104,26 +104,12 @@ const collectionMeta: Record<
     sourceHint: string
   }
 > = {
-  All: {
-    eyebrow: 'Full archive',
-    title: 'The Complete Collection',
-    description: 'Every captured moment from our celebration, preserved in one place.',
-    supporting: 'The definitive timeline of the wedding day and engagement.',
-    sourceHint: 'Mixed source',
-  },
-  'Guest Uploads': {
-    eyebrow: 'From family and friends',
-    title: 'Guest Perspectives',
-    description: 'A collection of memories and angles shared by our loved ones.',
-    supporting: 'This stays separate from the photographer coverage on purpose.',
-    sourceHint: 'Guest album',
-  },
-  Engagement: {
+  Proposal: {
     eyebrow: 'Before the wedding',
     title: 'Proposal and engagement portraits',
     description: 'The proposal, portraits, and the whole season before the wedding day.',
     supporting: 'Everything from the engagement chapter lives here.',
-    sourceHint: 'Engagement album',
+    sourceHint: 'Proposal album',
   },
   'Bach+ette': {
     eyebrow: 'Pre-wedding weekends',
@@ -132,12 +118,19 @@ const collectionMeta: Record<
     supporting: 'Everything from the bachelor and bachelorette events lives here.',
     sourceHint: 'Bach+ette album',
   },
-  'Wedding Day': {
+  'Wedding Photos': {
     eyebrow: 'The day itself',
     title: 'Wedding day coverage',
     description: 'The photographer-led archive for the day itself.',
     supporting: 'This is the main album for ceremony, portraits, and reception coverage.',
     sourceHint: 'Wedding-day album',
+  },
+  'Guest Photos': {
+    eyebrow: 'From family and friends',
+    title: 'Guest Perspectives',
+    description: 'A collection of memories and angles shared by our loved ones.',
+    supporting: 'This stays separate from the photographer coverage on purpose.',
+    sourceHint: 'Guest album',
   },
 }
 
@@ -164,7 +157,7 @@ const curatedPhotos = ([
       { id: 'c1', author: 'Emma Photography', content: 'The exact moment the surprise started to click.', timestamp: 'Curated note' }
     ],
     source: 'professional',
-    collection: 'Engagement',
+    collection: 'Proposal',
   },
   { 
     id: 'curated-2', 
@@ -182,7 +175,7 @@ const curatedPhotos = ([
     faces: [{ id: 'f3', name: 'Jordyn', x: 50, y: 45 }],
     tags: ['engagement', 'portrait', 'jordyn'],
     source: 'professional',
-    collection: 'Engagement',
+    collection: 'Proposal',
   },
   { 
     id: 'curated-3', 
@@ -203,7 +196,7 @@ const curatedPhotos = ([
     ],
     tags: ['engagement', 'proposal', 'yes'],
     source: 'professional',
-    collection: 'Engagement',
+    collection: 'Proposal',
   },
   { 
     id: 'curated-4', 
@@ -227,7 +220,7 @@ const curatedPhotos = ([
       { id: 'c2', author: 'Emma Photography', content: 'The easiest smiles of the whole session.', timestamp: 'Curated note' }
     ],
     source: 'professional',
-    collection: 'Engagement',
+    collection: 'Proposal',
   },
   { 
     id: 'curated-5', 
@@ -248,7 +241,7 @@ const curatedPhotos = ([
     ],
     tags: ['engagement', 'celebration', 'phone call'],
     source: 'professional',
-    collection: 'Engagement',
+    collection: 'Proposal',
   },
   { 
     id: 'curated-6', 
@@ -272,7 +265,7 @@ const curatedPhotos = ([
       { id: 'c3', author: 'Emma Photography', content: 'These are the frames that already felt like them.', timestamp: 'Curated note' }
     ],
     source: 'professional',
-    collection: 'Engagement',
+    collection: 'Proposal',
   },
   { 
     id: 'curated-7', 
@@ -293,7 +286,7 @@ const curatedPhotos = ([
     ],
     tags: ['engagement', 'ring', 'details'],
     source: 'professional',
-    collection: 'Engagement',
+    collection: 'Proposal',
   },
   { 
     id: 'curated-8', 
@@ -314,7 +307,7 @@ const curatedPhotos = ([
     ],
     tags: ['engagement', 'portrait', 'quiet moment'],
     source: 'professional',
-    collection: 'Engagement',
+    collection: 'Proposal',
   },
  ] satisfies Array<Omit<Photo, 'albumSortOrder'>>).map((photo, index): Photo => ({
   ...photo,
@@ -388,8 +381,8 @@ const formatPhotoCommentTimestamp = (value: string) =>
 const normalizeCollectionValue = (value?: string | null): Photo['collection'] | null => {
   const normalized = (value || '').trim().toLowerCase()
 
-  if (normalized === 'engagement') {
-    return 'Engagement'
+  if (normalized === 'engagement' || normalized === 'proposal') {
+    return 'Proposal'
   }
 
   if (
@@ -401,16 +394,21 @@ const normalizeCollectionValue = (value?: string | null): Photo['collection'] | 
     return 'Bach+ette'
   }
 
-  if (normalized === 'wedding day' || normalized === 'wedding-day') {
-    return 'Wedding Day'
+  if (
+    normalized === 'wedding day' ||
+    normalized === 'wedding-day' ||
+    normalized === 'wedding photos'
+  ) {
+    return 'Wedding Photos'
   }
 
   if (
     normalized === 'guest uploads' ||
     normalized === 'guest-upload' ||
-    normalized === 'guest'
+    normalized === 'guest' ||
+    normalized === 'guest photos'
   ) {
-    return 'Guest Uploads'
+    return 'Guest Photos'
   }
 
   return null
@@ -430,7 +428,7 @@ const deriveCollection = (
   }
 
   if (!photo.is_professional) {
-    return 'Guest Uploads'
+    return 'Guest Photos'
   }
 
   const pathAndTags = [
@@ -443,7 +441,7 @@ const deriveCollection = (
     .toLowerCase()
 
   if (pathAndTags.includes('engagement') || pathAndTags.includes('proposal')) {
-    return 'Engagement'
+    return 'Proposal'
   }
 
   if (
@@ -455,7 +453,7 @@ const deriveCollection = (
     return 'Bach+ette'
   }
 
-  return 'Wedding Day'
+  return 'Wedding Photos'
 }
 
 const mapSupabasePhoto = (photo: SupabasePhoto): Photo => normalizeGalleryPhoto({
@@ -484,7 +482,7 @@ export default function Gallery() {
   const { addToast } = useToast()
   const [searchParams] = useSearchParams()
   const [searchQuery, setSearchQuery] = useState('')
-  const [selectedCollection, setSelectedCollection] = useState<CollectionTab>('All')
+  const [selectedCollection, setSelectedCollection] = useState<CollectionTab>('Proposal')
   const [viewMode, setViewMode] = useState<'masonry' | 'grid' | 'timeline'>('masonry')
   const [lightboxIndex, setLightboxIndex] = useState<number | null>(null)
   const [faceFilter, setFaceFilter] = useState<string | null>(null)
@@ -612,11 +610,6 @@ export default function Gallery() {
     }
   }, [photos, searchParams])
 
-  const newestFirstPhotos = useMemo(
-    () => [...photos].sort((a, b) => new Date(b.createdAt || 0).getTime() - new Date(a.createdAt || 0).getTime()),
-    [photos],
-  )
-
   const albumOrderedPhotos = useMemo(
     () =>
       [...photos].sort((a, b) => {
@@ -633,16 +626,8 @@ export default function Gallery() {
   )
 
   const collectionScopedPhotos = useMemo(() => {
-    switch (selectedCollection) {
-      case 'Guest Uploads':
-      case 'Engagement':
-      case 'Bach+ette':
-      case 'Wedding Day':
-        return albumOrderedPhotos.filter(photo => photo.collection === selectedCollection)
-      default:
-        return newestFirstPhotos
-    }
-  }, [albumOrderedPhotos, newestFirstPhotos, selectedCollection])
+    return albumOrderedPhotos.filter(photo => photo.collection === selectedCollection)
+  }, [albumOrderedPhotos, selectedCollection])
 
   const filteredPhotos = useMemo(() => {
     const normalizedQuery = deferredSearchQuery.trim().toLowerCase()
@@ -737,24 +722,18 @@ export default function Gallery() {
   )
   const collectionCounts = useMemo(() => {
     return collectionTabs.reduce<Record<CollectionTab, number>>((acc, tab) => {
-      if (tab === 'All') {
-        acc[tab] = photos.length
-      } else {
-        acc[tab] = photos.filter(photo => photo.collection === tab).length
-      }
-
+      acc[tab] = photos.filter(photo => photo.collection === tab).length
       return acc
     }, {
-      All: 0,
-      'Guest Uploads': 0,
-      Engagement: 0,
+      Proposal: 0,
       'Bach+ette': 0,
-      'Wedding Day': 0,
+      'Wedding Photos': 0,
+      'Guest Photos': 0,
     })
   }, [photos])
 
   const selectedCollectionMeta = collectionMeta[selectedCollection]
-  const hasActiveFilters = Boolean(searchQuery || selectedCollection !== 'All' || faceFilter)
+  const hasActiveFilters = Boolean(searchQuery || faceFilter)
 
   const openLightbox = (index: number) => {
     if (index >= 0) {
@@ -931,19 +910,12 @@ export default function Gallery() {
 
   const clearAllFilters = () => {
     setSearchQuery('')
-    setSelectedCollection('All')
     setFaceFilter(null)
   }
 
-  const emptyStateTitle =
-    selectedCollection === 'All'
-      ? 'No moments match this mix yet'
-      : `${selectedCollectionMeta.title} is waiting for the next upload`
+  const emptyStateTitle = `${selectedCollectionMeta.title} is waiting for the next upload`
 
-  const emptyStateBody =
-    selectedCollection === 'All'
-      ? 'Try a wider collection, clear the face filter, or switch back to the full gallery.'
-      : `${selectedCollectionMeta.description} ${selectedCollectionMeta.supporting}`
+  const emptyStateBody = `${selectedCollectionMeta.description} ${selectedCollectionMeta.supporting}`
 
   useEffect(() => {
     galleryScrollRef.current?.scrollTo({ top: 0, behavior: 'smooth' })
@@ -1136,11 +1108,9 @@ export default function Gallery() {
                     <span className="text-[10px] uppercase tracking-[0.28em] text-charcoal-500">
                       Active filters
                     </span>
-                    {selectedCollection !== 'All' && (
-                      <span className="inline-flex items-center gap-2 rounded-full bg-cream-50 px-3 py-1.5 text-sm text-charcoal-600">
-                        {selectedCollection}
-                      </span>
-                    )}
+                    <span className="inline-flex items-center gap-2 rounded-full bg-cream-50 px-3 py-1.5 text-sm text-charcoal-600">
+                      {selectedCollection}
+                    </span>
                     {searchQuery && (
                       <span className="inline-flex items-center gap-2 rounded-full bg-cream-50 px-3 py-1.5 text-sm text-charcoal-600">
                         {`Search: "${searchQuery}"`}
