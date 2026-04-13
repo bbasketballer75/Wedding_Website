@@ -33,6 +33,29 @@ export async function installPublicSiteMocks(page: Page) {
     const request = route.request()
     const url = new URL(request.url())
 
+    // Mock the Netlify pre-signed URL function (same origin as the app)
+    if (url.pathname.includes('/guest-upload-url')) {
+      uploadAttempt += 1
+
+      if (uploadAttempt === 2) {
+        // Simulate a slot request failure for the second file (e.g. the video)
+        await route.fulfill({ status: 500, headers: JSON_HEADERS, body: 'Server configuration error' })
+        return
+      }
+
+      await fulfillJson(route, {
+        uploadUrl: `https://mock-r2.example.com/guest-uploads/photos/mock-${uploadAttempt}.png`,
+        publicUrl: `https://mock-r2.example.com/guest-uploads/photos/mock-${uploadAttempt}.png`,
+      })
+      return
+    }
+
+    // Mock the R2 PUT (signed URL destination)
+    if (url.hostname === 'mock-r2.example.com') {
+      await route.fulfill({ status: 200, body: '' })
+      return
+    }
+
     if (!url.hostname.includes('supabase')) {
       await route.continue()
       return
@@ -80,21 +103,6 @@ export async function installPublicSiteMocks(page: Page) {
 
     if (url.pathname.includes('/rest/v1/guest_uploads') && request.method() === 'POST') {
       await fulfillJson(route, guestUploadInsertResponse, 201)
-      return
-    }
-
-    if (
-      url.pathname.includes('/storage/v1/object/guest-photos/') ||
-      url.pathname.includes('/storage/v1/object/guest-videos/')
-    ) {
-      uploadAttempt += 1
-
-      if (uploadAttempt === 2) {
-        await fulfillJson(route, { message: 'Upload failed in mocked storage.' }, 500)
-        return
-      }
-
-      await fulfillJson(route, { Key: `mock-upload-${uploadAttempt}` }, 200)
       return
     }
 
