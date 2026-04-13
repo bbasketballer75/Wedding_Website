@@ -412,8 +412,8 @@ export default function UploadPage() {
               </div>
 
               <div className="mt-8 flex flex-col items-center gap-3 sm:flex-row sm:flex-wrap sm:justify-center">
-                <Button to="/guest-photos" variant="secondary" size="lg">
-                  Guest Memories
+                <Button to="/gallery?collection=Guest+Photos" variant="secondary" size="lg">
+                  Guest Photos
                 </Button>
                 <Button to="/gallery" variant="secondary" size="lg">
                   View Gallery

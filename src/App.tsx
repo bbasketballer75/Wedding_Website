@@ -1,4 +1,4 @@
-import { Routes, Route, useLocation } from 'react-router-dom'
+import { Routes, Route, Navigate, useLocation } from 'react-router-dom'
 import { AnimatePresence, motion } from 'framer-motion'
 import { Suspense, lazy, useEffect } from 'react'
 import { Header } from '@/components/layout/Header'
@@ -19,7 +19,6 @@ const Upload = lazy(() => import('@/pages/Upload'))
 const Guestbook = lazy(() => import('@/pages/Guestbook'))
 const Admin = lazy(() => import('@/pages/Admin'))
 const AdminLogin = lazy(() => import('@/pages/AdminLogin'))
-const GuestMemories = lazy(() => import('@/pages/GuestMemories'))
 const People = lazy(() => import('@/pages/People'))
 const NotFound = lazy(() => import('@/pages/NotFound'))
 
@@ -166,13 +165,7 @@ function AppContent() {
               />
               <Route
                 path="/guest-photos"
-                element={
-                  <RouteErrorBoundary>
-                    <LazyPage title="Guest Memories">
-                      <GuestMemories />
-                    </LazyPage>
-                  </RouteErrorBoundary>
-                }
+                element={<Navigate to="/gallery?collection=Guest+Photos" replace />}
               />
               <Route
                 path="/people"
