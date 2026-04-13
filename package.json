@@ -93,6 +93,8 @@
     "@radix-ui/react-tooltip": "1.2.8",
     "@sentry/browser": "10.42.0",
     "@sentry/react": "10.42.0",
+    "@aws-sdk/client-s3": "^3.1029.0",
+    "@aws-sdk/s3-request-presigner": "^3.1029.0",
     "@supabase/supabase-js": "^2.99.0",
     "@tailwindcss/vite": "^4.2.1",
     "canvas-confetti": "^1.9.4",
@@ -114,9 +116,7 @@
     "zustand": "5.0.11"
   },
   "devDependencies": {
-    "@aws-sdk/client-s3": "^3.1029.0",
     "@aws-sdk/lib-storage": "^3.1029.0",
-    "@aws-sdk/s3-request-presigner": "^3.1029.0",
     "@axe-core/playwright": "4.11.1",
     "@eslint/js": "9.39.4",
     "@lhci/cli": "^0.15.1",
