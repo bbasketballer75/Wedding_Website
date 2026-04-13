@@ -251,7 +251,7 @@ export function GuestbookSEO() {
         '@context': 'https://schema.org',
         '@type': 'CollectionPage',
         name: "Austin & Jordyn's Guestbook",
-        description: 'Messages, replies, voice notes, and video notes from family and friends.',
+        description: 'Messages and replies from family and friends.',
       }}
     />
   )

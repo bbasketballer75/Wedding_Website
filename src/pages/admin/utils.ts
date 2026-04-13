@@ -77,7 +77,7 @@ export const adminNavSections: AdminNavSection[] = [
       { path: '/admin/photos', label: 'Photos', icon: Image, description: 'Moderate uploads, publish photos, and run guest tagging.' },
       { path: '/admin/albums', label: 'Albums', icon: FolderOpen, description: 'Arrange the live order inside each public album.' },
       { path: '/admin/review', label: 'People Review', icon: Users, description: 'Work through face review and named people.' },
-      { path: '/admin/guestbook', label: 'Guestbook', icon: MessageSquare, description: 'Moderate notes, voice, and video messages.' },
+      { path: '/admin/guestbook', label: 'Guestbook', icon: MessageSquare, description: 'Moderate text messages.' },
     ],
   },
   {
