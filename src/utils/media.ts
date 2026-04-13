@@ -1,6 +1,4 @@
 const OFFLOADED_MEDIA_PREFIXES = ['/video/', '/background_audio/', '/media/']
-const STORAGE_MEDIA_PREFIX = '/media/'
-const DEFAULT_MEDIA_BUCKET = 'wedding-media'
 const DEV_MEDIA_PROXY_PREFIX = '/__media_proxy'
 
 function trimTrailingSlash(value: string): string {
@@ -47,12 +45,6 @@ export function getMediaPath(path: string): string {
     return path
   }
 
-  const supabaseUrl = trimTrailingSlash(import.meta.env.VITE_SUPABASE_URL || '')
-  const supabaseMediaBucket = import.meta.env.VITE_SUPABASE_MEDIA_BUCKET || DEFAULT_MEDIA_BUCKET
-  if (supabaseUrl && path.startsWith(STORAGE_MEDIA_PREFIX)) {
-    return `${supabaseUrl}/storage/v1/object/public/${supabaseMediaBucket}/${toRemoteMediaPath(path)}`
-  }
-
   const mediaBaseUrl = trimTrailingSlash(import.meta.env.VITE_MEDIA_BASE_URL || '')
   const shouldOffload = OFFLOADED_MEDIA_PREFIXES.some(prefix => path.startsWith(prefix))
 
@@ -62,13 +54,6 @@ export function getMediaPath(path: string): string {
 
   if (import.meta.env.DEV) {
     return `${DEV_MEDIA_PROXY_PREFIX}/${toRemoteMediaPath(path)}`
-  }
-
-  // In production, VTT caption/subtitle files must be same-origin to satisfy the
-  // browser's cross-origin track restriction. Route through a Netlify proxy so the
-  // URL stays on www.theporadas.com instead of pointing to the media CDN directly.
-  if (path.endsWith('.vtt')) {
-    return `/__vtt_proxy/${toRemoteMediaPath(path)}`
   }
 
   return `${mediaBaseUrl}/${toRemoteMediaPath(path)}`
