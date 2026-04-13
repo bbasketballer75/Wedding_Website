@@ -119,7 +119,6 @@ export const guestbookMessagesWithComments = [
     email: 'sarah@example.com',
     content:
       'Your vows made the whole room disappear for a second. It felt like all of us were holding our breath with you.',
-    type: 'text',
     media_url: null,
     reactions: { love: 12, clap: 4 },
     created_at: '2025-05-12T18:00:00.000Z',
@@ -137,7 +136,6 @@ export const guestbookMessagesWithComments = [
     name: 'Mike Chen',
     email: 'mike@example.com',
     content: 'The dance floor was wild in the best way possible.',
-    type: 'voice',
     media_url: null,
     reactions: { fire: 8 },
     created_at: '2025-05-13T18:00:00.000Z',
@@ -148,7 +146,6 @@ export const guestbookMessagesWithComments = [
     name: 'Aunt Patricia',
     email: 'patricia@example.com',
     content: 'We sent a quick video hello from our table right after the toasts.',
-    type: 'video',
     media_url: null,
     reactions: { love: 9 },
     created_at: '2025-05-14T18:00:00.000Z',
