@@ -113,41 +113,51 @@ export default function UploadPage() {
     setIsDragging(false)
   }, [])
 
-  const uploadFileToSupabase = useCallback(async (fileObj: UploadingFile) => {
+  const uploadFileToR2 = useCallback(async (fileObj: UploadingFile) => {
     try {
       const file = fileObj.file
-      const isVideo = file.type.startsWith('video/')
-      const bucket = isVideo ? 'guest-videos' : 'guest-photos'
 
-      const fileExt = file.name.split('.').pop()
-      const fileName = `${createUploadId()}.${fileExt}`
-      const filePath = `${fileName}`
+      // Step 1: request a pre-signed PUT URL from our Netlify function
+      const slotRes = await fetch('/.netlify/functions/guest-upload-url', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ contentType: file.type, contentLength: file.size }),
+      })
 
-      const { error } = await supabase.storage
-        .from(bucket)
-        .upload(filePath, file, {
-          cacheControl: '3600',
-          upsert: false,
-        })
-
-      if (error) {
+      if (!slotRes.ok) {
         setFiles(prev =>
           prev.map(f =>
             f.id === fileObj.id
-              ? {
-                  ...f,
-                  status: 'error',
-                  errorMessage: error.message || 'This one didn\'t make it through — try uploading again',
-                }
+              ? { ...f, status: 'error', errorMessage: 'Upload slot unavailable — try again' }
               : f
           )
         )
         return
       }
 
-      const { data: { publicUrl } } = supabase.storage
-        .from(bucket)
-        .getPublicUrl(filePath)
+      const { uploadUrl, publicUrl } = await slotRes.json() as { uploadUrl: string; publicUrl: string }
+
+      // Step 2: PUT the file directly to R2 using the signed URL
+      const putRes = await fetch(uploadUrl, {
+        method: 'PUT',
+        headers: { 'Content-Type': file.type },
+        body: file,
+      })
+
+      if (!putRes.ok) {
+        setFiles(prev =>
+          prev.map(f =>
+            f.id === fileObj.id
+              ? {
+                  ...f,
+                  status: 'error',
+                  errorMessage: 'This one didn\'t make it through — try uploading again',
+                }
+              : f
+          )
+        )
+        return
+      }
 
       setFiles(prev =>
         prev.map(f =>
@@ -216,9 +226,9 @@ export default function UploadPage() {
     setFiles(prev => [...prev, ...newUploadingFiles])
 
     newUploadingFiles.forEach(fileObj => {
-      void uploadFileToSupabase(fileObj)
+      void uploadFileToR2(fileObj)
     })
-  }, [files, uploadFileToSupabase])
+  }, [files, uploadFileToR2])
 
   const handleDrop = useCallback((e: React.DragEvent) => {
     e.preventDefault()
@@ -308,7 +318,7 @@ export default function UploadPage() {
             : f
         )
       )
-      void uploadFileToSupabase(file)
+      void uploadFileToR2(file)
     }
   }
 
