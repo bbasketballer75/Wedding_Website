@@ -1,25 +1,33 @@
 import fs from 'node:fs'
 import path from 'node:path'
-import { createClient } from '@supabase/supabase-js'
-import tus from 'tus-js-client'
+import { S3Client } from '@aws-sdk/client-s3'
+import { Upload } from '@aws-sdk/lib-storage'
 
-const PROJECT_URL = process.env.VITE_SUPABASE_URL
-const SERVICE_ROLE_KEY = process.env.SUPABASE_SERVICE_ROLE_KEY
-const BUCKET_NAME = process.env.SUPABASE_MEDIA_BUCKET || 'wedding-media'
+const R2_ACCOUNT_ID = process.env.R2_ACCOUNT_ID
+const R2_ACCESS_KEY_ID = process.env.R2_ACCESS_KEY_ID
+const R2_SECRET_ACCESS_KEY = process.env.R2_SECRET_ACCESS_KEY
+const BUCKET_NAME = process.env.R2_MEDIA_BUCKET || 'wedding-media'
+const R2_PUBLIC_BASE_URL = process.env.R2_PUBLIC_BASE_URL
 const MEDIA_ROOTS = ['public/video', 'public/background_audio', 'public/media']
 
-if (!PROJECT_URL) {
-  throw new Error('Missing VITE_SUPABASE_URL')
+if (!R2_ACCOUNT_ID) {
+  throw new Error('Missing R2_ACCOUNT_ID')
 }
 
-if (!SERVICE_ROLE_KEY) {
-  throw new Error('Missing SUPABASE_SERVICE_ROLE_KEY')
+if (!R2_ACCESS_KEY_ID) {
+  throw new Error('Missing R2_ACCESS_KEY_ID')
 }
 
-const supabase = createClient(PROJECT_URL, SERVICE_ROLE_KEY, {
-  auth: {
-    persistSession: false,
-    autoRefreshToken: false,
+if (!R2_SECRET_ACCESS_KEY) {
+  throw new Error('Missing R2_SECRET_ACCESS_KEY')
+}
+
+const s3 = new S3Client({
+  region: 'auto',
+  endpoint: `https://${R2_ACCOUNT_ID}.r2.cloudflarestorage.com`,
+  credentials: {
+    accessKeyId: R2_ACCESS_KEY_ID,
+    secretAccessKey: R2_SECRET_ACCESS_KEY,
   },
 })
 
@@ -98,75 +106,44 @@ function walk(directory) {
   return results
 }
 
-async function ensureBucket() {
-  const { data: existingBucket, error: getBucketError } = await supabase.storage.getBucket(BUCKET_NAME)
-
-  if (!getBucketError && existingBucket) {
-    console.log(`Using existing bucket ${BUCKET_NAME}`)
-    return
-  }
-
-  const { error: createBucketError } = await supabase.storage.createBucket(BUCKET_NAME, {
-    public: true,
-  })
-
-  if (createBucketError) {
-    throw createBucketError
-  }
-
-  console.log(`Created bucket ${BUCKET_NAME}`)
-}
-
 async function uploadFile(filePath, objectName, contentType) {
   const fileSize = fs.statSync(filePath).size
   const fileSizeMb = (fileSize / (1024 * 1024)).toFixed(2)
+  let lastLoggedPercent = -1
 
-  await new Promise((resolve, reject) => {
-    let lastLoggedPercent = -1
-
-    const upload = new tus.Upload(fs.createReadStream(filePath), {
-      endpoint: `${PROJECT_URL}/storage/v1/upload/resumable`,
-      retryDelays: [0, 1000, 3000, 5000, 10000],
-      headers: {
-        authorization: `Bearer ${SERVICE_ROLE_KEY}`,
-        apikey: SERVICE_ROLE_KEY,
-        'x-upsert': 'true',
-      },
-      uploadSize: fileSize,
-      uploadDataDuringCreation: true,
-      removeFingerprintOnSuccess: true,
-      chunkSize: 6 * 1024 * 1024,
-      metadata: {
-        bucketName: BUCKET_NAME,
-        objectName,
-        contentType,
-        cacheControl: '31536000',
-      },
-      onError(error) {
-        reject(error)
-      },
-      onProgress(bytesUploaded, bytesTotal) {
-        const percent = Math.floor((bytesUploaded / bytesTotal) * 100)
-
-        if (percent >= lastLoggedPercent + 25 || percent === 100) {
-          lastLoggedPercent = percent
-          console.log(`Progress ${objectName}: ${percent}%`)
-        }
-      },
-      onSuccess() {
-        console.log(`Uploaded ${objectName} (${fileSizeMb} MB)`)
-        resolve()
-      },
-    })
-
-    upload.start()
+  const upload = new Upload({
+    client: s3,
+    params: {
+      Bucket: BUCKET_NAME,
+      Key: objectName,
+      Body: fs.createReadStream(filePath),
+      ContentType: contentType,
+      CacheControl: 'public, max-age=31536000, immutable',
+    },
+    partSize: 6 * 1024 * 1024,
+    queueSize: 4,
   })
+
+  upload.on('httpUploadProgress', progress => {
+    const loaded = progress.loaded ?? 0
+    const total = progress.total ?? fileSize
+
+    if (total > 0) {
+      const percent = Math.floor((loaded / total) * 100)
+
+      if (percent >= lastLoggedPercent + 25 || percent === 100) {
+        lastLoggedPercent = percent
+        console.log(`Progress ${objectName}: ${percent}%`)
+      }
+    }
+  })
+
+  await upload.done()
+  console.log(`Uploaded ${objectName} (${fileSizeMb} MB)`)
 }
 
 async function main() {
-  await ensureBucket()
-
-  const files = MEDIA_ROOTS.flatMap(root => walk(root))
+  const files = MEDIA_ROOTS.filter(root => fs.existsSync(root)).flatMap(root => walk(root))
   console.log(`Uploading ${files.length} files to ${BUCKET_NAME}`)
 
   for (const filePath of files) {
@@ -175,7 +152,7 @@ async function main() {
     await uploadFile(filePath, objectName, contentType)
   }
 
-  console.log(`${PROJECT_URL}/storage/v1/object/public/${BUCKET_NAME}`)
+  console.log(`Done. Files available at: ${R2_PUBLIC_BASE_URL}`)
 }
 
 main().catch(error => {
