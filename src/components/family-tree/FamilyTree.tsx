@@ -332,7 +332,7 @@ export function FamilyTree() {
                       initial={{ opacity: 0, scale: 0.8 }}
                       animate={{ opacity: 1, scale: 1 }}
                       transition={{ delay: 0.9 + (rowIndex * 3 + index) * 0.08 }}
-                      className="w-[10rem] shrink-0 sm:w-[11rem] lg:w-[9rem] xl:w-[10.5rem]"
+                      className="h-full w-[10rem] shrink-0 sm:w-[11rem] lg:w-[9rem] xl:w-[10.5rem]"
                     >
                       <PersonCard
                         person={person}
@@ -363,7 +363,7 @@ export function FamilyTree() {
                       initial={{ opacity: 0, scale: 0.8 }}
                       animate={{ opacity: 1, scale: 1 }}
                       transition={{ delay: 0.9 + (rowIndex * 3 + index) * 0.08 }}
-                      className="w-[10rem] shrink-0 sm:w-[11rem] lg:w-[9rem] xl:w-[10.5rem]"
+                      className="h-full w-[10rem] shrink-0 sm:w-[11rem] lg:w-[9rem] xl:w-[10.5rem]"
                     >
                       <PersonCard
                         person={person}
