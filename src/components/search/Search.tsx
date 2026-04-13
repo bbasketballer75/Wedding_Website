@@ -69,7 +69,7 @@ const pageResults: Array<Omit<SearchResult, 'relevance'>> = [
     id: 'page-guestbook',
     type: 'page',
     title: 'Guestbook',
-    description: 'Text notes, voice messages, video hellos, and replies from guests.',
+    description: 'Text messages and replies from guests.',
     url: '/guestbook',
     badge: 'Page',
   },
