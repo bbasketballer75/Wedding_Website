@@ -7,7 +7,9 @@ const R2_ACCOUNT_ID = process.env.R2_ACCOUNT_ID
 const R2_ACCESS_KEY_ID = process.env.R2_ACCESS_KEY_ID
 const R2_SECRET_ACCESS_KEY = process.env.R2_SECRET_ACCESS_KEY
 const BUCKET_NAME = process.env.R2_MEDIA_BUCKET || 'wedding-media'
-const R2_PUBLIC_BASE_URL = process.env.R2_PUBLIC_BASE_URL
+const R2_PUBLIC_BASE_URL =
+  process.env.R2_PUBLIC_BASE_URL ||
+  `https://${process.env.R2_ACCOUNT_ID}.r2.cloudflarestorage.com/${process.env.R2_MEDIA_BUCKET || 'wedding-media'}`
 const MEDIA_ROOTS = ['public/video', 'public/background_audio', 'public/media']
 
 if (!R2_ACCOUNT_ID) {
