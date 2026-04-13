@@ -160,6 +160,19 @@ export function FamilyTree() {
   }, [])
   const orderedGroomsmen = useMemo(() => partyData.groomsmen, [])
 
+  function chunkRows(people: WeddingPartyPerson[]): WeddingPartyPerson[][] {
+    if (people.length === 7) return [people.slice(0, 2), people.slice(2, 5), people.slice(5, 7)]
+    if (people.length === 6) return [people.slice(0, 3), people.slice(3, 6)]
+    if (people.length === 5) return [people.slice(0, 2), people.slice(2, 5)]
+    // fallback: rows of 2
+    const rows: WeddingPartyPerson[][] = []
+    for (let i = 0; i < people.length; i += 2) rows.push(people.slice(i, i + 2))
+    return rows
+  }
+
+  const bridesmaidRows = useMemo(() => chunkRows(orderedBridesmaids), [orderedBridesmaids])
+  const groomsmenRows = useMemo(() => chunkRows(orderedGroomsmen), [orderedGroomsmen])
+
   const toggleSelectedPerson = (personId: string) => {
     setSelectedPersonId((current) => (current === personId ? null : personId))
   }
@@ -310,21 +323,26 @@ export function FamilyTree() {
           >
             <ConnectionLine vertical animated={hoveredSection === 'bridesmaids'} />
             <p className="mb-3 mt-2 text-xs uppercase tracking-wider text-rose-500">Bridesmaids</p>
-            <div className="grid w-full grid-cols-2 gap-3 sm:gap-4">
-              {orderedBridesmaids.map((person, index) => (
-                <motion.div
-                  key={person.id}
-                  initial={{ opacity: 0, scale: 0.8 }}
-                  animate={{ opacity: 1, scale: 1 }}
-                  transition={{ delay: 0.9 + index * 0.08 }}
-                >
-                  <PersonCard
-                    person={person}
-                    isPartyCard
-                    onClick={() => toggleSelectedPerson(person.id)}
-                    isSelected={selectedPersonId === person.id}
-                  />
-                </motion.div>
+            <div className="flex w-full flex-col items-center gap-3 sm:gap-4">
+              {bridesmaidRows.map((row, rowIndex) => (
+                <div key={`bridesmaid-row-${rowIndex}`} className="flex justify-center gap-3 sm:gap-4">
+                  {row.map((person, index) => (
+                    <motion.div
+                      key={person.id}
+                      initial={{ opacity: 0, scale: 0.8 }}
+                      animate={{ opacity: 1, scale: 1 }}
+                      transition={{ delay: 0.9 + (rowIndex * 3 + index) * 0.08 }}
+                      className="w-[10rem] shrink-0 sm:w-[11rem] lg:w-[9rem] xl:w-[10.5rem]"
+                    >
+                      <PersonCard
+                        person={person}
+                        isPartyCard
+                        onClick={() => toggleSelectedPerson(person.id)}
+                        isSelected={selectedPersonId === person.id}
+                      />
+                    </motion.div>
+                  ))}
+                </div>
               ))}
             </div>
           </div>
@@ -336,21 +354,26 @@ export function FamilyTree() {
           >
             <ConnectionLine vertical animated={hoveredSection === 'groomsmen'} />
             <p className="mb-3 mt-2 text-xs uppercase tracking-wider text-blue-500">Groomsmen</p>
-            <div className="grid w-full grid-cols-2 gap-3 sm:gap-4">
-              {orderedGroomsmen.map((person, index) => (
-                <motion.div
-                  key={person.id}
-                  initial={{ opacity: 0, scale: 0.8 }}
-                  animate={{ opacity: 1, scale: 1 }}
-                  transition={{ delay: 0.9 + index * 0.08 }}
-                >
-                  <PersonCard
-                    person={person}
-                    isPartyCard
-                    onClick={() => toggleSelectedPerson(person.id)}
-                    isSelected={selectedPersonId === person.id}
-                  />
-                </motion.div>
+            <div className="flex w-full flex-col items-center gap-3 sm:gap-4">
+              {groomsmenRows.map((row, rowIndex) => (
+                <div key={`groomsmen-row-${rowIndex}`} className="flex justify-center gap-3 sm:gap-4">
+                  {row.map((person, index) => (
+                    <motion.div
+                      key={person.id}
+                      initial={{ opacity: 0, scale: 0.8 }}
+                      animate={{ opacity: 1, scale: 1 }}
+                      transition={{ delay: 0.9 + (rowIndex * 3 + index) * 0.08 }}
+                      className="w-[10rem] shrink-0 sm:w-[11rem] lg:w-[9rem] xl:w-[10.5rem]"
+                    >
+                      <PersonCard
+                        person={person}
+                        isPartyCard
+                        onClick={() => toggleSelectedPerson(person.id)}
+                        isSelected={selectedPersonId === person.id}
+                      />
+                    </motion.div>
+                  ))}
+                </div>
               ))}
             </div>
           </div>
