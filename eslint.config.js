@@ -26,6 +26,8 @@ export default [
       'supabase/**',
       '.worktrees/**',
       'netlify/**',
+      '.minimax/**',
+      '.claude/**',
     ],
   },
   // JavaScript/JSX files

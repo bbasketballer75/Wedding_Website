@@ -849,7 +849,7 @@ In Supabase Dashboard → Storage → wedding-media → Delete bucket.
 ```bash
 # Remove if present:
 VITE_SUPABASE_MEDIA_BUCKET=wedding-media
-SUPABASE_SERVICE_ROLE_KEY=...  # Only if this was ONLY used for storage uploads
+SUPABASE_SERVICE_ROLE_KEY=your-service-role-key  # Only if this was ONLY used for storage uploads
 ```
 
 > Keep `SUPABASE_SERVICE_ROLE_KEY` if you still use it for admin DB operations or edge functions.
