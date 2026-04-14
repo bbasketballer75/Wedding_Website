@@ -27,7 +27,7 @@ const supabase = createClient(PROJECT_URL, SERVICE_ROLE_KEY, {
 function normalizeDateValue(value) {
   if (!value) return null
   const parsed = new Date(value)
-  return Number.isNaN(parsed.getTime()) ? value : parsed.toISOString()
+  return Number.isNaN(parsed.getTime()) ? null : parsed.toISOString()
 }
 
 function chunk(items, size) {
@@ -53,6 +53,10 @@ async function main() {
     const topLevelFolder = String(entry.sourceRelativePath || '').split('/')[0] || ''
     const album = inferCanonicalAlbum(topLevelFolder, entry.sourceRelativePath ?? '')
 
+    if (!album) {
+      console.warn(`  Skipping entry with unrecognized album: ${entry.sourceRelativePath}`)
+      continue
+    }
     if (album === 'Engagement') continue
 
     sortCounters[album] = (sortCounters[album] || 0) + 1
@@ -93,7 +97,10 @@ async function main() {
     return
   }
 
-  console.log('\nDeleting all existing photo rows...')
+  const { count: existingCount } = await supabase
+    .from('photos')
+    .select('*', { count: 'exact', head: true })
+  console.log(`Deleting ${existingCount ?? 'unknown'} existing rows...`)
   const { error: deleteError } = await supabase
     .from('photos')
     .delete()
@@ -107,7 +114,10 @@ async function main() {
 
   for (const batch of chunk(rows, 100)) {
     const { error } = await supabase.from('photos').insert(batch)
-    if (error) throw error
+    if (error) {
+      console.error(`\nInsert failed on batch starting at index ${inserted} (batch size ${batch.length})`)
+      throw error
+    }
     inserted += batch.length
     process.stdout.write(`\r  ${inserted}/${rows.length}`)
   }
