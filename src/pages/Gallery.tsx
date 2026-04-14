@@ -134,6 +134,13 @@ const collectionMeta: Record<
   },
 }
 
+const COLLECTION_COVERS: Record<CollectionTab, string> = {
+  Proposal: '/images/engagement/PoradaProposal-29.webp',
+  'Bach+ette': getMediaPath('_thumbs/Bach+ette/Photos/PXL_20240816_221115487.MP.webp'),
+  'Wedding Photos': getMediaPath('_thumbs/Professional/Wedding Day/Photos/DSC06261.webp'),
+  'Guest Photos': getMediaPath('_thumbs/Guest Uploads/Wedding Day/Live Photos/Stills/IMG_6014.webp'),
+}
+
 const curatedPhotos = ([
   { 
     id: 'curated-1', 
