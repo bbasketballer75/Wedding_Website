@@ -540,6 +540,7 @@ export default function Gallery() {
   const [submittingCommentPhotoId, setSubmittingCommentPhotoId] = useState<string | null>(null)
   const deferredSearchQuery = useDeferredValue(searchQuery)
   const galleryScrollRef = useRef<HTMLDivElement>(null)
+  const collectionSwitchDirectionRef = useRef(0)
 
   // Fetch photos from Supabase on mount
   useEffect(() => {
@@ -956,6 +957,13 @@ export default function Gallery() {
     setFaceFilter(null)
   }
 
+  const handleCollectionChange = (tab: CollectionTab) => {
+    const newIndex = collectionTabs.indexOf(tab)
+    const currentIndex = collectionTabs.indexOf(selectedCollection)
+    collectionSwitchDirectionRef.current = newIndex > currentIndex ? 1 : -1
+    setSelectedCollection(tab)
+  }
+
   const emptyStateTitle = `${selectedCollectionMeta.title} is waiting for the next upload`
 
   const emptyStateBody = `${selectedCollectionMeta.description} ${selectedCollectionMeta.supporting}`
@@ -1056,14 +1064,14 @@ export default function Gallery() {
                       <button
                         key={tab}
                         type="button"
-                        onClick={() => setSelectedCollection(tab)}
+                        onClick={() => handleCollectionChange(tab)}
                         aria-pressed={isActive}
                         className={cn(
-                          'relative h-40 overflow-hidden rounded-2xl bg-gold-100 transition-all',
+                          'relative h-40 cursor-pointer overflow-hidden rounded-2xl bg-gold-100 transition-all duration-300',
                           'focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-gold-400 focus-visible:ring-offset-2',
                           isActive
-                            ? 'ring-2 ring-gold-400 ring-offset-2'
-                            : 'hover:-translate-y-0.5 hover:shadow-lg'
+                            ? 'scale-[1.02] ring-2 ring-gold-400 ring-offset-2 shadow-lg'
+                            : 'scale-[0.98] hover:scale-[1.00] hover:shadow-md'
                         )}
                         style={{
                           backgroundImage: `url(${coverUrl})`,
@@ -1278,22 +1286,29 @@ export default function Gallery() {
                 {Array.from({ length: 12 }).map((_, i) => (
                   <div
                     key={i}
-                    className={`animate-pulse rounded-[1.8rem] bg-gold-100/60 ${
+                    className={cn(
+                      'skeleton-light rounded-[1.8rem]',
                       i % 5 === 0 ? 'aspect-[3/4]' : i % 3 === 0 ? 'aspect-[4/3]' : 'aspect-square'
-                    }`}
-                    style={{ animationDelay: `${i * 0.05}s` }}
+                    )}
+                    style={{ animationDelay: `${i * 0.08}s` }}
                   />
                 ))}
               </div>
             ) : filteredPhotos.length > 0 ? (
               <>
-                <AnimatePresence mode="wait">
+                <AnimatePresence mode="wait" custom={collectionSwitchDirectionRef.current}>
                   <motion.div
-                    key={viewMode}
-                    initial={{ opacity: 0 }}
-                    animate={{ opacity: 1 }}
-                    exit={{ opacity: 0 }}
-                    transition={{ duration: 0.2 }}
+                    key={`${selectedCollection}-${viewMode}`}
+                    custom={collectionSwitchDirectionRef.current}
+                    variants={{
+                      initial: (dir: number) => ({ opacity: 0, x: dir >= 0 ? 30 : -30 }),
+                      animate: { opacity: 1, x: 0 },
+                      exit: (dir: number) => ({ opacity: 0, x: dir >= 0 ? -30 : 30 }),
+                    }}
+                    initial="initial"
+                    animate="animate"
+                    exit="exit"
+                    transition={{ duration: 0.28, ease: [0.25, 0.46, 0.45, 0.94] }}
                   >
                     {viewMode === 'timeline' ? (
                       <div>
