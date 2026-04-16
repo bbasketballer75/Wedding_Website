@@ -771,7 +771,7 @@ export default function Film() {
                         key={chapter.label}
                         type="button"
                         onClick={() => jumpToChapter(chapter.time)}
-                        className="group cinematic-card min-h-[4.8rem] px-3 py-2.5 text-left transition-colors duration-200 hover:border-gold-300/35 hover:bg-white/8 sm:min-h-[5.1rem] sm:px-3.5 sm:py-3"
+                        className="group cinematic-card min-h-[4.8rem] cursor-pointer px-3 py-2.5 text-left transition-colors duration-200 hover:border-gold-300/35 hover:bg-white/8 sm:min-h-[5.1rem] sm:px-3.5 sm:py-3"
                       >
                         <div className="flex items-start justify-between gap-3">
                           <div>
@@ -864,8 +864,16 @@ export default function Film() {
             </motion.div>
 
             <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-3">
-                {guestHighlights.map((clip) => (
-                  <GuestVideoHighlightCard key={clip.id} clip={clip} onOpen={setActiveGuestHighlight} />
+                {guestHighlights.map((clip, index) => (
+                  <motion.div
+                    key={clip.id}
+                    initial={{ opacity: 0, y: 20 }}
+                    whileInView={{ opacity: 1, y: 0 }}
+                    viewport={{ once: true }}
+                    transition={{ duration: 0.5, delay: index * 0.07 }}
+                  >
+                    <GuestVideoHighlightCard clip={clip} onOpen={setActiveGuestHighlight} />
+                  </motion.div>
                 ))}
             </div>
           </div>

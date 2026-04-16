@@ -1,5 +1,5 @@
 import { type ElementType, useState, useEffect, useRef } from 'react'
-import { motion, useScroll, useTransform, useMotionValueEvent } from 'framer-motion'
+import { motion, useScroll, useTransform, useMotionValueEvent, useReducedMotion } from 'framer-motion'
 import { Link } from 'react-router-dom'
 import { ChevronDown } from 'lucide-react'
 import { LoveTimeline } from '@/components/timeline/LoveTimeline'
@@ -8,6 +8,7 @@ import { GuestHighlightReel } from '@/components/sections/GuestHighlightReel'
 import { MomentOfTheWeekSection } from '@/components/sections/MomentOfTheWeekSection'
 import { StandoutUploadSection } from '@/components/sections/StandoutUploadSection'
 import { FeaturedNoteSection } from '@/components/sections/FeaturedNoteSection'
+import ElegantDivider from '@/components/sections/ElegantDivider'
 import { publicNavLinks } from '@/components/layout/publicNav'
 import { HomeSEO } from '@/components/seo/SEOHead'
 import { cn } from '@/lib/utils'
@@ -50,6 +51,7 @@ function NavItem({
 }
 
 export default function Home() {
+  const prefersReducedMotion = useReducedMotion()
   const [showUI, setShowUI] = useState(false)
   const [scrolled, setScrolled] = useState(false)
   const [heroMateriallyVisible, setHeroMateriallyVisible] = useState(true)
@@ -237,7 +239,7 @@ export default function Home() {
         >
           <motion.button
             onClick={scrollToContent}
-            animate={{ y: [0, -3, 0] }}
+            animate={prefersReducedMotion ? undefined : { y: [0, -3, 0] }}
             transition={{ duration: 4, repeat: Infinity, ease: 'easeInOut' }}
             whileHover={{ scale: 1.03, y: -6 }}
             whileTap={{ scale: 0.95 }}
@@ -253,17 +255,71 @@ export default function Home() {
         </motion.div>
       </section>
 
+      {/* Cinematic act-break chapter panel */}
+      <section className="relative overflow-hidden bg-[#1a1208] py-20 sm:py-28">
+        <motion.div
+          initial={{ opacity: 0 }}
+          whileInView={{ opacity: 1 }}
+          viewport={{ once: true, amount: 0.5 }}
+          transition={{ duration: 1.4 }}
+          className="mx-auto max-w-2xl px-4 text-center"
+        >
+          <motion.div
+            initial={{ scaleX: 0 }}
+            whileInView={{ scaleX: 1 }}
+            viewport={{ once: true }}
+            transition={{ duration: 1, delay: 0.2, ease: 'easeInOut' }}
+            className="mx-auto mb-8 h-px w-16 origin-center bg-gold-500/40"
+          />
+          <motion.p
+            initial={{ opacity: 0, y: 12 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            viewport={{ once: true }}
+            transition={{ duration: 1, delay: 0.4 }}
+            className="font-script mb-3 text-5xl text-candle-100/90 sm:text-6xl"
+          >
+            Our Story
+          </motion.p>
+          <motion.p
+            initial={{ opacity: 0 }}
+            whileInView={{ opacity: 1 }}
+            viewport={{ once: true }}
+            transition={{ duration: 1, delay: 0.8 }}
+            className="text-[11px] uppercase tracking-[0.3em] text-gold-400/55"
+          >
+            May 10, 2025 · Shared with love
+          </motion.p>
+          <motion.div
+            initial={{ scaleX: 0 }}
+            whileInView={{ scaleX: 1 }}
+            viewport={{ once: true }}
+            transition={{ duration: 1, delay: 0.6, ease: 'easeInOut' }}
+            className="mx-auto mt-8 h-px w-16 origin-center bg-gold-500/40"
+          />
+        </motion.div>
+      </section>
+
       <div id="welcome-panel">
         <AnniversaryCountdown />
       </div>
 
+      <ElegantDivider />
+
       <LoveTimeline />
+
+      <ElegantDivider />
 
       <GuestHighlightReel />
 
+      <ElegantDivider />
+
       <MomentOfTheWeekSection />
 
+      <ElegantDivider />
+
       <StandoutUploadSection />
+
+      <ElegantDivider />
 
       <FeaturedNoteSection />
 

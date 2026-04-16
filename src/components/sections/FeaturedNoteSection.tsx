@@ -27,11 +27,11 @@ export function FeaturedNoteSection() {
     return (
       <section className='py-16 sm:py-24 px-4'>
         <div className='mx-auto max-w-2xl'>
-          <div className='animate-pulse space-y-4 text-center'>
-            <div className='mx-auto h-12 w-8 rounded bg-gold-200/40' />
-            <div className='mx-auto h-7 w-4/5 rounded-lg bg-charcoal-200/30' />
-            <div className='mx-auto h-6 w-3/5 rounded-lg bg-charcoal-200/20' />
-            <div className='mx-auto h-4 w-32 rounded-full bg-charcoal-200/30' />
+          <div className='space-y-4 text-center'>
+            <div className='skeleton-light mx-auto h-12 w-8 rounded' />
+            <div className='skeleton-light mx-auto h-7 w-4/5 rounded-lg' />
+            <div className='skeleton-light mx-auto h-6 w-3/5 rounded-lg' />
+            <div className='skeleton-light mx-auto h-4 w-32 rounded-full' />
           </div>
         </div>
       </section>
@@ -43,10 +43,10 @@ export function FeaturedNoteSection() {
   return (
     <section className='py-16 sm:py-24 px-4'>
       <motion.div
-        initial={{ opacity: 0, y: 20 }}
-        whileInView={{ opacity: 1, y: 0 }}
+        initial={{ opacity: 0, y: 20, scale: 0.95 }}
+        whileInView={{ opacity: 1, y: 0, scale: 1 }}
         viewport={{ once: true, amount: 0.2 }}
-        transition={{ duration: 0.6 }}
+        transition={{ duration: 0.7, ease: [0.25, 0.46, 0.45, 0.94] }}
         className='mx-auto max-w-2xl text-center'
       >
         {/* Decorative opening quote */}

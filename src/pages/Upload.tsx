@@ -1,5 +1,5 @@
 import { useCallback, useState } from 'react'
-import { motion } from 'framer-motion'
+import { AnimatePresence, motion } from 'framer-motion'
 import { UploadSEO } from '@/components/seo/SEOHead'
 import { Button } from '@/components/ui/Button'
 import { Input } from '@/components/ui/Input'
@@ -363,9 +363,14 @@ export default function UploadPage() {
             <div className="absolute -left-8 bottom-0 h-28 w-28 rounded-full bg-gold-400/5 blur-3xl" />
 
             <div className="relative">
-              <div className="mx-auto flex h-20 w-20 items-center justify-center rounded-full border border-green-400/25 bg-green-500/10 shadow-sm">
+              <motion.div
+                initial={{ scale: 0.5, opacity: 0 }}
+                animate={{ scale: 1, opacity: 1 }}
+                transition={{ type: 'spring', stiffness: 260, damping: 18, delay: 0.1 }}
+                className="mx-auto flex h-20 w-20 items-center justify-center rounded-full border border-green-400/25 bg-green-500/10 shadow-sm"
+              >
                 <CheckCircle className="h-10 w-10 text-green-400" />
-              </div>
+              </motion.div>
 
               <span className="flex items-center justify-center gap-1.5 text-[10px] uppercase tracking-[0.3em] text-gold-400 mt-6">
                 <Sparkles className="h-3.5 w-3.5" />
@@ -502,9 +507,13 @@ export default function UploadPage() {
                 className="absolute inset-0 h-full w-full cursor-pointer opacity-0"
               />
 
-              <div className="mx-auto flex h-18 w-18 items-center justify-center rounded-full border border-gold-400/20 bg-gold-500/10 sm:h-20 sm:w-20">
+              <motion.div
+                animate={isDragging ? { y: [0, -10, 0] } : { y: 0 }}
+                transition={isDragging ? { duration: 0.9, repeat: Infinity, ease: 'easeInOut' } : { duration: 0.2 }}
+                className="mx-auto flex h-18 w-18 items-center justify-center rounded-full border border-gold-400/20 bg-gold-500/10 sm:h-20 sm:w-20"
+              >
                 <Upload className="h-9 w-9 text-gold-400 sm:h-10 sm:w-10" />
-              </div>
+              </motion.div>
 
               <h2 className="mt-6 text-4xl text-white sm:text-5xl">
                 {isDragging ? 'Drop them right here.' : 'Drop photos or videos to begin.'}
@@ -584,9 +593,16 @@ export default function UploadPage() {
                 </div>
 
                 <div className="mt-6 space-y-3">
-                  {files.map(file => (
-                    <div
+                  <AnimatePresence initial={false}>
+                  {files.map((file, index) => (
+                    <motion.div
                       key={file.id}
+                      initial={{ opacity: 0, x: 24 }}
+                      animate={{ opacity: 1, x: 0 }}
+                      exit={{ opacity: 0, x: -16 }}
+                      transition={{ duration: 0.28, delay: index * 0.04, ease: [0.25, 0.46, 0.45, 0.94] }}
+                    >
+                    <div
                       className={cn(
                         'flex flex-col gap-4 px-4 py-4 sm:flex-row sm:items-center bg-white/5 border border-white/8 rounded-xl',
                         file.status === 'error' && 'border-rose-400/20 bg-rose-500/10'
@@ -653,7 +669,7 @@ export default function UploadPage() {
                             <button
                               type="button"
                               onClick={() => retryUpload(file.id)}
-                              className="text-xs font-medium uppercase tracking-[0.22em] text-gold-300 transition-colors hover:text-gold-400"
+                              className="cursor-pointer text-xs font-medium uppercase tracking-[0.22em] text-gold-300 transition-colors hover:text-gold-400"
                             >
                               Try again
                             </button>
@@ -665,14 +681,16 @@ export default function UploadPage() {
                         <button
                           type="button"
                           onClick={() => removeFile(file.id)}
-                          className="self-start rounded-full border border-white/12 bg-white/8 p-2 text-white/50 transition-colors hover:bg-white/12 hover:text-white sm:self-center"
+                          className="cursor-pointer self-start rounded-full border border-white/15 bg-white/8 p-2 text-white/60 transition-colors hover:bg-white/14 hover:text-white sm:self-center"
                           aria-label={`Remove ${file.file.name}`}
                         >
                           <X className="h-5 w-5" />
                         </button>
                       )}
                     </div>
+                    </motion.div>
                   ))}
+                  </AnimatePresence>
                 </div>
               </motion.section>
             )}
@@ -722,7 +740,7 @@ export default function UploadPage() {
                     placeholder="your@email.com"
                     required
                   />
-                  <p className="mt-2 text-xs text-white/30">
+                  <p className="mt-2 text-xs text-white/50">
                     We keep this in case we need to reach you about your photos.
                   </p>
                 </div>

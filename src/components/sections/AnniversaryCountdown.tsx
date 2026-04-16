@@ -49,7 +49,7 @@ function isDaysBeforeAnniversary(now: Date): boolean {
   return diffDays <= ANNIVERSARY_WINDOW_DAYS
 }
 
-function CountdownUnit({ value, label }: TimeUnit) {
+function CountdownUnit({ value, label, pulse }: TimeUnit & { pulse?: boolean }) {
   return (
     <div className="flex flex-col items-center gap-1">
       <motion.span
@@ -57,7 +57,7 @@ function CountdownUnit({ value, label }: TimeUnit) {
         initial={{ opacity: 0, y: -8 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ duration: 0.3 }}
-        className="font-display text-3xl text-gold-600 sm:text-4xl"
+        className={`font-display text-3xl text-gold-600 sm:text-4xl${pulse ? ' animate-pulse-soft' : ''}`}
       >
         {String(value).padStart(2, '0')}
       </motion.span>
@@ -104,8 +104,8 @@ export function AnniversaryCountdown() {
             Counting down to {COUPLE.person1.name} &amp; {COUPLE.person2.name}'s anniversary
           </h2>
           <div className="flex justify-center gap-6 sm:gap-10">
-            {units.map((unit) => (
-              <CountdownUnit key={unit.label} {...unit} />
+            {units.map((unit, index) => (
+              <CountdownUnit key={unit.label} {...unit} pulse={index === 3} />
             ))}
           </div>
         </motion.div>

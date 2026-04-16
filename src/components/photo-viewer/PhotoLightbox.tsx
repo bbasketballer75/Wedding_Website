@@ -268,7 +268,16 @@ export function PhotoLightbox({
               )}
 
               {/* Image Container with Face Tags */}
-              <div className="flex flex-1 items-center justify-center overflow-hidden p-3 sm:p-8">
+              <motion.div
+                className="flex flex-1 items-center justify-center overflow-hidden p-3 sm:p-8"
+                drag="x"
+                dragConstraints={{ left: 0, right: 0 }}
+                dragElastic={0.12}
+                onDragEnd={(_, info) => {
+                  if (info.offset.x < -50 && info.velocity.x < -80) handleNext()
+                  else if (info.offset.x > 50 && info.velocity.x > 80) handlePrevious()
+                }}
+              >
                 <motion.div
                   animate={{ scale: zoom }}
                   transition={{ duration: 0.3 }}
@@ -281,11 +290,20 @@ export function PhotoLightbox({
                     }
                   }}
                 >
-                  <img
-                    src={currentPhoto.url}
-                    alt={currentPhoto.caption || 'Wedding photo'}
-                    className="max-h-[calc(100vh-11rem)] max-w-full rounded-lg object-contain sm:max-h-[80vh]"
-                  />
+                  <AnimatePresence mode="wait">
+                    <motion.img
+                      key={currentPhoto.id}
+                      src={currentPhoto.url}
+                      alt={currentPhoto.caption || 'Wedding photo'}
+                      initial={{ opacity: 0 }}
+                      animate={{ opacity: 1 }}
+                      exit={{ opacity: 0 }}
+                      transition={{ duration: 0.22 }}
+                      className="max-h-[calc(100vh-11rem)] max-w-full rounded-lg object-contain sm:max-h-[80vh]"
+                    />
+                  </AnimatePresence>
+                  {/* Vignette overlay */}
+                  <div className="pointer-events-none absolute inset-0 rounded-lg bg-[radial-gradient(ellipse_at_center,transparent_45%,rgba(0,0,0,0.32)_100%)]" />
                   
                   {/* Face Tags Overlay */}
                   {shouldRenderFaceOverlay && visibleFaces.map((face) => (
@@ -315,7 +333,22 @@ export function PhotoLightbox({
                     </button>
                   ))}
                 </motion.div>
-              </div>
+              </motion.div>
+
+              {/* Caption slide-up */}
+              {currentPhoto.caption && (
+                <motion.div
+                  key={`caption-${currentPhoto.id}`}
+                  initial={{ opacity: 0, y: 8 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  transition={{ duration: 0.35, delay: 0.12 }}
+                  className="absolute bottom-[4.5rem] left-0 right-0 px-6 pb-1 text-center sm:bottom-[5rem]"
+                >
+                  <p className="font-display text-sm italic text-white/70 drop-shadow-sm">
+                    {currentPhoto.caption}
+                  </p>
+                </motion.div>
+              )}
 
               {/* Bottom Toolbar */}
               <div className="absolute bottom-0 left-0 right-0 bg-gradient-to-t from-black/85 to-transparent p-3 pb-[calc(env(safe-area-inset-bottom)+0.75rem)] sm:p-4">
