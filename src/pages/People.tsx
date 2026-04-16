@@ -1,7 +1,7 @@
 import { useState, useEffect, useMemo } from 'react'
 import { motion } from 'framer-motion'
 import { useNavigate } from 'react-router-dom'
-import { Users } from 'lucide-react'
+import { Users, ArrowRight } from 'lucide-react'
 import { fetchPhotosWithFaces } from '@/lib/supabase'
 import type { Photo } from '@/lib/supabase'
 import { getMediaPath } from '@/utils/media'
@@ -149,10 +149,10 @@ function buildPeopleFromPhotos(photos: Photo[]): PersonCard[] {
 
 function SkeletonCard() {
   return (
-    <div className="animate-pulse flex flex-col items-center gap-3 p-4 rounded-2xl border border-charcoal-200/40 bg-cream-100/60">
-      <div className="h-20 w-20 rounded-full bg-charcoal-200/40" />
-      <div className="h-4 w-20 rounded bg-charcoal-200/40" />
-      <div className="h-3 w-12 rounded bg-charcoal-200/30" />
+    <div className="flex flex-col items-center gap-3 p-4 rounded-2xl border border-charcoal-200/40 bg-cream-100/60">
+      <div className="skeleton-light h-20 w-20 rounded-full" />
+      <div className="skeleton-light h-4 w-20 rounded" />
+      <div className="skeleton-light h-3 w-12 rounded" />
     </div>
   )
 }
@@ -203,10 +203,10 @@ export default function People() {
             </span>
           </div>
           <h1 className="font-display text-4xl text-charcoal-900 sm:text-5xl mb-4">
-            Everyone in the frame.
+            The people who made it beautiful.
           </h1>
           <p className="max-w-2xl text-charcoal-500 text-lg leading-relaxed">
-            Click anyone to browse all their photos in the gallery.
+            Tap anyone to browse every photo they appear in — together, they tell the whole story.
           </p>
         </motion.div>
 
@@ -243,10 +243,10 @@ export default function People() {
                 initial={{ opacity: 0, y: 16 }}
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ duration: 0.4, delay: i * 0.03 }}
-                whileHover={{ y: -2 }}
+                whileHover={{ y: -3 }}
                 className={cn(
-                  'flex flex-col items-center gap-3 p-5 rounded-2xl border border-charcoal-200/40 bg-white shadow-sm',
-                  'hover:border-gold-300/60 hover:shadow-md transition-all text-left focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-gold-400'
+                  'group flex flex-col items-center gap-3 p-5 rounded-2xl border border-charcoal-200/40 bg-white shadow-sm cursor-pointer',
+                  'hover:border-gold-300/70 hover:shadow-lg transition-all duration-200 text-center focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-gold-400'
                 )}
                 aria-label={`Browse photos of ${person.name}`}
               >
@@ -255,18 +255,18 @@ export default function People() {
                   <img
                     src={person.curatedPortrait}
                     alt=""
-                    className="h-20 w-20 rounded-full border-2 border-cream-200 object-cover shrink-0"
+                    className="h-20 w-20 rounded-full border-2 border-cream-200 object-cover shrink-0 transition-all duration-200 group-hover:scale-[1.08] group-hover:ring-2 group-hover:ring-gold-400/60 group-hover:ring-offset-2"
                     loading="lazy"
                   />
                 ) : (
                   <div
-                    className="h-20 w-20 rounded-full border-2 border-cream-200 shrink-0"
+                    className="h-20 w-20 rounded-full border-2 border-cream-200 shrink-0 transition-all duration-200 group-hover:scale-[1.08] group-hover:ring-2 group-hover:ring-gold-400/60 group-hover:ring-offset-2"
                     style={faceAvatarStyle(person.thumbnail, person.faceX, person.faceY, person.faceBoxWidth)}
                   />
                 )}
 
                 {/* Name */}
-                <p className="font-display text-base text-charcoal-800 text-center leading-tight">
+                <p className="font-display text-base text-charcoal-800 leading-tight">
                   {person.name}
                 </p>
 
@@ -293,6 +293,11 @@ export default function People() {
                     )}
                   </div>
                 )}
+
+                {/* Click affordance */}
+                <span className="flex items-center gap-1 text-[10px] uppercase tracking-[0.18em] text-gold-500/0 transition-all duration-200 group-hover:text-gold-500">
+                  View photos <ArrowRight className="h-3 w-3" />
+                </span>
               </motion.button>
             ))}
           </div>
