@@ -124,13 +124,13 @@ function MessageCard({
         <Avatar fallback={message.name} size="lg" className="ring-2 ring-gold-400/30" />
         <div className="min-w-0">
           <h3 className="truncate text-lg font-semibold text-white">{message.name}</h3>
-          <p className="mt-1 text-sm text-white/45">{message.timestamp}</p>
+          <p className="mt-1 text-sm text-white/60">{message.timestamp}</p>
         </div>
       </div>
 
       {displayContent && (
-        <div className="mt-5 rounded-xl bg-white/6 px-4 py-4">
-          <p className="text-base leading-7 text-white/75">{displayContent}</p>
+        <div className="mt-5 rounded-xl bg-white/10 px-4 py-4">
+          <p className="text-base leading-7 text-white/85">{displayContent}</p>
         </div>
       )}
 
@@ -143,7 +143,7 @@ function MessageCard({
                 key={key}
                 type="button"
                 aria-label={`${rType?.label ?? key} reaction, ${count} votes`}
-                className="inline-flex items-center gap-1.5 rounded-full border border-white/12 bg-white/8 px-3 py-1 text-sm text-white/70 transition-colors hover:bg-white/12"
+                className="inline-flex cursor-pointer items-center gap-1.5 rounded-full border border-white/15 bg-white/8 px-3 py-1 text-sm text-white/75 transition-colors hover:bg-white/14"
               >
                 <span aria-hidden="true">{rType?.emoji ?? key}</span>
                 <span>{count}</span>
@@ -153,13 +153,13 @@ function MessageCard({
         </div>
       )}
 
-      <div className="mt-4 flex items-center gap-3 border-t border-white/8 pt-4">
+      <div className="mt-4 flex items-center gap-3 border-t border-white/10 pt-4">
         <button
           type="button"
           onClick={() => onAddReaction(message.id)}
           aria-haspopup="dialog"
           aria-controls="reaction-picker"
-          className="inline-flex items-center gap-1.5 rounded-full border border-white/12 bg-white/5 px-3 py-1.5 text-xs text-white/55 transition-colors hover:bg-white/10 hover:text-white/80"
+          className="inline-flex cursor-pointer items-center gap-1.5 rounded-full border border-white/15 bg-white/8 px-3 py-1.5 text-xs text-white/70 transition-colors hover:bg-white/14 hover:text-white/90"
         >
           <Smile className="h-3.5 w-3.5" />
           Add a reaction
@@ -167,7 +167,7 @@ function MessageCard({
         <button
           type="button"
           onClick={() => setReplyOpen((prev) => !prev)}
-          className="inline-flex items-center gap-1.5 rounded-full border border-white/12 bg-white/5 px-3 py-1.5 text-xs text-white/55 transition-colors hover:bg-white/10 hover:text-white/80"
+          className="inline-flex cursor-pointer items-center gap-1.5 rounded-full border border-white/15 bg-white/8 px-3 py-1.5 text-xs text-white/70 transition-colors hover:bg-white/14 hover:text-white/90"
         >
           <MessageSquare className="h-3.5 w-3.5" />
           {allComments.length > 0 ? `Reply (${allComments.length})` : 'Reply'}
@@ -375,6 +375,7 @@ export default function Guestbook() {
 
       setVisibleCount(INITIAL_VISIBLE_MESSAGES)
       setIsSubmitted(true)
+      addToast('Your note is part of the book now. Thank you.', 'success')
 
       window.setTimeout(() => {
         setShowForm(false)
@@ -614,12 +615,30 @@ export default function Guestbook() {
             </motion.div>
 
             {isLoading ? (
-              <div className="relative overflow-hidden rounded-2xl bg-white/5 backdrop-blur-sm border border-white/8 px-6 py-12 text-center">
-                <div className="mx-auto flex h-16 w-16 items-center justify-center rounded-full bg-white/8 text-gold-400">
-                  <Loader2 className="h-7 w-7 animate-spin" />
-                </div>
-                <p className="mt-6 font-display text-2xl text-white">Gathering the notes</p>
-                <p className="mt-2 text-white/40">Just a moment while we bring in everything from the day.</p>
+              <div className="grid gap-5 xl:grid-cols-2">
+                {Array.from({ length: 6 }).map((_, i) => (
+                  <div
+                    key={i}
+                    className="relative overflow-hidden rounded-2xl border border-white/8 bg-white/5 px-5 py-5 sm:px-6 sm:py-6"
+                    style={{ animationDelay: `${i * 0.06}s` }}
+                    aria-hidden="true"
+                  >
+                    {/* Avatar + name row */}
+                    <div className="flex items-center gap-3">
+                      <div className="skeleton-dark h-11 w-11 shrink-0 rounded-full" />
+                      <div className="flex-1 space-y-2">
+                        <div className="skeleton-dark h-4 w-2/5 rounded-full" style={{ animationDelay: `${i * 0.06 + 0.05}s` }} />
+                        <div className="skeleton-dark h-3 w-1/4 rounded-full" style={{ animationDelay: `${i * 0.06 + 0.1}s` }} />
+                      </div>
+                    </div>
+                    {/* Message body */}
+                    <div className="mt-5 space-y-2 rounded-xl bg-white/4 px-4 py-4">
+                      <div className="skeleton-dark h-3 w-full rounded-full" style={{ animationDelay: `${i * 0.06 + 0.12}s` }} />
+                      <div className="skeleton-dark h-3 w-full rounded-full" style={{ animationDelay: `${i * 0.06 + 0.16}s` }} />
+                      <div className="skeleton-dark h-3 w-3/5 rounded-full" style={{ animationDelay: `${i * 0.06 + 0.2}s` }} />
+                    </div>
+                  </div>
+                ))}
               </div>
             ) : visibleMessages.length > 0 ? (
               <>
@@ -642,7 +661,7 @@ export default function Guestbook() {
                     <button
                       type="button"
                       onClick={() => setVisibleCount((current) => current + INITIAL_VISIBLE_MESSAGES)}
-                      className="border border-white/12 bg-white/5 text-white/60 hover:text-white hover:bg-white/10 rounded-full px-6 py-2.5 text-sm transition-all"
+                      className="cursor-pointer rounded-full border border-white/15 bg-white/8 px-6 py-2.5 text-sm text-white/70 transition-all hover:bg-white/14 hover:text-white"
                     >
                       Read more notes
                     </button>
@@ -650,13 +669,32 @@ export default function Guestbook() {
                 )}
               </>
             ) : (
-              <div className="relative overflow-hidden rounded-2xl bg-white/5 backdrop-blur-sm border border-white/8 px-6 py-12 text-center">
-                <div className="mx-auto flex h-16 w-16 items-center justify-center rounded-full bg-white/8 text-gold-400">
-                  <BookHeart className="h-7 w-7" />
-                </div>
-                <p className="mt-6 font-display text-2xl text-white">No notes yet — yours could be the first.</p>
-                <p className="mx-auto mt-2 max-w-md text-white/40">Leave something small. It doesn't need to be a speech.</p>
-                <Button className="mt-6" size="lg" onClick={() => openComposer()}>Leave the first note</Button>
+              <div className="relative overflow-hidden rounded-2xl bg-white/5 backdrop-blur-sm border border-white/8 px-6 py-16 text-center">
+                {/* Feather quill SVG */}
+                <svg
+                  className="mx-auto mb-6 h-12 w-12 text-gold-400/55"
+                  viewBox="0 0 48 48"
+                  fill="none"
+                  aria-hidden="true"
+                >
+                  <path
+                    d="M38 4C28 4 14 18 12 38M12 38c4-8 10-13 18-15M12 38l4-4"
+                    stroke="currentColor"
+                    strokeWidth="1.5"
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                  />
+                  <path
+                    d="M12 38c2-4 4-6 6-6"
+                    stroke="currentColor"
+                    strokeWidth="1.2"
+                    strokeLinecap="round"
+                  />
+                </svg>
+                <p className="font-script text-5xl text-gold-300/75">Leave a note</p>
+                <p className="mt-4 font-display text-xl text-white/70">No notes yet — yours could be the first.</p>
+                <p className="mx-auto mt-2 max-w-md text-sm text-white/35">Leave something small. It doesn't need to be a speech.</p>
+                <Button className="mt-8" size="lg" onClick={() => openComposer()}>Leave the first note</Button>
               </div>
             )}
           </div>
