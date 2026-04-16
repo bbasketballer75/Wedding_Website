@@ -19,7 +19,7 @@ test.describe('Guestbook Page', () => {
     await page.getByLabel('Your Message').fill('We felt the joy from the back row and still cannot stop smiling.')
     await page.getByRole('button', { name: 'Post to the guestbook' }).click()
 
-    await expect(page.getByText('Your note is part of the book now.')).toBeVisible()
+    await expect(page.getByRole('heading', { name: 'Your note is part of the book now.' })).toBeVisible()
   })
 
   test('updates reactions and replies in the feed', async ({ page }) => {
