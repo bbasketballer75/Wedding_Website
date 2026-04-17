@@ -291,23 +291,6 @@ export function PeopleSEO() {
   )
 }
 
-export function GuestMemoriesSEO() {
-  return (
-    <SEOHead
-      title="Guest Memories"
-      description="Browse photos shared by our guests — candid moments, phone shots, and side-of-the-day captures from the people who were there."
-      canonical="/guest-photos"
-      image={DEFAULT_SOCIAL_IMAGE}
-      structuredData={{
-        '@context': 'https://schema.org',
-        '@type': 'ImageGallery',
-        name: 'Guest Memories',
-        description: 'A gallery of approved guest photo and video uploads from the wedding.',
-      }}
-    />
-  )
-}
-
 export function NotFoundSEO() {
   return (
     <SEOHead
