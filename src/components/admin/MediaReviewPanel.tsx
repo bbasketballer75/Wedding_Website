@@ -161,8 +161,9 @@ export function MediaReviewPanel() {
   useEffect(() => {
     const filteredGroups = useMediaReviewStore.getState().getFilteredGroups(useMediaReviewStore.getState().personSearch)
     const selectedGroup = useMediaReviewStore.getState().getSelectedGroup()
+    const setSelectedGroupKey = useMediaReviewStore.getState().setSelectedGroupKey
     if (!selectedGroup && filteredGroups[0]) {
-      useMediaReviewStore.getState().setSelectedGroupKey(filteredGroups[0].key)
+      setSelectedGroupKey(filteredGroups[0].key)
     }
   }, [])
 
