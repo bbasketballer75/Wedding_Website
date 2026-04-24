@@ -6,7 +6,7 @@ Transform theporadas.com into a polished, complete-feeling wedding archive. Star
 
 ## Phases
 
-- [ ] **Phase 1: Foundation & Polish** - Error boundaries, auth stability, code quality, console removal
+- [x] **Phase 1: Foundation & Polish** - Error boundaries, auth stability, code quality, console removal
 - [ ] **Phase 2: Gallery Performance & UX** - State consolidation, caching, lazy loading, lightbox improvements
 - [ ] **Phase 3: Upload Experience Polish** - Progress feedback, error recovery, upload confirmation
 - [ ] **Phase 4: Navigation & Design Consistency** - Polished nav, cohesive gold theme, fast perceived performance
@@ -28,10 +28,10 @@ Transform theporadas.com into a polished, complete-feeling wedding archive. Star
   8. Hamburger menu works on all pages with smooth open/close transitions
 **Plans**: 4 plans
 Plans:
-- [ ] 01-01-PLAN.md — Auth queue + Supabase client consolidation
-- [ ] 01-02-PLAN.md — Admin error boundaries on all admin pages
-- [ ] 01-03-PLAN.md — Verify existing: lightbox nav, console drop, page transitions, mobile menu
-- [ ] 01-04-PLAN.md — MediaReviewPanel decomposition into 5 components
+- [x] 01-01-PLAN.md — Auth queue + Supabase client consolidation
+- [x] 01-02-PLAN.md — Admin error boundaries on all admin pages
+- [x] 01-03-PLAN.md — Verify existing: lightbox nav, console drop, page transitions, mobile menu
+- [x] 01-04-PLAN.md — MediaReviewPanel decomposition into 5 components
 
 ### Phase 2: Gallery Performance & UX
 **Goal**: Gallery feels fast and responsive with proper state management and progressive loading
@@ -68,7 +68,7 @@ Plans:
 
 | Phase | Plans Complete | Status | Completed |
 |-------|----------------|--------|-----------|
-| 1. Foundation & Polish | 0/4 | Not started | - |
+| 1. Foundation & Polish | 4/4 | ✓ Complete | 2026-04-24 |
 | 2. Gallery Performance & UX | 0/4 | Not started | - |
 | 3. Upload Experience Polish | 0/3 | Not started | - |
 | 4. Navigation & Design Consistency | 0/3 | Not started | - |
