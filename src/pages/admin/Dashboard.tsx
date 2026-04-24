@@ -10,6 +10,7 @@ import {
   ArrowRight,
 } from 'lucide-react'
 import { Button } from '@/components/ui/Button'
+import { ComponentErrorBoundary } from '@/components/error/ErrorBoundary'
 import {
   supabase,
   fetchMediaReviewBatches,
@@ -160,6 +161,7 @@ export function Dashboard() {
   }, [])
 
   return (
+    <ComponentErrorBoundary componentName="Dashboard">
     <div className="space-y-6">
       <section className="rounded-[1.5rem] border border-gold-100 bg-white px-5 py-5 shadow-sm sm:px-6">
         <div className="flex flex-col gap-4 xl:flex-row xl:items-start xl:justify-between">
@@ -300,5 +302,6 @@ export function Dashboard() {
         </div>
       </div>
     </div>
+    </ComponentErrorBoundary>
   )
 }
