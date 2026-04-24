@@ -17,6 +17,7 @@ import {
   type AuditEntriesByEntityId,
 } from './utils'
 import { CompactAuditHistory } from './shared'
+import { ComponentErrorBoundary } from '@/components/error/ErrorBoundary'
 
 export function GuestbookModeration() {
   const [messages, setMessages] = useState<GuestbookMessage[]>([])
@@ -151,6 +152,7 @@ export function GuestbookModeration() {
   })
 
   return (
+    <ComponentErrorBoundary componentName="Guestbook Moderation">
     <div className="space-y-6">
       <div className="space-y-2">
         <h2 className="text-2xl font-display text-charcoal-900">Guestbook Moderation</h2>
@@ -233,5 +235,6 @@ export function GuestbookModeration() {
         )}
       </div>
     </div>
+    </ComponentErrorBoundary>
   )
 }
