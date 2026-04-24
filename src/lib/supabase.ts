@@ -63,6 +63,7 @@ export interface Photo {
   is_professional: boolean
   tags: string[]
   faces: PhotoFace[]
+  blurHash?: string | null
   created_at: string
 }
 

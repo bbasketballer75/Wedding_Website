@@ -1,6 +1,8 @@
 import { motion } from 'framer-motion'
 import React from 'react'
 import type { Photo } from '@/lib/supabase'
+import OptimizedImage from '@/components/ui/OptimizedImage'
+import { useBlurHash } from '@/hooks/useBlurHash'
 
 interface PhotoItemProps {
   photo: Photo
@@ -11,6 +13,8 @@ interface PhotoItemProps {
 }
 
 const PhotoItem: React.FC<PhotoItemProps> = ({ photo, index, viewMode, onSelect, onLike }) => {
+  const blurDataURL = useBlurHash(photo.blurHash)
+
   if (viewMode === 'carousel') {
     return (
       <motion.div
@@ -22,7 +26,13 @@ const PhotoItem: React.FC<PhotoItemProps> = ({ photo, index, viewMode, onSelect,
         className='relative w-80 h-60 flex-shrink-0 cursor-pointer overflow-hidden rounded-lg'
         onClick={() => onSelect(photo)}
       >
-        <img src={photo.url} alt={photo.caption || ''} className='w-full h-full object-cover' />
+        <OptimizedImage
+          src={photo.url}
+          alt={photo.caption || ''}
+          className='w-full h-full'
+          placeholder={blurDataURL ? 'blur' : 'color'}
+          blurDataURL={blurDataURL ?? undefined}
+        />
       </motion.div>
     )
   }
@@ -40,14 +50,16 @@ const PhotoItem: React.FC<PhotoItemProps> = ({ photo, index, viewMode, onSelect,
       }`}
       onClick={() => onSelect(photo)}
     >
-      <img
+      <OptimizedImage
         src={viewMode === 'masonry' ? photo.thumbnail : photo.url}
         alt={photo.caption || ''}
         className={`w-full ${
           viewMode === 'masonry'
             ? 'rounded-lg shadow-md group-hover:shadow-xl'
             : 'h-full object-cover'
-        } transition-all duration-300`}
+        }`}
+        placeholder={blurDataURL ? 'blur' : 'color'}
+        blurDataURL={blurDataURL ?? undefined}
       />
 
       {/* Overlay with Like Button */}
