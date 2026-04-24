@@ -237,14 +237,26 @@ export function PhotoModeration() {
       .eq('id', upload.id)
 
     if (updateError) {
+      // Compensate: remove any photos that were inserted before the update failed.
+      // This prevents orphaned photo rows from remaining in the gallery.
       if (rowsToInsert.length > 0) {
-        await supabase
+        const { error: cleanupError } = await supabase
           .from('photos')
           .delete()
           .in('url', rowsToInsert.map(row => row.url))
+
+        if (cleanupError) {
+          // Rollback failed - photo rows may be orphaned in the gallery.
+          // Log for investigation; the admin should check the gallery for duplicates.
+          console.error('Failed to clean up orphaned photo rows after approval failure:', cleanupError)
+          addToast('The upload could not be marked approved, and the automatic cleanup of published photos also failed. Please check the gallery for duplicate entries.', 'error')
+        } else {
+          addToast('The upload could not be marked approved after publishing', 'error')
+        }
+      } else {
+        addToast('The upload could not be marked approved after publishing', 'error')
       }
 
-      addToast('The upload could not be marked approved after publishing', 'error')
       setBusyId(null)
       return
     }
