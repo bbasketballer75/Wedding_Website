@@ -19,7 +19,7 @@ import {
   fetchPhotoLikeStatuses,
   supabase,
   togglePhotoLike,
-  Photo as SupabasePhoto,
+  Photo,
 } from '@/lib/supabase'
 import { useToast } from '@/context/ToastContext'
 import { partyData } from '@/data/weddingParty'
@@ -41,34 +41,11 @@ function resolveAlias(name: string): string {
 }
 
 // Extended photo type with faces and comments
-interface Photo {
-  id: string
-  url: string
-  thumbnail: string
+interface GalleryPhoto extends Photo {
   downloadUrl?: string
-  album?: string
   albumSortOrder?: number
-  caption?: string
-  category: string
-  likes: number
   aspectRatio: number
   time?: string
-  photographer?: string
-  faces?: Array<{
-    id: string
-    name: string
-    x: number
-    y: number
-    box?: {
-      left: number
-      top: number
-      width: number
-      height: number
-    } | null
-  }>
-  tags?: string[]
-  location?: string
-  date?: string
   comments?: Array<{ id: string; author: string; content: string; timestamp: string }>
   commentCount?: number
   createdAt?: string
@@ -343,7 +320,7 @@ const curatedPhotos = ([
   { id: 'curated-33', url: '/images/engagement/PoradaProposal-421.webp', thumbnail: '/images/engagement/PoradaProposal-421.webp', caption: undefined, category: 'Portraits', likes: 0, aspectRatio: 0.667, time: undefined, location: 'Proposal spot', photographer: 'Emma Photography', date: '2024-10-31', createdAt: '2024-10-31T17:54:00', faces: [], tags: ['engagement', 'portrait'], source: 'professional', collection: 'Proposal' },
   { id: 'curated-34', url: '/images/engagement/PoradaProposal-458.webp', thumbnail: '/images/engagement/PoradaProposal-458.webp', caption: undefined, category: 'Portraits', likes: 0, aspectRatio: 1.5, time: undefined, location: 'Proposal spot', photographer: 'Emma Photography', date: '2024-10-31', createdAt: '2024-10-31T17:55:00', faces: [], tags: ['engagement', 'portrait'], source: 'professional', collection: 'Proposal' },
   { id: 'curated-35', url: '/images/engagement/PoradaProposal-482.webp', thumbnail: '/images/engagement/PoradaProposal-482.webp', caption: undefined, category: 'Portraits', likes: 0, aspectRatio: 0.667, time: undefined, location: 'Proposal spot', photographer: 'Emma Photography', date: '2024-10-31', createdAt: '2024-10-31T17:56:00', faces: [], tags: ['engagement', 'portrait'], source: 'professional', collection: 'Proposal' },
- ] satisfies Array<Omit<Photo, 'albumSortOrder'>>).map((photo, index): Photo => ({
+ ] satisfies Array<Omit<GalleryPhoto, 'albumSortOrder'>>).map((photo, index): GalleryPhoto => ({
   ...photo,
   albumSortOrder: index + 1,
 }))
@@ -374,7 +351,7 @@ const normalizeGalleryMediaPath = (path?: string | null): string => {
   return getMediaPath(path)
 }
 
-const normalizeGalleryPhoto = (photo: Photo): Photo => ({
+const normalizeGalleryPhoto = (photo: GalleryPhoto): GalleryPhoto => ({
   ...photo,
   url: normalizeGalleryMediaPath(photo.url),
   thumbnail: normalizeGalleryMediaPath(photo.thumbnail || photo.url),
@@ -458,8 +435,8 @@ const normalizeCollectionValue = (value?: string | null): Photo['collection'] | 
 }
 
 const deriveCollection = (
-  photo: Pick<SupabasePhoto, 'album' | 'is_professional' | 'category' | 'caption' | 'tags' | 'location' | 'url' | 'thumbnail'>
-): Photo['collection'] => {
+  photo: Pick<Photo, 'album' | 'is_professional' | 'category' | 'caption' | 'tags' | 'location' | 'url' | 'thumbnail'>
+): GalleryPhoto['collection'] => {
   const normalizedAlbum = normalizeCollectionValue(photo.album)
   if (normalizedAlbum) {
     return normalizedAlbum
@@ -499,7 +476,7 @@ const deriveCollection = (
   return 'Wedding Photos'
 }
 
-const mapSupabasePhoto = (photo: SupabasePhoto): Photo => normalizeGalleryPhoto({
+const mapSupabasePhoto = (photo: Photo): GalleryPhoto => normalizeGalleryPhoto({
   id: photo.id,
   url: photo.url,
   thumbnail: photo.thumbnail,
@@ -529,7 +506,7 @@ export default function Gallery() {
   const [viewMode, setViewMode] = useState<'masonry' | 'grid' | 'timeline'>('masonry')
   const [lightboxIndex, setLightboxIndex] = useState<number | null>(null)
   const [faceFilter, setFaceFilter] = useState<string | null>(null)
-  const [photos, setPhotos] = useState<Photo[]>(() => curatedPhotos.map(normalizeGalleryPhoto))
+  const [photos, setPhotos] = useState<GalleryPhoto[]>(() => curatedPhotos.map(normalizeGalleryPhoto))
   const [downloadingId, setDownloadingId] = useState<string | null>(null)
   const [isLoading, setIsLoading] = useState(true)
   const [selectMode, setSelectMode] = useState(false)
@@ -560,7 +537,7 @@ export default function Gallery() {
         }
 
         const livePhotos = (data || []).map(mapSupabasePhoto)
-        const mergedPhotos = [...curatedPhotos.map(normalizeGalleryPhoto), ...livePhotos].reduce<Photo[]>((acc, photo) => {
+        const mergedPhotos = [...curatedPhotos.map(normalizeGalleryPhoto), ...livePhotos].reduce<GalleryPhoto[]>((acc, photo) => {
           const duplicateIndex = acc.findIndex(existing =>
             existing.id === photo.id ||
             existing.url === photo.url ||
