@@ -3,6 +3,17 @@ import type { User } from '@supabase/supabase-js'
 import { create } from 'zustand'
 import { devtools } from 'zustand/middleware'
 
+// Auth operation queue - ensures only one auth operation runs at a time
+let authOperationQueue: Promise<void> = Promise.resolve()
+
+const queueAuthOperation = async <T>(fn: () => Promise<T>): Promise<T> => {
+  return authOperationQueue.then(fn).catch((error) => {
+    // Log but don't propagate - auth state stays consistent
+    console.error('Auth operation failed:', error)
+    return undefined as T
+  })
+}
+
 export interface AuthState {
   // User state
   user: User | null
@@ -91,41 +102,45 @@ export const useAuthStore = create<AuthState>()(
 
       // Session management
       initializeAuth: async () => {
-        try {
-          const {
-            data: { session },
-          } = await supabase.auth.getSession()
+        return queueAuthOperation(async () => {
+          try {
+            const {
+              data: { session },
+            } = await supabase.auth.getSession()
 
-          if (session?.user) {
-            set({ user: session.user, isAuthenticated: true })
-            await get().checkAdminStatus()
-          } else {
+            if (session?.user) {
+              set({ user: session.user, isAuthenticated: true })
+              await get().checkAdminStatus()
+            } else {
+              set({ user: null, isAuthenticated: false, isAdmin: false })
+            }
+          } catch (error) {
+            console.error('Auth initialization error:', error)
             set({ user: null, isAuthenticated: false, isAdmin: false })
+          } finally {
+            set({ isLoading: false })
           }
-        } catch (error) {
-          console.error('Auth initialization error:', error)
-          set({ user: null, isAuthenticated: false, isAdmin: false })
-        } finally {
-          set({ isLoading: false })
-        }
+        })
       },
 
       refreshSession: async () => {
-        try {
-          const {
-            data: { session },
-          } = await supabase.auth.refreshSession()
+        return queueAuthOperation(async () => {
+          try {
+            const {
+              data: { session },
+            } = await supabase.auth.refreshSession()
 
-          if (session?.user) {
-            set({ user: session.user, isAuthenticated: true })
-            await get().checkAdminStatus()
-          } else {
+            if (session?.user) {
+              set({ user: session.user, isAuthenticated: true })
+              await get().checkAdminStatus()
+            } else {
+              set({ user: null, isAuthenticated: false, isAdmin: false })
+            }
+          } catch (error) {
+            console.error('Session refresh error:', error)
             set({ user: null, isAuthenticated: false, isAdmin: false })
           }
-        } catch (error) {
-          console.error('Session refresh error:', error)
-          set({ user: null, isAuthenticated: false, isAdmin: false })
-        }
+        })
       },
 
       setUser: (user) => {
