@@ -4,7 +4,7 @@ import { create } from 'zustand'
 import { devtools } from 'zustand/middleware'
 
 // Auth operation queue - ensures only one auth operation runs at a time
-let authOperationQueue: Promise<void> = Promise.resolve()
+const authOperationQueue: Promise<void> = Promise.resolve()
 
 const queueAuthOperation = async <T>(fn: () => Promise<T>): Promise<T> => {
   return authOperationQueue.then(fn).catch((error) => {
@@ -156,6 +156,12 @@ export const useAuthStore = create<AuthState>()(
       },
 
       // Admin check
+      //
+      // SECURITY NOTE: This isAdmin state is for UI purposes ONLY (showing/hiding admin menu items).
+      // It is NOT security. Actual admin authorization must be enforced server-side via:
+      //   1. Supabase RLS policies on tables (only admin role can access certain rows)
+      //   2. Server-side Edge Functions that validate admin status before privileged operations
+      // Client-side role checks can be bypassed by modifying user metadata.
       checkAdminStatus: async () => {
         const { user } = get()
         if (!user) {
@@ -164,7 +170,9 @@ export const useAuthStore = create<AuthState>()(
         }
 
         try {
-          // Check if user has admin role in user metadata
+          // This isAdmin state is used ONLY for UI convenience (hiding/showing admin nav items).
+          // Security-critical authorization MUST be enforced server-side via RLS policies
+          // and Edge Function authorization checks, never by relying on this client state.
           const isAdmin = user.user_metadata?.role === 'admin'
           set({ isAdmin })
         } catch (error) {
