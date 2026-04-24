@@ -10,6 +10,7 @@ import {
 } from 'lucide-react'
 import { cn } from '@/lib/utils'
 import { focusManager } from '@/accessibility/focusManagement'
+import { useGalleryStore } from '@/stores/galleryStore'
 import type { Photo } from '@/lib/supabase'
 
 // UI-only interface for comment display
@@ -23,10 +24,6 @@ interface Comment {
 
 interface PhotoLightboxProps {
   photos: Photo[]
-  currentIndex: number
-  isOpen: boolean
-  onClose: () => void
-  onNavigate: (index: number) => void
   onLike?: (photoId: string) => void
   onShare?: (photoId: string) => void
   onDownload?: (photoId: string) => void
@@ -38,10 +35,6 @@ interface PhotoLightboxProps {
 
 export function PhotoLightbox({
   photos,
-  currentIndex,
-  isOpen,
-  onClose,
-  onNavigate,
   onLike,
   onShare,
   onDownload,
@@ -50,6 +43,13 @@ export function PhotoLightbox({
   isSubmittingComment = false,
   highlightedFaceName = null,
 }: PhotoLightboxProps) {
+  // Read lightbox state from shared Zustand store
+  const isOpen = useGalleryStore(s => s.isModalOpen)
+  const storeIndex = useGalleryStore(s => s.selectedImageIndex)
+  const currentIndex = storeIndex ?? 0
+  const closeImageModal = useGalleryStore(s => s.closeImageModal)
+  const nextImage = useGalleryStore(s => s.nextImage)
+  const previousImage = useGalleryStore(s => s.previousImage)
   const [showInfo, setShowInfo] = useState(() =>
     typeof window === 'undefined' ? true : window.innerWidth >= 1024
   )
@@ -84,19 +84,19 @@ export function PhotoLightbox({
 
   const handlePrevious = useCallback(() => {
     if (currentIndex > 0) {
-      onNavigate(currentIndex - 1)
+      previousImage()
       setZoom(1)
       setSelectedFace(null)
     }
-  }, [currentIndex, onNavigate])
+  }, [currentIndex, previousImage])
 
   const handleNext = useCallback(() => {
     if (currentIndex < photos.length - 1) {
-      onNavigate(currentIndex + 1)
+      nextImage()
       setZoom(1)
       setSelectedFace(null)
     }
-  }, [currentIndex, photos.length, onNavigate])
+  }, [currentIndex, photos.length, nextImage])
 
   const lightboxRef = useRef<HTMLDivElement>(null)
 
@@ -107,7 +107,7 @@ export function PhotoLightbox({
     const release = focusManager.trapFocus(lightboxRef.current)
 
     const handleKeyDown = (e: KeyboardEvent) => {
-      if (e.key === 'Escape') { onClose(); return }
+      if (e.key === 'Escape') { closeImageModal(); return }
       if (e.key === 'ArrowLeft') { handlePrevious(); return }
       if (e.key === 'ArrowRight') { handleNext(); return }
       if (e.key === 'l') { currentPhoto && onLike?.(currentPhoto.id) }
@@ -119,7 +119,7 @@ export function PhotoLightbox({
       previousFocus?.focus()
       document.removeEventListener('keydown', handleKeyDown)
     }
-  }, [isOpen, onClose, handlePrevious, handleNext, currentPhoto, onLike])
+  }, [isOpen, closeImageModal, handlePrevious, handleNext, currentPhoto, onLike])
 
   const handleSubmitComment = async (e: React.FormEvent) => {
     e.preventDefault()
@@ -151,7 +151,7 @@ export function PhotoLightbox({
             className="fixed inset-0 z-50 flex bg-black/95"
             onClick={(event) => {
               if (event.target === event.currentTarget) {
-                onClose()
+                closeImageModal()
               }
             }}
           >
@@ -205,7 +205,7 @@ export function PhotoLightbox({
                     <ZoomOut className="w-5 h-5" />
                   </button>
                   <button
-                    onClick={(e) => { e.stopPropagation(); onClose(); }}
+                    onClick={(e) => { e.stopPropagation(); closeImageModal(); }}
                     type="button"
                     aria-label="Close photo viewer"
                     className="rounded-full bg-white/10 p-2.5 text-white/80 transition-colors hover:bg-white/20"
