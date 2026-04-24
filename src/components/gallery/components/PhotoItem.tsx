@@ -1,20 +1,12 @@
 import { motion } from 'framer-motion'
 import React from 'react'
+import type { Photo } from '@/lib/supabase'
 
 interface PhotoItemProps {
-  photo: {
-    id: string
-    url: string
-    thumbnail: string
-    caption?: string
-    liked?: boolean
-    tags: string[]
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    [key: string]: any
-  }
+  photo: Photo
   index: number
   viewMode: 'masonry' | 'grid' | 'carousel'
-  onSelect: (photo: PhotoItemProps['photo']) => void
+  onSelect: (photo: Photo) => void
   onLike: (id: string) => void
 }
 
