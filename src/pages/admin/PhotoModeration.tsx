@@ -31,6 +31,7 @@ import { Input } from '@/components/ui/Input'
 import { Label } from '@/components/ui/Label'
 import { Textarea } from '@/components/ui/Textarea'
 import { useToast } from '@/context/ToastContext'
+import { ComponentErrorBoundary } from '@/components/error/ErrorBoundary'
 import { memoryTrails, type MemoryTrailId } from '@/data/memoryTrails'
 import {
   buildGuestTaggingSyncPayloadFromFiles,
@@ -765,6 +766,7 @@ export function PhotoModeration() {
   }
 
   return (
+    <ComponentErrorBoundary componentName="Photo Moderation">
     <div className="space-y-6">
       <div className="space-y-2">
         <h2 className="text-2xl font-display text-charcoal-900">Content Operations</h2>
@@ -1527,5 +1529,6 @@ export function PhotoModeration() {
         </div>
       )}
     </div>
+    </ComponentErrorBoundary>
   )
 }
