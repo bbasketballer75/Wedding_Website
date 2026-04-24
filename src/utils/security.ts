@@ -1,7 +1,29 @@
 import { supabase } from '@/lib/supabase'
 
+import DOMPurify from 'dompurify'
+
 // Rate limiting helper
 const rateLimitMap = new Map()
+
+// Periodic cleanup of rate limit map to prevent memory leaks
+const RATE_LIMIT_CLEANUP_INTERVAL_MS = 60 * 1000 // 1 minute
+
+function cleanupRateLimitMap(windowMs: number) {
+  const windowStart = Date.now() - windowMs
+  for (const [key, timestamps] of rateLimitMap.entries()) {
+    const valid = (timestamps as number[]).filter((t) => t > windowStart)
+    if (valid.length === 0) {
+      rateLimitMap.delete(key)
+    } else {
+      rateLimitMap.set(key, valid)
+    }
+  }
+}
+
+// Start periodic cleanup
+if (typeof window !== 'undefined') {
+  setInterval(() => cleanupRateLimitMap(60 * 60 * 1000), RATE_LIMIT_CLEANUP_INTERVAL_MS) // clean entries older than 1 hour
+}
 
 export const rateLimit = async (key: string, limit: number, windowMs: number) => {
   const now = Date.now()
@@ -12,7 +34,7 @@ export const rateLimit = async (key: string, limit: number, windowMs: number) =>
   }
 
   const requests = rateLimitMap.get(key)
-  const validRequests = requests.filter((time: number) => time > windowStart)
+  const validRequests = (requests as number[]).filter((time: number) => time > windowStart)
 
   if (validRequests.length >= limit) {
     throw new Error('Rate limit exceeded')
@@ -58,11 +80,9 @@ export const validateInput = {
     if (!message || message.length < 10 || message.length > 1000) {
       throw new Error('Message must be between 10 and 1000 characters')
     }
-    // Basic XSS prevention
-    if (/<script|javascript:|on\w+=/i.test(message)) {
-      throw new Error('Message contains invalid content')
-    }
-    return message.trim()
+    // XSS prevention via DOMPurify sanitization (strip all HTML tags and attributes)
+    const sanitized = DOMPurify.sanitize(message, { ALLOWED_TAGS: [], ALLOWED_ATTR: [] })
+    return sanitized.trim()
   },
 }
 
