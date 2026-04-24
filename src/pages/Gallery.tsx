@@ -21,6 +21,7 @@ import {
   togglePhotoLike,
   Photo,
 } from '@/lib/supabase'
+import { useGalleryStore } from '@/stores/galleryStore'
 import { useToast } from '@/context/ToastContext'
 import { partyData } from '@/data/weddingParty'
 
@@ -758,11 +759,11 @@ export default function Gallery() {
 
   const openLightbox = (index: number) => {
     if (index >= 0) {
-      setLightboxIndex(index)
+      useGalleryStore.getState().openImageModal(index)
     }
   }
 
-  const closeLightbox = () => setLightboxIndex(null)
+  const closeLightbox = () => useGalleryStore.getState().closeImageModal()
 
   const handleLike = (photoId: string) => {
     void (async () => {
@@ -1353,10 +1354,6 @@ export default function Gallery() {
       {/* Enhanced Lightbox */}
       <PhotoLightbox
         photos={filteredPhotos}
-        currentIndex={lightboxIndex ?? 0}
-        isOpen={lightboxIndex !== null}
-        onClose={closeLightbox}
-        onNavigate={setLightboxIndex}
         onLike={handleLike}
         onDownload={handleDownload}
         isDownloading={downloadingId !== null}
