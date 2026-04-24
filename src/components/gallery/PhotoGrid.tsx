@@ -2,19 +2,7 @@ import { motion } from 'framer-motion'
 import { Heart, Images, CheckCircle2 } from 'lucide-react'
 import { cn } from '@/lib/utils'
 import MasonryGrid from './components/MasonryGrid'
-
-interface Photo {
-  id: string
-  url: string
-  thumbnail: string
-  caption?: string
-  photographer?: string
-  likes?: number
-  aspectRatio?: number
-  source?: 'professional' | 'guest'
-  collection?: string
-  liked?: boolean
-}
+import type { Photo } from '@/lib/supabase'
 
 interface PhotoGridProps {
   photos: Photo[]
