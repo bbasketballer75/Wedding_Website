@@ -631,17 +631,28 @@ export const useMediaReviewStore = create<MediaReviewState>()(
         }
       },
 
-      handleBatchStatusChange: (batch, status) => {
-        updateMediaReviewBatchStatus(batch.id, status).then(({ data, error }) => {
-          if (error || !data) {
-            console.error('Could not update the batch status:', error)
-            return
-          }
+      handleBatchStatusChange: async (batch, status) => {
+        const previousBatches = get().batches
 
-          set((state) => ({
-            batches: state.batches.map((item) => (item.id === batch.id ? data : item)),
-          }))
-        })
+        // Optimistic update - immediately update UI
+        set((state) => ({
+          batches: state.batches.map((item) =>
+            item.id === batch.id ? { ...item, status } : item
+          ),
+        }))
+
+        const { data, error } = await updateMediaReviewBatchStatus(batch.id, status)
+        if (error || !data) {
+          // Rollback on failure
+          set({ batches: previousBatches })
+          console.error('Could not update the batch status:', error)
+          return
+        }
+
+        // Update with server response to ensure consistency
+        set((state) => ({
+          batches: state.batches.map((item) => (item.id === batch.id ? data : item)),
+        }))
       },
 
       setSelectedBatchId: (id) => set({ selectedBatchId: id }),
