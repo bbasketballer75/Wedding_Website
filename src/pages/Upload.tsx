@@ -29,6 +29,18 @@ import {
 import { cn } from '@/lib/utils'
 import { supabase } from '@/lib/supabase'
 
+enum UploadError {
+  NETWORK_TIMEOUT = 'NETWORK_TIMEOUT',
+  FILE_TOO_LARGE = 'FILE_TOO_LARGE',
+  UPLOAD_SLOT_UNAVAILABLE = 'UPLOAD_SLOT_UNAVAILABLE',
+  R2_PUT_FAILURE = 'R2_PUT_FAILURE',
+  UNKNOWN = 'UNKNOWN',
+}
+
+function isUploadError(error: unknown): error is UploadError {
+  return typeof error === 'string' && Object.values(UploadError).includes(error as UploadError)
+}
+
 interface UploadingFile {
   id: string
   file: File
@@ -36,6 +48,7 @@ interface UploadingFile {
   preview?: string
   publicUrl?: string
   errorMessage?: string
+  progress?: number // 0-100
 }
 
 
@@ -125,10 +138,15 @@ export default function UploadPage() {
       })
 
       if (!slotRes.ok) {
+        const status = slotRes.status
+        let errorType = UploadError.UPLOAD_SLOT_UNAVAILABLE
+        if (status === 429 || status === 503) {
+          errorType = UploadError.UPLOAD_SLOT_UNAVAILABLE
+        }
         setFiles(prev =>
           prev.map(f =>
             f.id === fileObj.id
-              ? { ...f, status: 'error', errorMessage: 'Upload slot unavailable — try again' }
+              ? { ...f, status: 'error', errorMessage: errorType, progress: undefined }
               : f
           )
         )
@@ -137,45 +155,83 @@ export default function UploadPage() {
 
       const { uploadUrl, publicUrl } = await slotRes.json() as { uploadUrl: string; publicUrl: string }
 
-      // Step 2: PUT the file directly to R2 using the signed URL
-      const putRes = await fetch(uploadUrl, {
-        method: 'PUT',
-        headers: { 'Content-Type': file.type },
-        body: file,
+      // Step 2: PUT the file directly to R2 using XHR for progress tracking
+      await new Promise<void>((resolve, reject) => {
+        const xhr = new XMLHttpRequest()
+
+        xhr.upload.addEventListener('progress', (event) => {
+          if (event.lengthComputable) {
+            const progressPercent = Math.round((event.loaded / event.total) * 100)
+            setFiles(prev =>
+              prev.map(f =>
+                f.id === fileObj.id ? { ...f, progress: progressPercent } : f
+              )
+            )
+          }
+        })
+
+        xhr.addEventListener('load', () => {
+          if (xhr.status >= 200 && xhr.status < 300) {
+            resolve()
+          } else {
+            reject(UploadError.R2_PUT_FAILURE)
+          }
+        })
+
+        xhr.addEventListener('error', () => reject(UploadError.NETWORK_TIMEOUT))
+        xhr.addEventListener('timeout', () => reject(UploadError.NETWORK_TIMEOUT))
+        xhr.addEventListener('abort', () => reject(UploadError.NETWORK_TIMEOUT))
+
+        xhr.open('PUT', uploadUrl)
+        xhr.setRequestHeader('Content-Type', file.type)
+        xhr.timeout = 120000 // 2 minute timeout
+        xhr.send(file)
       })
 
-      if (!putRes.ok) {
-        setFiles(prev =>
-          prev.map(f =>
-            f.id === fileObj.id
-              ? {
-                  ...f,
-                  status: 'error',
-                  errorMessage: 'This one didn\'t make it through — try uploading again',
-                }
-              : f
-          )
+      setFiles(prev =>
+        prev.map(f =>
+          f.id === fileObj.id
+            ? { ...f, status: 'complete', publicUrl, errorMessage: undefined, progress: undefined }
+            : f
         )
-        return
+      )
+    } catch (error) {
+      let errorType = UploadError.UNKNOWN
+      let errorMessage = 'Something went wrong — try again or skip this file'
+
+      if (isUploadError(error)) {
+        errorType = error
+      } else if (error instanceof Error) {
+        if (error.name === 'AbortError' || error.message.includes('abort')) {
+          errorType = UploadError.NETWORK_TIMEOUT
+        } else if (error.message.includes('timeout')) {
+          errorType = UploadError.NETWORK_TIMEOUT
+        }
+      }
+
+      // Set specific message based on error type
+      switch (errorType) {
+        case UploadError.NETWORK_TIMEOUT:
+          errorMessage = 'Connection timed out — check your internet and try again'
+          break
+        case UploadError.FILE_TOO_LARGE:
+          errorMessage = 'This file exceeds the 500MB limit and was skipped.'
+          break
+        case UploadError.UPLOAD_SLOT_UNAVAILABLE:
+          errorMessage = 'Upload slot unavailable — try again in a moment'
+          break
+        case UploadError.R2_PUT_FAILURE:
+          errorMessage = 'This one didn\'t make it through — try uploading again'
+          break
+        case UploadError.UNKNOWN:
+        default:
+          errorMessage = 'Something went wrong — try again or skip this file'
       }
 
       setFiles(prev =>
         prev.map(f =>
           f.id === fileObj.id
-            ? { ...f, status: 'complete', publicUrl, errorMessage: undefined }
-            : f
-        )
-      )
-    } catch (error) {
-      const message =
-        error instanceof Error
-          ? error.message
-          : 'This one didn\'t make it through — try uploading again'
-
-      setFiles(prev =>
-        prev.map(f =>
-          f.id === fileObj.id
-            ? { ...f, status: 'error', errorMessage: message }
+            ? { ...f, status: 'error', errorMessage: errorMessage, progress: undefined }
             : f
         )
       )
@@ -633,20 +689,20 @@ export default function UploadPage() {
                         {file.status === 'uploading' && (
                           <div>
                             <div className="mb-2 flex items-center justify-between text-xs text-white/50">
-                              <span>Uploading for us…</span>
-                              <span>Processing</span>
+                              <span>{file.progress !== undefined ? `${file.progress}% uploaded` : 'Uploading for us…'}</span>
+                              <span>{file.progress === 100 ? 'Processing…' : 'Sending'}</span>
                             </div>
                             <div className="h-2 overflow-hidden rounded-full bg-white/10">
-                              <motion.div
-                                initial={{ x: '-100%' }}
-                                animate={{ x: '250%' }}
-                                transition={{ repeat: Infinity, duration: 1.25, ease: 'easeInOut' }}
-                                className="h-full w-1/3 rounded-full bg-gradient-to-r from-gold-300 via-gold-500 to-gold-300"
+                              <div
+                                className="h-full rounded-full bg-gradient-to-r from-gold-300 via-gold-500 to-gold-300 transition-all duration-300"
+                                style={{ width: `${file.progress ?? 0}%` }}
                               />
                             </div>
-                            <p className="mt-2 text-xs text-white/50">
-                              We only show ready vs failed states here so the queue never implies fake precision.
-                            </p>
+                            {file.progress !== undefined && file.progress < 100 && (
+                              <p className="mt-2 text-xs text-white/50">
+                                Keep this window open while your file uploads
+                              </p>
+                            )}
                           </div>
                         )}
 
