@@ -78,6 +78,26 @@ export interface GalleryState {
   previousImage: () => void
 }
 
+// Prefetch adjacent images for smooth lightbox navigation
+const prefetchAdjacentImages = (currentIndex: number, images: GalleryImage[]) => {
+  const toPrefetch: string[] = []
+
+  if (currentIndex > 0 && images[currentIndex - 1]) {
+    toPrefetch.push(images[currentIndex - 1].src)
+  }
+  if (currentIndex < images.length - 1 && images[currentIndex + 1]) {
+    toPrefetch.push(images[currentIndex + 1].src)
+  }
+
+  toPrefetch.forEach(url => {
+    const link = document.createElement('link')
+    link.rel = 'prefetch'
+    link.as = 'image'
+    link.href = url
+    document.head.appendChild(link)
+  })
+}
+
 export const useGalleryStore = create<GalleryState>()(
   devtools(
     subscribeWithSelector(
@@ -220,14 +240,18 @@ export const useGalleryStore = create<GalleryState>()(
           nextImage: () => {
             const { selectedImageIndex, filteredImages } = get()
             if (selectedImageIndex !== null && selectedImageIndex < filteredImages.length - 1) {
-              set({ selectedImageIndex: selectedImageIndex + 1 })
+              const newIndex = selectedImageIndex + 1
+              set({ selectedImageIndex: newIndex })
+              prefetchAdjacentImages(newIndex, filteredImages)
             }
           },
 
           previousImage: () => {
-            const { selectedImageIndex } = get()
+            const { selectedImageIndex, filteredImages } = get()
             if (selectedImageIndex !== null && selectedImageIndex > 0) {
-              set({ selectedImageIndex: selectedImageIndex - 1 })
+              const newIndex = selectedImageIndex - 1
+              set({ selectedImageIndex: newIndex })
+              prefetchAdjacentImages(newIndex, filteredImages)
             }
           },
         }),
