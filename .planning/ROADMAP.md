@@ -7,7 +7,7 @@ Transform theporadas.com into a polished, complete-feeling wedding archive. Star
 ## Phases
 
 - [x] **Phase 1: Foundation & Polish** - Error boundaries, auth stability, code quality, console removal
-- [ ] **Phase 2: Gallery Performance & UX** - State consolidation, caching, lazy loading, lightbox improvements
+- [x] **Phase 2: Gallery Performance & UX** - State consolidation, caching, lazy loading, lightbox improvements (2026-04-24)
 - [ ] **Phase 3: Upload Experience Polish** - Progress feedback, error recovery, upload confirmation
 - [ ] **Phase 4: Navigation & Design Consistency** - Polished nav, cohesive gold theme, fast perceived performance
 
@@ -42,7 +42,12 @@ Plans:
   2. Photo type imported from supabase.ts with no duplicate local definitions
   3. Gallery images show low-quality placeholders during load, then progressively reveal full images
   4. Lightbox uses shared Zustand state, prefetches adjacent images, and navigates smoothly
-**Plans**: TBD
+**Plans**: 4 plans
+Plans:
+- [x] 02-01-PLAN.md — GalleryStore with sessionStorage caching (GALLERY-01)
+- [x] 02-02-PLAN.md — Type consolidation - Photo from supabase.ts (GALLERY-02)
+- [x] 02-03-PLAN.md — LQIP blur hash placeholders with progressive reveal (GALLERY-03)
+- [x] 02-04-PLAN.md — Lightbox shared state + aggressive prefetch (GALLERY-04)
 
 ### Phase 3: Upload Experience Polish
 **Goal**: Guests see upload progress, understand errors, and receive confirmation
@@ -69,6 +74,6 @@ Plans:
 | Phase | Plans Complete | Status | Completed |
 |-------|----------------|--------|-----------|
 | 1. Foundation & Polish | 4/4 | ✓ Complete | 2026-04-24 |
-| 2. Gallery Performance & UX | 0/4 | Not started | - |
+| 2. Gallery Performance & UX | 4/4 | ✓ Complete | 2026-04-24 |
 | 3. Upload Experience Polish | 0/3 | Not started | - |
 | 4. Navigation & Design Consistency | 0/3 | Not started | - |
