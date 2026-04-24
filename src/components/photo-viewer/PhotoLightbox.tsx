@@ -10,43 +10,15 @@ import {
 } from 'lucide-react'
 import { cn } from '@/lib/utils'
 import { focusManager } from '@/accessibility/focusManagement'
+import type { Photo } from '@/lib/supabase'
 
-interface FaceTag {
-  id: string
-  name: string
-  x: number
-  y: number
-  box?: {
-    left: number
-    top: number
-    width: number
-    height: number
-  } | null
-}
-
+// UI-only interface for comment display
 interface Comment {
   id: string
   author: string
   avatar?: string
   content: string
   timestamp: string
-}
-
-interface Photo {
-  id: string
-  url: string
-  caption?: string
-  tags?: string[]
-  location?: string
-  date?: string
-  time?: string
-  photographer?: string
-  faces?: FaceTag[]
-  liked?: boolean
-  likeCount?: number
-  likes?: number
-  comments?: Comment[]
-  commentCount?: number
 }
 
 interface PhotoLightboxProps {
