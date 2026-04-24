@@ -26,7 +26,12 @@ Transform theporadas.com into a polished, complete-feeling wedding archive. Star
   6. All console.log/warn/error replaced with logger utility in production
   7. Page transitions use consistent Framer Motion animations across all routes
   8. Hamburger menu works on all pages with smooth open/close transitions
-**Plans**: TBD
+**Plans**: 4 plans
+Plans:
+- [ ] 01-01-PLAN.md — Auth queue + Supabase client consolidation
+- [ ] 01-02-PLAN.md — Admin error boundaries on all admin pages
+- [ ] 01-03-PLAN.md — Verify existing: lightbox nav, console drop, page transitions, mobile menu
+- [ ] 01-04-PLAN.md — MediaReviewPanel decomposition into 5 components
 
 ### Phase 2: Gallery Performance & UX
 **Goal**: Gallery feels fast and responsive with proper state management and progressive loading
@@ -63,7 +68,7 @@ Transform theporadas.com into a polished, complete-feeling wedding archive. Star
 
 | Phase | Plans Complete | Status | Completed |
 |-------|----------------|--------|-----------|
-| 1. Foundation & Polish | 0/8 | Not started | - |
+| 1. Foundation & Polish | 0/4 | Not started | - |
 | 2. Gallery Performance & UX | 0/4 | Not started | - |
 | 3. Upload Experience Polish | 0/3 | Not started | - |
 | 4. Navigation & Design Consistency | 0/3 | Not started | - |
