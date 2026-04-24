@@ -1,8 +1,9 @@
-import { type ElementType, useEffect, useRef, useState } from 'react'
+import { useState, useEffect, useRef } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
 import { Link, useLocation } from 'react-router-dom'
 import { cn } from '@/lib/utils'
 import { publicNavLinks } from './publicNav'
+import { Menu, X, type LucideIcon } from 'lucide-react'
 
 function HeaderLink({
   path,
@@ -15,7 +16,7 @@ function HeaderLink({
   path: string
   name: string
   mobileName: string
-  icon: ElementType
+  icon: LucideIcon
   isActive: boolean
   isPrimary?: boolean
 }) {
@@ -47,6 +48,7 @@ function HeaderLink({
 function HeaderContent() {
   const location = useLocation()
   const [isVisible, setIsVisible] = useState(true)
+  const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false)
   const lastScrollYRef = useRef(0)
 
   useEffect(() => {
@@ -75,6 +77,23 @@ function HeaderContent() {
     return () => window.removeEventListener('scroll', handleScroll)
   }, [])
 
+  // Close mobile menu on route change
+  useEffect(() => {
+    setIsMobileMenuOpen(false)
+  }, [location.pathname])
+
+  // Prevent body scroll when mobile menu is open
+  useEffect(() => {
+    if (isMobileMenuOpen) {
+      document.body.style.overflow = 'hidden'
+    } else {
+      document.body.style.overflow = ''
+    }
+    return () => {
+      document.body.style.overflow = ''
+    }
+  }, [isMobileMenuOpen])
+
   return (
     <AnimatePresence>
       {isVisible && (
@@ -97,22 +116,85 @@ function HeaderContent() {
 
             <div className="hidden h-5 w-px bg-gold-300/60 sm:block" />
 
-            {publicNavLinks.map((link, index) => (
-              <div key={link.path} className="contents">
-                <HeaderLink
-                  path={link.path}
-                  name={link.label}
-                  mobileName={link.mobileLabel}
-                  icon={link.icon}
-                  isActive={location.pathname === link.path}
-                  isPrimary={link.isPrimary}
-                />
-                {index < publicNavLinks.length - 1 && (
-                  <div className="hidden h-5 w-px bg-gold-300/60 sm:block" />
+            {/* Desktop nav links - hidden on mobile */}
+            <div className="hidden sm:flex items-center gap-0.5">
+              {publicNavLinks.map((link, index) => (
+                <div key={link.path} className="contents">
+                  <HeaderLink
+                    path={link.path}
+                    name={link.label}
+                    mobileName={link.mobileLabel}
+                    icon={link.icon}
+                    isActive={location.pathname === link.path}
+                    isPrimary={link.isPrimary}
+                  />
+                  {index < publicNavLinks.length - 1 && (
+                    <div className="hidden h-5 w-px bg-gold-300/60" />
+                  )}
+                </div>
+              ))}
+            </div>
+
+            {/* Mobile hamburger button - hidden on desktop */}
+            <button
+              type="button"
+              aria-label={isMobileMenuOpen ? 'Close menu' : 'Open menu'}
+              aria-expanded={isMobileMenuOpen}
+              className="flex sm:hidden items-center justify-center w-10 h-10 rounded-full bg-white/80 text-charcoal-700 hover:bg-white transition-colors"
+              onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
+            >
+              <AnimatePresence mode="wait" initial={false}>
+                {isMobileMenuOpen ? (
+                  <motion.div
+                    key="close"
+                    initial={{ rotate: -90, opacity: 0 }}
+                    animate={{ rotate: 0, opacity: 1 }}
+                    exit={{ rotate: 90, opacity: 0 }}
+                    transition={{ duration: 0.2 }}
+                  >
+                    <X className="w-5 h-5" />
+                  </motion.div>
+                ) : (
+                  <motion.div
+                    key="menu"
+                    initial={{ rotate: -90, opacity: 0 }}
+                    animate={{ rotate: 0, opacity: 1 }}
+                    exit={{ rotate: 90, opacity: 0 }}
+                    transition={{ duration: 0.2 }}
+                  >
+                    <Menu className="w-5 h-5" />
+                  </motion.div>
                 )}
-              </div>
-            ))}
+              </AnimatePresence>
+            </button>
           </div>
+
+          {/* Mobile menu overlay - hidden on desktop */}
+          <AnimatePresence>
+            {isMobileMenuOpen && (
+              <motion.div
+                initial={{ opacity: 0, y: -8 }}
+                animate={{ opacity: 1, y: 0 }}
+                exit={{ opacity: 0, y: -8 }}
+                transition={{ duration: 0.25, ease: [0.16, 1, 0.3, 1] }}
+                className="sm:hidden mt-2 rounded-2xl border border-gold-300/45 bg-gradient-to-r from-cream-100/98 via-gold-50/98 to-cream-100/98 px-4 py-4 shadow-lg backdrop-blur-xl"
+              >
+                <nav className="flex flex-col gap-1">
+                  {publicNavLinks.map((link) => (
+                    <HeaderLink
+                      key={link.path}
+                      path={link.path}
+                      name={link.label}
+                      mobileName={link.mobileLabel}
+                      icon={link.icon}
+                      isActive={location.pathname === link.path}
+                      isPrimary={link.isPrimary}
+                    />
+                  ))}
+                </nav>
+              </motion.div>
+            )}
+          </AnimatePresence>
         </motion.header>
       )}
     </AnimatePresence>
