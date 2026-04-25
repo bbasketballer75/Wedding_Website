@@ -12,10 +12,10 @@ const buttonVariants = cva(
       variant: {
         // Primary gold button
         primary: cn(
-          'bg-gradient-to-br from-gold-400 to-gold-600 text-white',
+          'bg-gold-500 text-white',
           'shadow-[0_4px_14px_rgba(201,160,92,0.4)]',
-          'hover:shadow-[0_8px_25px_rgba(201,160,92,0.5)] hover:brightness-110',
-          'border border-white/10 rounded-full'
+          'hover:bg-gold-600 hover:shadow-[0_8px_25px_rgba(201,160,92,0.5)]',
+          'border border-gold-600/30 rounded-full'
         ),
         // Secondary outline
         secondary: cn(
@@ -38,7 +38,7 @@ const buttonVariants = cva(
         ),
         // Shimmer effect for special moments
         shimmer: cn(
-          'bg-gradient-to-r from-gold-600 via-gold-300 to-gold-600',
+          'bg-gradient-to-r from-gold-600 via-gold-400 to-gold-600',
           'bg-[length:200%_100%] animate-shimmer',
           'text-white shadow-gold rounded-full'
         ),
