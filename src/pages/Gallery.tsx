@@ -7,6 +7,7 @@ import { PhotoLightbox } from '@/components/photo-viewer/PhotoLightbox'
 import { FaceRecognition } from '@/components/face-recognition/FaceRecognition'
 import { Button } from '@/components/ui/Button'
 import { Input } from '@/components/ui/Input'
+import { GallerySkeleton } from '@/components/ui/Skeleton'
 import { downloadFile } from '@/utils/download'
 import { getMediaPath } from '@/utils/media'
 import { useInfiniteScroll } from '@/hooks/useInfiniteScroll'
@@ -1260,18 +1261,7 @@ export default function Gallery() {
               className="overflow-visible lg:h-[calc(100vh-18rem)] lg:min-h-[32rem] lg:overflow-y-auto lg:pr-2 [&::-webkit-scrollbar]:w-1.5 [&::-webkit-scrollbar-track]:rounded-full [&::-webkit-scrollbar-track]:bg-gold-100/40 [&::-webkit-scrollbar-thumb]:rounded-full [&::-webkit-scrollbar-thumb]:bg-gold-400/50 hover:[&::-webkit-scrollbar-thumb]:bg-gold-500/70"
             >
             {isLoading ? (
-              <div className="grid grid-cols-2 gap-3 sm:grid-cols-3 xl:grid-cols-4">
-                {Array.from({ length: 12 }).map((_, i) => (
-                  <div
-                    key={i}
-                    className={cn(
-                      'skeleton-light rounded-[1.8rem]',
-                      i % 5 === 0 ? 'aspect-[3/4]' : i % 3 === 0 ? 'aspect-[4/3]' : 'aspect-square'
-                    )}
-                    style={{ animationDelay: `${i * 0.08}s` }}
-                  />
-                ))}
-              </div>
+              <GallerySkeleton count={12} />
             ) : filteredPhotos.length > 0 ? (
               <>
                 <AnimatePresence mode="wait" custom={collectionSwitchDirectionRef.current}>
