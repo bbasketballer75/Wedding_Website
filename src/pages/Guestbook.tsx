@@ -23,6 +23,27 @@ import {
   X,
 } from 'lucide-react'
 
+import logger from './logger'
+import storage from '@/utils/storage'
+
+const REACTION_FINGERPRINT_KEY = 'wedding-guestbook-session-id'
+
+function getOrCreateReactionFingerprint(): string {
+  // Check if fingerprint already exists in localStorage
+  const stored = storage.getItem(REACTION_FINGERPRINT_KEY)
+  if (stored) return stored
+
+  // Generate new UUID using crypto API
+  const fingerprint =
+    typeof crypto !== 'undefined' && typeof crypto.randomUUID === 'function'
+      ? crypto.randomUUID()
+      : `${Date.now()}_${Math.random().toString(36).slice(2)}`
+
+  // Persist to localStorage
+  storage.setItem(REACTION_FINGERPRINT_KEY, fingerprint)
+  return fingerprint
+}
+
 interface Comment {
   id: string
   author: string
