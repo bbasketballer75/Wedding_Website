@@ -569,6 +569,7 @@ export default function Film() {
         }))
 
       setGuestHighlights(highlights)
+      setIsLoadingHighlights(false)
     }
 
     void fetchGuestHighlights()
