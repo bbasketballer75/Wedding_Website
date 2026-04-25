@@ -42,33 +42,44 @@ Requirements for initial release. Each maps to roadmap phases.
 - [ ] **NAV-02**: Consistent design language — Cohesive gold theme (#d4af37) throughout all pages
 - [ ] **NAV-03**: Fast perceived performance — Skeleton screens, no layout shift, smooth scrolling (Lenis)
 
-## v2 Requirements
+## v1.1 Requirements
 
-Deferred to future release. Tracked but not in current roadmap.
+Requirements for v1.1 polish & feature expansion milestone.
 
-### Admin Controls
+### Moderation
 
-- **ADMIN-05**: Full moderation queue — Approve/reject/feature workflow for guest uploads
-- **ADMIN-06**: Pagination for batch queries — Admin moderation with 50+ items
-- **ADMIN-07**: Bulk actions — Batch approve/reject with individual override
+- [ ] **MOD-01**: Admin can approve guest uploads with one click
+- [ ] **MOD-02**: Admin can reject guest uploads with reason
+- [ ] **MOD-03**: Admin can feature/spotlight approved content to homepage
 
-### Gallery Enhancements
+### Gallery
 
-- **GALLERY-05**: Virtualized MasonryGrid — @tanstack/react-virtual for 200+ visible photos
-- **GALLERY-06**: Guest message reactions — Heart/like on guestbook entries
-- **GALLERY-07**: Featured content spotlight — Admin can highlight best photos on home page
+- [ ] **GAL-01**: Gallery virtualizes 200+ photos using @tanstack/react-virtual — only visible items rendered
+- [ ] **GAL-02**: Guest can add/remove heart reaction on guestbook entries with optimistic UI
+- [ ] **GAL-03**: Featured spotlight content appears on homepage in designated editorial slot
+
+### Social
+
+- [ ] **SOC-01**: Share button passes photo-specific URL as og:image for dynamic social previews
+- [ ] **SOC-02**: Share modal shows preview of what will be shared (title, image, description)
+
+### Upload
+
+- [ ] **UPL-01**: Incomplete uploads persist to localStorage and can be resumed after page refresh
+- [ ] **UPL-02**: Guest sees "Your photo is being reviewed" status with email-based lookup
+
+### PWA
+
+- [ ] **PWA-01**: PWA caches Supabase storage images for offline gallery browsing
+
+## Future Requirements (Deferred)
+
+### Advanced (v1.x)
+
+- Real-time reaction sync (requires Supabase Realtime subscription)
+- Photo comments and tagging
+- Push notifications for new uploads
 - **GALLERY-08**: Download original quality — Save button on lightbox for full resolution
-
-### Social & Sharing
-
-- **SOCIAL-01**: Share to social — Share buttons with proper OG tags for wedding photos
-- **SOCIAL-02**: OG tag verification — Ensure all shared links show preview images
-
-### Advanced
-
-- **ADV-01**: PWA offline verification — Test and verify full offline gallery browsing
-- **ADV-02**: Upload resume capability — Persist upload queue to localStorage, resume on return
-- **ADV-03**: Guest upload status — "Your photo is being reviewed" feedback for guests
 - **ADV-04**: Album cover customization — Admin can set cover image per album
 
 ## Out of Scope
@@ -90,49 +101,46 @@ Explicitly excluded. Documented to prevent scope creep.
 
 ## Traceability
 
-Which phases cover which requirements. Updated during roadmap creation.
-
 | Requirement | Phase | Status |
 |-------------|-------|--------|
-| POLISH-01 | Phase 1 | Pending |
-| POLISH-02 | Phase 1 | Pending |
-| POLISH-03 | Phase 1 | Pending |
-| POLISH-04 | Phase 1 | Pending |
-| POLISH-05 | Phase 1 | Pending |
-| POLISH-06 | Phase 1 | Pending |
-| ADMIN-01 | Phase 1 | Pending |
-| ADMIN-02 | Phase 1 | Pending |
-| ADMIN-03 | Phase 1 | Pending |
-| ADMIN-04 | Phase 1 | Pending |
-| GALLERY-01 | Phase 2 | Pending |
-| GALLERY-02 | Phase 2 | Pending |
-| GALLERY-03 | Phase 2 | Pending |
-| GALLERY-04 | Phase 2 | Pending |
-| UPLOAD-01 | Phase 3 | Pending |
-| UPLOAD-02 | Phase 3 | Pending |
-| UPLOAD-03 | Phase 3 | Pending |
-| NAV-01 | Phase 4 | Pending |
-| NAV-02 | Phase 4 | Pending |
-| NAV-03 | Phase 4 | Pending |
-| ADMIN-05 | Phase 5 | Pending |
-| ADMIN-06 | Phase 5 | Pending |
-| ADMIN-07 | Phase 5 | Pending |
-| GALLERY-05 | Phase 6 | Pending |
-| GALLERY-06 | Phase 7 | Pending |
-| GALLERY-07 | Phase 8 | Pending |
-| GALLERY-08 | Phase 8 | Pending |
-| SOCIAL-01 | Phase 8 | Pending |
-| SOCIAL-02 | Phase 8 | Pending |
-| ADV-01 | Future | Pending |
-| ADV-02 | Future | Pending |
-| ADV-03 | Future | Pending |
-| ADV-04 | Future | Pending |
+| POLISH-01 | Phase 1 (v1) | ✓ Done |
+| POLISH-02 | Phase 1 (v1) | ✓ Done |
+| POLISH-03 | Phase 1 (v1) | ✓ Done |
+| POLISH-04 | Phase 1 (v1) | ✓ Done |
+| POLISH-05 | Phase 1 (v1) | ✓ Done |
+| POLISH-06 | Phase 1 (v1) | ✓ Done |
+| ADMIN-01 | Phase 1 (v1) | ✓ Done |
+| ADMIN-02 | Phase 1 (v1) | ✓ Done |
+| ADMIN-03 | Phase 1 (v1) | ✓ Done |
+| ADMIN-04 | Phase 1 (v1) | ✓ Done |
+| GALLERY-01 | Phase 2 (v1) | ✓ Done |
+| GALLERY-02 | Phase 2 (v1) | ✓ Done |
+| GALLERY-03 | Phase 2 (v1) | ✓ Done |
+| GALLERY-04 | Phase 2 (v1) | ✓ Done |
+| UPLOAD-01 | Phase 3 (v1) | ✓ Done |
+| UPLOAD-02 | Phase 3 (v1) | ✓ Done |
+| UPLOAD-03 | Phase 3 (v1) | ✓ Done |
+| NAV-01 | Phase 4 (v1) | ✓ Done |
+| NAV-02 | Phase 4 (v1) | ✓ Done |
+| NAV-03 | Phase 4 (v1) | ✓ Done |
+| MOD-01 | TBD (v1.1) | Pending |
+| MOD-02 | TBD (v1.1) | Pending |
+| MOD-03 | TBD (v1.1) | Pending |
+| GAL-01 | TBD (v1.1) | Pending |
+| GAL-02 | TBD (v1.1) | Pending |
+| GAL-03 | TBD (v1.1) | Pending |
+| SOC-01 | TBD (v1.1) | Pending |
+| SOC-02 | TBD (v1.1) | Pending |
+| UPL-01 | TBD (v1.1) | Pending |
+| UPL-02 | TBD (v1.1) | Pending |
+| PWA-01 | TBD (v1.1) | Pending |
 
 **Coverage:**
-- v1 requirements: 18 total
-- Mapped to phases: 18
+- v1 requirements: 18 total, 18 done ✓
+- v1.1 requirements: 11 total, 0 done
 - Unmapped: 0 ✓
 
 ---
-*Requirements defined: 2026-04-23*
+*Requirements defined: 2026-04-23 (v1), 2026-04-24 (v1.1)*
+*Last updated: 2026-04-24 after v1.1 milestone start*
 *Last updated: 2026-04-23 after research synthesis*
