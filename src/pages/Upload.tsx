@@ -1,4 +1,4 @@
-import { useCallback, useState } from 'react'
+import { useCallback, useState, useEffect } from 'react'
 import { AnimatePresence, motion } from 'framer-motion'
 import { UploadSEO } from '@/components/seo/SEOHead'
 import { Button } from '@/components/ui/Button'
@@ -28,6 +28,7 @@ import {
 } from 'lucide-react'
 import { cn } from '@/lib/utils'
 import { supabase } from '@/lib/supabase'
+import storage from '@/utils/storage'
 
 enum UploadError {
   NETWORK_TIMEOUT = 'NETWORK_TIMEOUT',
@@ -49,6 +50,49 @@ interface UploadingFile {
   publicUrl?: string
   errorMessage?: string
   progress?: number // 0-100
+}
+
+interface StoredUploadMetadata {
+  id: string
+  name: string
+  type: string
+  size: number
+  fingerprint: string
+  preview: string // Base64 data URL for image preview
+  status: 'uploading' | 'paused' | 'error'
+  progress?: number // 0-100
+  createdAt: number // Timestamp for ordering
+}
+
+const UPLOAD_QUEUE_KEY = 'wedding-upload-queue'
+
+// Load stored upload queue from localStorage
+function loadUploadQueue(): StoredUploadMetadata[] {
+  return storage.getJSON<StoredUploadMetadata[]>(UPLOAD_QUEUE_KEY, []) || []
+}
+
+// Save upload queue to localStorage (excludes completed uploads)
+function saveUploadQueue(files: UploadingFile[]): void {
+  const toStore: StoredUploadMetadata[] = files
+    .filter(f => f.status !== 'complete') // Don't persist completed uploads
+    .map(f => ({
+      id: f.id,
+      name: f.file.name,
+      type: f.file.type,
+      size: f.file.size,
+      fingerprint: `${f.file.name}:${f.file.size}:${f.file.lastModified}`,
+      preview: f.preview || '',
+      status: (f.status === 'uploading' ? 'paused' : f.status) as 'uploading' | 'paused' | 'error',
+      progress: f.progress,
+      createdAt: Date.now(),
+    }))
+
+  storage.setJSON(UPLOAD_QUEUE_KEY, toStore)
+}
+
+// Clear upload queue from localStorage
+function clearUploadQueue(): void {
+  storage.removeItem(UPLOAD_QUEUE_KEY)
 }
 
 
@@ -109,6 +153,20 @@ export default function UploadPage() {
   const [submitError, setSubmitError] = useState<string | null>(null)
   const [shareCopied, setShareCopied] = useState(false)
   const [queueNotice, setQueueNotice] = useState<string | null>(null)
+
+  // Persist upload queue to localStorage whenever files change
+  useEffect(() => {
+    if (files.length > 0) {
+      saveUploadQueue(files)
+    }
+  }, [files])
+
+  // Clear localStorage on successful submission
+  useEffect(() => {
+    if (isSubmitted) {
+      clearUploadQueue()
+    }
+  }, [isSubmitted])
 
   const siteShareUrl = typeof window !== 'undefined'
     ? import.meta.env.VITE_SITE_URL || window.location.origin
@@ -231,7 +289,7 @@ export default function UploadPage() {
       setFiles(prev =>
         prev.map(f =>
           f.id === fileObj.id
-            ? { ...f, status: 'error', errorMessage: errorMessage, progress: undefined }
+            ? { ...f, status: 'error', errorMessage, progress: undefined }
             : f
         )
       )
