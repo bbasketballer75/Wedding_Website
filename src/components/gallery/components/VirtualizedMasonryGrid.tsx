@@ -129,6 +129,41 @@ export function useVirtualizedMasonry({
     return () => window.removeEventListener('resize', handleResize)
   }, [virtualizer])
 
+  // Track visible range changes and notify parent for prefetching
+  const lastScrollTopRef = useRef(0)
+
+  useEffect(() => {
+    const scrollElement = scrollRef.current
+    if (!scrollElement || !onVisibleRangeChange) return
+
+    const handleScroll = () => {
+      const virtualItems = virtualizer.getVirtualItems()
+      if (virtualItems.length === 0) return
+
+      const firstVisibleRow = virtualItems[0]
+      const lastVisibleRow = virtualItems[virtualItems.length - 1]
+
+      if (!firstVisibleRow || !lastVisibleRow) return
+
+      const rowStart = rows[firstVisibleRow.index]
+      const rowEnd = rows[lastVisibleRow.index]
+
+      if (!rowStart || !rowEnd) return
+
+      const startGlobalIndex = rowStart.startIndex
+      const endGlobalIndex = rowEnd.endIndex
+
+      onVisibleRangeChange(startGlobalIndex, endGlobalIndex)
+      lastScrollTopRef.current = scrollElement.scrollTop
+    }
+
+    // Initial call
+    handleScroll()
+
+    scrollElement.addEventListener('scroll', handleScroll, { passive: true })
+    return () => scrollElement.removeEventListener('scroll', handleScroll)
+  }, [virtualizer, rows, onVisibleRangeChange])
+
   return {
     scrollRef,
     virtualizer,

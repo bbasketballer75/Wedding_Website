@@ -82,6 +82,25 @@ None - plan executed exactly as written.
 ## Issues Encountered
 None
 
+## Gap Closure (07-02-GAP-CLOSURE)
+**Date:** 2026-04-25
+**Duration:** ~5 min
+
+Fixed two verified gaps from VERIFICATION.md:
+
+1. **GAP-01 (BLOCKER):** `onVisibleRangeChange` was declared as prop but never called — prefetching was non-functional
+   - **Fix:** Added scroll listener in `useVirtualizedMasonry` that computes global photo indices from visible rows and calls `onVisibleRangeChange(startGlobalIndex, endGlobalIndex)`
+   - **File:** `src/components/gallery/components/VirtualizedMasonryGrid.tsx`
+
+2. **GAP-02:** Unused `useMemo` import lint error in VirtualizedPhotoGrid.tsx
+   - **Fix:** Removed `useMemo` from import statement (handleVisibleRangeChange uses `useCallback`, not `useMemo`)
+   - **File:** `src/components/gallery/VirtualizedPhotoGrid.tsx`
+
+Both gaps verified fixed:
+- `onVisibleRangeChange` wired via useEffect with scroll listener ✓
+- `useMemo` removed ✓
+- ESLint passes on modified files (pre-existing errors in other files unchanged) ✓
+
 ## Next Phase Readiness
 - All virtualization integration complete: VirtualizedPhotoGrid in Gallery.tsx, lightbox portal to document.body
 - Prefetch ±5 photos works via VirtualizedPhotoGrid's prefetchMap
