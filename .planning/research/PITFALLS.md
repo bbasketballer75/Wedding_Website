@@ -1,277 +1,184 @@
 # Pitfalls Research
 
-**Domain:** Wedding Archive Website (post-wedding photo/memory preservation platform)
-**Researched:** 2026-04-23
-**Confidence:** MEDIUM-HIGH
+**Domain:** Wedding archive v1.1 feature expansion (adding moderation queue expansion, gallery virtualization, guest reactions, featured spotlight, social sharing, upload resume, PWA offline to existing system)
+**Researched:** 2026-04-24
+**Confidence:** MEDIUM
 
 ## Critical Pitfalls
 
-### Pitfall 1: Photo Gallery "Feels Incomplete"
+### Pitfall 1: Gallery Virtualization — Lazy Loading Breakage with Masonry Layout
 
 **What goes wrong:**
-Gallery appears functional but users sense something is unfinished — photos load with visible delay, lightbox feels jarring, no smooth transitions between albums, inconsistent hover states.
+When adding `@tanstack/react-virtual` to the existing masonry photo grid, the virtualization library assumes uniform row heights, but the masonry layout uses variable height items based on image aspect ratios. This causes incorrect scroll calculations, items being clipped or overlapped, and blank spaces appearing between rows.
 
 **Why it happens:**
-- Gallery state held in component state (`useState` in `Gallery.tsx`) rather than centralized store
-- No loading skeletons — users see blank space before photos appear
-- Lightbox is a separate modal rather than contextual overlay with shared transition context
-- Album switching triggers full re-render without animation
-- No cache headers or prefetching for adjacent photos
+The existing `MasonryGrid` component (PhotoGrid.tsx lines 23-43) distributes children across N columns by cycling through them (`i % columnCount`). This creates a column-based layout where row boundaries are undefined. Virtualizers work on flat lists with a defined primary axis — masonry's 2D column distribution breaks the virtualizer's size tracking and overscan logic.
 
 **How to avoid:**
-- Add loading skeleton components matching expected photo dimensions
-- Implement shared photo state in Zustand with `lightboxOpen`, `currentPhotoIndex`, `currentAlbum`
-- Use Framer Motion shared layout for lightbox transitions
-- Add `loading="lazy"` and explicit `width`/`height` attributes on all images
-- Prefetch next/previous 3 photos when lightbox opens
+- Use a row-based virtualizer instead of item-based, where each "row" contains photos that fit within the viewport width
+- Pre-calculate item heights with known aspect ratios before virtualization kicks in
+- Consider switching to a standardized grid layout for virtualization, then apply masonry styling on top
+- Use `useVirtualizer` with `getItemSize` returning a calculated row height that accounts for the tallest item in that row
 
 **Warning signs:**
-- Console shows "layout shift" warnings in Lighthouse
-- Photos jump when scrolling into view
-- Lightbox takes >300ms to open
+- Scroll position jumps when navigating to an already-visited section
+- Blank gaps appearing in the masonry layout between rows
+- Items being cut off at the bottom of the viewport
+- Scroll height mismatch (scrollbar shows more content than is visible)
 
 **Phase to address:**
-Phase 2: Gallery Performance & UX
+02-gallery-performance — before implementing virtualization, verify the masonry layout can be adapted to row-based rendering.
 
 ---
 
-### Pitfall 2: Guest Upload Abandonment Due to Poor Feedback
+### Pitfall 2: Guest Reactions — Optimistic Update Without Rollback
 
 **What goes wrong:**
-Guests start uploading but abandon mid-process because they don't know if it's working, get cryptic errors, or lose progress on network issues.
+The guestbook already has `handleAddReaction` (Guestbook.tsx lines 296-309) that optimistically updates local state then calls Supabase. If the Supabase update fails (network error, RLS policy rejection), the local state has already changed but never syncs back. The user sees their reaction was added, but on page reload it disappears. The error catch does nothing — the optimistic update already applied.
 
 **Why it happens:**
-- Upload progress is not visible (no progress bar per file)
-- Errors give no actionable feedback ("Upload failed" without reason)
-- Page refresh loses all progress — no persistence of in-flight uploads
-- Large files (>50MB) fail silently without chunking strategy
-- No confirmation when upload completes — user doesn't know if it succeeded
+The current code pattern:
+```typescript
+setLocalReactions((prev) => { ... }) // optimistic update
+await supabase.from('guestbook_messages').update({ reactions: updated }).eq('id', messageId)
+// if this fails, local state already mutated, catch block is empty
+```
+
+The catch block only has `// optimistic update already applied` — no rollback. Subsequent renders use wrong `updated` value because `localReactions[messageId]` is stale when calculating the next increment.
 
 **How to avoid:**
-- Show per-file progress bars with percentage and estimated time remaining
-- Display specific error messages (network timeout vs file too large vs format unsupported)
-- Persist upload queue to localStorage so page refresh resumes uploads
-- Implement chunked uploads for files >10MB with individual retry logic
-- Show success confirmation with what happens next (moderation delay, expected timeline)
+- Store previous state before mutation, restore it in the catch block
+- Or use a proper optimistic update library (e.g., `@tanstack/react-query` with mutation) that handles rollback
+- Verify RLS policies allow authenticated guests to update reactions
 
 **Warning signs:**
-- Support emails about "my photo didn't upload"
-- Upload completion rate drops for files >20MB
-- Users refresh page and think uploads succeeded when they didn't
+- Reactions count differs between what user sees and what reload shows
+- Console errors about Supabase update failing for guestbook_messages
+- Reaction counts sometimes incrementing by 2 instead of 1
 
 **Phase to address:**
-Phase 3: Upload Experience Polish
+02-gallery-performance — guest reactions are GALLERY-06, should be addressed in the same phase as virtualization.
 
 ---
 
-### Pitfall 3: Admin Tool Complexity Creep
+### Pitfall 3: Featured Spotlight — Admin-Fetched Featured Images Not Reflected in Gallery Store
 
 **What goes wrong:**
-Admin moderation panel becomes overwhelming — too many actions per screen, inconsistent workflows between photo/guestbook/featured content, no clear visual hierarchy.
+The Home page already has `GuestHighlightReel`, `MomentOfTheWeekSection`, `StandoutUploadSection`, `FeaturedNoteSection` components. The admin has `FeaturedContentManager.tsx`. But these featured images are fetched independently — they don't flow through the gallery store's `featuredImages`. Adding new spotlight features means querying Supabase separately for each section, duplicating data fetching logic.
 
 **Why it happens:**
-- `MediaReviewPanel.tsx` at 900+ lines tries to do everything
-- Batch approval, face tagging, photo promotion all on one screen
-- No clear primary action per card/section
-- Loading states mix with action states (buttons change but don't disable properly)
-- Pagination absent — admin sees infinite scroll of unmoderated items with no context
+The `featuredImages` in `galleryStore.ts` (line 108) is derived from filtering `images` by `type === 'main' || type === 'featured'`. But admin-selected featured content may come from a separate `site_editorial_features` table or have custom metadata that doesn't fit the existing Photo type schema.
 
 **How to avoid:**
-- Break into discrete sub-pages: Queue → Batch Review → Face Tagging → History
-- One primary action per card, secondary actions in overflow menu
-- Show pending count in navigation so admin knows workload
-- Add bulk actions but keep individual override clear
-- Disable controls during operations, show loading indicators, confirm before destructive actions
+- Extend the `Photo` type or `GalleryImage` to include a `spotlightPriority` field
+- Create a dedicated `featuredContentStore` or add to `uiStore` for editorial spotlight data
+- Fetch featured content once at the app level and pass down via context, rather than each section fetching independently
+- Ensure the Supabase schema for `site_editorial_features` is properly typed and imported
 
 **Warning signs:**
-- Admin avoids moderation page because it feels "cluttered"
-- Actions apply to wrong items (race conditions on async operations)
-- Hard to undo moderation decisions
+- Multiple `supabase.from('...').select()` calls on the Home page for different featured sections
+- Featured images not persisting across sessions despite being "saved" in admin
+- Inconsistency between what admin marks as featured and what appears on Home
 
 **Phase to address:**
-Phase 4: Admin Controls & Moderation
+02-gallery-performance — GALLERY-07 featured spotlight should be validated against existing admin feature management.
 
 ---
 
-### Pitfall 4: Breaking Auth During Refactor
+### Pitfall 4: Social Sharing — Dynamic OG Tags Set by useEffect Not Crawled by Share Bots
 
 **What goes wrong:**
-Refactoring auth or adding admin features causes session bugs — users get logged out unexpectedly, admin access fails for valid users, race conditions between `initializeAuth` and `refreshSession`.
+The `SEOHead` component (SEOHead.tsx lines 70-149) uses `useEffect` to set OG meta tags dynamically. Social media crawlers (Facebook, Twitter, LinkedIn) run headless browsers that fetch the initial HTML before JavaScript executes. The crawlers see the default HTML shell, not the dynamically injected OG tags.
 
 **Why it happens:**
-- `authStore.ts` has race conditions between init and refresh (documented in CONCERNS.md)
-- Multiple Supabase client instances with different configurations
-- Frontend checks admin role via `user.user_metadata?.role` which can be manipulated
-- No error boundaries on auth-dependent pages
+React renders to the DOM, but crawlers see the raw HTML response. The `<meta>` tags injected via `useEffect` don't exist in the server-sent HTML. For a static site deployed to Netlify, there's no server-side rendering to pre-populate these tags.
 
 **How to avoid:**
-- Implement auth state machine with explicit states: `initializing`, `authenticated`, `unauthenticated`, `error`
-- Queue auth operations — never run `initializeAuth` and `refreshSession` simultaneously
-- Consolidate to single Supabase client instance exported from `src/lib/supabase.ts`
-- Add server-side RLS policies that enforce admin role — frontend check only for UI state
-- Wrap admin pages in `ComponentErrorBoundary` with auth recovery actions
+- Use a meta tag approach that sets initial values in the HTML `<head>` before React hydrates (SSR-equivalent via Vite plugin or index.html template)
+- For React Router SPA, use `vite-plugin-ssr` or `@vitejs/plugin-react-ssr` to render initial route on server
+- Alternatively, generate static per-page HTML with correct OG tags at build time
+- At minimum, ensure the `index.html` has default OG tags that are reasonable
 
 **Warning signs:**
-- Users report "logged out after navigating back"
-- Admin pages show brief unauthenticated state before redirecting
-- Auth operations appear to run twice in network tab
+- Shared links on Facebook show incorrect thumbnail or title
+- Twitter card validator shows "WARNING: No metatags found"
+- Open Graph debugger shows JavaScript-altered content differently than browser view
 
 **Phase to address:**
-Phase 1: Foundation & Auth Polish
+02-gallery-performance — SOCIAL-01 and SOCIAL-02 should include SEO verification with social media debuggers.
 
 ---
 
-### Pitfall 5: Seasonal Code Path Breakage
+### Pitfall 5: Upload Resume — File Objects Not Serializable to localStorage
 
 **What goes wrong:**
-HalloweenContext and seasonal components silently fail or cause crashes when conditions change, and error boundaries don't catch them properly.
+Attempting to persist the upload queue to localStorage fails silently. `File` objects (from `<input type="file">`) cannot be serialized — they're a browser construct referencing binary data, not a plain object. The `UploadingFile` interface has `file: File` which will be dropped or throw a circular reference error when `JSON.stringify` is attempted.
 
 **Why it happens:**
-- `HalloweenContext` renders early in tree — errors may bypass standard error boundaries
-- Seasonal code is rarely tested until the season arrives
-- No feature flag fallback when seasonal data fails to load
-- Components like `LightningEffect` and `HalloweenAudio` have implicit dependencies on context state
+The `persist` middleware in zustand uses `createJSONStorage` with localStorage, which calls `JSON.stringify`. `File` objects are not JSON-serializable — they have no primitive representation of their binary content. The safeSessionStorage wrapper in galleryStore.ts catches errors but silently falls back to memory-only.
 
 **How to avoid:**
-- Ensure all seasonal components wrapped in dedicated error boundaries
-- Add explicit `isEnabled` flag that defaults to `false` — seasonal features only render when flag is on
-- Never have conditional rendering dependent solely on date — always check feature flag first
-- Add seasonal component health check to admin dashboard
+- Store only metadata in localStorage: file name, size, type, lastModified, and a fingerprint (SHA-256 hash already computed in `buildFileFingerprint` at Upload.tsx lines 83-98)
+- On app reload, read the queue from localStorage and re-prompt the user to re-select files from their device
+- Store `publicUrl` and `status` for completed uploads so they're not re-uploaded
+- Store failed uploads' fingerprints so they can be auto-retried or flagged
+- Never attempt to store the `File` object itself
 
 **Warning signs:**
-- Seasonal features fail in first week of season
-- Error boundary catches "cannot read property of null" but doesn't indicate which component
+- localStorage setItem throwing QuotaExceededError despite having space
+- Queue appearing empty after page reload despite previous uploads
+- Console errors about structured clone failing
 
 **Phase to address:**
-Phase 1: Foundation & Auth Polish (ensure error boundaries)
+02-gallery-performance — ADV-02 upload resume depends on proper file metadata serialization, not File object persistence.
 
 ---
 
-### Pitfall 6: State Management Inconsistency After Migration
+### Pitfall 6: PWA Offline — Cache Invalidation Causes White Screen on Update
 
 **What goes wrong:**
-After moving state from components to Zustand, some components still hold local state causing data to appear inconsistent (filter changes in one place, selection in another).
+After deploying a new version, returning users see a white screen. The service worker has cached the app shell (HTML, CSS, JS bundles), but the new JavaScript bundles have different hashes. The old SW serves the old HTML with new JS that doesn't match, causing runtime errors.
 
 **Why it happens:**
-- Gallery has component-level state for `selectedPhotos`, `lightboxOpen`, `activeAlbum` (documented in CONCERNS.md)
-- Moving to Zustand but forgetting to remove `useState` initializers
-- No clear ownership — some state in component, some in store, some in URL params
-- Hydration mismatches if Zustand persists to localStorage
+VitePWA's `workbox` config has `skipWaiting: true` and `clientsClaim: true` (vite.config.js lines 191-195), which means the new SW activates immediately. But the app itself (the JavaScript running in the browser) was loaded from the OLD SW cache. When the page reloads, it loads the new SW, but the app bundle is now out of sync with the cached HTML.
 
 **How to avoid:**
-- Inventory all gallery state before migration — document what lives where
-- Remove component state in same PR that adds Zustand state
-- Use Zustand store for all shared state, URL params for navigation-only state
-- Test gallery in all states: empty, single album, multiple albums, lightbox open
+- Ensure the `manifest.webmanifest` includes a `version` field or use `registerType: 'prompt'` instead of `'autoUpdate'` to give users control over when to refresh
+- Add a `version` query parameter to asset URLs in development to prevent caching during iteration
+- Implement an "update available" notification component that prompts users to reload
+- After each deploy, verify the SW cache is cleared by checking `navigator.serviceWorker.controller` state
 
 **Warning signs:**
-- "State not syncing" reports from testers
-- Filter changes don't persist when switching between albums
-- Lightbox position resets unexpectedly
+- Users reporting white screens after site updates
+- Bundle hash mismatch errors in browser console
+- Service worker registration failing with "Active Script URL mismatch"
 
 **Phase to address:**
-Phase 2: Gallery Performance & UX
+02-gallery-performance — ADV-01 PWA offline verification should include testing the update flow.
 
 ---
 
-### Pitfall 7: Photo Type Drift After Refactoring
+### Pitfall 7: Moderation Queue — Expanding Workflow Without RLS Policy Audit
 
 **What goes wrong:**
-`Gallery.tsx` defines local `Photo` interface while `src/lib/supabase.ts` exports a different `Photo` type. Changes to one don't reflect in the other.
+Adding approve/reject/feature workflow (ADMIN-05, ADMIN-06, ADMIN-07) to the moderation queue introduces new database operations. If RLS policies aren't updated to handle the new operations, moderators lose ability to update content they could previously modify. Or overly permissive new policies expose pending content publicly.
 
 **Why it happens:**
-- Early development created local types for "quick progress" without importing from shared module
-- Admin pages and public pages use inconsistent field names
-- TypeScript only catches exact matches — `id` vs `photo_id` slips through
+The existing moderation system likely has policies for `photos` and `guest_uploads` but the new "feature" workflow may touch `site_editorial_features` table which has different access patterns. Admin actions that worked before stop working, or pending content becomes visible when it shouldn't.
 
 **How to avoid:**
-- Import `Photo` type from `src/lib/supabase.ts` exclusively
-- If Gallery needs extended fields, extend the imported type: `interface GalleryPhoto extends Photo`
-- Add TypeScript lint rule to flag local type definitions that duplicate imported names
-- Audit type usage across admin/public boundaries before release
+- Audit all RLS policies before adding new moderation actions
+- Test each new workflow (approve, reject, feature) as both admin and unauthenticated guest
+- Verify `site_editorial_features` table has appropriate policies for admin-only access
+- Add feature flags to new workflows so they can be disabled without deploy
 
 **Warning signs:**
-- TypeScript errors on `photo_id` field after adding to Supabase schema
-- Admin moderation shows different field names than public gallery
-- Adding new Photo field requires editing two files
+- Admin clicks "feature" button but photo doesn't appear in featured section
+- Pending content appears publicly before approval
+- Supabase logs show RLS policy violations for moderation operations
 
 **Phase to address:**
-Phase 1: Foundation & Auth Polish (type consolidation)
-
----
-
-### Pitfall 8: Console Errors in Production Builds
-
-**What goes wrong:**
-Production code contains `console.log`, `console.warn`, `console.error` calls that expose sensitive data and make debugging harder in production.
-
-**Why it happens:**
-- Developer `console.log` statements left during active development
-- Error handling uses `console.error` instead of structured logging service
-- No build-time stripping of console calls for production
-
-**How to avoid:**
-- Replace all `console.*` calls with the `logger` utility from `src/utils/logger.ts`
-- Configure build to strip console in production (terser plugin or Babel transform)
-- Set `logger.enableProduction()` to disable output in production builds
-- Add pre-commit hook to catch new `console.` usages
-
-**Warning signs:**
-- Browser console shows Supabase auth tokens or user emails in production
-- Error messages differ between dev and prod (lost context in prod)
-
-**Phase to address:**
-Phase 1: Foundation & Auth Polish
-
----
-
-### Pitfall 9: Dead UI After Network Errors
-
-**What goes wrong:**
-Admin pages crash without recovery if data fetch fails — user sees broken UI with no way to retry or recover.
-
-**Why it happens:**
-- No error boundaries on admin pages (`PhotoModeration`, `GuestbookModeration`, `FeaturedContentManager`)
-- Failed fetches leave components in partial state
-- No retry mechanism for failed data loads
-
-**How to avoid:**
-- Wrap all admin page content in `ComponentErrorBoundary`
-- Provide explicit retry actions in error fallback UIs
-- Add "Last loaded" timestamp to help admin know data freshness
-- Implement optimistic UI patterns with rollback on failure
-
-**Warning signs:**
-- Console shows "uncaught promise rejection" on admin pages
-- Admin reports page "looks broken" with no recovery option
-
-**Phase to address:**
-Phase 4: Admin Controls & Moderation
-
----
-
-### Pitfall 10: Rate Limiting Bypass on Upload
-
-**What goes wrong:**
-In-memory rate limiting in `src/lib/supabase.ts` resets on page refresh and doesn't work across tabs — determined users can bypass limits.
-
-**Why it happens:**
-- Rate limiting uses `Map()` that lives in JavaScript heap
-- Each page load creates fresh state
-- Multiple tabs each have independent in-memory state
-
-**How to avoid:**
-- Move rate limiting to Supabase Edge Functions with persistent state
-- Use session-based limiting tied to authenticated user ID
-- Add server-side validation for all upload requests
-- Log rate limit bypasses for security monitoring
-
-**Warning signs:**
-- Security audit shows upload endpoint hit from same user rapidly
-- Guest reports successful upload despite exceeding stated limits
-
-**Phase to address:**
-Phase 1: Foundation & Auth Polish (Edge Function rate limiting)
+02-gallery-performance — moderation queue expansion should be tested with different user roles.
 
 ---
 
@@ -279,11 +186,12 @@ Phase 1: Foundation & Auth Polish (Edge Function rate limiting)
 
 | Shortcut | Immediate Benefit | Long-term Cost | When Acceptable |
 |----------|-------------------|----------------|-----------------|
-| Using `useState` for gallery state | Fast to implement | Hard to share across routes, no persistence | Never — project will refactor this |
-| Inline styles for "one-off" polish | Quick visual fix | Inconsistency, maintenance nightmare | Only for truly unique animations |
-| Skipping error boundaries on admin pages | Faster initial build | Page crashes leave admin stuck | Never — admin must always recover |
-| Using console.log for debugging | Zero setup | Leaks to production, no structured logs | Never — use logger utility |
-| Duplicate Supabase client instances | Avoids import conflict | Auth state inconsistency | Never — consolidate to one |
+| Skipping OG tag SSR, using client-side injection | Faster initial development | Social sharing is broken for crawlers and some platforms | Never — wedding photos are share-heavy content |
+| Virtualizing without row-based calculations | Seems simpler | Clipped items, broken scroll | Never — leads to unusable gallery |
+| Storing File objects in localStorage | Appears to persist queue | Silent failure, broken resume | Never |
+| Fetching featured content per section, not centralized | Isolated code | Duplicated queries, stale data | Only during initial prototyping |
+| Using optimistic updates without rollback | Snappier UI | Data inconsistency, confused users | Only if using a library that handles it |
+| Expanding moderation without RLS audit | Faster to ship | Security gap or broken admin actions | Never |
 
 ---
 
@@ -291,11 +199,13 @@ Phase 1: Foundation & Auth Polish (Edge Function rate limiting)
 
 | Integration | Common Mistake | Correct Approach |
 |-------------|----------------|------------------|
-| Supabase Auth | Multiple client instances | Single exported client from `src/lib/supabase.ts` |
-| Supabase Storage | Not handling `400 Bad Request` on large uploads | Chunked uploads with retry logic |
-| Supabase RLS | Assuming frontend check is sufficient | RLS policies enforce access at database level |
-| Sentry | Using old SDK version without migration plan | Pin minor version, plan upgrade to v11+ |
-| TensorFlow.js | Loading heavy models on public pages | Lazy-load only in admin review panel |
+| Supabase RLS for reactions | Forgetting guests need write access to update their own reactions | Verify `guestbook_messages` RLS allows UPDATE for authenticated users; test as unauthenticated guest |
+| VitePWA workbox | Not configuring `cleanupOutdatedCaches` — stale assets accumulate | Already configured in vite.config.js (line 192) — keep it |
+| Social share buttons | Hardcoding site URL instead of reading `window.location.href` | Use `window.location.href` for per-page sharing, not just the homepage |
+| SEO meta injection | Injecting tags after mount — not visible to crawlers | Either SSR or set default values in `index.html` template |
+| Upload queue persistence | Assuming File objects serialize | Store metadata + fingerprint only, prompt for file re-selection on restore |
+| Featured content vs gallery images | Admin-marked featured may not be in photo collection | Use separate editorial features table, sync with photo IDs |
+| Moderation queue expansion | Adding new actions without updating RLS | Audit all affected tables before shipping new workflows |
 
 ---
 
@@ -303,11 +213,12 @@ Phase 1: Foundation & Auth Polish (Edge Function rate limiting)
 
 | Trap | Symptoms | Prevention | When It Breaks |
 |------|----------|------------|----------------|
-| Parallel Supabase calls in gallery | Network tab shows 10+ simultaneous requests | Add request deduplication and caching layer | >100 photos loaded |
-| Full table scan for known people names | Slow load for person search | Create indexed covering index or separate lookup table | >5000 photos |
-| Fetch all batches on admin load | Admin page hangs on load | Pagination, limit, filter on batch queries | >50 pending batches |
-| Gallery state in component | State not shared, doesn't persist | Zustand store with proper initialization | Multi-page gallery navigation |
-| No image lazy loading | Initial page load blocks on images | `loading="lazy"` on all below-fold images | Gallery with >20 visible thumbnails |
+| Virtualizer with unknown item heights | Scroll position jumps, items overlap | Pre-measure images or use fixed aspect ratio containers | 200+ photos in gallery |
+| PWA cache too aggressive | Updates don't appear, stale content | Use cache-first for images, network-first for HTML/JS | Any deploy |
+| Zustand persist with large images array | localStorage quota exceeded | `partialize` state, exclude base64 image previews | Photos array > 50 items with metadata |
+| Multiple featured content fetches | Slow Home page load, waterfalls | Fetch all editorial content in parallel, cache with SW | Home page > 3 sections fetching independently |
+| Framer Motion on 200+ virtualized items | Memory bloat, slow animations | Use `layoutId` sparingly, disable animations for off-screen items | Gallery with masonry virtualization |
+| Moderation queue expanding | Admin page slow to load with more items | Pagination, virtualized list, limit initial fetch | >100 pending items |
 
 ---
 
@@ -315,10 +226,11 @@ Phase 1: Foundation & Auth Polish (Edge Function rate limiting)
 
 | Mistake | Risk | Prevention |
 |---------|------|------------|
-| Frontend-only admin check | User manipulates JWT to escalate privileges | Server-side RLS policies enforce admin role |
-| CSP allows `unsafe-inline` | XSS attacks execute inline scripts | Remove unsafe directives, use nonce-based CSP |
-| Audit log failures are silent | Security events unlogged | Retry mechanism and alerting on audit failures |
-| Upload without server validation | Malicious file types bypass client checks | Edge Function validates file type and size |
+| Guest reactions RLS too permissive | Any authenticated user could modify any guest's reactions | RLS policy should allow UPDATE only where user owns the reaction |
+| Featured spotlight exposing unpublished photos | Photos pending moderation become publicly visible if featured | Featured content queries should filter by `status = 'approved'` |
+| Upload resume revealing previous upload URLs | Anyone who accesses localStorage sees photo URLs they've uploaded | Only store fingerprints and status, not URLs, until admin approval |
+| Social sharing leaking guest email | Sharing with certain platforms may expose email in URL parameters | Don't include email in share URL |
+| Moderation action RLS too restrictive | Admin cannot approve/reject/feature content | Verify admin role has necessary UPDATE/UPDATE/INSERT permissions |
 
 ---
 
@@ -326,28 +238,31 @@ Phase 1: Foundation & Auth Polish (Edge Function rate limiting)
 
 | Pitfall | User Impact | Better Approach |
 |---------|-------------|-----------------|
-| Lightbox without transitions | Jarring open/close, breaks immersion | Shared layout animation via Framer Motion |
-| Upload without progress | Users unsure if upload is working | Per-file progress bars with percentage |
-| Error messages without actions | Users stuck, don't know what to do | Error UI with retry/go back/contact support |
-| Missing loading states | Blank space before content appears | Skeleton screens matching expected layout |
-| Inconsistent button styles | Site feels "cobbled together" | Design system with documented variants |
-| No empty states | Confusing when sections have no content | Friendly empty state with explanation |
-| Album switching full reload | Slow, no animation, jarring | Keep state, animate transition, lazy load |
+| Virtualized gallery shows loading spinners when scrolling fast | Confusing, appears broken | Use skeleton placeholders with correct aspect ratios, show blurred LQIP while loading |
+| Upload resume prompts for re-selecting files but doesn't explain why | User doesn't understand why their "uploaded" photos aren't there | Show clear explanation: "We stored your upload list but not the files themselves — please re-select to continue" |
+| Social share shows generic site preview instead of context-specific photo | Less engagement, appears unprofessional | Use per-page OG tags via SSR, or at minimum use the specific photo as og:image when sharing from a photo page |
+| PWA works for browsing but not uploading offline | User experience is inconsistent | Clearly communicate what works offline; queue uploads for when connection returns |
+| Moderation queue shows no pending count | Admin doesn't know how much work awaits | Show count badge in admin navigation |
 
 ---
 
 ## "Looks Done But Isn't" Checklist
 
-- [ ] **Gallery:** Often missing skeleton loaders — verify photos show skeleton before loading
-- [ ] **Lightbox:** Often missing smooth transition — verify opens with animation, not instant
-- [ ] **Upload:** Often missing progress feedback — verify progress bar shows for >1 second uploads
-- [ ] **Admin:** Often missing bulk action confirmation — verify destructive actions ask for confirmation
-- [ ] **Admin:** Often missing error recovery — verify page recovers after network failure
-- [ ] **Error boundaries:** Often missing on admin pages — verify all admin pages have error boundary
-- [ ] **Auth:** Often shows brief unauthenticated flash — verify redirects are instant, not visible
-- [ ] **Seasonal features:** Often missing feature flag — verify components don't render by date alone
-- [ ] **Consoles:** Often still has `console.log` — verify production build has no console output
-- [ ] **Type consistency:** Often has duplicate types — verify Gallery uses imported Supabase types
+- [ ] **Virtualization:** Gallery with 200+ photos scrolls without items being cut off or blank gaps appearing
+- [ ] **Virtualization:** Scroll position is preserved when navigating away and back
+- [ ] **Guest reactions:** Reaction persists after page reload, not just in optimistic UI state
+- [ ] **Guest reactions:** Error state is visible to user if Supabase update fails, not silently swallowed
+- [ ] **Featured spotlight:** Admin-marked featured content appears on Home within 1 refresh cycle
+- [ ] **Featured spotlight:** Featured photos don't include items pending moderation
+- [ ] **Social sharing:** Facebook debugger shows correct og:title, og:description, og:image for each page type
+- [ ] **Social sharing:** Shared links from photo detail pages show that specific photo as og:image
+- [ ] **Upload resume:** Page reload preserves upload queue state in localStorage
+- [ ] **Upload resume:** Restored queue shows file name/size/type correctly (not the File object itself)
+- [ ] **PWA offline:** Gallery images load when device is in airplane mode
+- [ ] **PWA offline:** Uploading while offline shows clear "waiting for connection" state
+- [ ] **PWA offline:** After new deploy, existing users see the new version within 2 navigations
+- [ ] **Moderation expansion:** All moderation actions (approve, reject, feature) work for admin
+- [ ] **Moderation expansion:** Unauthenticated guest cannot see pending content even if it's featured
 
 ---
 
@@ -355,11 +270,13 @@ Phase 1: Foundation & Auth Polish (Edge Function rate limiting)
 
 | Pitfall | Recovery Cost | Recovery Steps |
 |---------|---------------|----------------|
-| Breaking auth flow | HIGH | Revert auth changes, test session persistence, ensure single client instance |
-| Upload data loss | HIGH | Implement upload queue persistence to localStorage, validate uploads before marking complete |
-| Gallery state inconsistency | MEDIUM | Audit all state ownership, migrate to Zustand store, remove component state |
-| Admin page crash | LOW | Add error boundary, implement retry UI, catch promise rejections |
-| Type drift | LOW | Update imports, extend Supabase type, lint against duplicate definitions |
+| Virtualization breaking masonry layout | MEDIUM | Fall back to non-virtualized grid with pagination, defer virtualization to v1.2 |
+| Reactions not persisting | LOW | Implement proper rollback pattern in the catch block; patch is < 10 lines |
+| Featured spotlight shows wrong content | MEDIUM | Add `status = 'approved'` filter to all featured content queries; verify with admin |
+| OG tags not crawled | HIGH | Refactor SEOHead to use SSR-compatible approach (requires Netlify SSR setup or static generation) |
+| Upload resume broken | MEDIUM | Switch from serializing File objects to storing metadata; user must re-select files but queue is preserved |
+| PWA white screen after deploy | MEDIUM | Force-clear SW cache via DevTools, push `skipWaiting` fix, notify users to hard refresh |
+| Moderation RLS issues | MEDIUM | Revert RLS changes, test per-table, re-apply with proper policies |
 
 ---
 
@@ -367,26 +284,26 @@ Phase 1: Foundation & Auth Polish (Edge Function rate limiting)
 
 | Pitfall | Prevention Phase | Verification |
 |---------|------------------|--------------|
-| Photo Gallery "Feels Incomplete" | Phase 2: Gallery Performance & UX | Lighthouse score >90, no layout shift |
-| Guest Upload Abandonment | Phase 3: Upload Experience Polish | >95% upload completion rate |
-| Admin Tool Complexity Creep | Phase 4: Admin Controls & Moderation | Admin completes moderation without confusion |
-| Breaking Auth During Refactor | Phase 1: Foundation & Auth Polish | Session persists across navigation, no race conditions |
-| Seasonal Code Path Breakage | Phase 1: Foundation & Auth Polish | Error boundaries catch seasonal component failures |
-| State Management Inconsistency | Phase 2: Gallery Performance & UX | State syncs across all routes |
-| Photo Type Drift | Phase 1: Foundation & Auth Polish | No duplicate Photo type definitions |
-| Console Errors in Production | Phase 1: Foundation & Auth Polish | Production build has zero console output |
-| Dead UI After Network Errors | Phase 4: Admin Controls & Moderation | All admin pages recover gracefully |
-| Rate Limiting Bypass | Phase 1: Foundation & Auth Polish | Edge Function enforces limits server-side |
+| Gallery virtualization masonry breakage | 02-gallery-performance | Load 200+ photos, scroll through all, verify no cutoffs or blank gaps |
+| Guest reaction optimistic update inconsistency | 02-gallery-performance | Submit reaction as guest, check DevTools Supabase call fails gracefully |
+| Featured spotlight data sync | 02-gallery-performance | Mark photo as featured in admin, reload Home, verify it appears |
+| Social OG tags not crawled | 02-gallery-performance | Use Facebook Sharing Debugger and Twitter Card Validator |
+| Upload resume File object serialization | 02-gallery-performance | Reload page mid-upload, verify queue metadata restored |
+| PWA offline gallery browsing | 02-gallery-performance | Enable airplane mode, navigate gallery, verify images load |
+| PWA update white screen | 02-gallery-performance | Deploy update, visit site as returning user, verify no white screen |
+| Moderation queue RLS gaps | 02-gallery-performance | Test all moderation actions as admin, verify pending content stays hidden |
 
 ---
 
 ## Sources
 
-- Codebase analysis: `.planning/codebase/CONCERNS.md` (documented issues)
-- Project context: `.planning/PROJECT.md` (requirements and constraints)
-- Personal experience: Admin tool complexity, gallery state management patterns
-- Known patterns: Supabase client consolidation, Zustand migration, React 19 concurrent features
+- TanStack Virtual documentation — row-based virtualization patterns
+- Supabase RLS policy documentation — reaction update permissions
+- VitePWA workbox configuration — cache invalidation strategies
+- React SPA SEO best practices — OG tag injection limitations
+- MDN Web Docs — File object serialization constraints
+- Web.dev — PWA update strategies
+- Codebase analysis: Gallery components (PhotoGrid.tsx, MasonryGrid.tsx, galleryStore.ts, Upload.tsx, Guestbook.tsx, SEOHead.tsx, vite.config.js)
 
----
-*Pitfalls research for: Wedding Archive Website*
-*Researched: 2026-04-23*
+*Pitfalls research for: wedding archive v1.1 feature expansion*
+*Researched: 2026-04-24*

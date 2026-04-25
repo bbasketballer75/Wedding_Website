@@ -1,373 +1,292 @@
 # Architecture Research
 
-**Domain:** Wedding Archive Website (theporadas.com)
-**Researched:** 2026-04-23
-**Confidence:** HIGH (based on existing codebase analysis + patterns)
+**Domain:** Wedding Archive Website (React 19 SPA + Supabase)
+**Researched:** 2026-04-24
+**Confidence:** HIGH
 
 ## Executive Summary
 
-Wedding archive systems are content-heavy read-heavy applications requiring strong gallery performance, admin moderation workflows, and reliable upload handling. This architecture extends the existing React + Supabase stack with focus on gallery virtualization, admin panel decomposition, and upload reliability patterns.
+The v1.1 feature expansion adds seven new capabilities to an existing wedding archive: gallery virtualization, guest reactions, featured spotlight, social sharing with OG tags, upload resume, upload status feedback, and PWA offline support. These integrate with the existing React + Supabase + Zustand stack requiring new components, store additions, database schema changes, and configuration work.
 
-**Key architectural decisions:**
-- Virtualize gallery for smooth scrolling at scale
-- Decompose MediaReviewPanel (900+ lines) into focused components
-- Implement upload progress persistence with retry queue
-- Add admin error boundaries on all admin pages
-- Cache gallery data to avoid repeated Supabase calls
+**Key findings:**
+- Gallery virtualization replaces PhotoGrid rendering with @tanstack/react-virtual
+- Guest reactions require JSONB column + atomic RPC functions
+- Featured spotlight already has data infrastructure (site_editorial_features table)
+- Upload resume needs a new Zustand store with localStorage persistence
+- PWA offline already configured via VitePWA, needs workbox tuning
+- Social sharing already exists in Upload.tsx, needs per-photo OG enhancement
 
 ## System Overview
 
 ```
 ┌─────────────────────────────────────────────────────────────┐
-│                        UI Layer (React)                       │
+│                        Pages (Lazy Routes)                  │
 ├─────────────────────────────────────────────────────────────┤
 │  ┌─────────┐  ┌─────────┐  ┌─────────┐  ┌─────────┐        │
-│  │ Gallery │  │ Upload  │  │  Admin  │  │ Guest   │        │
-│  │  Page   │  │  Page   │  │ Layout  │  │ Book    │        │
+│  │  Home   │  │ Gallery │  │ Upload  │  │Guestbook│        │
 │  └────┬────┘  └────┬────┘  └────┬────┘  └────┬────┘        │
 │       │            │            │            │              │
 ├───────┴────────────┴────────────┴────────────┴──────────────┤
-│                    State Layer (Zustand)                     │
+│              Components (ui, layout, gallery, sections)      │
 ├─────────────────────────────────────────────────────────────┤
-│  ┌──────────┐  ┌──────────┐  ┌──────────┐  ┌──────────┐   │
-│  │  auth    │  │ gallery  │  │   ui     │  │ upload   │   │
-│  │  store   │  │  store   │  │  store   │  │  store   │   │
-│  └──────────┘  └──────────┘  └──────────┘  └──────────┘   │
+│  ┌──────────┐  ┌──────────┐  ┌──────────┐  ┌──────────┐    │
+│  │  auth   │  │  gallery │  │   ui     │  │ upload   │    │
+│  │  store  │  │  store   │  │  store   │  │  queue   │    │
+│  └──────────┘  └──────────┘  └──────────┘  └──────────┘    │
 ├─────────────────────────────────────────────────────────────┤
-│                    Service Layer                              │
-├─────────────────────────────────────────────────────────────┤
-│  ┌──────────────┐  ┌──────────────┐  ┌──────────────┐     │
-│  │ galleryService│ │ uploadService │ │ moderation   │     │
-│  │              │  │              │  │   Service    │     │
-│  └──────────────┘  └──────────────┘  └──────────────┘     │
-├─────────────────────────────────────────────────────────────┤
-│                    Data Layer (Supabase)                      │
-├─────────────────────────────────────────────────────────────┤
-│  ┌─────────┐  ┌─────────┐  ┌─────────┐  ┌─────────┐        │
-│  │ Postgres│  │ Storage │  │  Auth   │  │ Edge Fn  │        │
-│  └─────────┘  └─────────┘  └─────────┘  └─────────┘        │
+│                     Supabase Client                          │
+│         (Auth, Database, Storage, Edge Functions)            │
 └─────────────────────────────────────────────────────────────┘
 ```
 
-## Component Responsibilities
+### Component Responsibilities
 
 | Component | Responsibility | Implementation |
 |-----------|----------------|----------------|
-| GalleryStore | Gallery state, filters, pagination, selection | Zustand with subscribeWithSelector |
-| UploadStore | Upload queue, progress, retry state | Zustand (new) |
-| AuthStore | User session, admin status, sign in/out | Zustand with devtools |
-| galleryService | Photo fetching, caching, deduplication | Service layer |
-| uploadService | File processing, upload orchestration | Service layer |
-| supabase.ts | Database queries, storage operations | Data access layer |
+| galleryStore | Gallery images, filters, pagination, selection, modal state | Zustand with sessionStorage (exists) |
+| uploadQueueStore | Upload queue with localStorage persistence (NEW) | Zustand with persist middleware |
+| authStore | Authentication state | Zustand (exists) |
+| supabase.ts | Typed DB functions, RPC calls | Singleton client with typed wrappers (extends) |
+| SEOHead | Dynamic OG tags per page/photo | Existing component (extends) |
+| VitePWA | PWA registration, service worker | vite-plugin-pwa (configured, needs tuning) |
+
+## New Components
+
+| Component | File | Purpose |
+|-----------|------|---------|
+| VirtualizedPhotoGrid | components/gallery/VirtualizedPhotoGrid.tsx | Renders only visible photos using @tanstack/react-virtual |
+| useUploadQueueStore | stores/uploadQueueStore.ts | Zustand store for upload queue with localStorage |
+| useGuestReactions | hooks/useGuestReactions.ts | Hook for optimistic reaction updates |
+| FeaturedSpotlight | components/sections/FeaturedSpotlight.tsx | Displays featured content on Home |
+| ShareButtons | components/gallery/ShareButtons.tsx | Social share button group |
+| UploadStatusScreen | components/upload/UploadStatusScreen.tsx | "Your photo is being reviewed" feedback |
+| OfflineGalleryProvider | hooks/useOfflineGallery.ts | PWA offline support hook |
 
 ## Recommended Project Structure
 
 ```
 src/
-├── components/
-│   ├── admin/              # Admin-specific components
-│   │   ├── AlbumOrganizer.tsx
-│   │   ├── MediaReviewPanel.tsx    # Decompose into sub-components
-│   │   ├── BatchList.tsx           # NEW: batch listing
-│   │   ├── FaceReviewGrid.tsx      # NEW: face review UI
-│   │   └── ReviewImportManifest.tsx # NEW: import preview
-│   ├── gallery/
-│   │   ├── MasonryGrid.tsx         # Virtualized grid
-│   │   ├── PhotoItem.tsx           # Lazy-loaded image
-│   │   └── Lightbox.tsx            # Full-screen viewer
-│   ├── upload/
-│   │   ├── UploadDropzone.tsx      # File selection
-│   │   ├── UploadPreview.tsx       # Preview grid
-│   │   └── UploadProgress.tsx      # Progress indicator
-│   └── error/
-│       ├── ErrorBoundary.tsx       # General boundary
-│       └── AdminErrorBoundary.tsx   # NEW: admin-specific
+├── components/gallery/
+│   ├── PhotoGrid.tsx              # EXISTING: standard grid
+│   ├── VirtualizedPhotoGrid.tsx   # NEW: virtualization wrapper
+│   ├── ShareButtons.tsx           # NEW: social share component
+│   └── components/
+│       ├── MasonryGrid.tsx        # EXISTING: masonry layout
+│       └── PhotoItem.tsx          # EXISTING: individual photo
+├── components/sections/
+│   └── FeaturedSpotlight.tsx     # NEW: featured content display
 ├── stores/
-│   ├── authStore.ts
-│   ├── galleryStore.ts
-│   ├── uiStore.ts
-│   └── uploadStore.ts              # NEW: upload state
-├── services/
-│   ├── galleryService.ts           # NEW: caching layer
-│   ├── uploadService.ts            # NEW: upload orchestration
-│   └── moderationService.ts        # NEW: review operations
+│   ├── galleryStore.ts            # EXISTING: extends for virtualization
+│   └── uploadQueueStore.ts        # NEW: upload queue with localStorage
 ├── hooks/
-│   ├── useGalleryCache.ts          # NEW: cache hook
-│   ├── useUploadQueue.ts           # NEW: upload queue hook
-│   └── useInfiniteScroll.ts
-├── workers/
-│   ├── image.worker.ts             # Image processing
-│   ├── search.worker.ts
-│   └── sync.worker.ts
+│   ├── useGuestReactions.ts       # NEW: guest reactions hook
+│   └── useOfflineGallery.ts       # NEW: PWA offline hook
 └── lib/
-    └── supabase.ts                 # Supabase client + queries
+    └── supabase.ts                # EXISTING: extends with reaction RPCs
 ```
 
 ### Structure Rationale
 
-- **components/admin/**: Admin-specific UI isolated from public-facing components
-- **components/gallery/**: Gallery components co-located for easier imports
-- **components/upload/**: Upload flow isolated for cohesive state management
-- **services/**: Business logic separated from UI for testability
-- **hooks/**: Reusable logic extracted from components
+- **`components/gallery/VirtualizedPhotoGrid.tsx`**: Centralizes virtualization logic, wraps existing PhotoGrid pattern
+- **`stores/uploadQueueStore.ts`**: Persists upload queue to localStorage, restores on mount
+- **`hooks/useGuestReactions.ts`**: Encapsulates reaction optimistic updates + Supabase sync
+- **`components/sections/FeaturedSpotlight.tsx`**: Reusable featured content display for Home page
 
 ## Architectural Patterns
 
-### Pattern 1: Virtualized Gallery
+### Pattern 1: Virtualized Rendering with @tanstack/react-virtual
 
-**What:** Masonry grid with virtualized rendering for large photo collections
-**When to use:** Gallery with 100+ images that need smooth scrolling
-**Trade-offs:** + Handles thousands of images, - Slight complexity increase for layout
+**What:** Render only visible items in a large list instead of all items
+**When to use:** Gallery with 200+ photos
+**Trade-offs:** + Handles thousands of images, - Slight complexity for masonry layout
 
+**Implementation approach:**
 ```typescript
-// Pattern: Use react-window for virtualization with masonry layout
-// Existing MasonryGrid.tsx should be enhanced with virtualization
-
-interface VirtualizedMasonryProps {
-  images: GalleryImage[]
-  columnCount: number
-  onImageClick: (index: number) => void
-}
-
-// Key optimization: Only render visible rows + buffer
-// Use IntersectionObserver for lazy loading images
+// For masonry, virtualizer tracks row-based indices
+// Masonry columns determined by CSS, virtualizer handles vertical scroll
+// Only photos in visible vertical range render
+// Adjacent photo prefetch preserved from existing code
 ```
 
-**Build implications:** MasonryGrid.tsx decomposition should happen first before other gallery work.
+### Pattern 2: Optimistic Updates with Rollback
 
-### Pattern 2: Upload Queue with Retry
+**What:** Update UI immediately, sync to server async, rollback on failure
+**When to use:** Reactions, likes, comments
+**Trade-offs:** + Instant UX, - Requires careful error handling
 
-**What:** Centralized upload queue with progress tracking, pause/resume, and retry
-**When to use:** Guest uploads where interruptions are common (mobile users)
-**Trade-offs:** + Reliable uploads, + Offline resilience, - Complex state management
-
+**Implementation:**
 ```typescript
-// Pattern: Upload store manages queue state
-interface UploadItem {
-  id: string
-  file: File
-  status: 'pending' | 'uploading' | 'complete' | 'error'
-  progress: number
-  retryCount: number
-  error?: string
-  abortController?: AbortController
-}
-
-interface UploadStore {
-  queue: UploadItem[]
-  addToQueue: (files: File[]) => void
-  retryUpload: (id: string) => void
-  cancelUpload: (id: string) => void
-  pauseAll: () => void
-  resumeAll: () => void
-}
-```
-
-**Build implications:** UploadStore provides foundation for Upload.tsx improvements.
-
-### Pattern 3: Admin Panel Decomposition
-
-**What:** Break 900+ line MediaReviewPanel into focused, single-responsibility components
-**When to use:** Components that have grown beyond single responsibility
-**Trade-offs:** + Maintainable, + Testable, - More files to manage
-
-```typescript
-// Decomposition plan for MediaReviewPanel.tsx:
-// Before: 900+ lines, handles batches, faces, clusters, UI, state
-// After:
-src/components/admin/
-├── MediaReviewPanel.tsx      # Orchestrator, ~150 lines
-├── BatchList.tsx            # Batch selection sidebar, ~100 lines
-├── FaceReviewGrid.tsx       # Face review main area, ~200 lines
-├── ClusterMergeModal.tsx    # Cluster merge dialog, ~80 lines
-├── FaceTaggingConfirmation.tsx # Name confirmation, ~80 lines
-├── ReviewImportManifest.tsx # Import preview, ~100 lines
-└── types.ts                  # Shared review types
-```
-
-**Build implications:** This is the highest-impact refactoring. Phase 1 priority.
-
-### Pattern 4: Gallery Caching Layer
-
-**What:** Service layer with in-memory cache for Supabase responses
-**When to use:** When gallery makes repeated calls without caching
-**Trade-offs:** + Reduces API calls, + Faster navigation, - Cache invalidation complexity
-
-```typescript
-// Pattern: Gallery service with cache
-class GalleryCache {
-  private cache = new Map<string, { data: any; timestamp: number }>()
-  private TTL = 5 * 60 * 1000 // 5 minutes
-
-  get(key: string): any | null {
-    const entry = this.cache.get(key)
-    if (!entry) return null
-    if (Date.now() - entry.timestamp > this.TTL) {
-      this.cache.delete(key)
-      return null
-    }
-    return entry.data
-  }
-
-  set(key: string, data: any): void {
-    this.cache.set(key, { data, timestamp: Date.now() })
-  }
-
-  invalidate(pattern?: string): void {
-    // Clear matching keys
+const [localReactions, setLocalReactions] = useState(initial)
+const addReaction = async (key) => {
+  setLocalReactions(prev => ({ ...prev, [key]: (prev[key] ?? 0) + 1 }))
+  try {
+    await supabase.rpc('add_guestbook_reaction', { message_id, reaction_key: key })
+  } catch {
+    setLocalReactions(prev => ({ ...prev, [key]: prev[key] - 1 }))
   }
 }
 ```
 
-**Build implications:** galleryService.ts with caching built before admin work.
+### Pattern 3: localStorage Persistence with Safe Wrapper
 
-### Pattern 5: Error Boundary Per Admin Route
+**What:** Persist state to localStorage with error handling for quota exceeded
+**When to use:** Upload queue, UI preferences
+**Trade-offs:** + Survives refresh, - Can fail (quota, private browsing)
 
-**What:** Each admin page wrapped in ComponentErrorBoundary
-**When to use:** Admin pages that load external data and can fail
-**Trade-offs:** + Graceful degradation, + User feedback, - Some repetition
-
+**Implementation (reusing existing safeSessionStorage pattern):**
 ```typescript
-// Pattern: Wrap lazy-loaded admin routes
-<Suspense fallback={<AdminPageSkeleton />}>
-  <ErrorBoundary
-    fallback={
-      <div className="p-8 text-center">
-        <h3>Page Failed to Load</h3>
-        <Button onClick={() => window.location.reload()}>Refresh</Button>
-      </div>
-    }
-  >
-    <Routes>
-      <Route path="photos" element={<PhotoModeration />} />
-      <Route path="review" element={<MediaReviewPanel />} />
-      // ... other routes
-    </Routes>
-  </ErrorBoundary>
-</Suspense>
+const safeLocalStorage = {
+  getItem: (name) => { try { return localStorage.getItem(name) } catch { return null } },
+  setItem: (name, value) => { try { localStorage.setItem(name, value) } catch {} },
+}
+
+// Zustand persist with safeLocalStorage
+export const useUploadQueueStore = create(
+  persist(
+    (set, get) => ({
+      files: [],
+      addFiles: (newFiles) => set(state => ({ files: [...state.files, ...newFiles] })),
+      removeFile: (id) => set(state => ({ files: state.files.filter(f => f.id !== id) })),
+    }),
+    { name: 'upload-queue', storage: createJSONStorage(() => safeLocalStorage) }
+  )
+)
 ```
 
-**Build implications:** Apply to all admin routes before admin feature work.
+### Pattern 4: Dynamic OG Image URL
+
+**What:** Generate share URLs with photo-specific OG images
+**When to use:** Photo share, gallery share
+**Trade-offs:** + Rich social previews, - Requires image processing infrastructure
+
+**Implementation:**
+```typescript
+// Option A: Query parameter approach
+const shareUrl = `${location.origin}/gallery?photo=${photoId}&share=1`
+// OG image URL: /_og?photo=${photoId} (processed server-side or via CDN)
+
+// Option B: Pre-generated OG images per photo
+// Storage path: /og-photos/{photoId}.jpg
+const ogImageUrl = supabase.storage.getPublicUrl('og-photos', `${photoId}.jpg`)
+```
 
 ## Data Flow
 
-### Gallery Data Flow (Current vs Recommended)
-
-**Current (problematic):**
-```
-Gallery.tsx → useState → supabase.from('photos').select()
-           → parallel calls with no caching
-           → setState directly
-```
-
-**Recommended:**
-```
-Gallery.tsx → galleryStore.fetchAlbum(album)
-           → galleryService.getCached OR supabase call
-           → cache result
-           → store updates
-           → components re-render
-```
-
-### Upload Flow
+### Gallery Virtualization Flow
 
 ```
-[User selects files]
+User scrolls
     ↓
-[UploadDropzone validates files]
+Virtualizer calculates visible vertical range
     ↓
-[uploadStore.addToQueue(files)]
+Only photos in range render (PhotoItem components)
     ↓
-[uploadService.processQueue()]
-    ↓ (parallel)
-[File Fingerprint] → [Compression] → [Upload to Supabase Storage]
-    ↓                      ↓                    ↓
-[Generate preview]  [Worker thread]    [Track progress]
-    ↓                      ↓                    ↓
-[Dispatch progress update to store]
+IntersectionObserver triggers prefetch for adjacent
     ↓
-[On complete: create guest_upload record in DB]
-    ↓
-[Dispatch success/error to UI]
+Next range becomes visible (smooth)
 ```
 
-### Admin Moderation Flow
+### Upload Queue with Resume Flow
 
 ```
-[Admin selects batch]
+User selects files
     ↓
-[fetchMediaReviewBatches() → BatchList UI]
+Files added to uploadQueueStore (persisted to localStorage)
     ↓
-[Admin selects batch → fetchMediaReviewFaces(batchId)]
+uploadFileToR2 processes each file
     ↓
-[Faces displayed in FaceReviewGrid]
+On success: status = 'complete'
+On failure: status = 'error', retry available
     ↓
-[Admin confirms face → updateMediaReviewFace(faceId, { confirmedName })]
+On page reload: store restored from localStorage
     ↓
-[Audit log recorded via recordModerationAudit()]
+User can retry failed or remove them
+```
+
+### Guest Reaction Flow
+
+```
+User clicks "Add a reaction"
     ↓
-[State updates → UI reflects change]
+Reaction picker appears (existing emoji grid)
+    ↓
+User selects emoji
+    ↓
+Optimistic update: localReactions[messageId][emojiKey]++
+    ↓
+Supabase RPC: add_guestbook_reaction(message_id, emoji_key)
+    ↓
+On error: rollback optimistic update
+```
+
+### Featured Spotlight Flow
+
+```
+Admin sets featured content (FeaturedContentManager - exists)
+    ↓
+site_editorial_features table updated
+    ↓
+Home page fetches active features via fetchSiteEditorialFeatures()
+    ↓
+FeaturedSpotlightSection renders featured slots
+    ↓
+Users see highlighted content on home page
+```
+
+### Social Share Flow
+
+```
+User clicks share on a photo
+    ↓
+ShareButtons component opens share dialog
+    ↓
+URL generated with photo context: /gallery?photo={id}&share=1
+    ↓
+Platform-specific URL (Facebook, Twitter, etc.)
+    ↓
+Meta tags updated via SEOHead (dynamic OG image)
 ```
 
 ## Scaling Considerations
 
 | Scale | Architecture Adjustments |
 |-------|--------------------------|
-| 0-1k users | Current architecture sufficient. Add caching layer. |
-| 1k-10k users | Virtualize gallery, add pagination to admin queries |
-| 10k+ users | Consider CDN for images, edge caching, database indexing |
+| 0-1k users | Current architecture sufficient |
+| 1k-10k users | Gallery virtualization, image CDN |
+| 10k-100k users | Edge caching, aggressive asset optimization |
 
 ### Scaling Priorities
 
-1. **First bottleneck:** Gallery scrolling performance at 200+ images
-   - Fix: Virtualize MasonryGrid with react-window
-2. **Second bottleneck:** Admin batch loading
-   - Fix: Paginate batch queries, lazy-load faces
-3. **Third bottleneck:** Upload reliability on mobile
-   - Fix: Implement upload queue with retry
+1. **First bottleneck:** Gallery rendering at 200+ photos
+   - Fix: @tanstack/react-virtual
+2. **Second bottleneck:** Image load times
+   - Fix: LQIP, prefetch, CDN (already partially implemented)
 
 ## Anti-Patterns
 
-### Anti-Pattern 1: Parallel Uncached Supabase Calls
+### Anti-Pattern 1: Rendering All Gallery Items
 
-**What happens:** Gallery page makes multiple concurrent Supabase queries without caching
-**Why wrong:** Each navigation triggers API calls, causes UI freeze on slow connections
-**Do this instead:**
-```typescript
-// In galleryService.ts
-async getAlbumPhotos(album: PhotoAlbum) {
-  const cacheKey = `album:${album}`
-  const cached = this.cache.get(cacheKey)
-  if (cached) return cached
+**What happens:** Map over all photos, render every one
+**Why wrong:** DOM grows with photo count, causing lag on scroll, high memory
+**Do this instead:** Use @tanstack/react-virtual to render only visible items
 
-  const data = await fetchAlbumPhotos(album)
-  this.cache.set(cacheKey, data)
-  return data
-}
-```
+### Anti-Pattern 2: Upload Queue in Component State Only
 
-### Anti-Pattern 2: Monolithic Admin Components
+**What happens:** `const [files, setFiles] = useState([])`
+**Why wrong:** Page refresh loses all progress
+**Do this instead:** Persist to localStorage via Zustand with persist middleware
 
-**What happens:** Single component handles multiple concerns (batches, faces, clusters, UI)
-**Why wrong:** Hard to test, reason about, or modify safely
-**Do this instead:** Decompose into single-responsibility components with clear interfaces
+### Anti-Pattern 3: No Per-Photo OG Image
 
-### Anti-Pattern 3: No Upload Progress Persistence
+**What happens:** Single default OG image for all shares
+**Why wrong:** Shared links look generic
+**Do this instead:** Dynamic OG image URLs with photo-specific images
 
-**What happens:** Upload progress lost on page refresh/navigation
-**Why wrong:** Users lose uploads already in progress, must restart
-**Do this instead:**
-```typescript
-// Use sessionStorage or IndexedDB for upload queue persistence
-// On page load, restore pending uploads from storage
-// Provide resume/cancel UI for restored uploads
-```
+### Anti-Pattern 4: Blocking UI on Network Requests
 
-### Anti-Pattern 4: Missing Admin Error Boundaries
-
-**What happens:** Admin page errors crash entire admin view
-**Why wrong:** No graceful degradation, bad UX for admin users
-**Do this instead:** Wrap each admin route in ComponentErrorBoundary with recovery UI
+**What happens:** `await addReaction()` then update UI
+**Why wrong:** User feels lag on every interaction
+**Do this instead:** Optimistic updates, sync in background
 
 ## Integration Points
 
@@ -375,54 +294,103 @@ async getAlbumPhotos(album: PhotoAlbum) {
 
 | Service | Integration Pattern | Notes |
 |---------|---------------------|-------|
-| Supabase Storage | Direct SDK calls via supabase.storage | For guest uploads, batch artifacts |
-| Supabase Database | RPC calls for complex operations | Album org, photo likes, moderation |
-| Sentry | Browser SDK for error tracking | Via ErrorLoggingService |
+| Supabase | Single client in src/lib/supabase.ts | Auth, Database, Storage |
+| VitePWA | vite-plugin-pwa in vite.config.js | Already configured, needs workbox tuning |
+| Social Platforms | Share URLs (Facebook, Twitter, SMS, email) | Already implemented in Upload.tsx |
 
 ### Internal Boundaries
 
 | Boundary | Communication | Notes |
 |----------|---------------|-------|
-| Gallery ↔ Supabase | galleryService.ts | Cache as intermediary |
-| Upload ↔ Supabase | uploadService.ts | Queue management |
-| Admin ↔ Supabase | Direct supabase calls | Per-review operations |
-| Auth ↔ All | authStore.ts | Auth header injection via Supabase client |
+| Gallery ↔ Supabase | galleryStore subscribes, supabase.ts functions | State-driven |
+| Upload ↔ Supabase | uploadQueueStore + Upload.tsx | localStorage persistence |
+| Guestbook ↔ Supabase | Direct Supabase calls | Reactions need new RPC |
+| FeaturedContent ↔ Home | fetchSiteEditorialFeatures() | Already exists in supabase.ts |
 
-## Build Order Implications
+## Database Schema Changes
 
-The architecture suggests this phase ordering:
+### guestbook_messages reactions column
 
-**Phase 1: Foundation (Critical path dependencies)**
-1. Decompose MediaReviewPanel.tsx into sub-components
-   - Enables parallel work on admin features
-   - Reduces risk of breaking existing functionality
-2. Add GalleryStore caching layer (galleryService.ts)
-   - Dependency for gallery improvements later
-   - Reduces API load immediately
+```sql
+ALTER TABLE guestbook_messages
+ADD COLUMN IF NOT EXISTS reactions JSONB DEFAULT '{}';
+```
 
-**Phase 2: Gallery Performance**
-3. Virtualize MasonryGrid with react-window
-   - Depends on: GalleryStore with caching working
-4. Add UploadStore with queue persistence
-   - Enables reliable uploads
+### New RPC for atomic reaction updates
 
-**Phase 3: Admin Polish**
-5. Add error boundaries to all admin routes
-   - Depends on: MediaReviewPanel decomposed
-6. Build Upload UI improvements (progress, validation, feedback)
+```sql
+CREATE OR REPLACE FUNCTION add_guestbook_reaction(
+  p_message_id UUID,
+  p_reaction_key TEXT
+) RETURNS JSONB AS $$
+  UPDATE guestbook_messages
+  SET reactions = jsonb_set(
+    COALESCE(reactions, '{}'),
+    ARRAY[p_reaction_key],
+    to_jsonb(COALESCE((reactions->>p_reaction_key)::int, 0) + 1)
+  )
+  WHERE id = p_message_id
+  RETURNING reactions
+$$ LANGUAGE SQL SECURITY DEFINER;
+```
 
-**Phase 4: Integration & Polish**
-7. Connect upload queue to admin moderation
-8. Add lightbox performance improvements
-9. Final error handling pass
+## Build Order (Considering Dependencies)
+
+### Phase 1: Social Sharing & Upload Resume (No Dependencies)
+
+1. **ShareButtons component** -- Simple, no backend changes
+2. **Social OG tag enhancement** -- Extend SEOHead for dynamic per-photo images
+3. **uploadQueueStore** -- localStorage persistence for upload queue
+
+### Phase 2: Guest Reactions (DB Schema Changes)
+
+4. **Add reactions column to guestbook_messages** -- Migration
+5. **Supabase RPC for reactions** -- Atomic update of reactions JSONB
+6. **useGuestReactions hook** -- Optimistic updates with rollback
+
+### Phase 3: Gallery Virtualization (Core Performance)
+
+7. **@tanstack/react-virtual integration** -- Replace PhotoGrid rendering
+8. **Masonry virtualizer** -- Handle masonry layout with virtualization
+9. **Prefetch integration** -- Keep adjacent image prefetch working
+
+### Phase 4: Featured Spotlight (Home Page Changes)
+
+10. **FeaturedSpotlight component** -- Display site_editorial_features
+11. **Home.tsx integration** -- Fetch and render featured content
+12. **Admin FeaturedContentManager** -- Already exists, verify coverage
+
+### Phase 5: PWA Offline (Configuration Work)
+
+13. **Workbox tuning** -- Cache Supabase storage images
+14. **Offline fallback page** -- public/offline.html already exists
+15. **Service worker customization** -- Runtime caching for photos
+
+## Existing Architecture Compatibility
+
+**What to modify:**
+- `src/components/gallery/PhotoGrid.tsx` -- Add VirtualizedPhotoGrid variant
+- `src/stores/galleryStore.ts` -- Add virtualization-related state if needed
+- `src/components/seo/SEOHead.tsx` -- Add dynamic OG image per photo
+- `vite.config.js` -- Workbox runtime caching configuration
+- `src/lib/supabase.ts` -- Add reaction RPC functions
+
+**What to add (new files):**
+- `src/stores/uploadQueueStore.ts`
+- `src/hooks/useGuestReactions.ts`
+- `src/hooks/useOfflineGallery.ts`
+- `src/components/gallery/VirtualizedPhotoGrid.tsx`
+- `src/components/gallery/ShareButtons.tsx`
+- `src/components/sections/FeaturedSpotlight.tsx`
 
 ## Sources
 
-- Existing codebase analysis: src/stores/, src/components/admin/, src/pages/admin/
-- React virtualized rendering patterns: https://react.dev/learn/passing-data-deeply-with-context (context patterns)
-- Zustand middleware documentation: https://docs.pmnd.rs/zustand/middleware (subscribeWithSelector, devtools)
-- Supabase React patterns: https://supabase.com/docs (client usage)
+- [@tanstack/react-virtual documentation](https://tanstack.com/virtual/latest)
+- [Vite PWA Plugin documentation](https://vite-pwa.dev/)
+- [Supabase JSONB operations](https://supabase.com/docs/guides/database/json)
+- [Workbox runtime caching](https://developer.chrome.com/docs/workbox/)
+- Existing codebase: src/stores/, src/components/gallery/, src/pages/
 
 ---
-*Architecture research for: Wedding Archive Website*
-*Researched: 2026-04-23*
+*Architecture research for: Wedding Archive v1.1 Feature Expansion*
+*Researched: 2026-04-24*
