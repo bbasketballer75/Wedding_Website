@@ -6,6 +6,7 @@ import { FilmFeatureSection } from '@/components/sections/FilmFeatureSection'
 import { FilmSEO } from '@/components/seo/SEOHead'
 import { VideoPlayer } from '@/components/video/VideoPlayer'
 import { Button } from '@/components/ui/Button'
+import { CardSkeleton } from '@/components/ui/Skeleton'
 import { supabase, type GuestUpload } from '@/lib/supabase'
 import {
   MAIN_FILM_CHAPTERS_FALLBACK,
@@ -480,8 +481,10 @@ function GuestVideoHighlightModal({
 
 export default function Film() {
   const [chapters, setChapters] = useState<FilmChapter[]>(MAIN_FILM_CHAPTERS_FALLBACK)
+  const [isLoadingChapters, setIsLoadingChapters] = useState(true)
   const [activeFamilyFilm, setActiveFamilyFilm] = useState<FamilyFilm | null>(null)
   const [guestHighlights, setGuestHighlights] = useState<GuestVideoHighlight[]>([])
+  const [isLoadingHighlights, setIsLoadingHighlights] = useState(true)
   const [activeGuestHighlight, setActiveGuestHighlight] = useState<GuestVideoHighlight | null>(null)
   const [resumeTime, setResumeTime] = useState<number | null>(null)
   const [didFinishMainFilm, setDidFinishMainFilm] = useState(false)
@@ -494,9 +497,14 @@ export default function Film() {
       .then((loadedChapters) => {
         if (isActive) {
           setChapters(loadedChapters)
+          setIsLoadingChapters(false)
         }
       })
-      .catch(() => {})
+      .catch(() => {
+        if (isActive) {
+          setIsLoadingChapters(false)
+        }
+      })
 
     return () => {
       isActive = false
@@ -531,7 +539,10 @@ export default function Film() {
 
       const data = highlightsResult.data
 
-      if (!isActive || !Array.isArray(data)) return
+      if (!isActive || !Array.isArray(data)) {
+        setIsLoadingHighlights(false)
+        return
+      }
 
       const highlights = (data as GuestUpload[])
         .filter((upload) => Array.isArray(upload.video_urls) && upload.video_urls.length > 0)
@@ -564,6 +575,7 @@ export default function Film() {
 
     return () => {
       isActive = false
+      setIsLoadingHighlights(false)
     }
   }, [])
 
@@ -764,30 +776,38 @@ export default function Film() {
                     Jump back in only when you need a specific section.
                   </p>
                 </div>
-                <div className="overflow-x-auto pb-2 hide-scrollbar">
-                  <div className="grid grid-cols-1 gap-2.5 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-5">
-                    {chapters.map((chapter) => (
-                      <button
-                        key={chapter.label}
-                        type="button"
-                        onClick={() => jumpToChapter(chapter.time)}
-                        className="group cinematic-card min-h-[4.8rem] cursor-pointer px-3 py-2.5 text-left transition-colors duration-200 hover:border-gold-300/35 hover:bg-white/8 sm:min-h-[5.1rem] sm:px-3.5 sm:py-3"
-                      >
-                        <div className="flex items-start justify-between gap-3">
-                          <div>
-                            <p className="text-[10px] uppercase tracking-[0.28em] text-gold-300/72">
-                              {formatChapterTime(chapter.time)}
-                            </p>
-                            <p className="mt-1.5 text-[0.9rem] font-semibold leading-5 text-cinematic-primary sm:text-[0.96rem]">
-                              {chapter.label}
-                            </p>
-                          </div>
-                          <ArrowRight className="mt-0.5 h-4 w-4 shrink-0 text-gold-300/72 transition-transform duration-200 group-hover:translate-x-0.5" />
-                        </div>
-                      </button>
+                {isLoadingChapters ? (
+                  <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-2.5">
+                    {Array.from({ length: 8 }).map((_, i) => (
+                      <div key={i} className="h-20 rounded-xl bg-gold-100/50 animate-pulse" />
                     ))}
                   </div>
-                </div>
+                ) : (
+                  <div className="overflow-x-auto pb-2 hide-scrollbar">
+                    <div className="grid grid-cols-1 gap-2.5 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-5">
+                      {chapters.map((chapter) => (
+                        <button
+                          key={chapter.label}
+                          type="button"
+                          onClick={() => jumpToChapter(chapter.time)}
+                          className="group cinematic-card min-h-[4.8rem] cursor-pointer px-3 py-2.5 text-left transition-colors duration-200 hover:border-gold-300/35 hover:bg-white/8 sm:min-h-[5.1rem] sm:px-3.5 sm:py-3"
+                        >
+                          <div className="flex items-start justify-between gap-3">
+                            <div>
+                              <p className="text-[10px] uppercase tracking-[0.28em] text-gold-300/72">
+                                {formatChapterTime(chapter.time)}
+                              </p>
+                              <p className="mt-1.5 text-[0.9rem] font-semibold leading-5 text-cinematic-primary sm:text-[0.96rem]">
+                                {chapter.label}
+                              </p>
+                            </div>
+                            <ArrowRight className="mt-0.5 h-4 w-4 shrink-0 text-gold-300/72 transition-transform duration-200 group-hover:translate-x-0.5" />
+                          </div>
+                        </button>
+                      ))}
+                    </div>
+                  </div>
+                )}
               </motion.div>
             </div>
           </div>
@@ -864,18 +884,24 @@ export default function Film() {
             </motion.div>
 
             <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-3">
-                {guestHighlights.map((clip, index) => (
-                  <motion.div
-                    key={clip.id}
-                    initial={{ opacity: 0, y: 20 }}
-                    whileInView={{ opacity: 1, y: 0 }}
-                    viewport={{ once: true }}
-                    transition={{ duration: 0.5, delay: index * 0.07 }}
-                  >
-                    <GuestVideoHighlightCard clip={clip} onOpen={setActiveGuestHighlight} />
-                  </motion.div>
-                ))}
-            </div>
+                {isLoadingHighlights ? (
+                  Array.from({ length: 6 }).map((_, i) => (
+                    <CardSkeleton key={i} />
+                  ))
+                ) : guestHighlights.length > 0 ? (
+                  guestHighlights.map((clip, index) => (
+                    <motion.div
+                      key={clip.id}
+                      initial={{ opacity: 0, y: 20 }}
+                      whileInView={{ opacity: 1, y: 0 }}
+                      viewport={{ once: true }}
+                      transition={{ duration: 0.5, delay: index * 0.07 }}
+                    >
+                      <GuestVideoHighlightCard clip={clip} onOpen={setActiveGuestHighlight} />
+                    </motion.div>
+                  ))
+                ) : null}
+              </div>
           </div>
         </section>
       )}
