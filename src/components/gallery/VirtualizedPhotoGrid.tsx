@@ -1,4 +1,4 @@
-import { useRef, useCallback, useMemo } from 'react'
+import { useRef, useCallback } from 'react'
 import { motion } from 'framer-motion'
 import { Heart, CheckCircle2 } from 'lucide-react'
 import { cn } from '@/lib/utils'
