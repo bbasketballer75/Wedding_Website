@@ -305,10 +305,6 @@ export default function Guestbook() {
   }, [])
 
   useEffect(() => {
-    setVisibleCount(INITIAL_VISIBLE_MESSAGES)
-  }, [messages.length])
-
-  useEffect(() => {
     const requestedMessageId = searchParams.get('message')
     if (!requestedMessageId) {
       setHighlightedMessageId(null)
