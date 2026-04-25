@@ -1,179 +1,354 @@
 # Stack Research
 
-**Domain:** Wedding Memory Archive Websites
-**Researched:** 2026-04-23
-**Confidence:** MEDIUM-HIGH
+**Domain:** Wedding Memory Archive Website - v1.1 Feature Expansion
+**Researched:** 2026-04-24
+**Confidence:** HIGH
+
+## Summary
+
+This project already has a solid foundation: React 19, Supabase, Zustand, Framer Motion, and Tailwind CSS v4. The v1.1 features require **only ONE new library** (@tanstack/react-virtual for gallery virtualization). Everything else leverages existing infrastructure or can be implemented with Supabase schema changes.
 
 ## Recommended Stack
 
-### Core Technologies
+### Core Technologies (Already in Use - No Changes Needed)
 
-| Technology | Version | Purpose | Why Recommended |
-|------------|---------|---------|-----------------|
-| React | 19.x | UI framework | Already in use. React 19's concurrent features (useTransition, useDeferredValue) improve gallery scrolling performance. |
-| Supabase | 2.99.x | Backend (DB, Auth, Storage) | Already in use. Excellent file storage with built-in image transformations, row-level security for moderation, and affordable free tier. |
-| Tailwind CSS | 4.x | Styling | Already in use. v4's CSS-first configuration and improved performance for complex UIs. |
-| Zustand | 5.x | State management | Already in use. Lightweight, performant, with good DevTools support for debugging. |
-| Framer Motion | 12.x | Animations | Already in use. Best-in-class React animation library with layout animations for gallery transitions. |
+| Technology | Current Version | Status | Notes |
+|------------|----------------|--------|-------|
+| React | 19.2.4 | Verified | React 19's concurrent features work well with virtualization |
+| Supabase | 2.99.0 | Verified | PostgreSQL, Auth, Storage, Edge Functions all in use |
+| Zustand | 5.0.11 | Verified | galleryStore already handles caching/sessionStorage |
+| Framer Motion | 12.35.2 | Verified | Excellent for modal/lightbox animations |
+| Tailwind CSS | 4.1.18 | Verified | Via @tailwindcss/vite plugin |
+| Vite | 7.3.2 | Verified | Build tool with PWA plugin |
+| vite-plugin-pwa | 1.2.0 | Verified | Already configured, just needs workbox enhancements |
+| react-router-dom | 7.13.1 | Verified | Lazy-loaded routes working |
 
-### Photo/Video Gallery Management
+### NEW Library Addition
 
-| Library | Version | Purpose | When to Use |
-|---------|---------|---------|-------------|
-| `react-masonry-css` | 1.x | Masonry layout | Already in use. Solid masonry layout but lacks virtualization. |
-| `framer-motion` | 12.x | Layout animations | Use for smooth photo reorder transitions when filtering. |
-| Native `loading="lazy"` | - | Lazy loading | Use on all gallery images as baseline. |
-| Intersection Observer API | - | Visibility detection | Use for infinite scroll triggers and progressive loading. |
+| Library | Version | Purpose | Why Recommended |
+|---------|---------|---------|-----------------|
+| @tanstack/react-virtual | 3.13.24 | Gallery virtualization | Headless (works with any layout), React 19 compatible, only ~7KB, no masonry layout conflicts |
 
-**Recommendation:** Extend current masonry setup with virtualization (see "What NOT to Use" section). Add `loading="lazy"` attributes to all gallery thumbnails. Use `decoding="async"` on images to prevent decode blocking.
+**Installation:** `npm install @tanstack/react-virtual`
 
-### Guest Upload Handling
+## Feature Stack Breakdown
 
-| Library | Version | Purpose | When to Use |
-|---------|---------|---------|-------------|
-| Supabase Storage | - | File uploads | Already in use. Use `uploadFile` with progress callbacks. |
-| JSZip | 3.x | Client-side zip creation | Already in use for guest tagging batch downloads. |
-| DOMPurify | 3.x | Input sanitization | Already in use. Essential for guest message fields. |
+### Gallery Virtualization (GALLERY-05)
 
-**Recommendation:** Current upload flow works but lacks:
-- Persisted upload progress (refreshing loses progress)
-- Automatic retry on failure
-- Chunked uploads for large files
+**Library:** @tanstack/react-virtual 3.13.24
 
-### Content Moderation (Admin Controls)
+**Recommendation:** Wrap existing `react-masonry-css` with `@tanstack/react-virtual` for columns-based virtualization. Use `useVirtualizer` with column approach for masonry effect.
 
-| Library | Version | Purpose | When to Use |
-|---------|---------|---------|-------------|
-| Supabase RLS | - | Row-level security | Use for approval workflow: guests submit to pending bucket, admins promote. |
-| Radix UI | 1.x | Accessible primitives | Already in use (Dialog, DropdownMenu, Tabs, Toast, Tooltip). |
-| Zod | 4.x | Schema validation | Already in use. Use for admin moderation forms. |
+**Why @tanstack/react-virtual:**
+- Headless (works with any layout, not opinionated about masonry)
+- React 19 compatible (peerDeps: react >=16.8.0 || ^17 || ^18 || ^19)
+- Only ~7KB gzipped
+- Does not conflict with existing masonry library
 
-**Recommendation:** Current PhotoModeration.tsx is 900+ lines. Break into smaller components:
-- `ModerationQueue.tsx` - List view with filters
-- `ModerationItem.tsx` - Single photo review card
-- `BulkActionsBar.tsx` - Batch approve/reject
+**Alternatives rejected:**
+- react-virtuoso: Over-engineered, pre-built components not needed
+- react-window: Deprecated pattern, lacks masonry support
 
-### Performance Optimization
+**Integration:** See Integration Points section below.
 
-| Library | Version | Purpose | When to Use |
-|---------|---------|---------|-------------|
-| Sharp | 0.34.x | Server-side image processing | Already in use in build scripts. Ensure thumbnails are pre-generated. |
-| Vite | 7.x | Build tool | Already in use. Configure with appropriate chunking strategy. |
-| `vite-plugin-pwa` | 1.x | Service worker | Already in use. Verify Workbox configuration for gallery caching. |
+---
 
-**Recommendation:** Implement:
-1. **Image placeholder strategy**: Low-quality image placeholders (LQIP) during load
-2. **Cache invalidation**: Supabase storage CDN cache for approved photos (set appropriate headers)
-3. **Prefetch adjacent images**: Preload next/previous lightbox images
+### Guest Reactions / Heart (GALLERY-06)
 
-### Elegant, Beautiful UI Design
+**Implementation:** Supabase schema change + UI component (no new library)
 
-| Library | Version | Purpose | When to Use |
-|---------|---------|---------|-------------|
-| Tailwind CSS | 4.x | Utility styling | Already in use. Use design tokens for consistent gold (#d4af37) theme. |
-| `tailwind-merge` | 3.x | Class merging | Already in use for dynamic class handling. |
-| `clsx` | 2.x | Conditional classes | Already in use. |
-| Framer Motion | 12.x | Micro-interactions | Already in use. Add entrance animations, hover effects on gallery items. |
-| `lenis` | 1.x | Smooth scrolling | Already in use. Ensure it works across all pages. |
+**Database schema changes:**
+```sql
+-- Simple counter for anonymous likes
+ALTER TABLE guestbook_messages ADD COLUMN like_count INTEGER DEFAULT 0;
 
-**Recommendation:** Current design uses Allura, Cormorant Garamond, Pinyon Script fonts. Maintain this elegance by:
-- Consistent spacing scale (use Tailwind's 4px base grid)
-- Motion that feels natural (spring physics, 200-400ms durations)
-- Subtle shadows and borders (avoid harsh contrasts)
+-- Full likes table with visitor tracking (prevents duplicate likes)
+CREATE TABLE guestbook_likes (
+  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  message_id UUID REFERENCES guestbook_messages(id) ON DELETE CASCADE,
+  visitor_id TEXT NOT NULL,
+  created_at TIMESTAMPTZ DEFAULT now(),
+  UNIQUE(message_id, visitor_id)
+);
+```
+
+**UI:** Use existing Heart icon from lucide-react (already installed in package.json). The `src/pages/Guestbook.tsx` page already displays messages and can be extended with like buttons.
+
+**State:** Extend `uiStore` with:
+- `likedMessages: Set<string>` for tracking user's likes (persisted to localStorage)
+- RPC function to increment/decrement like_count
+
+**Supabase RPC for atomic like increment:**
+```sql
+CREATE OR REPLACE FUNCTION toggle_message_like(message_id UUID, visitor_id TEXT)
+RETURNS JSONB AS $$
+DECLARE
+  existing_like UUID;
+  new_count INTEGER;
+BEGIN
+  -- Check if already liked
+  SELECT id INTO existing_like FROM guestbook_likes
+  WHERE message_id = toggle_message_like.message_id AND visitor_id = toggle_message_like.visitor_id;
+
+  IF existing_like IS NOT NULL THEN
+    -- Unlike: remove like and decrement count
+    DELETE FROM guestbook_likes WHERE id = existing_like;
+    UPDATE guestbook_messages SET like_count = GREATEST(0, like_count - 1) WHERE id = message_id;
+  ELSE
+    -- Like: add like and increment count
+    INSERT INTO guestbook_likes (message_id, visitor_id) VALUES (message_id, visitor_id);
+    UPDATE guestbook_messages SET like_count = like_count + 1 WHERE id = message_id;
+  END IF;
+
+  SELECT like_count INTO new_count FROM guestbook_messages WHERE id = message_id;
+  RETURN jsonb_build_object('like_count', new_count, 'user_liked', existing_like IS NULL);
+END;
+$$ LANGUAGE plpgsql;
+```
+
+**No new library needed** - uses existing lucide-react Heart icon and Supabase RPC.
+
+---
+
+### Social Sharing (SOCIAL-01, SOCIAL-02)
+
+**Implementation:** Extend existing SEOHead + add ShareButtons component
+
+The `src/components/seo/SEOHead.tsx` already handles:
+- Open Graph tags (og:title, og:description, og:image, og:type, og:url)
+- Twitter Card tags (twitter:card, twitter:title, twitter:image)
+- JSON-LD structured data
+- Canonical URLs
+
+**What's needed:**
+1. `ShareButtons.tsx` component using native Web Share API
+2. Dynamic OG image URL for shared gallery items (query param for specific photo)
+3. URL generation for deep linking to specific photos/albums
+
+**Web Share API with fallback:**
+```typescript
+const shareLink = async (url: string, title: string) => {
+  if (navigator.share) {
+    await navigator.share({ url, title });
+  } else {
+    await navigator.clipboard.writeText(url);
+    // Show toast "Link copied!"
+  }
+};
+```
+
+**No new library needed** - native `navigator.share()` with copy-to-clipboard fallback.
+
+---
+
+### Upload Resume (ADV-02)
+
+**Implementation:** Create Zustand store with localStorage persistence
+
+Current `Upload.tsx` already tracks:
+- File status (uploading, complete, error)
+- Progress via XHR
+- Error messages
+
+**What needs to be added:**
+1. New `uploadStore.ts` with persist middleware (localStorage)
+2. Queue structure: `{ file, progress, status, retryCount }`
+3. On page mount: hydrate from localStorage, resume pending uploads
+4. Clean up completed uploads from persistence
+
+**Zustand persist with localStorage:**
+```typescript
+export const useUploadStore = create(
+  persist(
+    (set, get) => ({
+      queue: [], // UploadingFile[]
+      addToQueue: (files) => set(state => ({ queue: [...state.queue, ...files] })),
+      removeFromQueue: (id) => set(state => ({ queue: state.queue.filter(f => f.id !== id) })),
+      updateProgress: (id, progress) => set(state => ({
+        queue: state.queue.map(f => f.id === id ? { ...f, progress } : f)
+      })),
+      // On mount, filter out completed items older than 1 hour
+    }),
+    { name: 'upload-queue', storage: createJSONStorage(() => localStorage) }
+  )
+);
+```
+
+**No new library needed** - uses existing Zustand with persist middleware.
+
+---
+
+### PWA Offline (ADV-01)
+
+**Implementation:** Enhance workbox configuration in vite.config.js
+
+Current setup:
+- vite-plugin-pwa v1.2.0 already configured
+- Service worker registered via `virtual:pwa-register`
+- Basic caching via workbox (globPatterns: ['**/*.{js,css,html,ico,png,svg,webp}'])
+
+**What's needed:** Add runtime caching strategy for gallery images from Supabase storage
+
+**Enhanced workbox config:**
+```javascript
+VitePWA({
+  workbox: {
+    cleanupOutdatedCaches: true,
+    clientsClaim: true,
+    skipWaiting: true,
+    runtimeCaching: [
+      {
+        urlPattern: /^https:\/\/.*\.supabase\.co\/storage\/.*/i,
+        handler: 'CacheFirst',
+        options: {
+          cacheName: 'gallery-media',
+          expiration: {
+            maxEntries: 200,
+            maxAgeSeconds: 30 * 24 * 60 * 60, // 30 days
+          },
+          cacheableResponse: { statuses: [0, 200] },
+        },
+      },
+      {
+        urlPattern: /^https:\/\/.*\.supabase\.co\/rest\/.*/i,
+        handler: 'NetworkFirst',
+        options: {
+          cacheName: 'api-cache',
+          expiration: {
+            maxEntries: 50,
+            maxAgeSeconds: 5 * 60, // 5 minutes
+          },
+        },
+      },
+    ],
+  },
+})
+```
+
+**No new library needed** - workbox is bundled with vite-plugin-pwa.
+
+---
+
+### Guest Upload Status (ADV-03)
+
+**Implementation:** Extend upload store + Supabase status polling
+
+Current: Upload shows "pending review" message after completion.
+
+**What's needed:**
+1. Store upload reference ID in localStorage after submission
+2. Poll Supabase for status (or use Supabase Realtime subscription)
+3. Show "Your photo is being reviewed" with status updates
+
+**Supabase Realtime for live status:**
+```typescript
+const channel = supabase
+  .channel('upload-status')
+  .on('postgres_changes', {
+    event: 'UPDATE',
+    schema: 'public',
+    table: 'guest_uploads',
+    filter: `id=eq.${uploadId}`
+  }, (payload) => {
+    setStatus(payload.new.status); // 'pending' | 'approved' | 'rejected'
+  })
+  .subscribe();
+```
+
+**No new library needed** - Supabase Realtime is already part of the client.
+
+---
 
 ## Installation
 
 ```bash
-# Core (already installed)
-npm install react@^19.2.4 react-dom@^19.2.4
-npm install @supabase/supabase-js@^2.99.0
-npm install zustand@5.0.11 framer-motion@12.35.2
-npm install tailwindcss@^4.1.18 @tailwindcss/vite@^4.2.1
+# Only new dependency needed
+npm install @tanstack/react-virtual
 
-# Supporting (already installed)
-npm install react-masonry-css@^1.0.16 lucide-react@0.577.0
-npm install @radix-ui/react-dialog@1.1.15 @radix-ui/react-dropdown-menu@2.1.16
-npm install @radix-ui/react-tabs@1.1.13 @radix-ui/react-toast@1.2.15
-npm install zod@4.3.6
-
-# Dev dependencies (ensure current)
-npm install -D sharp@^0.34.5
+# No other libraries required for v1.1 features
 ```
 
 ## Alternatives Considered
 
 | Recommended | Alternative | When to Use Alternative |
 |-------------|-------------|------------------------|
-| react-masonry-css | `react-virtuoso` or `@tanstack/react-virtual` | When gallery exceeds 500 visible items and scrolling becomes choppy |
-| Zustand | Redux Toolkit | If team has more Redux experience; Zustand is simpler for this use case |
-| Framer Motion | `react-spring` | If needing more physics-based control; Framer Motion has better React 19 support |
+| @tanstack/react-virtual | react-virtuoso | If need pre-built grid/list components with built-in infinite scroll |
+| @tanstack/react-virtual | react-window | If targeting React 16-17 only (react-window lacks React 19 support) |
+| Native Web Share API | share-api package | Native API has better mobile UX, fallback works everywhere |
+| Zustand localStorage | redux-persist | Zustand is already in use, simpler for this use case |
+| Supabase Realtime | socket.io-client | Supabase Realtime is already configured, no extra server needed |
 
 ## What NOT to Use
 
 | Avoid | Why | Use Instead |
 |-------|-----|-------------|
-| `react-lazy-load-image-component` | Deprecated pattern; conflicts with native `loading="lazy"` and React 19 concurrent features | Native lazy loading + Intersection Observer |
-| Redux + Redux Thunk | Over-engineered for this use case; Zustand provides same functionality with 1/10th the boilerplate | Zustand with its `devtools` middleware |
-| Full-page carousel | Poor UX for wedding galleries with many photos; users cannot scan or browse | Masonry grid or lightbox with keyboard navigation |
-| Client-side image resizing via Canvas | Performance hit on mobile; edge cases with EXIF orientation | Server-side Sharp processing (already in use) + Supabase image transformations |
+| react-lazy-load-image-component | Deprecated, conflicts with native lazy loading | Native `loading="lazy"` + Intersection Observer |
+| react-share | Over-engineered, limited customization | Native Web Share API + custom buttons |
+| Workbox via CDN | Harder to configure with Vite | vite-plugin-pwa workbox (already using) |
+| Redux | Over-engineered for this use case | Zustand with persistence middleware |
+| Socket.io | Extra server dependency | Supabase Realtime (already configured) |
 
-## Stack Patterns by Variant
+## Integration Points
 
-**If gallery has > 200 visible photos:**
-- Use virtualization with `@tanstack/react-virtual`
-- Lazy load in batches of 50
-- Because masonry without virtualization causes memory issues
+### Gallery Virtualization Integration
+```
+src/stores/galleryStore.ts (existing)
+  └── Add virtualizer state (columns, rowHeights)
+src/components/gallery/
+  ├── GalleryGrid.tsx (existing)
+  │   └── Wrap with useVirtualizer
+  └── Lightbox.tsx (existing)
+      └── Works with virtualized indices
+```
 
-**If upload files exceed 50MB:**
-- Implement chunked uploads using `supabase.storage.from().uploadPart()`
-- Show granular progress (chunk X of Y)
-- Because single-file uploads can timeout on slow connections
+### Upload Resume Integration
+```
+src/stores/uploadStore.ts (new)
+  └── persist to localStorage with resume queue
+src/pages/Upload.tsx (existing)
+  └── On mount, hydrate from localStorage
+```
 
-**If moderation queue exceeds 100 pending items:**
-- Add server-side pagination to admin queries (not fetching all at once)
-- Filter by date range, collection, status
-- Because loading 100+ high-res thumbnails freezes the browser
+### Social Sharing Integration
+```
+src/components/social/ShareButtons.tsx (new)
+  └── Uses SEOHead dynamic image updates
+src/pages/Gallery.tsx (existing)
+  └── Add share button to photo context menu
+```
+
+### PWA Offline Integration
+```
+vite.config.js (existing)
+  └── Enhance workbox runtimeCaching
+src/utils/serviceWorker.ts (existing)
+  └── Already has swManager, extend for cache events
+```
 
 ## Version Compatibility
 
 | Package A | Compatible With | Notes |
 |-----------|-----------------|-------|
-| React 19.2.x | Framer Motion 12.x | Tested in current codebase. |
-| React 19.2.x | Zustand 5.x | Tested in current codebase. |
-| Supabase JS 2.99.x | Supabase Server | Use matching server version for RLS policies. |
-| Tailwind CSS 4.x | Vite 7.x | Use `@tailwindcss/vite` plugin (already in use). |
-| Sharp 0.34.x | Node 20+ | Required for build scripts. |
-
-## Current Stack Analysis
-
-**Already in use (verified from package.json):**
-- React 19.2.4, React Router 7.13.1, Zustand 5.0.11
-- Supabase JS 2.99.0 (storage, auth, database)
-- Framer Motion 12.35.2, Lenis 1.3.18 (smooth scroll)
-- Tailwind CSS 4.1.18, Lucide React 0.577.0
-- Radix UI Dialog, DropdownMenu, Tabs, Toast, Tooltip
-- Sentry for error tracking
-- Playwright for e2e testing
-
-**Existing patterns to preserve:**
-- Gallery masonry with `react-masonry-css`
-- Upload flow with fingerprinting for deduplication
-- Admin moderation with Supabase RLS
-
-**Gaps identified in current codebase:**
-1. No image virtualization (memory risk with large galleries)
-2. No upload progress persistence across page refreshes
-3. MediaReviewPanel.tsx is 900+ lines (needs component breakup)
-4. Gallery makes parallel Supabase calls without caching
-5. No LQIP (low-quality image placeholder) strategy
+| React 19.2.x | @tanstack/react-virtual 3.x | Tested: react >=16.8.0 supports React 19 |
+| React 19.2.x | Framer Motion 12.x | Already verified in codebase |
+| React 19.2.x | Zustand 5.x | Already verified in codebase |
+| Supabase JS 2.99.x | React 19 | Official Supabase client supports React 19 |
+| vite-plugin-pwa 1.2.0 | workbox-window 7.x | peerDeps specify workbox ^7.4.0 |
+| Tailwind CSS 4.x | Vite 7.x | Via @tailwindcss/vite plugin |
 
 ## Sources
 
-- [Supabase Storage Documentation](https://supabase.com/docs/reference/javascript/storage-createbucket) - Storage bucket creation and file management patterns, MEDIUM confidence
-- [React 19 Blog](https://react.dev/blog) - React 19 features including concurrent features for performance, HIGH confidence
-- [package.json dependencies](file://C:/Users/bbask/Coding_Projects/Wedding_Website_Clean/package.json) - Current installed versions, HIGH confidence
-- Codebase analysis: Gallery.tsx, Upload.tsx, PhotoModeration.tsx, galleryStore.ts - Current implementation patterns, HIGH confidence
+- [TanStack Virtual - Context7](https://ctx7.com/tanstack/virtual) - Library documentation and React integration patterns, **HIGH confidence**
+- [npm info @tanstack/react-virtual](https://www.npmjs.com/package/@tanstack/react-virtual) - Current version 3.13.24, peerDeps show React 19 support, **HIGH confidence**
+- [vite-plugin-pwa docs](https://vite-pwa.dev/) - Workbox configuration for offline gallery caching, **HIGH confidence**
+- [Web Share API - MDN](https://developer.mozilla.org/en-US/docs/Web/API/Web_Share_API) - Native sharing with fallback, **HIGH confidence**
+- [Supabase Realtime](https://supabase.com/docs/guides/realtime) - Live status updates for upload queue, **HIGH confidence**
+- [package.json dependencies](file://C:/Users/bbask/Coding_Projects/Wedding_Website_Clean/package.json) - Current installed versions, **HIGH confidence**
+- [Gallery store analysis](file://C:/Users/bbask/Coding_Projects/Wedding_Website_Clean/src/stores/galleryStore.ts) - Current caching implementation, **HIGH confidence**
+- [SEOHead component](file://C:/Users/bbask/Coding_Projects/Wedding_Website_Clean/src/components/seo/SEOHead.tsx) - Existing OG tag implementation, **HIGH confidence**
+- [Upload component](file://C:/Users/bbask/Coding_Projects/Wedding_Website_Clean/src/pages/Upload.tsx) - Current upload flow, **HIGH confidence**
+- [vite.config.js](file://C:/Users/bbask/Coding_Projects/Wedding_Website_Clean/vite.config.js) - Current PWA configuration, **HIGH confidence**
 
 ---
-*Stack research for: Wedding Memory Archive*
-*Researched: 2026-04-23*
+*Stack research for: Wedding Memory Archive v1.1*
+*Researched: 2026-04-24*

@@ -1,161 +1,171 @@
 # Project Research Summary
 
-**Project:** Wedding Archive Website (theporadas.com)
-**Domain:** Post-wedding photo/video archive and guest interaction platform
-**Researched:** 2026-04-23
-**Confidence:** MEDIUM-HIGH
+**Project:** Wedding Archive v1.1 Feature Expansion
+**Domain:** Wedding Memory Archive Website (theporadas.com)
+**Researched:** 2026-04-24
+**Confidence:** HIGH
 
 ## Executive Summary
 
-The wedding archive website is a content-heavy, read-heavy application requiring strong gallery performance, reliable upload handling, and an effective admin moderation workflow. Experts build these platforms with virtualization at scale, centralized state management, and progressive enhancement for the upload experience. The current codebase has a solid foundation (React 19, Supabase, Tailwind 4, Zustand, Framer Motion) but suffers from component-level state fragmentation, missing upload persistence, and a monolithic MediaReviewPanel that needs decomposition.
+This project expands an existing wedding archive (React 19 + Supabase + Zustand) with 7 new features: gallery virtualization, guest reactions polish, featured spotlight, social sharing with OG tags, upload resume, upload status feedback, and PWA offline support. The key finding: **only ONE new library is needed** (@tanstack/react-virtual). Everything else leverages existing infrastructure or Supabase schema changes.
 
-The recommended approach prioritizes foundation work first: consolidate state management into Zustand stores with proper caching, decompose the 900+ line MediaReviewPanel into focused components, and ensure auth operations are race-condition free. Gallery performance and upload polish follow, then admin controls refinement. This sequence respects dependencies: gallery caching must exist before virtualization improvements, and MediaReviewPanel decomposition enables parallel admin work.
-
-Key risks center on state management consistency (existing `useState` in Gallery.tsx vs new Zustand stores), photo type drift between local definitions and supabase.ts exports, and seasonal code paths that may bypass error boundaries. Mitigation requires explicit state ownership, type consolidation, and feature-flag-first seasonal rendering.
+The recommended approach is to implement features in dependency order: social sharing and upload resume first (no dependencies), then guest reactions (requires DB migration), then gallery virtualization (core performance), then featured spotlight, then PWA offline. The critical risk is masonry virtualization breaking scroll behavior - this requires row-based virtualizer approach, not item-based. Additionally, OG tags set via useEffect will not be crawled by social bots, requiring SSR or static OG image generation.
 
 ## Key Findings
 
 ### Recommended Stack
 
-The existing stack is well-suited for this domain. React 19's concurrent features enable smooth gallery scrolling without complex virtualization. Supabase provides all backend needs: database, auth, storage with built-in image transformations. Zustand handles state management with minimal boilerplate. Framer Motion delivers polished animations and lightbox transitions.
+The existing stack requires minimal changes. Only **@tanstack/react-virtual 3.13.24** is needed for gallery virtualization. Everything else is implementation work within existing patterns.
 
-**Core technologies:**
-- React 19.x — UI framework with concurrent features for gallery performance
-- Supabase 2.99.x — backend (DB, Auth, Storage) with RLS for moderation workflow
-- Tailwind CSS 4.x — styling with CSS-first configuration
-- Zustand 5.x — lightweight state management with devtools support
-- Framer Motion 12.x — best-in-class animation library for transitions
+**Core technologies (no changes needed):**
+- React 19.2.4, Supabase 2.99.0, Zustand 5.0.11, Framer Motion 12.35.2, Tailwind CSS 4.1.18, Vite 7.3.2
+- vite-plugin-pwa 1.2.0 already configured, needs workbox tuning for offline gallery
+- react-router-dom 7.13.1 with lazy-loaded routes
 
-**Critical gaps identified:**
-- No gallery virtualization (memory risk at 200+ photos)
-- No upload progress persistence (progress lost on refresh)
-- MediaReviewPanel.tsx at 900+ lines needs decomposition
-- Gallery makes parallel Supabase calls without caching
-- No LQIP (low-quality image placeholder) strategy
+**New library:**
+- @tanstack/react-virtual: Headless virtualization for 200+ photo galleries with masonry support
+
+**No new libraries needed for:**
+- Guest reactions: Supabase RPC + existing lucide-react Heart icon
+- Social sharing: Native Web Share API with clipboard fallback
+- Upload resume: Zustand persist middleware with localStorage
+- Upload status: Supabase Realtime (already configured)
+- PWA offline: Workbox via vite-plugin-pwa (already bundled)
 
 ### Expected Features
 
-**Must have (table stakes):**
-- Photo gallery with album organization — users expect to browse by event/date
-- Lightbox image viewing — standard expectation from all photo apps
-- Video playback — wedding films are central memories
-- Guest upload functionality — "Share your photos" expected at weddings
-- Mobile responsiveness — 60%+ of guests view on phone
-- Loading states everywhere — users panic without feedback
-- Error states with recovery — something always fails
+**Must have (table stakes - P1):**
+- Gallery virtualization: Handle 200+ photos without scroll lag, use @tanstack/react-virtual with row-based masonry approach
+- Guest reactions polish: Fix optimistic update rollback, ensure reactions persist after page reload
+- Social sharing with OG tags: Per-page OG meta, dynamic og:image for gallery shares (note: needs SSR approach, not useEffect)
+- Upload resume: localStorage queue with metadata only (NOT File objects which are non-serializable)
+- Guest upload status: Post-submission status display with pending/approved/rejected states
 
-**Should have (competitive):**
-- Face-tagged people gallery — high value differentiator vs generic wedding sites
-- Admin content moderation queue — clean site, quality over quantity
-- Lazy loading with placeholder shimmer — fast perceived performance
-- Guest upload progress persistence — "Will my upload survive page refresh?"
-- Featured content spotlight — couple highlights best moments
+**Should have (competitive - P2):**
+- Featured content spotlight: Wire admin FeatureContentManager to homepage display
+- PWA offline verification: Full offline gallery test with Supabase storage URL caching
 
 **Defer (v2+):**
-- PWA offline verification — verify full offline gallery browsing
-- Photo moment captions — context text on photos
-- Album cover customization — admin sets covers
-- Guest upload queue status — "Your photo is being reviewed" feedback
+- Real-time sync of reactions: Use optimistic updates instead (not worth Supabase Realtime complexity)
+- Photo comments/tagging: Use existing people gallery with face tagging instead
+- Push notifications: Use email notification on approval instead
 
 ### Architecture Approach
 
-The system follows a layered architecture: UI Layer (React components) → State Layer (Zustand stores) → Service Layer (galleryService, uploadService, moderationService) → Data Layer (Supabase). The GalleryStore manages gallery state, filters, pagination, and selection. The UploadStore (new) manages upload queue, progress, and retry state. AuthStore handles session and admin status.
+The architecture extends existing patterns with new stores, hooks, and components. Virtualization wraps PhotoGrid via VirtualizedPhotoGrid component. Upload queue persists to localStorage via new uploadQueueStore. Guest reactions use useGuestReactions hook with optimistic updates and rollback. Featured spotlight uses existing site_editorial_features table with new FeaturedSpotlight component. PWA offline extends workbox with runtime caching for Supabase storage URLs.
 
 **Major components:**
-1. GalleryStore — centralized gallery state with caching; replaces component-level useState
-2. uploadStore (new) — manages upload queue with progress tracking, pause/resume, retry
-3. galleryService — service layer with in-memory cache for Supabase responses to avoid repeated calls
-4. MediaReviewPanel decomposition — break 900+ line component into BatchList, FaceReviewGrid, ClusterMergeModal, FaceTaggingConfirmation, ReviewImportManifest
+1. VirtualizedPhotoGrid: Replaces PhotoGrid rendering with @tanstack/react-virtual for visible-only rendering
+2. uploadQueueStore: Zustand store persisting upload queue to localStorage (metadata only, not File objects)
+3. useGuestReactions: Encapsulates optimistic reaction updates with rollback on failure
+4. FeaturedSpotlight: Displays featured content from site_editorial_features on Home
+5. ShareButtons: Social share with per-photo OG image URL generation
 
 ### Critical Pitfalls
 
-1. **Photo Gallery "Feels Incomplete"** — Gallery state in component useState causes inconsistent behavior; add loading skeletons, implement shared lightbox state in Zustand, use Framer Motion shared layout for transitions. Address in Phase 2.
+1. **Masonry virtualization breaks scroll**: Row-based virtualizer required, not item-based. Pre-calculate item heights or use fixed aspect ratio containers. Warning: scroll position jumps, items cut off, blank gaps.
 
-2. **Guest Upload Abandonment** — No visible progress, cryptic errors, progress lost on refresh. Implement per-file progress bars, persist upload queue to localStorage, add retry logic for large files. Address in Phase 3.
+2. **Optimistic update without rollback**: Current Guestbook.tsx catches errors but does nothing. Store previous state, restore in catch block. Warning: reaction counts differ after reload.
 
-3. **Admin Tool Complexity Creep** — MediaReviewPanel at 900+ lines handles batches, faces, clusters, UI. Decompose into discrete sub-pages with one primary action per card. Address in Phase 1 (foundation) and Phase 4 (admin polish).
+3. **OG tags via useEffect not crawled**: Social bots see raw HTML before JS executes. Use SSR or static generation for OG tags. Warning: Facebook debugger shows incorrect thumbnail.
 
-4. **Breaking Auth During Refactor** — Race conditions between initializeAuth and refreshSession documented in CONCERNS.md. Implement auth state machine, queue operations, consolidate to single Supabase client. Address in Phase 1.
+4. **File objects not serializable to localStorage**: File objects are browser constructs, not JSON-serializable. Store metadata only (name, size, type, fingerprint), prompt user to re-select files on restore. Warning: silent failure, empty queue on reload.
 
-5. **State Management Inconsistency After Migration** — Moving to Zustand but components still hold local state causes data to appear inconsistent. Inventory all gallery state before migration, remove component state in same PR that adds Zustand state. Address in Phase 2.
+5. **PWA cache invalidation causes white screen**: New JS bundles have different hashes. Use registerType: 'prompt' or implement update notification. Warning: white screen after deploy.
 
 ## Implications for Roadmap
 
 Based on research, suggested phase structure:
 
-### Phase 1: Foundation & Auth Polish
-**Rationale:** Critical path dependencies — MediaReviewPanel decomposition enables parallel admin work; auth fixes prevent race conditions during later phases; type consolidation prevents drift.
-**Delivers:** Decomposed MediaReviewPanel (BatchList, FaceReviewGrid, ClusterMergeModal, FaceTaggingConfirmation, ReviewImportManifest); consolidated Photo type from src/lib/supabase.ts; auth state machine with explicit states; single Supabase client; error boundaries on admin routes; console.* replaced with logger utility; Edge Function rate limiting.
-**Addresses:** Pitfalls 3 (admin complexity), 4 (auth race conditions), 7 (type drift), 8 (console errors), 10 (rate limiting bypass)
-**Avoids:** Breaking existing functionality while enabling parallel work
+### Phase 1: Social Sharing & Upload Resume
+**Rationale:** No database changes, no complex patterns, builds on existing infrastructure. These features unlock shareability and upload reliability immediately.
+**Delivers:** ShareButtons component with per-photo OG support, uploadQueueStore with localStorage persistence
+**Addresses:** SOCIAL-01, SOCIAL-02, ADV-02
+**Avoids:** OG tags via useEffect (must use SSR-compatible approach)
 
-### Phase 2: Gallery Performance & UX
-**Rationale:** Depends on GalleryStore caching from foundation; virtualization requires stable state management; state consolidation must happen before performance work.
-**Delivers:** Zustand GalleryStore with caching layer (galleryService.ts); virtualized MasonryGrid with react-window for 200+ photos; shared lightbox state in Zustand with Framer Motion transitions; loading skeletons matching expected photo dimensions; LQIP strategy for gallery images.
-**Addresses:** Pitfalls 1 (gallery feels incomplete), 6 (state inconsistency)
-**Implements:** Pattern 1 (Virtualized Gallery), Pattern 4 (Gallery Caching Layer)
+### Phase 2: Guest Reactions Polish
+**Rationale:** Requires DB schema change (reactions column) and Supabase RPC function. Should be in same phase as gallery virtualization since both touch Guestbook.tsx.
+**Delivers:** Reactions JSONB column, atomic RPC, useGuestReactions hook with proper rollback
+**Addresses:** GALLERY-06
+**Avoids:** Optimistic update without rollback pitfall
 
-### Phase 3: Upload Experience Polish
-**Rationale:** Upload reliability critical for guest engagement; queue must exist before broadening upload access; depends on UploadStore foundation.
-**Delivers:** UploadStore with queue persistence (localStorage); per-file progress bars with percentage; specific error messages (network timeout vs file too large); chunked uploads for files >10MB; success confirmation with "what happens next"; session tracking with resume capability.
-**Addresses:** Pitfalls 2 (upload abandonment)
-**Implements:** Pattern 2 (Upload Queue with Retry)
+### Phase 3: Gallery Virtualization
+**Rationale:** Core performance feature. Must be row-based for masonry compatibility. Affects PhotoGrid, galleryStore, and Lightbox integration.
+**Delivers:** VirtualizedPhotoGrid component, masonry-compatible virtualizer
+**Addresses:** GALLERY-05
+**Avoids:** Masonry virtualization breakage - use row-based approach with pre-calculated heights
 
-### Phase 4: Admin Controls & Moderation
-**Rationale:** Final integration; admin polish depends on decomposed components from Phase 1 and moderation service patterns.
-**Delivers:** Admin moderation queue with approve/reject/feature workflow; pagination for batch queries; bulk actions with clear individual override; error recovery UI on all admin pages; optimistic UI patterns with rollback on failure.
-**Addresses:** Pitfalls 3 (admin complexity creep), 9 (dead UI after network errors)
-**Implements:** Pattern 3 (Admin Panel Decomposition), Pattern 5 (Error Boundary Per Admin Route)
+### Phase 4: Featured Spotlight
+**Rationale:** Depends on moderation queue existing. Home page integration with existing GuestHighlightReel sections.
+**Delivers:** FeaturedSpotlight component, Home page integration
+**Addresses:** GALLERY-07
+**Avoids:** Featured spotlight not reflecting admin selections - ensure status='approved' filter
+
+### Phase 5: PWA Offline Verification
+**Rationale:** Configuration work on vite.config.js workbox settings. Caches Supabase storage URLs for offline gallery browsing.
+**Delivers:** Runtime caching for gallery images, offline fallback testing
+**Addresses:** ADV-01
+**Avoids:** PWA cache invalidation white screen - verify update flow after deploy
 
 ### Phase Ordering Rationale
 
-- **Foundation first:** MediaReviewPanel decomposition and auth fixes are prerequisites for parallel work. Cannot safely add admin features without component decomposition and auth stability.
-- **Gallery before admin polish:** State consolidation and virtualization must happen before refining admin controls. Prevents working on admin features with unstable state foundations.
-- **Upload after foundation, before final admin:** Upload experience depends on UploadStore which depends on foundation patterns. Completes before final admin polish for integration.
-- **Pitfall mapping ensures coverage:** Each phase directly addresses mapped pitfalls, preventing known failure modes.
+- Social sharing and upload resume have no dependencies, come first
+- Guest reactions need DB migration, logically groups with virtualization work
+- Virtualization is the core performance concern, should happen before spotlight which is decorative
+- PWA offline is configuration work, can come last
+- Featured spotlight is lowest priority (P2) among must-haves
 
 ### Research Flags
 
 Phases likely needing deeper research during planning:
-- **Phase 2 (Gallery Performance):** Virtualization patterns with masonry layout — current `react-masonry-css` lacks virtualization; evaluate `@tanstack/react-virtual` vs `react-virtuoso`. Skip research if gallery under 200 photos.
-- **Phase 3 (Upload Polish):** Chunked upload implementation — Edge Function storage patterns for resumable uploads need API research.
+- **Phase 3 (Gallery Virtualization):** Complex integration with masonry layout, may need detailed API research for useVirtualizer configuration
+- **Phase 4 (Featured Spotlight):** Verify admin FeatureContentManager fully covers needs before implementing display
 
 Phases with standard patterns (skip research-phase):
-- **Phase 1 (Foundation):** Component decomposition, auth patterns, error boundaries — well-documented React patterns
-- **Phase 4 (Admin Polish):** Pagination, bulk actions, optimistic UI — standard admin patterns
+- **Phase 1 (Social Sharing):** Web Share API is well-documented, OG tag patterns are standard
+- **Phase 2 (Guest Reactions):** Optimistic update patterns are standard, Supabase RPC is documented
+- **Phase 5 (PWA Offline):** Workbox configuration is well-documented by Google
 
 ## Confidence Assessment
 
 | Area | Confidence | Notes |
 |------|------------|-------|
-| Stack | HIGH | Based on existing codebase analysis and package.json verification |
-| Features | MEDIUM-HIGH | Domain knowledge + competitor analysis; web search unavailable for verification |
-| Architecture | HIGH | Based on existing codebase analysis and established React patterns |
-| Pitfalls | MEDIUM-HIGH | Based on CONCERNS.md documented issues and known patterns |
+| Stack | HIGH | Single new library needed, everything else verified in existing codebase |
+| Features | HIGH | All features identified with implementation approach, priority matrix clear |
+| Architecture | HIGH | New components and integration points mapped, patterns well-understood |
+| Pitfalls | MEDIUM | Some pitfalls (OG tag crawler, masonry virtualization) need verification during implementation |
 
-**Overall confidence:** MEDIUM-HIGH
+**Overall confidence:** HIGH
 
 ### Gaps to Address
 
-- **Gallery scale:** Unclear if gallery will exceed 200 photos. If <200, virtualization may be unnecessary. Validate during Phase 2 planning.
-- **Upload volume:** No data on expected guest uploads. Rate limiting strategy depends on volume estimates.
-- **Face tagging UX:** FaceReviewGrid component design needs user research. Current assumption may not match actual admin workflow.
+- **OG tag SSR:** Need to verify whether Netlify supports SSR or if static OG image generation is needed. Facebook debugger testing required after implementation.
+- **Masonry virtualizer:** Need to verify row-based approach works with existing MasonryGrid component. May need to create simplified grid layout for virtualization.
+- **RLS policy audit:** Before Phase 4 (Featured Spotlight), verify site_editorial_features RLS policies allow admin access.
 
 ## Sources
 
 ### Primary (HIGH confidence)
-- `package.json` dependencies — current installed versions, verified in codebase
-- Codebase analysis: Gallery.tsx, Upload.tsx, PhotoModeration.tsx, galleryStore.ts — current implementation patterns
+- STACK.md: Verified existing stack, library compatibility, installation approach
+- FEATURES.md: Feature prioritization matrix with complexity estimates, implementation approach for each
+- ARCHITECTURE.md: Component structure, data flow, build order with dependencies
+- PITFALLS.md: Critical pitfalls with prevention strategies and recovery approaches
 
-### Secondary (MEDIUM-HIGH confidence)
-- `.planning/codebase/CONCERNS.md` — documented issues, auth race conditions
-- `.planning/PROJECT.md` — project requirements and constraints
-- React 19 Blog — concurrent features documentation
+### Codebase Sources (HIGH confidence)
+- package.json: Current installed versions for compatibility verification
+- src/stores/galleryStore.ts: Existing caching implementation
+- src/components/gallery/PhotoGrid.tsx, MasonryGrid.tsx: Current masonry layout structure
+- src/pages/Guestbook.tsx: Current reaction handling with optimistic updates
+- src/pages/Upload.tsx: Current upload flow and progress tracking
+- src/components/seo/SEOHead.tsx: Existing OG tag implementation
+- vite.config.js: Current PWA configuration
 
-### Tertiary (MEDIUM confidence)
-- Supabase Storage Documentation — storage patterns, needs verification for chunked upload patterns
-- Domain knowledge — wedding photo archive product patterns, not verified via external sources
+### Documentation Sources (HIGH confidence)
+- @tanstack/react-virtual documentation: React 19 compatible, peerDeps verified
+- vite-plugin-pwa docs: Workbox configuration for offline gallery caching
+- MDN Web Share API: Native sharing with fallback
+- Supabase Realtime: Already configured, documented integration
 
 ---
-*Research completed: 2026-04-23*
+*Research completed: 2026-04-24*
 *Ready for roadmap: yes*
