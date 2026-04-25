@@ -1,4 +1,5 @@
 import { useState, useEffect, useCallback, useRef } from 'react'
+import { createPortal } from 'react-dom'
 import { motion, AnimatePresence } from 'framer-motion'
 import { Button } from '@/components/ui/Button'
 import { Avatar } from '@/components/ui/Avatar'
@@ -143,7 +144,7 @@ export function PhotoLightbox({
   return (
     <>
       <AnimatePresence>
-        {isOpen && (
+        {isOpen && createPortal(
           <motion.div
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
@@ -276,7 +277,7 @@ export function PhotoLightbox({
                   </AnimatePresence>
                   {/* Vignette overlay */}
                   <div className="pointer-events-none absolute inset-0 rounded-lg bg-[radial-gradient(ellipse_at_center,transparent_45%,rgba(0,0,0,0.32)_100%)]" />
-                  
+
                   {/* Face Tags Overlay */}
                   {shouldRenderFaceOverlay && visibleFaces.map((face) => (
                     <button
@@ -289,8 +290,8 @@ export function PhotoLightbox({
                     >
                       <div className={cn(
                         "w-full h-full rounded-full border-2 transition-all",
-                        activeSelectedFaceId === face.id 
-                          ? "border-gold-400 bg-gold-400/20" 
+                        activeSelectedFaceId === face.id
+                          ? "border-gold-400 bg-gold-400/20"
                           : "border-white/70 hover:border-gold-400 hover:bg-gold-400/10"
                       )} />
                       {(activeSelectedFaceId === face.id || Boolean(highlightedFaceName)) && (
@@ -331,8 +332,8 @@ export function PhotoLightbox({
                     aria-label={currentPhoto.liked ? 'Unlike photo' : 'Like photo'}
                     className={cn(
                       "flex min-h-11 items-center gap-2 px-4 py-2 rounded-full transition-colors",
-                      currentPhoto.liked 
-                        ? "bg-rose-500 text-white" 
+                      currentPhoto.liked
+                        ? "bg-rose-500 text-white"
                         : "bg-white/10 text-white/80 hover:bg-white/20"
                     )}
                   >
@@ -431,7 +432,7 @@ export function PhotoLightbox({
                             </p>
                           </div>
                         )}
-                        
+
                         {(currentPhoto.time || currentPhoto.date) && (
                           <div className="flex items-center gap-2 text-charcoal-500 text-sm">
                             <Clock className="w-4 h-4 text-gold-500" />
@@ -514,7 +515,8 @@ export function PhotoLightbox({
                 </motion.div>
               )}
             </AnimatePresence>
-          </motion.div>
+          </motion.div>,
+          document.body
         )}
       </AnimatePresence>
 

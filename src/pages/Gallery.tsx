@@ -2,7 +2,7 @@ import { useState, useMemo, useEffect, useDeferredValue, useRef } from 'react'
 import { AnimatePresence, motion } from 'framer-motion'
 import { useSearchParams } from 'react-router-dom'
 import { GallerySEO } from '@/components/seo/SEOHead'
-import { PhotoGrid } from '@/components/gallery/PhotoGrid'
+import { VirtualizedPhotoGrid } from '@/components/gallery/VirtualizedPhotoGrid'
 import { PhotoLightbox } from '@/components/photo-viewer/PhotoLightbox'
 import { FaceRecognition } from '@/components/face-recognition/FaceRecognition'
 import { Button } from '@/components/ui/Button'
@@ -1316,9 +1316,8 @@ export default function Gallery() {
                     {viewMode === 'timeline' ? (
                       <div>
                         <h2 className="mb-4 font-display text-2xl text-charcoal-900">Timeline view</h2>
-                        <PhotoGrid
+                        <VirtualizedPhotoGrid
                           photos={displayedItems}
-                          viewMode="masonry"
                           onPhotoClick={selectMode ? undefined : (_, index) => openLightbox(index)}
                           onLike={selectMode ? undefined : handleLike}
                           selectMode={selectMode}
@@ -1327,9 +1326,8 @@ export default function Gallery() {
                         />
                       </div>
                     ) : (
-                      <PhotoGrid
+                      <VirtualizedPhotoGrid
                         photos={displayedItems}
-                        viewMode={viewMode as 'masonry' | 'grid'}
                         onPhotoClick={selectMode ? undefined : (_, index) => openLightbox(index)}
                         onLike={selectMode ? undefined : handleLike}
                         selectMode={selectMode}
