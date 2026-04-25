@@ -23,7 +23,6 @@ import {
   X,
 } from 'lucide-react'
 
-import logger from './logger'
 import storage from '@/utils/storage'
 
 const REACTION_FINGERPRINT_KEY = 'wedding-guestbook-session-id'
