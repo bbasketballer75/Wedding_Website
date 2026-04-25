@@ -132,6 +132,9 @@ export function ShareModal({
             <div className="p-6">
               {/* Preview */}
               <div className="bg-cream-50 rounded-xl p-4 mb-6">
+                {imageUrl && (
+                  <img src={imageUrl} alt="" className="w-full h-32 object-cover rounded-lg mb-3" />
+                )}
                 <p className="font-medium text-charcoal-800 mb-1">{title}</p>
                 <p className="text-charcoal-500 text-sm line-clamp-2">{description}</p>
                 <p className="text-gold-600 text-xs mt-2 truncate">{url}</p>
