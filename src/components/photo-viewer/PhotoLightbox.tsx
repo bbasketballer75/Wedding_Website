@@ -343,6 +343,10 @@ export function PhotoLightbox({
                     onClick={(e) => {
                       e.stopPropagation()
                       onShare?.(currentPhoto.id)
+                      // Update URL with ?shared= so copied link reflects the shared photo
+                      const url = new URL(window.location.href)
+                      url.searchParams.set('shared', currentPhoto.id)
+                      window.history.pushState(null, '', url.toString())
                       setShareModalOpen(true)
                     }}
                     type="button"
