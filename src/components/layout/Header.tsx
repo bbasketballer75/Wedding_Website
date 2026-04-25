@@ -27,7 +27,7 @@ function HeaderLink({
       className={cn(
         'flex shrink-0 items-center gap-1 rounded-full px-2 py-2 text-[9px] font-medium leading-none uppercase tracking-[0.16em] transition-all duration-300 max-[360px]:gap-0 max-[360px]:px-1.5 max-[360px]:text-[8px] max-[360px]:tracking-[0.12em] min-[430px]:px-2.5 sm:gap-2 sm:px-4 sm:py-2.5 sm:text-xs sm:tracking-[0.24em]',
         isActive
-          ? 'bg-[linear-gradient(145deg,rgba(58,42,33,0.98),rgba(77,58,44,0.96))] text-cinematic-primary shadow-[0_16px_32px_-24px_rgba(21,20,19,0.72)]'
+          ? 'border-2 border-gold-500 bg-transparent text-gold-700'
           : isPrimary
             ? 'text-gold-700 hover:bg-white/80 hover:text-gold-800'
             : 'text-charcoal-700 hover:bg-white/80 hover:text-charcoal-900'
@@ -36,7 +36,7 @@ function HeaderLink({
       <Icon
         className={cn(
           'h-3.5 w-3.5 max-[360px]:h-3 max-[360px]:w-3 sm:h-4 sm:w-4',
-          isActive ? 'text-gold-200' : isPrimary ? 'text-gold-500' : 'text-gold-600'
+          isActive ? 'text-gold-700' : isPrimary ? 'text-gold-500' : 'text-gold-600'
         )}
       />
       <span className="max-[360px]:hidden sm:hidden">{mobileName}</span>
