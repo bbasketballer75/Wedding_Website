@@ -57,7 +57,9 @@ Plans:
   1. Upload page displays visible progress bar with percentage during file upload
   2. Upload errors show specific messages (network timeout vs file too large) with retry capability
   3. Upload success shows confirmation with "what happens next" info
-**Plans**: TBD
+**Plans**: 1 plan
+Plans:
+- [ ] 03-01-PLAN.md — Upload progress bar, error differentiation, success panel verification
 
 ### Phase 4: Navigation & Design Consistency
 **Goal**: Navigation feels complete and intuitive with cohesive gold theme throughout
@@ -65,9 +67,13 @@ Plans:
 **Requirements**: NAV-01, NAV-02, NAV-03
 **Success Criteria** (what must be TRUE):
   1. Navigation menu feels complete and intuitive with smooth transitions
-  2. Gold theme (#d4af37) consistently applied to all interactive elements across all pages
+  2. Gold theme (#c9a05c) consistently applied to all interactive elements across all pages
   3. Pages load with skeleton screens and scroll smoothly without layout shift
-**Plans**: TBD
+**Plans**: 3 plans
+Plans:
+- [ ] 04-01-PLAN.md — Active nav gold border styling (NAV-01)
+- [ ] 04-02-PLAN.md — Gold theme consistency audit (NAV-02)
+- [ ] 04-03-PLAN.md — Skeleton screens for Gallery and Film pages (NAV-03)
 
 ## Progress
 
@@ -75,5 +81,5 @@ Plans:
 |-------|----------------|--------|-----------|
 | 1. Foundation & Polish | 4/4 | ✓ Complete | 2026-04-24 |
 | 2. Gallery Performance & UX | 4/4 | ✓ Complete | 2026-04-24 |
-| 3. Upload Experience Polish | 0/3 | Not started | - |
+| 3. Upload Experience Polish | 0/1 | Not started | - |
 | 4. Navigation & Design Consistency | 0/3 | Not started | - |
