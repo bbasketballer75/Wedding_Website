@@ -1,50 +1,53 @@
 ---
 gsd_state_version: 1.0
-milestone: v1.0
-milestone_name: v1.0 MVP
-status: milestone_complete
-stopped_at: v1.0 milestone complete (2026-04-25)
+milestone: v1.1
+milestone_name: v1.1 Polish & Feature Expansion
+status: milestone_in_progress
+stopped_at: v1.1 roadmap created (2026-04-25)
 last_updated: "2026-04-25T00:00:00.000Z"
-last_activity: 2026-04-25 — v1.0 milestone shipped
+last_activity: 2026-04-25 — v1.1 roadmap created, phases 5-9 defined
 progress:
-  percent: 100
+  percent: 0
 ---
 
 # Project State
 
 ## Project Reference
 
-See: .planning/PROJECT.md (updated 2026-04-23)
+See: .planning/PROJECT.md (updated 2026-04-25)
 
 **Core value:** Guests and the couple can browse, upload, and share wedding memories in a beautiful, elegant experience that feels finished and polished.
-**Current focus:** Phase 4: Navigation & Design Consistency
+**Current focus:** Phase 5: Social Sharing & Upload Resume
 
 ## Current Position
 
-Phase: Not started (defining requirements)
+Phase: 5 of 9 (Phase 5: Social Sharing & Upload Resume)
 Plan: —
-Status: Defining requirements
-Last activity: 2026-04-24 — Milestone v1.1 started
+Status: Ready to plan
+Last activity: 2026-04-25 — v1.1 roadmap created
 
-Progress: [██████████] 100%
+Progress: [░░░░░░░░░░] 0%
 
 ## Performance Metrics
 
 **Velocity:**
 
-- Total plans completed: 8
+- Total plans completed: 12 (v1.0)
 - Average duration: ~6 min
-- Total execution time: 0.8 hours
+- Total execution time: ~1.2 hours (v1.0)
 
 **By Phase:**
 
 | Phase | Plans | Total | Avg/Plan |
 |-------|-------|-------|----------|
+| 1 | 3 | 3 | ~7 min |
 | 2 | 4 | 4 | ~6 min |
+| 3 | 3 | 3 | ~5 min |
+| 4 | 2 | 2 | ~5 min |
 
 **Recent Trend:**
 
-- Phase 1: 4 plans in ~30 min (3 waves)
+- Phase 4: 2 plans in ~10 min (stable velocity)
 
 *Updated after each plan completion*
 
@@ -52,10 +55,18 @@ Progress: [██████████] 100%
 
 ### Decisions
 
+From v1.0:
 - Phase 1: Foundation first (admin error boundaries, auth fixes, code quality)
 - Phase 2: Gallery state consolidation before performance work
 - Phase 3: Upload polish depends on foundation patterns
 - Phase 4: Navigation and design consistency after core features complete
+
+From v1.1 roadmap:
+- Phase 5: Social sharing and upload resume have no dependencies (come first)
+- Phase 6: Guest reactions need DB migration (reactions column), groups with status feedback
+- Phase 7: Virtualization is core performance (row-based approach required)
+- Phase 8: Moderation queue enables featured spotlight (MOD-03 depends on MOD-01/02)
+- Phase 9: PWA offline is configuration work (comes last)
 
 ### Pending Todos
 
@@ -75,6 +86,6 @@ Items acknowledged and carried forward from previous milestone close:
 
 ## Session Continuity
 
-Last session: 2026-04-24T23:00:00.000Z
-Stopped at: Phase 4 context gathered — ready for planning
-Resume file: .planning/phases/04-navigation-design/04-CONTEXT.md
+Last session: 2026-04-25T00:00:00.000Z
+Stopped at: v1.1 roadmap created, phases 5-9 defined
+Resume file: None (fresh milestone)

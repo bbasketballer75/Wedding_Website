@@ -103,44 +103,43 @@ Explicitly excluded. Documented to prevent scope creep.
 
 | Requirement | Phase | Status |
 |-------------|-------|--------|
-| POLISH-01 | Phase 1 (v1) | ✓ Done |
-| POLISH-02 | Phase 1 (v1) | ✓ Done |
-| POLISH-03 | Phase 1 (v1) | ✓ Done |
-| POLISH-04 | Phase 1 (v1) | ✓ Done |
-| POLISH-05 | Phase 1 (v1) | ✓ Done |
-| POLISH-06 | Phase 1 (v1) | ✓ Done |
-| ADMIN-01 | Phase 1 (v1) | ✓ Done |
-| ADMIN-02 | Phase 1 (v1) | ✓ Done |
-| ADMIN-03 | Phase 1 (v1) | ✓ Done |
-| ADMIN-04 | Phase 1 (v1) | ✓ Done |
-| GALLERY-01 | Phase 2 (v1) | ✓ Done |
-| GALLERY-02 | Phase 2 (v1) | ✓ Done |
-| GALLERY-03 | Phase 2 (v1) | ✓ Done |
-| GALLERY-04 | Phase 2 (v1) | ✓ Done |
-| UPLOAD-01 | Phase 3 (v1) | ✓ Done |
-| UPLOAD-02 | Phase 3 (v1) | ✓ Done |
-| UPLOAD-03 | Phase 3 (v1) | ✓ Done |
-| NAV-01 | Phase 4 (v1) | ✓ Done |
-| NAV-02 | Phase 4 (v1) | ✓ Done |
-| NAV-03 | Phase 4 (v1) | ✓ Done |
-| MOD-01 | TBD (v1.1) | Pending |
-| MOD-02 | TBD (v1.1) | Pending |
-| MOD-03 | TBD (v1.1) | Pending |
-| GAL-01 | TBD (v1.1) | Pending |
-| GAL-02 | TBD (v1.1) | Pending |
-| GAL-03 | TBD (v1.1) | Pending |
-| SOC-01 | TBD (v1.1) | Pending |
-| SOC-02 | TBD (v1.1) | Pending |
-| UPL-01 | TBD (v1.1) | Pending |
-| UPL-02 | TBD (v1.1) | Pending |
-| PWA-01 | TBD (v1.1) | Pending |
+| POLISH-01 | Phase 1 (v1) | Done |
+| POLISH-02 | Phase 1 (v1) | Done |
+| POLISH-03 | Phase 1 (v1) | Done |
+| POLISH-04 | Phase 1 (v1) | Done |
+| POLISH-05 | Phase 1 (v1) | Done |
+| POLISH-06 | Phase 1 (v1) | Done |
+| ADMIN-01 | Phase 1 (v1) | Done |
+| ADMIN-02 | Phase 1 (v1) | Done |
+| ADMIN-03 | Phase 1 (v1) | Done |
+| ADMIN-04 | Phase 1 (v1) | Done |
+| GALLERY-01 | Phase 2 (v1) | Done |
+| GALLERY-02 | Phase 2 (v1) | Done |
+| GALLERY-03 | Phase 2 (v1) | Done |
+| GALLERY-04 | Phase 2 (v1) | Done |
+| UPLOAD-01 | Phase 3 (v1) | Done |
+| UPLOAD-02 | Phase 3 (v1) | Done |
+| UPLOAD-03 | Phase 3 (v1) | Done |
+| NAV-01 | Phase 4 (v1) | Done |
+| NAV-02 | Phase 4 (v1) | Done |
+| NAV-03 | Phase 4 (v1) | Done |
+| MOD-01 | Phase 8 (v1.1) | Pending |
+| MOD-02 | Phase 8 (v1.1) | Pending |
+| MOD-03 | Phase 8 (v1.1) | Pending |
+| GAL-01 | Phase 7 (v1.1) | Pending |
+| GAL-02 | Phase 6 (v1.1) | Pending |
+| GAL-03 | Phase 8 (v1.1) | Pending |
+| SOC-01 | Phase 5 (v1.1) | Pending |
+| SOC-02 | Phase 5 (v1.1) | Pending |
+| UPL-01 | Phase 5 (v1.1) | Pending |
+| UPL-02 | Phase 6 (v1.1) | Pending |
+| PWA-01 | Phase 9 (v1.1) | Pending |
 
 **Coverage:**
-- v1 requirements: 18 total, 18 done ✓
+- v1 requirements: 18 total, 18 done
 - v1.1 requirements: 11 total, 0 done
-- Unmapped: 0 ✓
+- Unmapped: 0
 
 ---
 *Requirements defined: 2026-04-23 (v1), 2026-04-24 (v1.1)*
-*Last updated: 2026-04-24 after v1.1 milestone start*
-*Last updated: 2026-04-23 after research synthesis*
+*Last updated: 2026-04-25 after v1.1 roadmap creation*
