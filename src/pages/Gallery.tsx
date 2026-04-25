@@ -517,6 +517,7 @@ export default function Gallery() {
   const [loadError, setLoadError] = useState<string | null>(null)
   const [engagementSessionId] = useState(getPhotoEngagementSessionId)
   const [submittingCommentPhotoId, setSubmittingCommentPhotoId] = useState<string | null>(null)
+  const [sharedPhotoMeta, setSharedPhotoMeta] = useState<{ url: string; caption?: string } | null>(null)
   const deferredSearchQuery = useDeferredValue(searchQuery)
   const galleryScrollRef = useRef<HTMLDivElement>(null)
   const collectionSwitchDirectionRef = useRef(0)
@@ -601,6 +602,26 @@ export default function Gallery() {
     fetchPhotos()
   }, [engagementSessionId])
 
+  // Fetch shared photo metadata from Supabase when ?shared= param is present
+  useEffect(() => {
+    const requestedShared = searchParams.get('shared')
+    if (!requestedShared) return
+
+    const fetchSharedPhoto = async () => {
+      const { data } = await supabase
+        .from('photos')
+        .select('url, caption')
+        .eq('id', requestedShared)
+        .single()
+
+      if (data) {
+        setSharedPhotoMeta({ url: data.url, caption: data.caption })
+      }
+    }
+
+    fetchSharedPhoto()
+  }, [searchParams])
+
   useEffect(() => {
     const requestedQuery = searchParams.get('q') || ''
     const requestedCollection = searchParams.get('collection') as CollectionTab | null
@@ -678,15 +699,26 @@ export default function Gallery() {
 
   useEffect(() => {
     const requestedPhotoId = searchParams.get('photo')
-    if (!requestedPhotoId || isLoading) {
-      return
-    }
+    const sharedParam = searchParams.get('shared')
 
-    const photoIndex = filteredPhotos.findIndex((photo) => photo.id === requestedPhotoId)
-    if (photoIndex >= 0 && lightboxIndex !== photoIndex) {
-      setLightboxIndex(photoIndex)
+    if (!isLoading) {
+      // Handle ?shared= param
+      if (sharedParam && photos.length > 0) {
+        const photoIndex = photos.findIndex((photo) => photo.id === sharedParam)
+        if (photoIndex >= 0 && lightboxIndex !== photoIndex) {
+          setLightboxIndex(photoIndex)
+          useGalleryStore.getState().openImageModal(photoIndex)
+        }
+      }
+      // Handle ?photo= param
+      else if (requestedPhotoId) {
+        const photoIndex = filteredPhotos.findIndex((photo) => photo.id === requestedPhotoId)
+        if (photoIndex >= 0 && lightboxIndex !== photoIndex) {
+          setLightboxIndex(photoIndex)
+        }
+      }
     }
-  }, [filteredPhotos, isLoading, lightboxIndex, searchParams])
+  }, [isLoading, lightboxIndex, searchParams, photos])
 
   // Infinite scroll for masonry/grid views
   const {
@@ -995,8 +1027,11 @@ export default function Gallery() {
   }, [filteredPhotos, lightboxIndex])
 
   const shareParam = searchParams.get('share')
+  const sharedParam = searchParams.get('shared')
   const shareImageUrl = shareParam
     ? photos.find((p) => p.id === shareParam.split(',')[0])?.thumbnail
+    : sharedParam
+    ? sharedPhotoMeta?.url
     : undefined
 
   return (
