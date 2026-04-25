@@ -40,10 +40,12 @@ export function useVirtualizedMasonry({
   photos,
   rowHeight = 280,
   gap = 8,
+  onVisibleRangeChange,
 }: {
   photos: Photo[]
   rowHeight?: number
   gap?: number
+  onVisibleRangeChange?: (startIndex: number, endIndex: number) => void
 }) {
   const scrollRef = useRef<HTMLDivElement>(null)
   const measurementMapRef = useRef<Map<number, number>>(new Map())
@@ -179,11 +181,13 @@ export function VirtualizedMasonryGrid({
   rowHeight = 280,
   gap = 8,
   children,
+  onVisibleRangeChange,
 }: VirtualizedMasonryGridProps) {
   const { scrollRef, virtualizer, rows, measureRow } = useVirtualizedMasonry({
     photos,
     rowHeight,
     gap,
+    onVisibleRangeChange,
   })
 
   const virtualItems = virtualizer.getVirtualItems()
