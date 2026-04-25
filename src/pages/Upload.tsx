@@ -159,10 +159,9 @@ export default function UploadPage() {
   const [storedUploads, setStoredUploads] = useState<StoredUploadMetadata[]>([])
 
   useEffect(() => {
+    // Load stored uploads on mount - StoredUploadMetadata never has 'complete' status
     const stored = loadUploadQueue()
-    // Filter to only incomplete uploads
-    const incomplete = stored.filter(u => u.status !== 'complete')
-    setStoredUploads(incomplete)
+    setStoredUploads(stored)
   }, [])
 
   // Persist upload queue to localStorage whenever files change
@@ -264,6 +263,14 @@ export default function UploadPage() {
             : f
         )
       )
+
+      // Clean up stored upload from localStorage on successful completion
+      const completedFingerprint = `${fileObj.file.name}:${fileObj.file.size}:${fileObj.file.lastModified}`
+      const storedUploads = loadUploadQueue()
+      const updatedStored = storedUploads.filter(u => u.fingerprint !== completedFingerprint)
+      if (updatedStored.length !== storedUploads.length) {
+        storage.setJSON(UPLOAD_QUEUE_KEY, updatedStored)
+      }
     } catch (error) {
       let errorType = UploadError.UNKNOWN
       let errorMessage = 'Something went wrong — try again or skip this file'
@@ -308,6 +315,12 @@ export default function UploadPage() {
   }, [])
 
   const addFiles = useCallback((newFiles: File[]) => {
+    // Load stored uploads for fingerprint matching (resume detection)
+    const storedUploads = loadUploadQueue()
+    const storedFingerprints = new Set(
+      storedUploads.map(u => u.fingerprint)
+    )
+
     const existingFingerprints = new Set(
       files.map(({ file }) => `${file.name}:${file.size}:${file.lastModified}`)
     )
@@ -335,18 +348,36 @@ export default function UploadPage() {
         return false
       }
 
+      // Check against stored uploads - if match found, it's a resume
+      if (storedFingerprints.has(fingerprint)) {
+        const storedUpload = storedUploads.find(u => u.fingerprint === fingerprint)
+        if (storedUpload) {
+          notices.push(`${file.name} is being resumed from a previous session.`)
+        }
+      }
+
       batchFingerprints.add(fingerprint)
       return true
     })
 
     setQueueNotice(notices.length > 0 ? notices[0] : null)
 
-    const newUploadingFiles: UploadingFile[] = validFiles.map(file => ({
-      id: createUploadId(),
-      file,
-      status: 'uploading',
-      preview: file.type.startsWith('image/') ? URL.createObjectURL(file) : undefined,
-    }))
+    const newUploadingFiles: UploadingFile[] = validFiles.map(file => {
+      const fingerprint = `${file.name}:${file.size}:${file.lastModified}`
+      const storedUpload = storedUploads.find(u => u.fingerprint === fingerprint)
+      const isResumed = Boolean(storedUpload)
+
+      return {
+        id: createUploadId(),
+        file,
+        status: 'uploading' as const,
+        preview: isResumed && storedUpload?.preview
+          ? storedUpload.preview  // Restore preview from stored upload
+          : file.type.startsWith('image/')
+            ? URL.createObjectURL(file)
+            : undefined,
+      }
+    })
 
     setFiles(prev => [...prev, ...newUploadingFiles])
 
