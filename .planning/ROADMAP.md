@@ -40,7 +40,9 @@
   3. Guest with interrupted upload can return later and see incomplete uploads in queue
   4. Resumed uploads continue from where they left off (not re-uploaded from scratch)
   5. Upload queue persists across browser sessions (localStorage)
-**Plans**: TBD
+**Plans**: 2 plans
+  - [x] `05-01-PLAN.md` — Share URL + OG Tags (SOC-01, SOC-02)
+  - [x] `05-02-PLAN.md` — Upload Queue Persistence (UPL-01)
 
 ### Phase 6: Guest Reactions & Upload Status
 **Goal**: Guests can heart guestbook entries and see upload status after submission
@@ -52,7 +54,8 @@
   3. If optimistic update fails, previous state is restored (proper rollback)
   4. After uploading, guest sees "Your photo is being reviewed" confirmation
   5. Guest can return to site and lookup their upload status via email lookup
-**Plans**: TBD
+**Plans**: 1 plan
+  - [ ] `06-01-PLAN.md` — Guest Reactions with Fingerprint + Optimistic UI (GAL-02)
 
 ### Phase 7: Gallery Virtualization
 **Goal**: Gallery renders 200+ photos smoothly without scroll lag
@@ -100,8 +103,8 @@
 | 2. Gallery Performance & UX | v1.0 | 4/4 | Complete | 2026-04-24 |
 | 3. Upload Experience | v1.0 | 1/1 | Complete | 2026-04-24 |
 | 4. Navigation & Design Consistency | v1.0 | 3/3 | Complete | 2026-04-25 |
-| 5. Social Sharing & Upload Resume | v1.1 | 0/TBD | Not started | - |
-| 6. Guest Reactions & Upload Status | v1.1 | 0/TBD | Not started | - |
+| 5. Social Sharing & Upload Resume | v1.1 | 2/2 | Complete | 2026-04-25 |
+| 6. Guest Reactions & Upload Status | v1.1 | 0/1 | Planned | - |
 | 7. Gallery Virtualization | v1.1 | 0/TBD | Not started | - |
 | 8. Moderation Queue & Featured Spotlight | v1.1 | 0/TBD | Not started | - |
 | 9. PWA Offline Verification | v1.1 | 0/TBD | Not started | - |
