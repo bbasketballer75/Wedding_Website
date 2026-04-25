@@ -25,18 +25,28 @@ These features exist and work — they form the foundation we're building on.
 - ✓ React Router navigation between pages
 - ✓ Basic mobile responsiveness
 - ✓ PWA support for offline access
+- ✓ Polished, intuitive navigation — Gold border active state, smooth transitions — v1.0
+- ✓ Admin panel for guest content moderation — MediaReviewPanel decomposed, error boundaries — v1.0
+- ✓ Consistent, elegant UI/UX — Gold theme consistently applied — v1.0
+- ✓ Gallery performance & UX — Zustand store, LQIP, prefetch, sessionStorage caching — v1.0
+- ✓ Fully wired features — No broken links, skeleton loading states — v1.0
+- ✓ Reliable upload experience — Determinate progress bar, error differentiation, retry — v1.0
+- ✓ Admin error boundaries — No white screens on component failures — v1.0
+- ✓ Auth race condition fix — Serialized auth operations, single Supabase client — v1.0
+- ✓ MediaReviewPanel decomposition — 1716 → 325 lines, 5 components — v1.0
 
 ### Active
 
-What we're building toward in this overhaul.
+What we're building toward in next release.
 
-- [ ] **Polished, intuitive navigation** — Menu that feels complete, smooth transitions, clear wayfinding
-- [ ] **Admin panel for guest content moderation** — Clean interface to approve/reject uploads, manage guestbook, feature content
-- [ ] **Consistent, elegant UI/UX** — Every page feels polished, cohesive design language throughout
-- [ ] **Gallery performance & UX** — Fast loading, smooth scrolling, proper caching, lightbox that flows
-- [ ] **Fully wired features** — No broken links, dead ends, or "coming soon" placeholders
-- [ ] **Reliable upload experience** — Progress indication, error handling, confirmation feedback
-- [ ] **Admin error boundaries** — Graceful error handling on all admin pages
+- [ ] **Moderation queue expansion** — Full approve/reject/feature workflow (ADMIN-05, ADMIN-06, ADMIN-07)
+- [ ] **Gallery virtualization** — @tanstack/react-virtual for 200+ visible photos (GALLERY-05)
+- [ ] **Guest reactions** — Heart/like on guestbook entries (GALLERY-06)
+- [ ] **Featured content spotlight** — Admin highlights best photos on home (GALLERY-07)
+- [ ] **Social sharing** — Share buttons with OG tags (SOCIAL-01, SOCIAL-02)
+- [ ] **PWA offline verification** — Test full offline gallery browsing (ADV-01)
+- [ ] **Upload resume** — Persist upload queue to localStorage (ADV-02)
+- [ ] **Guest upload status** — "Your photo is being reviewed" feedback (ADV-03)
 
 ### Out of Scope
 
@@ -59,14 +69,14 @@ Explicitly excluded — do not add these.
 - Netlify deployment
 
 **Current Issues (from codebase analysis):**
-- MediaReviewPanel.tsx is 900+ lines — hard to maintain
-- Gallery state held in component state vs Zustand
-- Photo type duplication between Gallery.tsx and supabase.ts
-- Auth has race conditions between initializeAuth and refreshSession
-- Admin pages lack error boundaries
-- Gallery makes parallel Supabase calls with no caching
-- No upload progress persistence
-- Console.log throughout production code
+- ~~MediaReviewPanel.tsx is 900+ lines~~ — RESOLVED v1.0 (decomposed into 5 components)
+- ~~Gallery state held in component state~~ — RESOLVED v1.0 (Zustand with sessionStorage)
+- ~~Photo type duplication~~ — RESOLVED v1.0 (canonical Photo from supabase.ts)
+- ~~Auth race conditions~~ — RESOLVED v1.0 (serialized operation queue)
+- ~~Admin pages lack error boundaries~~ — RESOLVED v1.0 (ComponentErrorBoundary wrapping)
+- ~~Gallery no caching~~ — RESOLVED v1.0 (sessionStorage persistence)
+- ~~No upload progress~~ — RESOLVED v1.0 (XHR with progress tracking)
+- ~~Console.log in production~~ — RESOLVED v1.0 (esbuild console drop)
 
 **Design Context:**
 - Beautiful, elegant wedding aesthetic
@@ -85,10 +95,29 @@ Explicitly excluded — do not add these.
 
 | Decision | Rationale | Outcome |
 |----------|-----------|---------|
-| Post-wedding only | Explicit user requirement | — Pending |
-| Build on existing codebase | User said "don't wipe what we have" | — Pending |
-| Open to suggestions | User invited additions | — Pending |
-| Prioritize polish over new features | "Feels incomplete" is main pain point | — Pending |
+| Post-wedding only | Explicit user requirement | ✓ Confirmed — archive site only |
+| Build on existing codebase | User said "don't wipe what we have" | ✓ Confirmed — incremental improvements |
+| Open to suggestions | User invited additions | ✓ Applied — suggestions incorporated |
+| Prioritize polish over new features | "Feels incomplete" is main pain point | ✓ Achieved — v1.0 shipped with polish |
+| Foundation before features | Stability and code quality first | ✓ Validated — good engineering practice |
+| Zustand for gallery state | Centralized state with persistence | ✓ Achieved — sessionStorage caching working |
+| XHR for upload progress | Need progress events from fetch | ✓ Achieved — real percentage progress bar |
+
+## Current State
+
+**v1.0 MVP shipped** — All v1 requirements complete as of 2026-04-25.
+
+### What This Is Now
+
+A polished, complete-feeling wedding archive for Austin & Jordyn (theporadas.com) — all core features working, stable auth, performant gallery, and elegant design.
+
+### Context Update
+
+- MediaReviewPanel decomposed: 1716 → 325 lines
+- Gallery state centralized in Zustand with sessionStorage caching
+- Upload progress with XHR tracking and error differentiation
+- All pages have skeleton loading states
+- Gold theme consistently applied
 
 ## Evolution
 
@@ -108,4 +137,4 @@ This document evolves at phase transitions and milestone boundaries.
 4. Update Context with current state
 
 ---
-*Last updated: 2026-04-23 after initialization*
+*Last updated: 2026-04-25 after v1.0 milestone*
