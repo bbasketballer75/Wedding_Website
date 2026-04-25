@@ -103,6 +103,7 @@ function MessageCard({
   extraComments,
   onSubmitReply,
   staggerIndex = 0,
+  fingerprint,
 }: {
   message: Message
   isHighlighted?: boolean
@@ -111,6 +112,7 @@ function MessageCard({
   extraComments?: Comment[]
   onSubmitReply: (messageId: string, content: string) => Promise<void>
   staggerIndex?: number
+  fingerprint?: string
 }) {
   const displayContent = message.content
   const reactions = localReactions ?? message.reactions
@@ -159,12 +161,20 @@ function MessageCard({
         <div className="mt-4 flex flex-wrap gap-2">
           {Object.entries(reactions).map(([key, count]) => {
             const rType = REACTION_TYPES.find((r) => r.key === key)
+            const isOwnReaction = fingerprint
+              ? storage.getItem(`wedding-reacted:${message.id}:${key}`) === fingerprint
+              : false
             return (
               <button
                 key={key}
                 type="button"
                 aria-label={`${rType?.label ?? key} reaction, ${count} votes`}
-                className="inline-flex cursor-pointer items-center gap-1.5 rounded-full border border-white/15 bg-white/8 px-3 py-1 text-sm text-white/75 transition-colors hover:bg-white/14"
+                className={cn(
+                  'inline-flex cursor-pointer items-center gap-1.5 rounded-full border px-3 py-1 text-sm transition-colors',
+                  isOwnReaction
+                    ? 'border-gold-400/50 bg-gold-500/15 text-gold-300'
+                    : 'border-white/15 bg-white/8 text-white/75 hover:bg-white/14'
+                )}
               >
                 <span aria-hidden="true">{rType?.emoji ?? key}</span>
                 <span>{count}</span>
@@ -175,6 +185,11 @@ function MessageCard({
       )}
 
       <div className="mt-4 flex items-center gap-3 border-t border-white/10 pt-4">
+        {fingerprint && REACTION_TYPES.some((r) =>
+          storage.getItem(`wedding-reacted:${message.id}:${r.key}`) === fingerprint
+        ) && (
+          <span className="text-xs text-gold-400/70">You reacted</span>
+        )}
         <button
           type="button"
           onClick={() => onAddReaction(message.id)}
@@ -259,6 +274,7 @@ export default function Guestbook() {
   const [extraComments, setExtraComments] = useState<Record<string, Comment[]>>({})
   const composerRef = useRef<HTMLDivElement | null>(null)
   const { addToast } = useToast()
+  const [fingerprint] = useState<string>(getOrCreateReactionFingerprint)
 
   useEffect(() => {
     const fetchMessages = async () => {
@@ -729,6 +745,7 @@ export default function Guestbook() {
                       extraComments={extraComments[message.id]}
                       onSubmitReply={handleSubmitReply}
                       staggerIndex={index}
+                      fingerprint={fingerprint}
                     />
                   ))}
                 </div>
