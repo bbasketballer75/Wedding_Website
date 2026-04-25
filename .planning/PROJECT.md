@@ -119,6 +119,20 @@ A polished, complete-feeling wedding archive for Austin & Jordyn (theporadas.com
 - All pages have skeleton loading states
 - Gold theme consistently applied
 
+## Current Milestone: v1.1 Polish & Feature Expansion
+
+**Goal:** Expand moderation capabilities, improve gallery performance, add social features, and enhance PWA functionality
+
+**Target features:**
+- Moderation queue expansion (ADMIN-05, ADMIN-06, ADMIN-07)
+- Gallery virtualization for 200+ photos (GALLERY-05)
+- Guest reactions on guestbook (GALLERY-06)
+- Featured content spotlight (GALLERY-07)
+- Social sharing with OG tags (SOCIAL-01, SOCIAL-02)
+- Upload resume with localStorage persistence (ADV-02)
+- Guest upload status feedback (ADV-03)
+- PWA offline verification (ADV-01)
+
 ## Evolution
 
 This document evolves at phase transitions and milestone boundaries.
