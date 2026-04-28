@@ -142,4 +142,4 @@ Explicitly excluded. Documented to prevent scope creep.
 
 ---
 *Requirements defined: 2026-04-23 (v1), 2026-04-24 (v1.1)*
-*Last updated: 2026-04-25 after v1.1 roadmap creation*
+*Last updated: 2026-04-28 after PWA-01 implementation*
