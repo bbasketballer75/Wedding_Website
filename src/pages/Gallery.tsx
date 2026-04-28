@@ -18,9 +18,11 @@ import {
   fetchPhotoEngagementSummary,
   fetchPhotoComments,
   fetchPhotoLikeStatuses,
+  fetchGuestUploadStatus,
   supabase,
   togglePhotoLike,
   Photo,
+  GuestUpload,
 } from '@/lib/supabase'
 import { useGalleryStore } from '@/stores/galleryStore'
 import { useToast } from '@/context/ToastContext'
@@ -115,9 +117,9 @@ const collectionMeta: Record<
 
 const COLLECTION_COVERS: Record<CollectionTab, string> = {
   Proposal: '/images/engagement/PoradaProposal-29.webp',
-  'Bach+ette': getMediaPath('_thumbs/Bach+ette/Photos/PXL_20240816_221115487.MP.webp'),
-  'Wedding Photos': getMediaPath('_thumbs/Professional/Wedding Day/Photos/DSC06261.webp'),
-  'Guest Photos': getMediaPath('_thumbs/Guest Uploads/Wedding Day/Live Photos/Stills/IMG_6014.webp'),
+  'Bach+ette': getMediaPath('/media/_thumbs/Bach+ette/Photos/PXL_20240816_221115487.MP.webp'),
+  'Wedding Photos': getMediaPath('/media/_thumbs/Professional/Wedding Day/Photos/DSC06261.webp'),
+  'Guest Photos': getMediaPath('/media/_thumbs/Guest Uploads/Wedding Day/Live Photos/Stills/20250511_180812-0b9c.webp'),
 }
 
 const curatedPhotos = ([
@@ -521,6 +523,12 @@ export default function Gallery() {
   const deferredSearchQuery = useDeferredValue(searchQuery)
   const galleryScrollRef = useRef<HTMLDivElement>(null)
   const collectionSwitchDirectionRef = useRef(0)
+
+  // Upload status lookup state
+  const [uploadStatusEmail, setUploadStatusEmail] = useState('')
+  const [uploadStatusResult, setUploadStatusResult] = useState<GuestUpload | null>(null)
+  const [lookupLoading, setLookupLoading] = useState(false)
+  const [lookupError, setLookupError] = useState<string | null>(null)
 
   // Fetch photos from Supabase on mount
   useEffect(() => {
@@ -968,6 +976,24 @@ export default function Gallery() {
     setFaceFilter(null)
   }
 
+  const handleLookupUploadStatus = async (e: React.FormEvent) => {
+    e.preventDefault()
+    if (!uploadStatusEmail.trim()) return
+    setLookupLoading(true)
+    setLookupError(null)
+    try {
+      const result = await fetchGuestUploadStatus(uploadStatusEmail.trim())
+      setUploadStatusResult(result)
+      if (!result) {
+        setLookupError('No upload found for that email. Please check your email and try again.')
+      }
+    } catch {
+      setLookupError('Unable to look up status. Please try again later.')
+      setUploadStatusResult(null)
+    }
+    setLookupLoading(false)
+  }
+
   const handleCollectionChange = (tab: CollectionTab) => {
     const newIndex = collectionTabs.indexOf(tab)
     const currentIndex = collectionTabs.indexOf(selectedCollection)
@@ -1271,7 +1297,7 @@ export default function Gallery() {
 
       <section className="flex-1 min-h-0 px-4 pb-8">
         <div className="mx-auto max-w-7xl">
-          {loadError && (
+            {loadError && (
             <motion.div
               initial={{ opacity: 0, y: -10 }}
               animate={{ opacity: 1, y: 0 }}
@@ -1280,6 +1306,58 @@ export default function Gallery() {
               {loadError}
             </motion.div>
           )}
+
+          {/* Upload Status Lookup Section */}
+          <div className="mb-6 rounded-[1.4rem] border border-gold-100 bg-white p-5 shadow-sm">
+            <h3 className="font-display text-lg text-charcoal-900 mb-3">Check Your Upload Status</h3>
+            <p className="text-sm text-charcoal-500 mb-4">Enter the email address you used when uploading to see your status.</p>
+            <form onSubmit={handleLookupUploadStatus} className="flex gap-3 max-w-md">
+              <Input
+                type="email"
+                placeholder="your@email.com"
+                value={uploadStatusEmail}
+                onChange={(e) => setUploadStatusEmail(e.target.value)}
+                className="flex-1"
+              />
+              <Button type="submit" isLoading={lookupLoading}>
+                Look up
+              </Button>
+            </form>
+            {lookupError && (
+              <p className="mt-3 text-sm text-rose-600">{lookupError}</p>
+            )}
+            {uploadStatusResult && (
+              <div className="mt-4 rounded-xl border border-gold-200 bg-cream-50/70 p-4">
+                <div className="flex items-center justify-between">
+                  <div>
+                    <p className="font-medium text-charcoal-900">{uploadStatusResult.guest_name}</p>
+                    <p className="text-sm text-charcoal-500">{uploadStatusResult.guest_email}</p>
+                  </div>
+                  <span className={cn(
+                    'inline-flex rounded-full px-3 py-1 text-sm font-medium',
+                    uploadStatusResult.status === 'approved' && 'bg-green-100 text-green-700',
+                    uploadStatusResult.status === 'pending' && 'bg-gold-100 text-gold-700',
+                    uploadStatusResult.status === 'rejected' && 'bg-rose-100 text-rose-700'
+                  )}>
+                    {uploadStatusResult.status.charAt(0).toUpperCase() + uploadStatusResult.status.slice(1)}
+                  </span>
+                </div>
+                {uploadStatusResult.status === 'rejected' && uploadStatusResult.rejection_reason && (
+                  <div className="mt-3 rounded-lg border border-rose-200 bg-rose-50/80 p-3">
+                    <p className="text-xs font-medium text-rose-700">Rejection reason:</p>
+                    <p className="mt-1 text-sm text-rose-600">{uploadStatusResult.rejection_reason}</p>
+                  </div>
+                )}
+                {uploadStatusResult.photo_urls.length > 0 && (
+                  <div className="mt-3 flex gap-2">
+                    {uploadStatusResult.photo_urls.slice(0, 3).map((url, idx) => (
+                      <img key={idx} src={url} alt={`Upload ${idx + 1}`} className="h-12 w-12 rounded-lg object-cover" />
+                    ))}
+                  </div>
+                )}
+              </div>
+            )}
+          </div>
 
           <div className="mb-5">
             <h2 className="font-display text-3xl text-charcoal-900 sm:text-4xl">
@@ -1293,7 +1371,7 @@ export default function Gallery() {
           >
             <div
               ref={galleryScrollRef}
-              className="overflow-visible lg:h-[calc(100vh-18rem)] lg:min-h-[32rem] lg:overflow-y-auto lg:pr-2 [&::-webkit-scrollbar]:w-1.5 [&::-webkit-scrollbar-track]:rounded-full [&::-webkit-scrollbar-track]:bg-gold-100/40 [&::-webkit-scrollbar-thumb]:rounded-full [&::-webkit-scrollbar-thumb]:bg-gold-400/50 hover:[&::-webkit-scrollbar-thumb]:bg-gold-500/70"
+              className="overflow-hidden lg:h-[calc(100vh-18rem)] lg:min-h-[32rem] lg:overflow-y-auto lg:pr-2 [&::-webkit-scrollbar]:w-1.5 [&::-webkit-scrollbar-track]:rounded-full [&::-webkit-scrollbar-track]:bg-gold-100/40 [&::-webkit-scrollbar-thumb]:rounded-full [&::-webkit-scrollbar-thumb]:bg-gold-400/50 hover:[&::-webkit-scrollbar-thumb]:bg-gold-500/70"
             >
             {isLoading ? (
               <GallerySkeleton count={12} />
