@@ -9,10 +9,7 @@
     "plan_check": true,
     "verifier": true,
     "nyquist_validation": true,
-    "auto_advance": false
-  },
-  "project": {
-    "name": "Wedding Website Overhaul",
-    "path": "."
+    "auto_advance": false,
+    "use_worktrees": true
   }
 }

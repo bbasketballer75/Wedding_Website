@@ -32,7 +32,7 @@ const MasonryGrid: React.FC<MasonryGridProps> = ({ columns, children }) => {
   const childrenArray = React.Children.toArray(children)
 
   return (
-    <div className="flex gap-2">
+    <div className="flex gap-2 [&>div]:content-visibility-auto">
       {Array.from({ length: columnCount }).map((_, colIndex) => (
         <div key={colIndex} className="flex flex-1 flex-col gap-2">
           {childrenArray.filter((_, i) => i % columnCount === colIndex)}

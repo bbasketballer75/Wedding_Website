@@ -25,7 +25,7 @@
 - [ ] **Phase 5: Social Sharing & Upload Resume** - Share buttons with OG tags, upload queue persistence
 - [ ] **Phase 6: Guest Reactions & Upload Status** - Heart reactions on guestbook, upload status feedback
 - [ ] **Phase 7: Gallery Virtualization** - @tanstack/react-virtual for 200+ photos
-- [ ] **Phase 8: Moderation Queue & Featured Spotlight** - Full approve/reject workflow, homepage spotlight
+- [ ] **Phase 8: Moderation Queue & Featured Spotlight** - Full approve/reject workflow (no spotlight per D-04)
 - [ ] **Phase 9: PWA Offline Verification** - Cached Supabase storage images for offline browsing
 
 ## Phase Details
@@ -67,21 +67,25 @@
   3. Masonry layout preserved with proper row-based virtualization approach
   4. Lightbox opens for any virtualized photo without issues
   5. Adjacent photos prefetch for smooth lightbox navigation
-**Plans**: TBD
+**Plans**: 2 plans
+  - [x] `07-01-PLAN.md` — Virtualized PhotoGrid with @tanstack/react-virtual (GAL-01)
+  - [ ] `07-02-PLAN.md` — Lightbox Portal Integration (GAL-01)
 **UI hint**: yes
 
 ### Phase 8: Moderation Queue & Featured Spotlight
-**Goal**: Admin can approve/reject/feature guest uploads; featured content appears on homepage
+**Goal**: Admin can approve/reject guest uploads with one click from a moderation queue. Rejected uploads include a reason visible to the guest. Bulk approve/reject supported.
 **Depends on**: Phase 7
-**Requirements**: MOD-01, MOD-02, MOD-03, GAL-03
+**Requirements**: MOD-01, MOD-02
 **Success Criteria** (what must be TRUE):
   1. Admin sees queue of pending guest uploads in MediaReviewPanel
   2. Admin can approve any pending upload with one click
   3. Admin can reject any upload with a reason (saved to moderation_audit_log)
-  4. Admin can feature/spotlight approved content to homepage editorial slot
-  5. Featured spotlight appears on homepage for site visitors to see
-  6. Homepage spotlight updates when admin changes featured content
-**Plans**: TBD
+  4. Admin can bulk approve selected uploads
+  5. Admin can bulk reject selected uploads with confirmation dialog
+  6. Guest can lookup upload status by email and see rejection reason if rejected
+**Plans**: 2 plans
+  - [ ] `08-01-PLAN.md` — Schema + Supabase functions + Zustand store
+  - [ ] `08-02-PLAN.md` — UI components + MediaReviewPanel integration + Gallery.tsx extension
 
 ### Phase 9: PWA Offline Verification
 **Goal**: PWA serves cached gallery images when offline
@@ -104,9 +108,9 @@
 | 3. Upload Experience | v1.0 | 1/1 | Complete | 2026-04-24 |
 | 4. Navigation & Design Consistency | v1.0 | 3/3 | Complete | 2026-04-25 |
 | 5. Social Sharing & Upload Resume | v1.1 | 2/2 | Complete | 2026-04-25 |
-| 6. Guest Reactions & Upload Status | v1.1 | 0/1 | Planned | - |
-| 7. Gallery Virtualization | v1.1 | 0/TBD | Not started | - |
-| 8. Moderation Queue & Featured Spotlight | v1.1 | 0/TBD | Not started | - |
+| 6. Guest Reactions & Upload Status | v1.1 | 1/1 | Complete | 2026-04-25 |
+| 7. Gallery Virtualization | v1.1 | 2/2 | Complete | 2026-04-25 |
+| 8. Moderation Queue & Featured Spotlight | v1.1 | 0/2 | Not started | - |
 | 9. PWA Offline Verification | v1.1 | 0/TBD | Not started | - |
 
 ---

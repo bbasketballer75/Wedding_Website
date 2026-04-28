@@ -88,32 +88,48 @@ Fix two gaps from VERIFICATION.md:
     })
     ```
 
-    Then add a useEffect AFTER the virtualizer creation (after line 120) that watches the virtual items and calls onVisibleRangeChange:
+    Then add a useEffect AFTER the virtualizer creation that uses a scroll event listener approach:
+
+    Add a scrollRef callback to track scroll position changes and call onVisibleRangeChange:
 
     ```typescript
-    // Call onVisibleRangeChange when visible range changes
+    // Track previous scroll offset to detect scroll events
+    const lastScrollTopRef = useRef(0)
+
     useEffect(() => {
-      const virtualItems = virtualizer.getVirtualItems()
-      if (virtualItems.length === 0 || !onVisibleRangeChange) return
+      const scrollElement = scrollRef.current
+      if (!scrollElement || !onVisibleRangeChange) return
 
-      const firstVisibleRow = virtualItems[0]
-      const lastVisibleRow = virtualItems[virtualItems.length - 1]
+      const handleScroll = () => {
+        const virtualItems = virtualizer.getVirtualItems()
+        if (virtualItems.length === 0) return
 
-      if (!firstVisibleRow || !lastVisibleRow) return
+        const firstVisibleRow = virtualItems[0]
+        const lastVisibleRow = virtualItems[virtualItems.length - 1]
 
-      const rowStart = rows[firstVisibleRow.index]
-      const rowEnd = rows[lastVisibleRow.index]
+        if (!firstVisibleRow || !lastVisibleRow) return
 
-      if (!rowStart || !rowEnd) return
+        const rowStart = rows[firstVisibleRow.index]
+        const rowEnd = rows[lastVisibleRow.index]
 
-      const startGlobalIndex = rowStart.startIndex
-      const endGlobalIndex = rowEnd.endIndex
+        if (!rowStart || !rowEnd) return
 
-      onVisibleRangeChange(startGlobalIndex, endGlobalIndex)
-    }, [virtualizer, virtualizer.getVirtualItems(), rows, onVisibleRangeChange])
+        const startGlobalIndex = rowStart.startIndex
+        const endGlobalIndex = rowEnd.endIndex
+
+        onVisibleRangeChange(startGlobalIndex, endGlobalIndex)
+        lastScrollTopRef.current = scrollElement.scrollTop
+      }
+
+      // Initial call
+      handleScroll()
+
+      scrollElement.addEventListener('scroll', handleScroll, { passive: true })
+      return () => scrollElement.removeEventListener('scroll', handleScroll)
+    }, [virtualizer, rows, onVisibleRangeChange])
     ```
 
-    The key insight: rows[] array contains startIndex/endIndex for each row's photo range. Use row.startIndex for first visible row and row.endIndex for last visible row to get global photo indices.
+    Note: We track scroll position to avoid calling on every frame. The dependency on `virtualizer` ensures we re-read getVirtualItems() when rows change. The scroll listener is the actual trigger for prefetch calls.
   </action>
   <verify>
     <automated>

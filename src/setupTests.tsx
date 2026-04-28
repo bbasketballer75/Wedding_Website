@@ -1,4 +1,4 @@
-/* eslint-disable no-unused-vars */
+ 
 import '@testing-library/dom'
 import '@testing-library/jest-dom/vitest'
 import { cleanup } from '@testing-library/react'
