@@ -256,7 +256,7 @@ export default function Home() {
       </section>
 
       {/* Cinematic act-break chapter panel */}
-      <section className="relative overflow-hidden bg-[#1a1208] py-20 sm:py-28">
+      <section className="relative overflow-hidden bg-charcoal-900 py-20 sm:py-28">
         <motion.div
           initial={{ opacity: 0 }}
           whileInView={{ opacity: 1 }}
