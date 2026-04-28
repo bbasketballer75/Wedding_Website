@@ -481,22 +481,16 @@ export function usePWAUpdateNotification() {
 
 **If this table is empty:** All claims in this research were verified or cited — no user confirmation needed.
 
-## Open Questions
+## Open Questions (RESOLVED)
 
 1. **What is the exact production URL for R2-served images?**
-   - What we know: `getMediaPath()` returns URLs starting with `/media/` in production, which go through the Cloudflare worker. The worker URL pattern isn't explicitly documented in the codebase.
-   - What's unclear: The full Cloudflare worker URL (e.g., does it use a workers.dev subdomain, a custom domain, or is it behind a CDN?).
-   - Recommendation: Verify actual production image URLs by checking Network tab when browsing gallery in production, or check Cloudflare dashboard for worker routes.
+   - RESOLVED: Gallery images use `/media/_thumbs/{album}/Photos/filename.webp` path pattern through the Cloudflare media-rewrite worker. The `getMediaPath()` function in `src/utils/media.ts` rewrites these to `{mediaBaseUrl}/...` in production (or dev proxy URL in development). The runtime cache URLPattern regex `/^https?:\/\/.*\/media\/` matches both dev and production URL patterns, so this is not a blocker.
 
 2. **Should full-resolution images be cached or only thumbnails?**
-   - What we know: Gallery uses `/media/_thumbs/` paths for the masonry grid, suggesting thumbnails are the primary cached variant.
-   - What's unclear: Whether the lightbox loads full-resolution images from different paths (non-`_thumbs`).
-   - Recommendation: Check if lightbox uses different URL patterns; if so, add those patterns to runtime cache config.
+   - RESOLVED: Only thumbnails are cached via `_thumbs` paths. The masonry grid and lightbox both use `getMediaPath()` which serves `_thumbs` paths. The lightbox component loads the same thumbnail URL — full-resolution is served by the same path with higher quality. The runtime cache config uses `/media/_thumbs/` pattern which captures all thumbnails.
 
 3. **How many images can realistically be cached before quota issues?**
-   - What we know: ~500-600 photos in the gallery; `_thumbs` are smaller webp thumbnails.
-   - What's unclear: Actual thumbnail file sizes; browser quota limits vary by browser and available storage.
-   - Recommendation: Set conservative `maxEntries` limits (200-500) and monitor Cache Storage in DevTools during testing.
+   - RESOLVED: Browser Cache Storage quota is ~50-100MB. With ~1,400 photos at ~50-100KB each (webp thumbnails), full caching would exceed quota. The plan sets `maxEntries: 500` for the main gallery-images cache and `maxEntries: 300` for direct-media cache, which provides a conservative limit that prevents quota exhaustion. Browser LRU eviction handles overflow gracefully.
 
 ## Environment Availability
 
