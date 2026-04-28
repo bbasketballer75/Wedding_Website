@@ -4,10 +4,10 @@ milestone: v2.0
 milestone_name: UI/UX Polish Round 2
 status: executing
 stopped_at: none
-last_updated: "2026-04-28T16:00:00.000Z"
+last_updated: "2026-04-28T17:30:00.000Z"
 last_activity: 2026-04-28
 progress:
-  total_phases: 0
+  total_phases: 5
   completed_phases: 0
   total_plans: 0
   completed_plans: 0
@@ -21,13 +21,13 @@ progress:
 See: .planning/PROJECT.md (updated 2026-04-28)
 
 **Core value:** Guests and the couple can browse, upload, and share wedding memories in a beautiful, elegant experience that feels finished and polished.
-**Current focus:** Phase 10 — UI/UX Consistency (planned)
+**Current focus:** Phase 10 - Fix Blockers (planned)
 
 ## Current Position
 
 Milestone: v2.0 (UI/UX Polish Round 2)
 Phase: 10 (planned)
-Status: Setup
+Status: Not started
 Last activity: 2026-04-28
 
 Progress: [░░░░░░░░░░] 0%
@@ -43,31 +43,56 @@ Progress: [░░░░░░░░░░] 0%
 - Moderation queue with approve/reject/bulk workflow
 - PWA offline caching with Workbox
 
+## v2.0 Milestone Structure
+
+| Phase | Name | Focus | Requirements |
+|-------|------|-------|--------------|
+| 10 | Fix Blockers | Invalid Tailwind classes | UX-01, UX-02 |
+| 11 | Design Token Unification | Hardcoded values, undefined tokens | UX-03, UX-04, UX-05, UX-06 |
+| 12 | Component Consolidation | Duplicate components, token usage | UX-07, UX-08 |
+| 13 | Accessibility & Motion | a11y, motion preferences | UX-09, UX-10, UX-11, UX-12 |
+| 14 | Animation & Visual Polish | Animation, border radius standardization | UX-13, UX-14, UX-15 |
+
 ## UI/UX Audit Findings (v2.0 baseline)
 
 **BLOCKER (2):**
-- `z-100` invalid Tailwind class in BackgroundMusic.tsx
-- `bg-(--color-gold)` invalid CSS var syntax in ErrorBoundary.tsx
+- UX-01: `z-100` invalid Tailwind class in BackgroundMusic.tsx
+- UX-02: `bg-(--color-gold)` invalid CSS var syntax in ErrorBoundary.tsx
 
 **MAJOR (4):**
-- Hardcoded hex values in Footer/Home sections
-- Duplicate LoadingSpinner implementations
-- `shadow-gold` undefined in design tokens
-- Avatar gradient inconsistency
+- UX-03: Hardcoded hex values in Footer.tsx
+- UX-04: Hardcoded hex values in Home sections
+- UX-05: `shadow-gold` undefined in design tokens
+- UX-06: Avatar gradient inconsistency
 
 **MINOR (4):**
-- Focus ring color inconsistency
-- Missing aria-labels
-- CustomCursor ignores prefers-reduced-motion
-- Theme toggle animation variance
+- UX-09: Missing aria-labels on interactive elements
+- UX-10: CustomCursor ignores prefers-reduced-motion
+- UX-11: Focus ring color inconsistency
+- UX-12: Theme toggle animation variance
 
 **COSMETIC (3):**
-- Border radius inconsistency
-- Animation duration variance
-- DarkModeToggle uses gray tokens instead of gold
+- UX-08: DarkModeToggle uses gray tokens instead of gold
+- UX-13: Border radius inconsistency
+- UX-14: Animation duration variance
+
+## Requirements Coverage
+
+**Total v2.0 requirements:** 15 (UX-01 through UX-15)
+**Phases:** 5 (10-14)
+**Requirements per phase:**
+- Phase 10: 2 requirements
+- Phase 11: 4 requirements
+- Phase 12: 2 requirements
+- Phase 13: 4 requirements
+- Phase 14: 3 requirements
 
 ## Session Continuity
 
-Last session: 2026-04-28T16:00:00Z
-Stopped at: v2.0 milestone setup in progress
+Last session: 2026-04-28T17:30:00Z
+Stopped at: v2.0 roadmap created, ready for planning
 Resume file: None
+
+## Next Action
+
+Run `/gsd-plan-phase 10` to create plans for Phase 10 (Fix Blockers)
