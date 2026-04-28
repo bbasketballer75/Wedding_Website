@@ -84,8 +84,8 @@
   5. Admin can bulk reject selected uploads with confirmation dialog
   6. Guest can lookup upload status by email and see rejection reason if rejected
 **Plans**: 2 plans
-  - [ ] `08-01-PLAN.md` — Schema + Supabase functions + Zustand store
-  - [ ] `08-02-PLAN.md` — UI components + MediaReviewPanel integration + Gallery.tsx extension
+  - [x] `08-01-PLAN.md` — Schema + Supabase functions + Zustand store
+  - [x] `08-02-PLAN.md` — UI components + MediaReviewPanel integration + Gallery.tsx extension
 
 ### Phase 9: PWA Offline Verification
 **Goal**: PWA serves cached gallery images when offline
@@ -110,7 +110,7 @@
 | 5. Social Sharing & Upload Resume | v1.1 | 2/2 | Complete | 2026-04-25 |
 | 6. Guest Reactions & Upload Status | v1.1 | 1/1 | Complete | 2026-04-25 |
 | 7. Gallery Virtualization | v1.1 | 2/2 | Complete | 2026-04-25 |
-| 8. Moderation Queue & Featured Spotlight | v1.1 | 0/2 | Not started | - |
+| 8. Moderation Queue & Featured Spotlight | v1.1 | 2/2 | Complete | 2026-04-28 |
 | 9. PWA Offline Verification | v1.1 | 0/TBD | Not started | - |
 
 ---
