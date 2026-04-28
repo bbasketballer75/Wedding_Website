@@ -192,6 +192,36 @@ export default defineConfig(({ mode }) => {
           cleanupOutdatedCaches: true,
           clientsClaim: true,
           skipWaiting: true,
+          runtimeCaching: [
+            {
+              urlPattern: /^https?:\/\/.*\/media\/_thumbs\/.*/i,
+              handler: 'CacheFirst',
+              options: {
+                cacheName: 'gallery-images-v1',
+                expiration: {
+                  maxEntries: 500,
+                  maxAgeSeconds: 30 * 24 * 60 * 60, // 30 days
+                },
+                cacheableResponse: {
+                  statuses: [0, 200],
+                },
+              },
+            },
+            {
+              urlPattern: /^https?:\/\/.*\/media\/(?!_thumbs).*/i,
+              handler: 'CacheFirst',
+              options: {
+                cacheName: 'gallery-direct-media-v1',
+                expiration: {
+                  maxEntries: 300,
+                  maxAgeSeconds: 30 * 24 * 60 * 60, // 30 days
+                },
+                cacheableResponse: {
+                  statuses: [0, 200],
+                },
+              },
+            },
+          ],
         },
       }),
       process.env.ANALYZE &&
