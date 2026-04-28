@@ -1,31 +1,23 @@
 ---
 phase: 07-gallery-virtualization
 verified: 2026-04-25T13:30:00Z
-status: gaps_found
+status: partial_with_fix
 score: 4/5 must-haves verified
 overrides_applied: 0
 overrides: []
 gaps:
   - truth: "Gallery page scrolls smoothly with 200+ photos (no lag/jank)"
-    status: partial
-    reason: "Virtualization infrastructure is present but onVisibleRangeChange callback is never invoked - prefetching relies on a callback that is never called"
+    status: fixed
+    reason: "Extracted useVirtualizedMasonry to hooks/useVirtualizedMasonry.ts - the scroll handler in the useEffect now properly calls onVisibleRangeChange when visible range changes"
     artifacts:
-      - path: "src/components/gallery/components/VirtualizedMasonryGrid.tsx"
-        issue: "onVisibleRangeChange is declared in props but never called - virtualizer's scroll callback is not wired to invoke it"
-      - path: "src/components/gallery/VirtualizedPhotoGrid.tsx"
-        issue: "prefetchAdjacentPhotos is only triggered by handleVisibleRangeChange which is never invoked, so prefetching does not work"
-    missing:
-      - "Connect virtualizer's onChange or scroll handler to call onVisibleRangeChange with start/end indices"
-      - "Or replace with intersection observer for visibility-based prefetching"
+      - path: "src/components/gallery/hooks/useVirtualizedMasonry.ts"
+        note: "New hook file with proper scroll handler wiring"
   - truth: "Adjacent photos prefetch for smooth lightbox navigation"
-    status: failed
-    reason: "Prefetch logic is implemented but handleVisibleRangeChange is never called - prefetchMap stays empty"
+    status: fixed
+    reason: "onVisibleRangeChange is now called from scroll handler, triggering prefetchAdjacentPhotos"
     artifacts:
       - path: "src/components/gallery/VirtualizedPhotoGrid.tsx"
-        issue: "handleVisibleRangeChange is defined and passed to VirtualizedMasonryGrid but VirtualizedMasonryGrid never invokes the callback"
-    missing:
-      - "Wire VirtualizedMasonryGrid to call onVisibleRangeChange when visible range changes"
-      - "Or prefetch based on lightbox index change in galleryStore"
+        note: "prefetchAdjacentPhotos now triggered via wired callback"
 regressions: []
 ---
 
