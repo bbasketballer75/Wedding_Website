@@ -19,7 +19,7 @@
 | 7. Gallery Virtualization | v1.1 | 2/2 | Complete | 2026-04-25 |
 | 8. Moderation Queue & Featured Spotlight | v1.1 | 2/2 | Complete | 2026-04-28 |
 | 9. PWA Offline Verification | v1.1 | 1/1 | Complete | 2026-04-28 |
-| 10. Fix Blockers | v2.0 | 0/2 | Not started | - |
+| 10. Fix Blockers | v2.0 | 2/2 | Complete   | 2026-04-28 |
 | 11. Design Token Unification | v2.0 | 0/4 | Not started | - |
 | 12. Component Consolidation | v2.0 | 0/2 | Not started | - |
 | 13. Accessibility & Motion | v2.0 | 0/4 | Not started | - |
