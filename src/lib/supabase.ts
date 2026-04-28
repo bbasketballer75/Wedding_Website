@@ -82,6 +82,7 @@ export interface GuestUpload {
   editorial_title?: string | null
   editorial_summary?: string | null
   featured_rank?: number | null
+  rejection_reason?: string | null
   created_at: string
 }
 
@@ -875,6 +876,140 @@ export async function fetchApprovedGuestUploads(): Promise<GuestUpload[]> {
     .order('created_at', { ascending: false })
   if (error) throw error
   return data ?? []
+}
+
+// Fetch pending guest uploads for moderation queue
+export async function fetchPendingGuestUploads(): Promise<GuestUpload[]> {
+  const { data, error } = await supabase
+    .from('guest_uploads')
+    .select('*')
+    .eq('status', 'pending')
+    .order('created_at', { ascending: false })
+  if (error) throw error
+  return data ?? []
+}
+
+// Fetch all guest uploads by status (for filter tabs)
+export async function fetchGuestUploadsByStatus(status: 'pending' | 'approved' | 'rejected'): Promise<GuestUpload[]> {
+  const { data, error } = await supabase
+    .from('guest_uploads')
+    .select('*')
+    .eq('status', status)
+    .order('created_at', { ascending: false })
+  if (error) throw error
+  return data ?? []
+}
+
+// Approve a single guest upload
+export async function approveGuestUpload(uploadId: string, actor?: ModerationAuditActor): Promise<void> {
+  const { data: existing } = await supabase
+    .from('guest_uploads')
+    .select('status')
+    .eq('id', uploadId)
+    .single()
+
+  const { error } = await supabase
+    .from('guest_uploads')
+    .update({ status: 'approved' })
+    .eq('id', uploadId)
+
+  if (error) throw error
+
+  await recordModerationAudit({
+    entityType: 'guest_upload',
+    entityId: uploadId,
+    action: 'upload_approved_published',
+    fromStatus: existing?.status ?? null,
+    toStatus: 'approved',
+    summary: `Guest upload approved`,
+    actor,
+  })
+}
+
+// Reject a single guest upload with optional reason
+export async function rejectGuestUpload(uploadId: string, reason?: string, actor?: ModerationAuditActor): Promise<void> {
+  const { data: existing } = await supabase
+    .from('guest_uploads')
+    .select('status')
+    .eq('id', uploadId)
+    .single()
+
+  const { error } = await supabase
+    .from('guest_uploads')
+    .update({ status: 'rejected', rejection_reason: reason ?? null })
+    .eq('id', uploadId)
+
+  if (error) throw error
+
+  await recordModerationAudit({
+    entityType: 'guest_upload',
+    entityId: uploadId,
+    action: 'upload_rejected',
+    fromStatus: existing?.status ?? null,
+    toStatus: 'rejected',
+    summary: reason ? `Guest upload rejected: ${reason}` : `Guest upload rejected`,
+    metadata: reason ? { rejection_reason: reason } : {},
+    actor,
+  })
+}
+
+// Bulk approve guest uploads
+export async function bulkApproveGuestUploads(uploadIds: string[], actor?: ModerationAuditActor): Promise<void> {
+  const { error } = await supabase
+    .from('guest_uploads')
+    .update({ status: 'approved' })
+    .in('id', uploadIds)
+
+  if (error) throw error
+
+  for (const uploadId of uploadIds) {
+    await recordModerationAudit({
+      entityType: 'guest_upload',
+      entityId: uploadId,
+      action: 'upload_approved_published',
+      fromStatus: 'pending',
+      toStatus: 'approved',
+      summary: `Guest upload bulk approved`,
+      actor,
+    })
+  }
+}
+
+// Bulk reject guest uploads with optional reason
+export async function bulkRejectGuestUploads(uploadIds: string[], reason?: string, actor?: ModerationAuditActor): Promise<void> {
+  const { error } = await supabase
+    .from('guest_uploads')
+    .update({ status: 'rejected', rejection_reason: reason ?? null })
+    .in('id', uploadIds)
+
+  if (error) throw error
+
+  for (const uploadId of uploadIds) {
+    await recordModerationAudit({
+      entityType: 'guest_upload',
+      entityId: uploadId,
+      action: 'upload_bulk_rejected',
+      fromStatus: 'pending',
+      toStatus: 'rejected',
+      summary: reason ? `Guest upload bulk rejected: ${reason}` : `Guest upload bulk rejected`,
+      metadata: reason ? { rejection_reason: reason } : {},
+      actor,
+    })
+  }
+}
+
+// Fetch rejection reason for guest upload status page
+export async function fetchGuestUploadStatus(email: string): Promise<GuestUpload | null> {
+  const { data, error } = await supabase
+    .from('guest_uploads')
+    .select('id, status, rejection_reason, created_at, photo_urls, guest_name, guest_email, message')
+    .eq('guest_email', email)
+    .order('created_at', { ascending: false })
+    .limit(1)
+    .single()
+
+  if (error) return null
+  return data
 }
 
 export async function upsertSiteEditorialFeature(input: UpsertSiteEditorialFeatureInput) {
