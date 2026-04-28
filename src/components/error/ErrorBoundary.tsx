@@ -23,7 +23,7 @@ const ErrorFallback: React.FC<{ error: Error | null; resetError: () => void }> =
       <div className='text-center max-w-md'>
         <div className='mb-8'>
           <h1 className='text-6xl font-bold text-gray-900 dark:text-white mb-4'>Oops!</h1>
-          <div className='w-16 h-1 bg-(--color-gold) mx-auto mb-6'></div>
+          <div className='w-16 h-1 bg-gold-500 mx-auto mb-6'></div>
         </div>
 
         <h2
@@ -52,7 +52,7 @@ const ErrorFallback: React.FC<{ error: Error | null; resetError: () => void }> =
         <div className='flex flex-col sm:flex-row gap-4 justify-center'>
           <button
             onClick={resetError}
-            className='px-6 py-3 bg-(--color-gold) text-white rounded-md hover:bg-opacity-90 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-(--color-gold) transition-colors'
+            className='px-6 py-3 bg-gold-500 text-white rounded-md hover:bg-opacity-90 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-gold-500 transition-colors'
           >
             Try Again
           </button>
