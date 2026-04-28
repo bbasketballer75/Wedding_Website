@@ -46,7 +46,7 @@
 /* Chapter Label - Matching ChapterTitle.jsx */
 .engagement-chapter {
   font-family: 'Newsreader', Georgia, serif;
-  color: #d4af37;
+  color: var(--color-gold-500);
   font-size: 1.1rem;
   text-transform: uppercase;
   letter-spacing: 0.3em;
@@ -154,7 +154,7 @@
 .gold-line {
   height: 1px;
   width: 60px;
-  background-color: #d4af37;
+  background-color: var(--color-gold-500);
   opacity: 0.8;
 }
 
@@ -162,7 +162,7 @@
   font-family: 'Newsreader', Georgia, serif;
   font-size: clamp(1.8rem, 2.5vw, 2.2rem);
   font-style: italic;
-  color: #d4af37;
+  color: var(--color-gold-500);
   margin: 0;
 }
 
