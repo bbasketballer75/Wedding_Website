@@ -20,8 +20,8 @@
 | 8. Moderation Queue & Featured Spotlight | v1.1 | 2/2 | Complete | 2026-04-28 |
 | 9. PWA Offline Verification | v1.1 | 1/1 | Complete | 2026-04-28 |
 | 10. Fix Blockers | v2.0 | 2/2 | Complete    | 2026-04-28 |
-| 11. Design Token Unification | v2.0 | 4/4 | Complete   | 2026-04-28 |
-| 12. Component Consolidation | v2.0 | 0/2 | Not started | - |
+| 11. Design Token Unification | v2.0 | 4/4 | Complete    | 2026-04-28 |
+| 12. Component Consolidation | v2.0 | 1/1 | Not started | - |
 | 13. Accessibility & Motion | v2.0 | 0/4 | Not started | - |
 | 14. Animation & Visual Polish | v2.0 | 0/3 | Not started | - |
 
@@ -51,7 +51,6 @@
 </details>
 
 ---
-
 ## Phase Details
 
 ### Phase 10: Fix Blockers
@@ -67,9 +66,11 @@
 2. ErrorBoundary.tsx no longer uses invalid `bg-(--color-gold)` CSS var syntax
 3. Build produces no Tailwind class validation errors for these files
 
-**Plans**: TBD
+**Plans**: 2 plans
 
-**UI hint**: yes
+Plans:
+- [ ] 10-01-PLAN.md — Fix invalid z-100 class
+- [ ] 10-02-PLAN.md — Fix invalid CSS var syntax
 
 ---
 
@@ -87,9 +88,13 @@
 3. `shadow-gold` is defined in designTokens.ts or replaced with valid token
 4. Avatar components use consistent gradient definition across all usages
 
-**Plans**: TBD
+**Plans**: 4 plans
 
-**UI hint**: yes
+Plans:
+- [ ] 11-01-PLAN.md — Replace hardcoded hex in Footer.tsx
+- [ ] 11-02-PLAN.md — Replace hardcoded hex in Home sections
+- [ ] 11-03-PLAN.md — Fix undefined shadow-gold token
+- [ ] 11-04-PLAN.md — Fix Avatar gradient inconsistency
 
 ---
 
@@ -105,9 +110,10 @@
 1. Only one LoadingSpinner implementation exists (remove duplicate)
 2. DarkModeToggle uses gold tokens instead of gray tokens
 
-**Plans**: TBD
+**Plans**: 1 plan
 
-**UI hint**: yes
+Plans:
+- [ ] 12-01-PLAN.md — Remove duplicate LoadingSpinner; verify DarkModeToggle gold tokens
 
 ---
 
