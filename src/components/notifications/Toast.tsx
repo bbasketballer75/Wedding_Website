@@ -86,12 +86,12 @@ const ToastComponent: React.FC<{ toast: ToastType }> = ({ toast }) => {
     const base = 'p-4 rounded-lg shadow-lg backdrop-blur-md border max-w-sm w-full'
     const typeStyles = {
       success:
-        'bg-green-50/90 border-green-200 text-green-900 dark:bg-green-900/90 dark:border-green-700 dark:text-green-100',
+        'bg-green-50/90 border-green-200 text-green-900 dark:bg-green-800 dark:border-green-600 dark:text-white',
       error:
-        'bg-red-50/90 border-red-200 text-red-900 dark:bg-red-900/90 dark:border-red-700 dark:text-red-100',
+        'bg-red-50/90 border-red-200 text-red-900 dark:bg-red-800 dark:border-red-600 dark:text-white',
       warning:
-        'bg-yellow-50/90 border-yellow-200 text-yellow-900 dark:bg-yellow-900/90 dark:border-yellow-700 dark:text-yellow-100',
-      info: 'bg-blue-50/90 border-blue-200 text-blue-900 dark:bg-blue-900/90 dark:border-blue-700 dark:text-blue-100',
+        'bg-yellow-50/90 border-yellow-200 text-yellow-900 dark:bg-yellow-700 dark:border-yellow-500 dark:text-white',
+      info: 'bg-blue-50/90 border-blue-200 text-blue-900 dark:bg-blue-800 dark:border-blue-600 dark:text-white',
     }
 
     return `${base} ${typeStyles[toast.type]}`
