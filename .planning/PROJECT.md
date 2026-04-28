@@ -34,19 +34,17 @@ These features exist and work — they form the foundation we're building on.
 - ✓ Admin error boundaries — No white screens on component failures — v1.0
 - ✓ Auth race condition fix — Serialized auth operations, single Supabase client — v1.0
 - ✓ MediaReviewPanel decomposition — 1716 → 325 lines, 5 components — v1.0
+- ✓ Social sharing with OG tags — v1.1
+- ✓ Guest heart reactions — Optimistic UI on guestbook — v1.1
+- ✓ Gallery virtualization — 200+ photos with @tanstack/react-virtual — v1.1
+- ✓ Moderation queue — Approve/reject/bulk workflow — v1.1
+- ✓ PWA offline caching — Workbox runtimeCaching for gallery images — v1.1
 
 ### Active
 
 What we're building toward in next release.
 
-- [ ] **Moderation queue expansion** — Full approve/reject/feature workflow (ADMIN-05, ADMIN-06, ADMIN-07)
-- [ ] **Gallery virtualization** — @tanstack/react-virtual for 200+ visible photos (GALLERY-05)
-- [ ] **Guest reactions** — Heart/like on guestbook entries (GALLERY-06)
-- [ ] **Featured content spotlight** — Admin highlights best photos on home (GALLERY-07)
-- [ ] **Social sharing** — Share buttons with OG tags (SOCIAL-01, SOCIAL-02)
-- [ ] **PWA offline verification** — Test full offline gallery browsing (ADV-01)
-- [ ] **Upload resume** — Persist upload queue to localStorage (ADV-02)
-- [ ] **Guest upload status** — "Your photo is being reviewed" feedback (ADV-03)
+- [ ] **UI/UX consistency** — Fix invalid Tailwind classes, standardize design tokens, unify shadows/borders/animation
 
 ### Out of Scope
 
@@ -105,33 +103,20 @@ Explicitly excluded — do not add these.
 
 ## Current State
 
-**v1.0 MVP shipped** — All v1 requirements complete as of 2026-04-25.
+**v1.1 Polish & Feature Expansion shipped** — All v1.1 requirements complete as of 2026-04-28.
 
 ### What This Is Now
 
-A polished, complete-feeling wedding archive for Austin & Jordyn (theporadas.com) — all core features working, stable auth, performant gallery, and elegant design.
+A polished, complete-feeling wedding archive for Austin & Jordyn (theporadas.com) — all core features working, stable auth, performant gallery with virtualization, elegant design, social sharing, and PWA offline support.
 
 ### Context Update
 
-- MediaReviewPanel decomposed: 1716 → 325 lines
-- Gallery state centralized in Zustand with sessionStorage caching
-- Upload progress with XHR tracking and error differentiation
-- All pages have skeleton loading states
-- Gold theme consistently applied
+- v1.0: MediaReviewPanel decomposed, gallery state centralized, upload progress, skeleton loading, gold theme
+- v1.1: Social sharing with OG tags, guest heart reactions, gallery virtualization (200+ photos), moderation queue, PWA offline caching
 
-## Current Milestone: v1.1 Polish & Feature Expansion
+## Current Milestone: v2.0 UI/UX Polish Round 2
 
-**Goal:** Expand moderation capabilities, improve gallery performance, add social features, and enhance PWA functionality
-
-**Target features:**
-- Moderation queue expansion (ADMIN-05, ADMIN-06, ADMIN-07)
-- Gallery virtualization for 200+ photos (GALLERY-05)
-- Guest reactions on guestbook (GALLERY-06)
-- Featured content spotlight (GALLERY-07)
-- Social sharing with OG tags (SOCIAL-01, SOCIAL-02)
-- Upload resume with localStorage persistence (ADV-02)
-- Guest upload status feedback (ADV-03)
-- PWA offline verification (ADV-01)
+**Goal:** Fix invalid Tailwind classes, standardize design tokens, unify shadows/borders/animation across the entire site
 
 ## Evolution
 
@@ -151,4 +136,4 @@ This document evolves at phase transitions and milestone boundaries.
 4. Update Context with current state
 
 ---
-*Last updated: 2026-04-25 after v1.0 milestone*
+*Last updated: 2026-04-28 after v1.1 milestone*
