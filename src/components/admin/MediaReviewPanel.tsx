@@ -12,6 +12,7 @@ import { BatchList } from './BatchList'
 import { FaceReviewGrid } from './FaceReviewGrid'
 import { ClusterMergeModal } from './ClusterMergeModal'
 import { handleSyncManifestMetadata, handleApplyConfirmedFaces } from './ReviewImportManifest'
+import { GuestUploadModerationList } from './GuestUploadModerationList'
 
 // Re-export types for use by other components
 export interface ReviewImportManifestRow {
@@ -313,6 +314,14 @@ export function MediaReviewPanel() {
             />
           </div>
         )}
+
+        {/* Guest Upload Moderation section */}
+        <section className="rounded-[1.4rem] border border-gold-100 bg-white p-4 shadow-sm">
+          <div className="mb-4 flex items-center justify-between">
+            <h2 className="font-display text-lg text-charcoal-900">Guest Upload Moderation</h2>
+          </div>
+          <GuestUploadModerationList />
+        </section>
 
         {/* Known people datalist for autocomplete */}
         <datalist id="known-people-options">
