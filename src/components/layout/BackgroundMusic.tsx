@@ -179,7 +179,7 @@ const BackgroundMusic = () => {
   const currentTrack = activePlaylist[currentTrackIndex] || mainPlaylist[0]
 
   return (
-    <div className='fixed bottom-4 left-1/2 z-100 w-[calc(100vw-1.5rem)] max-w-xs -translate-x-1/2 p-safe-bottom sm:bottom-8 sm:left-6 sm:w-auto sm:max-w-none sm:translate-x-0'>
+    <div className='fixed bottom-4 left-1/2 z-50 w-[calc(100vw-1.5rem)] max-w-xs -translate-x-1/2 p-safe-bottom sm:bottom-8 sm:left-6 sm:w-auto sm:max-w-none sm:translate-x-0'>
       <motion.div
         onMouseEnter={() => setIsHovered(true)}
         onMouseLeave={() => setIsHovered(false)}
