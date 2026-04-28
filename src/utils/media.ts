@@ -5,39 +5,10 @@ function trimTrailingSlash(value: string): string {
   return value.replace(/\/+$/, '')
 }
 
-function hashString(value: string): string {
-  let hash = 2166136261
-
-  for (let index = 0; index < value.length; index += 1) {
-    hash ^= value.charCodeAt(index)
-    hash = Math.imul(hash, 16777619)
-  }
-
-  return (hash >>> 0).toString(36)
-}
-
-function sanitizePathSegment(segment: string): string {
-  const lastDotIndex = segment.lastIndexOf('.')
-  const hasExtension = lastDotIndex > 0
-  const baseName = hasExtension ? segment.slice(0, lastDotIndex) : segment
-  const extension = hasExtension ? segment.slice(lastDotIndex) : ''
-  const safeBaseName = baseName.replace(/[^A-Za-z0-9._-]/g, '_')
-
-  if (safeBaseName === baseName) {
-    return `${safeBaseName}${extension}`
-  }
-
-  return `${safeBaseName}__${hashString(segment)}${extension}`
-}
-
 export function toRemoteMediaPath(path: string): string {
+  // Don't modify path segments - preserve special characters like +
   const normalizedPath = path.startsWith('/') ? path.slice(1) : path
-
-  return normalizedPath
-    .split('/')
-    .filter(Boolean)
-    .map(sanitizePathSegment)
-    .join('/')
+  return normalizedPath.split('/').filter(Boolean).join('/')
 }
 
 export function getMediaPath(path: string): string {
@@ -52,6 +23,8 @@ export function getMediaPath(path: string): string {
     return path
   }
 
+  // Don't sanitize path segments - the + in Bach+ette must be preserved
+  // so the Cloudflare Worker can correctly rewrite the URL
   if (import.meta.env.DEV) {
     return `${DEV_MEDIA_PROXY_PREFIX}/${toRemoteMediaPath(path)}`
   }

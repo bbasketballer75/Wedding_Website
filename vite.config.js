@@ -254,6 +254,24 @@ export default defineConfig(({ mode }) => {
           }
         : undefined,
     },
+    preview: {
+      port: 4173,
+      strictPort: true,
+      proxy: mediaBaseUrl
+        ? {
+            '/__media_proxy': {
+              target: mediaBaseUrl,
+              changeOrigin: true,
+              rewrite: (requestPath) => requestPath.replace(/^\/__media_proxy/, ''),
+            },
+            '/media': {
+              target: mediaBaseUrl,
+              changeOrigin: true,
+              rewrite: (requestPath) => requestPath.replace(/^\/media/, ''),
+            },
+          }
+        : undefined,
+    },
     define: {
       __DEV__: process.env.NODE_ENV === 'development',
       __APP_VERSION__: JSON.stringify(process.env.VITE_APP_VERSION || packageJson.version),
