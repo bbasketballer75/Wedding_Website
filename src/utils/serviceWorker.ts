@@ -5,6 +5,8 @@ export class ServiceWorkerManager {
   public isOnline: boolean;
   public listeners: Map<string, Function[]>;
   public updateHandler: ((hasUpdate: boolean) => Promise<void>) | null;
+  private wb: any = null;
+  private pendingSW: ServiceWorker | null = null;
 
   constructor() {
     this.isOnline = typeof navigator !== 'undefined' ? navigator.onLine : true
@@ -16,6 +18,38 @@ export class ServiceWorkerManager {
       navigator.serviceWorker.addEventListener('message', (event: MessageEvent) => {
         this.handleMessage(event)
       })
+    }
+
+    // Initialize workbox-window for proper SW update handling
+    this.initWorkboxWindow()
+  }
+
+  // Initialize workbox-window for proper SW update handling
+  private async initWorkboxWindow() {
+    if (typeof window === 'undefined' || !('serviceWorker' in navigator)) return
+
+    try {
+      const { Workbox } = await import('workbox-window')
+      this.wb = new Workbox('/sw.js')
+
+      this.wb.addEventListener('waiting', (event: any) => {
+        this.pendingSW = event.detail.serviceWorker
+        this.notifyListeners('update-available', { hasUpdate: true, pendingSW: this.pendingSW })
+      })
+
+      this.wb.addEventListener('controlling', () => {
+        window.location.reload()
+      })
+
+      this.wb.addEventListener('activated', (event: any) => {
+        if (!event.detail.isUpdate) {
+          // First install, no notification needed
+        }
+      })
+
+      await this.wb.register()
+    } catch (e) {
+      // workbox-window not available, fall back to basic SW handling
     }
   }
 
@@ -85,12 +119,14 @@ export class ServiceWorkerManager {
     this.notifyListeners('update-available', { hasUpdate: true })
   }
 
+  // Replace skipWaiting to use workbox's skipWaiting mechanism
   async skipWaiting() {
-    if (this.updateHandler) {
-      await this.updateHandler(true)
+    if (this.wb && this.pendingSW) {
+      this.wb.messageSkipWaiting()
+      this.pendingSW = null
       return
     }
-
+    // Fallback for environments without workbox-window
     if (typeof window !== 'undefined') window.location.reload()
   }
 
