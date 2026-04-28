@@ -21,7 +21,7 @@
 | 9. PWA Offline Verification | v1.1 | 1/1 | Complete | 2026-04-28 |
 | 10. Fix Blockers | v2.0 | 2/2 | Complete    | 2026-04-28 |
 | 11. Design Token Unification | v2.0 | 4/4 | Complete    | 2026-04-28 |
-| 12. Component Consolidation | v2.0 | 1/1 | Not started | - |
+| 12. Component Consolidation | v2.0 | 1/1 | Complete    | 2026-04-28 |
 | 13. Accessibility & Motion | v2.0 | 0/4 | Not started | - |
 | 14. Animation & Visual Polish | v2.0 | 0/3 | Not started | - |
 
@@ -113,7 +113,7 @@ Plans:
 **Plans**: 1 plan
 
 Plans:
-- [ ] 12-01-PLAN.md — Remove duplicate LoadingSpinner; verify DarkModeToggle gold tokens
+- [x] 12-01-PLAN.md — Remove duplicate LoadingSpinner; verify DarkModeToggle gold tokens
 
 ---
 
