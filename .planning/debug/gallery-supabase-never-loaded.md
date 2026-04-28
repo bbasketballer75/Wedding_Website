@@ -1,6 +1,6 @@
 ---
 name: gallery-supabase-never-loaded
-status: awaiting_human_verify
+status: resolved
 trigger: Gallery shows only hardcoded curated photos, Supabase photos never load. Worker returns 200 but gallery displays zero live photos.
 ---
 
