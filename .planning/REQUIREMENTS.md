@@ -70,7 +70,7 @@ Requirements for v1.1 polish & feature expansion milestone.
 
 ### PWA
 
-- [ ] **PWA-01**: PWA caches Supabase storage images for offline gallery browsing
+- [x] **PWA-01**: PWA caches Supabase storage images for offline gallery browsing
 
 ## Future Requirements (Deferred)
 
@@ -133,7 +133,7 @@ Explicitly excluded. Documented to prevent scope creep.
 | SOC-02 | Phase 5 (v1.1) | Pending |
 | UPL-01 | Phase 5 (v1.1) | Pending |
 | UPL-02 | Phase 6 (v1.1) | Pending |
-| PWA-01 | Phase 9 (v1.1) | Pending |
+| PWA-01 | Phase 9 (v1.1) | Implemented |
 
 **Coverage:**
 - v1 requirements: 18 total, 18 done
