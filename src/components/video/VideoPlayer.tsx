@@ -531,7 +531,7 @@ export function VideoPlayer({
       {/* Video Element */}
       {shouldShowPreviewVideo && !previewReady && poster && (
         <div
-          className="pointer-events-none absolute inset-0 z-[2] bg-[#130e0b] bg-contain bg-center bg-no-repeat blur-[10px] saturate-[0.78] brightness-[0.68] scale-[1.02]"
+          className="pointer-events-none absolute inset-0 z-[2] bg-mocha-900 bg-contain bg-center bg-no-repeat blur-[10px] saturate-[0.78] brightness-[0.68] scale-[1.02]"
           style={{ backgroundImage: `url(${poster})` }}
           aria-hidden="true"
         />
@@ -546,7 +546,7 @@ export function VideoPlayer({
         onLoadStart={() => setPreviewReady(false)}
         aria-hidden="true"
         className={cn(
-          'pointer-events-none absolute inset-0 z-[2] h-full w-full bg-[#130e0b] object-contain transition-[filter,transform,opacity] duration-500 ease-out',
+          'pointer-events-none absolute inset-0 z-[2] h-full w-full bg-mocha-900 object-contain transition-[filter,transform,opacity] duration-500 ease-out',
           shouldShowPreviewVideo && previewReady
             ? 'scale-[1.03] opacity-100 blur-[12px] saturate-[0.82] brightness-[0.72]'
             : 'scale-100 opacity-0'
@@ -557,7 +557,7 @@ export function VideoPlayer({
         src={src}
         poster={poster}
         className={cn(
-          'relative z-[2] h-full w-full bg-[#130e0b] object-contain transition-[filter,transform,opacity] duration-500 ease-out',
+          'relative z-[2] h-full w-full bg-mocha-900 object-contain transition-[filter,transform,opacity] duration-500 ease-out',
           !hasStartedPlayback && 'opacity-0'
         )}
         onTimeUpdate={handleTimeUpdate}
@@ -769,7 +769,7 @@ export function VideoPlayer({
                     aria-label="Seek through the wedding film"
                     className="h-1.5 w-full cursor-pointer appearance-none rounded-full bg-white/18 [&::-webkit-slider-thumb]:h-4 [&::-webkit-slider-thumb]:w-4 [&::-webkit-slider-thumb]:appearance-none [&::-webkit-slider-thumb]:rounded-full [&::-webkit-slider-thumb]:bg-gold-400 [&::-webkit-slider-thumb]:shadow-[0_0_0_4px_rgba(245,226,191,0.18)] [&::-webkit-slider-thumb]:transition-transform [&::-webkit-slider-thumb]:hover:scale-125"
                     style={{
-                      background: `linear-gradient(to right, #dbb880 0%, #dbb880 ${progressPercent}%, rgba(255,247,235,0.18) ${progressPercent}%, rgba(255,247,235,0.18) 100%)`
+                      background: `linear-gradient(to right, var(--color-gold-400) 0%, var(--color-gold-400) ${progressPercent}%, rgba(255,247,235,0.18) ${progressPercent}%, rgba(255,247,235,0.18) 100%)`
                     }}
                   />
 
