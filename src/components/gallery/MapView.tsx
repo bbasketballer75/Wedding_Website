@@ -71,7 +71,7 @@ export function MapView({ photos, onPhotoClick }: MapViewProps) {
             <svg className="absolute inset-0 h-full w-full" xmlns="http://www.w3.org/2000/svg">
               <path
                 d="M 15% 20% Q 30% 35% 50% 30%"
-                stroke="#d2b178"
+                stroke="var(--color-gold-400)"
                 strokeWidth="3"
                 fill="none"
                 strokeDasharray="6,8"
@@ -79,7 +79,7 @@ export function MapView({ photos, onPhotoClick }: MapViewProps) {
               />
               <path
                 d="M 50% 30% Q 60% 40% 60% 60%"
-                stroke="#d2b178"
+                stroke="var(--color-gold-400)"
                 strokeWidth="3"
                 fill="none"
                 strokeDasharray="6,8"
@@ -87,7 +87,7 @@ export function MapView({ photos, onPhotoClick }: MapViewProps) {
               />
               <path
                 d="M 50% 30% Q 65% 28% 75% 25%"
-                stroke="#d2b178"
+                stroke="var(--color-gold-400)"
                 strokeWidth="3"
                 fill="none"
                 strokeDasharray="6,8"
