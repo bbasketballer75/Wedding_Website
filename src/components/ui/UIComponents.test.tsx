@@ -30,6 +30,23 @@ describe('UI Components', () => {
     it('renders cursor elements', () => {
       render(<CustomCursor />)
     })
+
+    it('returns null when prefers-reduced-motion is enabled', () => {
+      // Mock matchMedia to return reduced motion preference
+      vi.mocked(window.matchMedia).mockImplementation(query => ({
+        matches: query === '(prefers-reduced-motion: reduce)',
+        media: query,
+        onchange: null,
+        addListener: vi.fn(),
+        removeListener: vi.fn(),
+        addEventListener: vi.fn(),
+        removeEventListener: vi.fn(),
+        dispatchEvent: vi.fn(),
+      } as MediaQueryList))
+
+      const { container } = render(<CustomCursor />)
+      expect(container.firstChild).toBeNull()
+    })
   })
 
   describe('RotateDevicePrompt', () => {
