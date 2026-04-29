@@ -76,10 +76,10 @@ const ToastItem = ({ message, type, onDismiss }: ToastItemProps) => {
   }
 
   const bgColors: Record<ToastType, string> = {
-    success: 'bg-[#050508]/90 border-(--color-gold) text-white',
+    success: 'bg-charcoal-900 border-gold-500 text-white',
     error: 'bg-red-950/90 border-red-500/50 text-white',
     warning: 'bg-amber-950/90 border-amber-500/50 text-white',
-    info: 'bg-[#050508]/90 border-white/20 text-white',
+    info: 'bg-charcoal-900 border-white/20 text-white',
   }
 
   const icons: Record<ToastType, string> = {
