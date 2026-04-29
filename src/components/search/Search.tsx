@@ -319,7 +319,7 @@ function Search({
           onBlur={() => window.setTimeout(() => setIsOpen(false), 160)}
           onKeyDown={handleKeyDown}
           placeholder={placeholder}
-          className="h-12 w-full rounded-full border border-gold-200/70 bg-white/86 px-11 pr-11 text-sm text-charcoal-900 shadow-sm transition-all duration-200 placeholder:text-charcoal-400 focus:border-gold-400 focus:outline-none focus:ring-2 focus:ring-gold-400/20"
+          className="h-12 w-full rounded-full border border-gold-200/70 bg-white/86 px-11 pr-11 text-sm text-charcoal-900 shadow-sm transition-all duration-200 placeholder:text-charcoal-400 focus:border-(--color-gold) focus:outline-none focus:ring-2 focus:ring-(--color-gold)"
         />
 
         <div className="absolute right-3 top-1/2 -translate-y-1/2">
