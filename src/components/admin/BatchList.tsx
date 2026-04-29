@@ -92,7 +92,7 @@ export function BatchList({
                   id="review-batch-picker"
                   value={selectedBatchId || ''}
                   onChange={(event) => handleSelectBatch(event.target.value || null)}
-                  className="h-11 min-w-0 flex-1 rounded-full border border-gold-200/70 bg-white px-4 text-sm text-charcoal-900 outline-none transition focus:border-gold-500 focus:ring-2 focus:ring-gold-500/20"
+                  className="h-11 min-w-0 flex-1 rounded-full border border-gold-200/70 bg-white px-4 text-sm text-charcoal-900 outline-none transition focus:border-(--color-gold) focus:ring-2 focus:ring-(--color-gold)"
                 >
                   {batches.map((batch) => (
                     <option key={batch.id} value={batch.id}>

@@ -84,7 +84,7 @@ export function AuditLogView() {
             value={entityFilter}
             onChange={(event) => setEntityFilter(event.target.value as typeof entityFilter)}
             aria-label="Filter audit trail by entity type"
-            className="h-11 rounded-full border border-gold-200/70 bg-white px-4 text-sm text-charcoal-900 outline-none transition focus:border-gold-500 focus:ring-2 focus:ring-gold-500/20"
+            className="h-11 rounded-full border border-gold-200/70 bg-white px-4 text-sm text-charcoal-900 outline-none transition focus:border-(--color-gold) focus:ring-2 focus:ring-(--color-gold)"
           >
             <option value="all">All entities</option>
             <option value="guest_upload">Uploads</option>
@@ -94,7 +94,7 @@ export function AuditLogView() {
             value={actionFilter}
             onChange={(event) => setActionFilter(event.target.value as typeof actionFilter)}
             aria-label="Filter audit trail by action"
-            className="h-11 rounded-full border border-gold-200/70 bg-white px-4 text-sm text-charcoal-900 outline-none transition focus:border-gold-500 focus:ring-2 focus:ring-gold-500/20"
+            className="h-11 rounded-full border border-gold-200/70 bg-white px-4 text-sm text-charcoal-900 outline-none transition focus:border-(--color-gold) focus:ring-2 focus:ring-(--color-gold)"
           >
             <option value="all">All actions</option>
             {Object.entries(auditActionLabels).map(([value, label]) => (
@@ -107,7 +107,7 @@ export function AuditLogView() {
             value={actorFilter}
             onChange={(event) => setActorFilter(event.target.value)}
             aria-label="Filter audit trail by actor"
-            className="h-11 rounded-full border border-gold-200/70 bg-white px-4 text-sm text-charcoal-900 outline-none transition focus:border-gold-500 focus:ring-2 focus:ring-gold-500/20"
+            className="h-11 rounded-full border border-gold-200/70 bg-white px-4 text-sm text-charcoal-900 outline-none transition focus:border-(--color-gold) focus:ring-2 focus:ring-(--color-gold)"
           >
             <option value="all">All actors</option>
             {actorOptions.map((actorEmail) => (
