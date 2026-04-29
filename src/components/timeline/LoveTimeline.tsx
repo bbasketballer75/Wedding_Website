@@ -358,7 +358,7 @@ function HalloweenCard({ event, index }: { event: TimelineEvent; index: number }
           {/* Title */}
           <h3 className="mb-3 font-display text-[2.15rem] leading-none text-white md:text-[3rem]">
             <span className="text-rose-300 drop-shadow-[0_0_18px_rgba(244,114,182,0.72)]">The</span>
-            <span className="ml-2 text-[#fff7eb] drop-shadow-[0_0_24px_rgba(255,247,235,0.12)]"> Proposal</span>
+            <span className="ml-2 text-candle-100 drop-shadow-[0_0_24px_rgba(255,247,235,0.12)]"> Proposal</span>
             <span className="ml-3 inline-block text-fuchsia-200 drop-shadow-[0_0_18px_rgba(244,114,182,0.65)]">💍</span>
           </h3>
 
@@ -380,7 +380,7 @@ function HalloweenCard({ event, index }: { event: TimelineEvent; index: number }
           {/* Location */}
           <motion.div 
             className="flex items-center gap-2 text-xs font-semibold uppercase tracking-widest text-rose-100/88"
-            whileHover={{ x: 5, color: '#f9a8d4' }}
+            whileHover={{ x: 5, color: 'var(--color-rose-200)' }}
           >
             <MapPin className="w-3 h-3 text-orange-300" />
             <span>Halloween night • costumes on • forever got weird in the best way</span>
