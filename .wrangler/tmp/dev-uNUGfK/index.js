@@ -1,8 +1,8 @@
-var __defProp = Object.defineProperty;
-var __name = (target, value) => __defProp(target, "name", { value, configurable: true });
+const __defProp = Object.defineProperty;
+const __name = (target, value) => __defProp(target, "name", { value, configurable: true });
 
 // .wrangler/tmp/bundle-LKNKTH/checked-fetch.js
-var urls = /* @__PURE__ */ new Set();
+const urls = /* @__PURE__ */ new Set();
 function checkURL(request, init) {
   const url = request instanceof URL ? request : new URL(
     (typeof request === "string" ? new Request(request, init) : request).url
@@ -28,7 +28,7 @@ globalThis.fetch = new Proxy(globalThis.fetch, {
 });
 
 // src/workers/media-rewrite/index.ts
-var media_rewrite_default = {
+const media_rewrite_default = {
   async fetch(request, env) {
     const url = new URL(request.url);
     let path = url.pathname;
@@ -79,7 +79,7 @@ var media_rewrite_default = {
 };
 
 // ../../AppData/Roaming/npm/node_modules/wrangler/templates/middleware/middleware-ensure-req-body-drained.ts
-var drainBody = /* @__PURE__ */ __name(async (request, env, _ctx, middlewareCtx) => {
+const drainBody = /* @__PURE__ */ __name(async (request, env, _ctx, middlewareCtx) => {
   try {
     return await middlewareCtx.next(request, env);
   } finally {
@@ -94,7 +94,7 @@ var drainBody = /* @__PURE__ */ __name(async (request, env, _ctx, middlewareCtx)
     }
   }
 }, "drainBody");
-var middleware_ensure_req_body_drained_default = drainBody;
+const middleware_ensure_req_body_drained_default = drainBody;
 
 // ../../AppData/Roaming/npm/node_modules/wrangler/templates/middleware/middleware-miniflare3-json-error.ts
 function reduceError(e) {
@@ -106,7 +106,7 @@ function reduceError(e) {
   };
 }
 __name(reduceError, "reduceError");
-var jsonError = /* @__PURE__ */ __name(async (request, env, _ctx, middlewareCtx) => {
+const jsonError = /* @__PURE__ */ __name(async (request, env, _ctx, middlewareCtx) => {
   try {
     return await middlewareCtx.next(request, env);
   } catch (e) {
@@ -117,17 +117,17 @@ var jsonError = /* @__PURE__ */ __name(async (request, env, _ctx, middlewareCtx)
     });
   }
 }, "jsonError");
-var middleware_miniflare3_json_error_default = jsonError;
+const middleware_miniflare3_json_error_default = jsonError;
 
 // .wrangler/tmp/bundle-LKNKTH/middleware-insertion-facade.js
-var __INTERNAL_WRANGLER_MIDDLEWARE__ = [
+const __INTERNAL_WRANGLER_MIDDLEWARE__ = [
   middleware_ensure_req_body_drained_default,
   middleware_miniflare3_json_error_default
 ];
-var middleware_insertion_facade_default = media_rewrite_default;
+const middleware_insertion_facade_default = media_rewrite_default;
 
 // ../../AppData/Roaming/npm/node_modules/wrangler/templates/middleware/common.ts
-var __facade_middleware__ = [];
+const __facade_middleware__ = [];
 function __facade_register__(...args) {
   __facade_middleware__.push(...args.flat());
 }
@@ -152,7 +152,7 @@ function __facade_invoke__(request, env, ctx, dispatch, finalMiddleware) {
 __name(__facade_invoke__, "__facade_invoke__");
 
 // .wrangler/tmp/bundle-LKNKTH/middleware-loader.entry.ts
-var __Facade_ScheduledController__ = class ___Facade_ScheduledController__ {
+const __Facade_ScheduledController__ = class ___Facade_ScheduledController__ {
   constructor(scheduledTime, cron, noRetry) {
     this.scheduledTime = scheduledTime;
     this.cron = cron;
@@ -176,7 +176,7 @@ function wrapExportedHandler(worker) {
   for (const middleware of __INTERNAL_WRANGLER_MIDDLEWARE__) {
     __facade_register__(middleware);
   }
-  const fetchDispatcher = /* @__PURE__ */ __name(function(request, env, ctx) {
+  const fetchDispatcher = /* @__PURE__ */ __name((request, env, ctx) => {
     if (worker.fetch === void 0) {
       throw new Error("Handler does not export a fetch() function.");
     }
@@ -185,7 +185,7 @@ function wrapExportedHandler(worker) {
   return {
     ...worker,
     fetch(request, env, ctx) {
-      const dispatcher = /* @__PURE__ */ __name(function(type, init) {
+      const dispatcher = /* @__PURE__ */ __name((type, init) => {
         if (type === "scheduled" && worker.scheduled !== void 0) {
           const controller = new __Facade_ScheduledController__(
             Date.now(),
@@ -240,13 +240,13 @@ function wrapWorkerEntrypoint(klass) {
   };
 }
 __name(wrapWorkerEntrypoint, "wrapWorkerEntrypoint");
-var WRAPPED_ENTRY;
+let WRAPPED_ENTRY;
 if (typeof middleware_insertion_facade_default === "object") {
   WRAPPED_ENTRY = wrapExportedHandler(middleware_insertion_facade_default);
 } else if (typeof middleware_insertion_facade_default === "function") {
   WRAPPED_ENTRY = wrapWorkerEntrypoint(middleware_insertion_facade_default);
 }
-var middleware_loader_entry_default = WRAPPED_ENTRY;
+const middleware_loader_entry_default = WRAPPED_ENTRY;
 export {
   __INTERNAL_WRANGLER_MIDDLEWARE__,
   middleware_loader_entry_default as default

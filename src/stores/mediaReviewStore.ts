@@ -67,7 +67,7 @@ function toSiteMediaPath(relativePath: string) {
   return `/media/${relativePath.replace(/^\/+/, '')}`
 }
 
-function chunkItems<T>(items: T[], size: number) {
+function buildChunks<T>(items: T[], size: number) {
   const chunks: T[][] = []
   for (let index = 0; index < items.length; index += size) {
     chunks.push(items.slice(index, index + size))
@@ -506,7 +506,7 @@ export const useMediaReviewStore = create<MediaReviewState>()(
       },
 
       updateDraft: (faceId, patch) => {
-        const { faces, faceDrafts } = get()
+        const { faces } = get()
         const face = faces.find((item) => item.id === faceId)
         set((state) => ({
           faceDrafts: {
