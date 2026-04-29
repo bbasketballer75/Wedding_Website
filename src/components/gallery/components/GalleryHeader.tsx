@@ -40,7 +40,7 @@ const GalleryHeader: React.FC<GalleryHeaderProps> = ({
               placeholder='Search photos by caption, tags, or location...'
               value={searchQuery}
               onChange={e => setSearchQuery(e.target.value)}
-              className='w-full px-5 py-3 bg-white/5 border border-white/10 rounded-full text-cream-100 placeholder-white/30 focus:outline-none focus:ring-2 focus:ring-gold-500/50 focus:border-gold-500/50 transition-all font-body text-sm'
+              className='w-full px-5 py-3 bg-white/5 border border-white/10 rounded-full text-cream-100 placeholder-white/30 focus:outline-none focus:ring-2 focus:ring-(--color-gold) focus:border-(--color-gold) transition-all font-body text-sm'
             />
           </div>
 
@@ -50,7 +50,7 @@ const GalleryHeader: React.FC<GalleryHeaderProps> = ({
               value={filter}
               onChange={e => setFilter(e.target.value)}
               aria-label='Filter photos by tag'
-              className='px-5 py-3 bg-white/5 border border-white/10 rounded-full text-cream-100 text-sm focus:outline-none focus:ring-2 focus:ring-gold-500/50 cursor-pointer hover:bg-white/10 transition-colors appearance-none min-w-[140px]'
+              className='px-5 py-3 bg-white/5 border border-white/10 rounded-full text-cream-100 text-sm focus:outline-none focus:ring-2 focus:ring-(--color-gold) cursor-pointer hover:bg-white/10 transition-colors appearance-none min-w-[140px]'
             >
               <option value='all' className='bg-dark-900'>All Photos</option>
               <option value='liked' className='bg-dark-900'>Liked</option>
@@ -65,7 +65,7 @@ const GalleryHeader: React.FC<GalleryHeaderProps> = ({
               value={sortBy}
               onChange={e => setSortBy(e.target.value as 'date' | 'likes' | 'ai')}
               aria-label='Sort photos by'
-              className='px-5 py-3 bg-white/5 border border-white/10 rounded-full text-cream-100 text-sm focus:outline-none focus:ring-2 focus:ring-gold-500/50 cursor-pointer hover:bg-white/10 transition-colors appearance-none min-w-[140px]'
+              className='px-5 py-3 bg-white/5 border border-white/10 rounded-full text-cream-100 text-sm focus:outline-none focus:ring-2 focus:ring-(--color-gold) cursor-pointer hover:bg-white/10 transition-colors appearance-none min-w-[140px]'
             >
               <option value='date' className='bg-dark-900'>Sort by Date</option>
               <option value='likes' className='bg-dark-900'>Sort by Likes</option>
