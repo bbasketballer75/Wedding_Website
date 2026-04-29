@@ -3,6 +3,8 @@ import { render } from '@testing-library/react'
 import ScrollProgress from './ScrollProgress'
 import CustomCursor from '../layout/CustomCursor'
 import RotateDevicePrompt from './RotateDevicePrompt'
+import * as fs from 'fs'
+import * as path from 'path'
 
 // Mock window.matchMedia
 Object.defineProperty(window, 'matchMedia', {
@@ -80,6 +82,26 @@ describe('UI Components', () => {
 
       const { container } = render(<RotateDevicePrompt />)
       expect(container).toBeTruthy()
+    })
+  })
+})
+
+describe('Focus Ring CSS Variable Verification', () => {
+  const targetFiles = [
+    'src/components/gallery/components/GalleryHeader.tsx',
+    'src/components/search/Search.tsx',
+    'src/components/admin/BatchList.tsx',
+    'src/pages/admin/AuditLogView.tsx',
+  ]
+
+  it('uses focus:ring-(--color-gold) instead of hardcoded gold classes', () => {
+    targetFiles.forEach(file => {
+      const content = fs.readFileSync(path.resolve(process.cwd(), file), 'utf-8')
+      // Should NOT contain hardcoded focus:ring-gold-* patterns
+      expect(content).not.toMatch(/focus:ring-gold-\d+/)
+      expect(content).not.toMatch(/focus:ring-gold-\d+\/\d+/)
+      // SHOULD contain the CSS variable pattern
+      expect(content).toMatch(/focus:ring-\(--color-gold\)/)
     })
   })
 })
