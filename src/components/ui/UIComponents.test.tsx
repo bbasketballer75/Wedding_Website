@@ -105,3 +105,36 @@ describe('Focus Ring CSS Variable Verification', () => {
     })
   })
 })
+
+describe('Aria-Label Verification', () => {
+  const targetFiles = [
+    'src/components/gallery/components/GalleryHeader.tsx',
+    'src/components/search/Search.tsx',
+    'src/components/notifications/Toast.tsx',
+  ]
+
+  it('has aria-label attributes on interactive elements', () => {
+    targetFiles.forEach(file => {
+      const content = fs.readFileSync(file, 'utf-8')
+      // Should contain aria-label attributes
+      const ariaLabelMatches = content.match(/aria-label\s*=/g)
+      expect(ariaLabelMatches).toBeTruthy()
+      expect(ariaLabelMatches.length).toBeGreaterThan(0)
+    })
+  })
+
+  it('GalleryHeader has aria-label on view mode button', () => {
+    const content = fs.readFileSync('src/components/gallery/components/GalleryHeader.tsx', 'utf-8')
+    expect(content).toMatch(/aria-label=\{`Switch to \$\{mode\} view`\}/)
+  })
+
+  it('Search has aria-label on clear button', () => {
+    const content = fs.readFileSync('src/components/search/Search.tsx', 'utf-8')
+    expect(content).toMatch(/aria-label\s*=\s*['"]Clear search['"]/)
+  })
+
+  it('Toast has aria-label on close button', () => {
+    const content = fs.readFileSync('src/components/notifications/Toast.tsx', 'utf-8')
+    expect(content).toMatch(/aria-label\s*=\s*['"]Close notification['"]/)
+  })
+})
