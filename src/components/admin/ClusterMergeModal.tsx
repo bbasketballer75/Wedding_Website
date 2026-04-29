@@ -264,7 +264,7 @@ export function ClusterMergeModal({
   onSelectFace,
   onNavigateFace,
 }: ClusterMergeModalProps) {
-  const { faceDrafts, savingKey, knownPeople } = useMediaReviewStore()
+  const { faceDrafts, savingKey } = useMediaReviewStore()
 
   const getFacePhotoStatus = (face: MediaReviewFace, draft?: FaceDraft) => {
     return draft?.reviewStatus || face.review_status

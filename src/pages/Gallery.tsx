@@ -804,8 +804,6 @@ export default function Gallery() {
     }
   }
 
-  const closeLightbox = () => useGalleryStore.getState().closeImageModal()
-
   const handleLike = (photoId: string) => {
     void (async () => {
       const { data } = await togglePhotoLike(photoId, engagementSessionId)

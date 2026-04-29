@@ -1,0 +1,200 @@
+
+> weddingwebsite@0.0.0 lint
+> eslint .
+
+
+C:\Users\bbask\Coding_Projects\Wedding_Website_Clean\.wrangler\tmp\bundle-LKNKTH\middleware-loader.entry.ts
+  0:0  error  Parsing error: "parserOptions.project" has been provided for @typescript-eslint/parser.
+The file was not found in any of the provided project(s): .wrangler\tmp\bundle-LKNKTH\middleware-loader.entry.ts
+
+C:\Users\bbask\Coding_Projects\Wedding_Website_Clean\.wrangler\tmp\bundle-LtleJY\middleware-loader.entry.ts
+  0:0  error  Parsing error: "parserOptions.project" has been provided for @typescript-eslint/parser.
+The file was not found in any of the provided project(s): .wrangler\tmp\bundle-LtleJY\middleware-loader.entry.ts
+
+C:\Users\bbask\Coding_Projects\Wedding_Website_Clean\.wrangler\tmp\dev-uNUGfK\index.js
+  75:14  error  'e' is defined but never used  no-unused-vars
+
+C:\Users\bbask\Coding_Projects\Wedding_Website_Clean\scripts\upload-wedding-photos.js
+  52:9  error  'fileSize' is assigned a value but never used. Allowed unused vars must match /^[A-Z_]/u  no-unused-vars
+
+C:\Users\bbask\Coding_Projects\Wedding_Website_Clean\src\App.test.tsx
+   9:32  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  23:27  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+
+C:\Users\bbask\Coding_Projects\Wedding_Website_Clean\src\components\admin\ClusterMergeModal.tsx
+  267:34  error  'knownPeople' is assigned a value but never used. Allowed unused vars must match /^[A-Z_]/u  @typescript-eslint/no-unused-vars
+
+C:\Users\bbask\Coding_Projects\Wedding_Website_Clean\src\components\admin\GuestUploadModerationList.tsx
+  159:13  error  A form label must be associated with a control  jsx-a11y/label-has-associated-control
+
+C:\Users\bbask\Coding_Projects\Wedding_Website_Clean\src\components\admin\UploadCard.tsx
+  135:13  error  A form label must be associated with a control  jsx-a11y/label-has-associated-control
+
+C:\Users\bbask\Coding_Projects\Wedding_Website_Clean\src\components\gallery\hooks\useVirtualizedMasonry.ts
+  96:23  warning  Compilation Skipped: Use of incompatible library
+
+This API returns functions which cannot be memoized without leading to stale UI. To prevent this, by default React Compiler will skip memoizing this component/hook. However, you may see issues if values from this API are passed to other components/hooks that are memoized.
+
+C:\Users\bbask\Coding_Projects\Wedding_Website_Clean\src\components\gallery\hooks\useVirtualizedMasonry.ts:96:23
+  94 |   }, [photos, rowHeight])
+  95 |
+> 96 |   const virtualizer = useVirtualizer({
+     |                       ^^^^^^^^^^^^^^ TanStack Virtual's `useVirtualizer()` API returns functions that cannot be memoized safely
+  97 |     count: estimatedTotalRows,
+  98 |     getScrollElement: () => scrollRef.current,
+  99 |     estimateSize: () => estimateSize,  react-hooks/incompatible-library
+
+C:\Users\bbask\Coding_Projects\Wedding_Website_Clean\src\components\layout\CustomCursor.tsx
+  17:5  error  Error: Calling setState synchronously within an effect can trigger cascading renders
+
+Effects are intended to synchronize state between React and external systems such as manually updating the DOM, state management libraries, or other platform APIs. In general, the body of an effect should do one or both of the following:
+* Update external systems with the latest state from React.
+* Subscribe for updates from some external system, calling setState in a callback function when external state changes.
+
+Calling setState synchronously within an effect body causes cascading renders that can hurt performance, and is not recommended. (https://react.dev/learn/you-might-not-need-an-effect).
+
+C:\Users\bbask\Coding_Projects\Wedding_Website_Clean\src\components\layout\CustomCursor.tsx:17:5
+  15 |   useEffect(() => {
+  16 |     const mediaQuery = window.matchMedia('(prefers-reduced-motion: reduce)')
+> 17 |     setReducedMotion(mediaQuery.matches)
+     |     ^^^^^^^^^^^^^^^^ Avoid calling setState() directly within an effect
+  18 |
+  19 |     const handler = (e: MediaQueryListEvent) => setReducedMotion(e.matches)
+  20 |     mediaQuery.addEventListener('change', handler)  react-hooks/set-state-in-effect
+
+C:\Users\bbask\Coding_Projects\Wedding_Website_Clean\src\components\layout\Header.tsx
+  82:5  error  Error: Calling setState synchronously within an effect can trigger cascading renders
+
+Effects are intended to synchronize state between React and external systems such as manually updating the DOM, state management libraries, or other platform APIs. In general, the body of an effect should do one or both of the following:
+* Update external systems with the latest state from React.
+* Subscribe for updates from some external system, calling setState in a callback function when external state changes.
+
+Calling setState synchronously within an effect body causes cascading renders that can hurt performance, and is not recommended. (https://react.dev/learn/you-might-not-need-an-effect).
+
+C:\Users\bbask\Coding_Projects\Wedding_Website_Clean\src\components\layout\Header.tsx:82:5
+  80 |   // Close mobile menu on route change
+  81 |   useEffect(() => {
+> 82 |     setIsMobileMenuOpen(false)
+     |     ^^^^^^^^^^^^^^^^^^^ Avoid calling setState() directly within an effect
+  83 |   }, [location.pathname])
+  84 |
+  85 |   // Prevent body scroll when mobile menu is open  react-hooks/set-state-in-effect
+
+C:\Users\bbask\Coding_Projects\Wedding_Website_Clean\src\components\sections\EngagementSection.tsx
+  163:53  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+
+C:\Users\bbask\Coding_Projects\Wedding_Website_Clean\src\components\sections\engagement\EngagementGallery.tsx
+  165:24  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  191:63  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+
+C:\Users\bbask\Coding_Projects\Wedding_Website_Clean\src\components\sections\engagement\FlyingBat.tsx
+  20:23  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  20:39  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  20:62  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  20:84  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+
+C:\Users\bbask\Coding_Projects\Wedding_Website_Clean\src\components\sections\engagement\VolumetricFog.tsx
+  158:47  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+
+C:\Users\bbask\Coding_Projects\Wedding_Website_Clean\src\components\ui\CustomVideoPlayer.tsx
+  17:17  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+
+C:\Users\bbask\Coding_Projects\Wedding_Website_Clean\src\components\ui\LazyLoadUtils.tsx
+  29:58  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  35:21  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  36:19  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+
+C:\Users\bbask\Coding_Projects\Wedding_Website_Clean\src\components\ui\RotateDevicePrompt.tsx
+  47:15  warning  Forbidden non-null assertion              @typescript-eslint/no-non-null-assertion
+  54:42  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+
+C:\Users\bbask\Coding_Projects\Wedding_Website_Clean\src\components\ui\VirtualScroll.tsx
+   14:34  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+   93:39  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  187:41  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+
+C:\Users\bbask\Coding_Projects\Wedding_Website_Clean\src\hooks\useBlurHash.ts
+  22:7  error  Error: Calling setState synchronously within an effect can trigger cascading renders
+
+Effects are intended to synchronize state between React and external systems such as manually updating the DOM, state management libraries, or other platform APIs. In general, the body of an effect should do one or both of the following:
+* Update external systems with the latest state from React.
+* Subscribe for updates from some external system, calling setState in a callback function when external state changes.
+
+Calling setState synchronously within an effect body causes cascading renders that can hurt performance, and is not recommended. (https://react.dev/learn/you-might-not-need-an-effect).
+
+C:\Users\bbask\Coding_Projects\Wedding_Website_Clean\src\hooks\useBlurHash.ts:22:7
+  20 |   useEffect(() => {
+  21 |     if (!hash) {
+> 22 |       setDataUrl(null)
+     |       ^^^^^^^^^^ Avoid calling setState() directly within an effect
+  23 |       return
+  24 |     }
+  25 |  react-hooks/set-state-in-effect
+
+C:\Users\bbask\Coding_Projects\Wedding_Website_Clean\src\hooks\useIdleCallback.ts
+    7:54  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+   19:42  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+   22:32  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+   32:29  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+   49:22  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+   51:46  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+   99:57  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  100:46  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  116:21  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+
+C:\Users\bbask\Coding_Projects\Wedding_Website_Clean\src\hooks\useIntersectionObserver.ts
+  13:22  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  75:61  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+
+C:\Users\bbask\Coding_Projects\Wedding_Website_Clean\src\hooks\useTouchGestures.ts
+   83:48  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  106:48  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  164:48  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+
+C:\Users\bbask\Coding_Projects\Wedding_Website_Clean\src\pages\Gallery.tsx
+  729:6  warning  React Hook useEffect has a missing dependency: 'filteredPhotos'. Either include it or remove the dependency array  react-hooks/exhaustive-deps
+  807:9  error    'closeLightbox' is assigned a value but never used. Allowed unused vars must match /^[A-Z_]/u                      @typescript-eslint/no-unused-vars
+
+C:\Users\bbask\Coding_Projects\Wedding_Website_Clean\src\pages\People.tsx
+  113:9  warning  Forbidden non-null assertion  @typescript-eslint/no-non-null-assertion
+
+C:\Users\bbask\Coding_Projects\Wedding_Website_Clean\src\setupTests.tsx
+  75:52  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  76:47  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  77:49  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  78:46  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  79:46  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  80:47  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  81:49  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  82:47  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  83:44  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  97:37  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+
+C:\Users\bbask\Coding_Projects\Wedding_Website_Clean\src\stores\mediaReviewStore.ts
+   70:10  error  'chunkItems' is defined but never used. Allowed unused vars must match /^[A-Z_]/u           @typescript-eslint/no-unused-vars
+  473:14  error  'state' is defined but never used                                                           @typescript-eslint/no-unused-vars
+  509:24  error  'faceDrafts' is assigned a value but never used. Allowed unused vars must match /^[A-Z_]/u  @typescript-eslint/no-unused-vars
+
+C:\Users\bbask\Coding_Projects\Wedding_Website_Clean\src\stores\moderationStore.ts
+  116:36  error  'uploads' is assigned a value but never used. Allowed unused vars must match /^[A-Z_]/u  @typescript-eslint/no-unused-vars
+  137:36  error  'uploads' is assigned a value but never used. Allowed unused vars must match /^[A-Z_]/u  @typescript-eslint/no-unused-vars
+
+C:\Users\bbask\Coding_Projects\Wedding_Website_Clean\src\utils\serviceWorker.ts
+   8:15  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  35:51  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  44:53  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  51:14  error    'e' is defined but never used             @typescript-eslint/no-unused-vars
+  95:41  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+
+C:\Users\bbask\Coding_Projects\Wedding_Website_Clean\src\utils\storage.test.ts
+  12:41  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+
+C:\Users\bbask\Coding_Projects\Wedding_Website_Clean\src\utils\storage.ts
+  72:15  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  84:15  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+
+C:\Users\bbask\Coding_Projects\Wedding_Website_Clean\src\workers\media-rewrite\index.ts
+  591:10  error  'mapWeddingDayFile' is defined but never used. Allowed unused vars must match /^[A-Z_]/u  @typescript-eslint/no-unused-vars
+
+✖ 71 problems (18 errors, 53 warnings)
+

@@ -12,27 +12,27 @@ export default {
 
       if (inner.startsWith('Engagement/Photos/')) {
         const filename = inner.slice(18);
-        rewrittenPath = 'professional/photos/proposal/' + filename;
+        rewrittenPath = `professional/photos/proposal/${  filename}`;
       } else if (inner.startsWith('Bach+ette/Photos/') || inner.startsWith('Bach ette/Photos/')) {
         const filename = inner.slice(17);
         let mappedName = filename;
         if (mappedName.endsWith('.webp')) {
-          mappedName = mappedName.slice(0, -5) + '.jpg';
+          mappedName = `${mappedName.slice(0, -5)  }.jpg`;
         }
-        rewrittenPath = 'media/Bach+ette/Photos/' + mappedName;
+        rewrittenPath = `media/Bach+ette/Photos/${  mappedName}`;
       } else if (inner.startsWith('Professional/Wedding Day/Photos/')) {
         let filename = inner.slice(32);
         if (filename.endsWith('.webp')) {
-          filename = filename.slice(0, -5) + '.jpg';
+          filename = `${filename.slice(0, -5)  }.jpg`;
         }
-        rewrittenPath = 'media/Professional/Wedding Day/Photos/' + filename;
+        rewrittenPath = `media/Professional/Wedding Day/Photos/${  filename}`;
       } else if (inner.startsWith('Professional/')) {
         const afterPro = inner.slice(12);
         const slashIdx = afterPro.indexOf('/');
         if (slashIdx > 0) {
           const album = afterPro.slice(0, slashIdx);
           const rest = afterPro.slice(slashIdx + 1);
-          rewrittenPath = `media/Professional/${album}/Photos/` + rest;
+          rewrittenPath = `media/Professional/${album}/Photos/${  rest}`;
         }
       } else if (inner.startsWith('Guest Uploads/') || inner.startsWith('GuestUploads/')) {
         // Extract filename after "Guest Uploads/Wedding Day/Live Photos/Stills/"
@@ -42,18 +42,18 @@ export default {
         if (stillsIdx > 0) {
           let filename = afterGuest.slice(stillsIdx + 7); // Skip "Stills/"
           if (filename.endsWith('.webp')) {
-            filename = filename.slice(0, -5) + '.jpg';
+            filename = `${filename.slice(0, -5)  }.jpg`;
           }
-          rewrittenPath = 'media/Guest Uploads/Wedding Day/Live Photos/Stills/' + filename;
+          rewrittenPath = `media/Guest Uploads/Wedding Day/Live Photos/Stills/${  filename}`;
         } else {
           let filename = afterGuest;
           if (filename.endsWith('.webp')) {
-            filename = filename.slice(0, -5) + '.jpg';
+            filename = `${filename.slice(0, -5)  }.jpg`;
           }
-          rewrittenPath = 'media/Guest Uploads/' + filename;
+          rewrittenPath = `media/Guest Uploads/${  filename}`;
         }
       } else {
-        rewrittenPath = 'media/' + inner;
+        rewrittenPath = `media/${  inner}`;
       }
     }
     // Case 2: /_thumbs/Album/Photos/filename.webp
@@ -62,27 +62,27 @@ export default {
 
       if (inner.startsWith('Engagement/Photos/')) {
         const filename = inner.slice(18);
-        rewrittenPath = 'professional/photos/proposal/' + filename;
+        rewrittenPath = `professional/photos/proposal/${  filename}`;
       } else if (inner.startsWith('Bach+ette/Photos/') || inner.startsWith('Bach ette/Photos/')) {
         const filename = inner.slice(17);
         let mappedName = filename;
         if (mappedName.endsWith('.webp')) {
-          mappedName = mappedName.slice(0, -5) + '.jpg';
+          mappedName = `${mappedName.slice(0, -5)  }.jpg`;
         }
-        rewrittenPath = 'media/Bach+ette/Photos/' + mappedName;
+        rewrittenPath = `media/Bach+ette/Photos/${  mappedName}`;
       } else if (inner.startsWith('Professional/Wedding Day/Photos/')) {
         let filename = inner.slice(32);
         if (filename.endsWith('.webp')) {
-          filename = filename.slice(0, -5) + '.jpg';
+          filename = `${filename.slice(0, -5)  }.jpg`;
         }
-        rewrittenPath = 'media/Professional/Wedding Day/Photos/' + filename;
+        rewrittenPath = `media/Professional/Wedding Day/Photos/${  filename}`;
       } else if (inner.startsWith('Professional/')) {
         const afterPro = inner.slice(12);
         const slashIdx = afterPro.indexOf('/');
         if (slashIdx > 0) {
           const album = afterPro.slice(0, slashIdx);
           const rest = afterPro.slice(slashIdx + 1);
-          rewrittenPath = `media/Professional/${album}/Photos/` + rest;
+          rewrittenPath = `media/Professional/${album}/Photos/${  rest}`;
         }
       } else if (inner.startsWith('Guest Uploads/') || inner.startsWith('GuestUploads/')) {
         // Extract filename after "Guest Uploads/Wedding Day/Live Photos/Stills/"
@@ -92,18 +92,18 @@ export default {
         if (stillsIdx > 0) {
           let filename = afterGuest.slice(stillsIdx + 7); // Skip "Stills/"
           if (filename.endsWith('.webp')) {
-            filename = filename.slice(0, -5) + '.jpg';
+            filename = `${filename.slice(0, -5)  }.jpg`;
           }
-          rewrittenPath = 'media/Guest Uploads/Wedding Day/Live Photos/Stills/' + filename;
+          rewrittenPath = `media/Guest Uploads/Wedding Day/Live Photos/Stills/${  filename}`;
         } else {
           let filename = afterGuest;
           if (filename.endsWith('.webp')) {
-            filename = filename.slice(0, -5) + '.jpg';
+            filename = `${filename.slice(0, -5)  }.jpg`;
           }
-          rewrittenPath = 'media/Guest Uploads/' + filename;
+          rewrittenPath = `media/Guest Uploads/${  filename}`;
         }
       } else {
-        rewrittenPath = 'media/' + inner;
+        rewrittenPath = `media/${  inner}`;
       }
     }
     // Case 3: /media/Bach+ette/... - direct access
