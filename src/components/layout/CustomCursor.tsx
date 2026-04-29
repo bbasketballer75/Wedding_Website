@@ -10,6 +10,16 @@ interface MousePosition {
 const CustomCursor = () => {
   const [mousePosition, setMousePosition] = useState<MousePosition>({ x: 0, y: 0 })
   const [isHovering, setIsHovering] = useState(false)
+  const [reducedMotion, setReducedMotion] = useState(false)
+
+  useEffect(() => {
+    const mediaQuery = window.matchMedia('(prefers-reduced-motion: reduce)')
+    setReducedMotion(mediaQuery.matches)
+
+    const handler = (e: MediaQueryListEvent) => setReducedMotion(e.matches)
+    mediaQuery.addEventListener('change', handler)
+    return () => mediaQuery.removeEventListener('change', handler)
+  }, [])
 
   useEffect(() => {
     const updateMousePosition = (e: MouseEvent) => {
@@ -38,6 +48,10 @@ const CustomCursor = () => {
       window.removeEventListener('mouseover', handleMouseOver)
     }
   }, [])
+
+  if (reducedMotion) {
+    return null
+  }
 
   return (
     <>
