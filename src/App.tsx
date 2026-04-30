@@ -20,6 +20,7 @@ const Guestbook = lazy(() => import('@/pages/Guestbook'))
 const Admin = lazy(() => import('@/pages/Admin'))
 const AdminLogin = lazy(() => import('@/pages/AdminLogin'))
 const People = lazy(() => import('@/pages/People'))
+const Activity = lazy(() => import('@/pages/Activity'))
 const NotFound = lazy(() => import('@/pages/NotFound'))
 
 // Page transition wrapper
@@ -70,6 +71,7 @@ function AppContent() {
       '/guestbook': 'Guestbook',
       '/guest-photos': 'Guest Memories',
       '/people': 'People',
+      '/activity': 'Activity',
       '/admin/login': 'Admin Login',
       '/admin': 'Admin Dashboard',
     }
@@ -173,6 +175,16 @@ function AppContent() {
                   <RouteErrorBoundary>
                     <LazyPage title="People">
                       <People />
+                    </LazyPage>
+                  </RouteErrorBoundary>
+                }
+              />
+              <Route
+                path="/activity"
+                element={
+                  <RouteErrorBoundary>
+                    <LazyPage title="Activity">
+                      <Activity />
                     </LazyPage>
                   </RouteErrorBoundary>
                 }
