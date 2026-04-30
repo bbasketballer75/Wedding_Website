@@ -36,7 +36,7 @@ Last activity: 2026-04-30
 |-------|--------|-----------|
 | 15. Activity Feed | Complete | 02/02 plans |
 | 16. Lightbox Enhancement | Not started | — |
-| 17. Download Management | Not started | — |
+| 17. Download Management | Complete | 01/01 plans |
 | 18. Photo Claiming | Not started | — |
 | 19. Shared Links & Print | Not started | — |
 
@@ -53,9 +53,9 @@ Last activity: 2026-04-30
 | LB-02 Swipe Refinement | 16 | Pending |
 | LB-03 EXIF Display | 16 | Pending |
 | LB-04 Lightbox Download | 16 | Pending |
-| DL-01 Multi-Select Queue | 17 | Pending |
-| DL-02 Batch Download | 17 | Pending |
-| DL-03 Queue Persistence | 17 | Pending |
+| DL-01 Multi-Select Queue | 17 | Complete |
+| DL-02 Batch Download | 17 | Complete |
+| DL-03 Queue Persistence | 17 | Complete |
 | SC-01 Photo Claiming Email | 18 | Pending |
 | SC-02 Photo Claiming Face | 18 | Pending |
 | SC-03 Shared Album Links | 19 | Pending |
