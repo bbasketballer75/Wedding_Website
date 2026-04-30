@@ -1,6 +1,8 @@
+import { useRef } from 'react'
 import { motion } from 'framer-motion'
 import { Heart, Images, CheckCircle2 } from 'lucide-react'
 import { cn } from '@/lib/utils'
+import { useLongPress } from '@/hooks/useLongPress'
 import MasonryGrid from './components/MasonryGrid'
 import type { Photo } from '@/lib/supabase'
 
@@ -69,6 +71,26 @@ function SelectOverlay({ selected, onToggle }: { selected: boolean; onToggle: ()
 }
 
 function MasonryPhotoGrid({ photos, onPhotoClick, onLike, selectMode, selectedIds, onToggleSelect }: PhotoGridProps) {
+  const longPressFired = useRef(false)
+
+  const handlePhotoClick = (photo: Photo, index: number) => {
+    if (selectMode) {
+      onToggleSelect?.(photo.id)
+    } else if (longPressFired.current) {
+      // Prevent click after long-press activated select mode
+      longPressFired.current = false
+    } else {
+      onPhotoClick?.(photo, index)
+    }
+  }
+
+  const longPressHandlers = useLongPress(() => {
+    if (!selectMode) {
+      longPressFired.current = true
+      // Enter select mode and select this photo
+      onToggleSelect?.(photo.id)
+    }
+  }, 500)
 
   return (
     <MasonryGrid columns={MASONRY_COLUMNS}>
@@ -96,9 +118,11 @@ function MasonryPhotoGrid({ photos, onPhotoClick, onLike, selectMode, selectedId
               }
             }}
             onMouseLeave={(e) => {
-              e.currentTarget.style.boxShadow = '0 26px 60px -42px rgba(46,33,13,0.24)'
+              if (!selectMode) {
+                e.currentTarget.style.boxShadow = '0 26px 60px -42px rgba(46,33,13,0.24)'
+              }
             }}
-            onClick={() => selectMode ? onToggleSelect?.(photo.id) : onPhotoClick?.(photo, index)}
+            onClick={() => handlePhotoClick(photo, index)}
             onKeyDown={(event) => {
 
               if (event.key === 'Enter' || event.key === ' ') {
@@ -106,6 +130,7 @@ function MasonryPhotoGrid({ photos, onPhotoClick, onLike, selectMode, selectedId
                 selectMode ? onToggleSelect?.(photo.id) : onPhotoClick?.(photo, index)
               }
             }}
+            {...longPressHandlers}
             role="button"
             tabIndex={0}
             aria-label={selectMode ? (isSelected ? `Deselect ${photo.caption || 'photo'}` : `Select ${photo.caption || 'photo'}`) : (photo.caption ? `Open photo: ${photo.caption}` : 'Open photo')}
