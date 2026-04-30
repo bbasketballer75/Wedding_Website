@@ -1,4 +1,5 @@
 import React from 'react'
+import GalleryCheckbox from '@/components/gallery/GalleryCheckbox'
 
 interface GalleryHeaderProps {
   searchQuery: string
@@ -13,6 +14,12 @@ interface GalleryHeaderProps {
   enableAI: boolean
   isLoading: boolean
   onUploadClick: () => void
+  // New props for multi-select (per D-03, D-04)
+  selectMode?: boolean
+  onToggleSelectMode?: () => void
+  selectedCount?: number
+  onSelectAll?: () => void
+  onClearSelection?: () => void
 }
 
 const GalleryHeader: React.FC<GalleryHeaderProps> = ({
@@ -28,10 +35,38 @@ const GalleryHeader: React.FC<GalleryHeaderProps> = ({
   enableAI,
   isLoading,
   onUploadClick,
+  selectMode = false,
+  onToggleSelectMode,
+  selectedCount = 0,
+  onSelectAll,
+  onClearSelection,
 }) => {
   return (
     <div className='sticky top-0 z-40 bg-dark-950/80 backdrop-blur-xl border-b border-white/5 shadow-glass'>
       <div className='max-w-7xl mx-auto px-4 py-4'>
+        {selectMode ? (
+          // Select mode header: checkbox, select all, clear, selected count (per D-03, D-04)
+          <div className='flex items-center gap-4'>
+            <GalleryCheckbox
+              checked={selectedCount > 0}
+              onChange={onToggleSelectMode || (() => {})}
+              ariaLabel="Exit select mode"
+            />
+            <span className='text-sm text-cream-200'>{selectedCount} selected</span>
+            <button
+              onClick={onSelectAll || (() => {})}
+              className='text-sm text-gold-400 hover:text-gold-300'
+            >
+              Select All
+            </button>
+            <button
+              onClick={onClearSelection || (() => {})}
+              className='text-sm text-rose-400 hover:text-rose-300'
+            >
+              Clear
+            </button>
+          </div>
+        ) : (
         <div className='flex flex-col lg:flex-row gap-4'>
           {/* Search */}
           <div className='flex-1'>
@@ -110,6 +145,7 @@ const GalleryHeader: React.FC<GalleryHeaderProps> = ({
             </button>
           </div>
         </div>
+        )}
       </div>
     </div>
   )
