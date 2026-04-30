@@ -4,7 +4,7 @@
 
 - [x] **v1.0 MVP** — Phases 1-4 (shipped 2026-04-25)
 - [x] **v1.1 Polish & Feature Expansion** — Phases 5-9 (shipped 2026-04-28)
-- [ ] **v2.0 UI/UX Polish Round 2** — Phases 10-14 (in progress)
+- [x] **v2.0 UI/UX Polish Round 2** — Phases 10-14 (shipped 2026-04-30)
 
 ## Progress
 
@@ -19,11 +19,11 @@
 | 7. Gallery Virtualization | v1.1 | 2/2 | Complete | 2026-04-25 |
 | 8. Moderation Queue & Featured Spotlight | v1.1 | 2/2 | Complete | 2026-04-28 |
 | 9. PWA Offline Verification | v1.1 | 1/1 | Complete | 2026-04-28 |
-| 10. Fix Blockers | v2.0 | 2/2 | Complete    | 2026-04-28 |
-| 11. Design Token Unification | v2.0 | 4/4 | Complete    | 2026-04-28 |
-| 12. Component Consolidation | v2.0 | 1/1 | Complete    | 2026-04-28 |
-| 13. Accessibility & Motion | v2.0 | 0/4 | Not started | - |
-| 14. Animation & Visual Polish | v2.0 | 0/3 | Not started | - |
+| 10. Fix Blockers | v2.0 | 2/2 | Complete | 2026-04-28 |
+| 11. Design Token Unification | v2.0 | 4/4 | Complete | 2026-04-28 |
+| 12. Component Consolidation | v2.0 | 1/1 | Complete | 2026-04-28 |
+| 13. Accessibility & Motion | v2.0 | 4/4 | Complete | 2026-04-28 |
+| 14. Animation & Visual Polish | v2.0 | 3/3 | Complete | 2026-04-30 |
 
 ## Archived Milestones
 
@@ -50,115 +50,30 @@
 
 </details>
 
+<details>
+<summary>v2.0 UI/UX Polish Round 2 (Phases 10-14) — SHIPPED 2026-04-30</summary>
+
+- [x] Phase 10: Fix Blockers (2/2 plans) — completed 2026-04-28
+- [x] Phase 11: Design Token Unification (4/4 plans) — completed 2026-04-28
+- [x] Phase 12: Component Consolidation (1/1 plan) — completed 2026-04-28
+- [x] Phase 13: Accessibility & Motion (4/4 plans) — completed 2026-04-28
+- [x] Phase 14: Animation & Visual Polish (3/3 plans) — completed 2026-04-30
+
+**Key accomplishments:**
+- Fixed invalid Tailwind classes (z-100, CSS var syntax)
+- Design tokens unified across all components
+- Border radius standardized to rounded-xl
+- Animation durations standardized to 300ms
+- Accessibility: aria-labels, prefers-reduced-motion, gold focus rings
+
+</details>
+
 ---
+
 ## Phase Details
 
-### Phase 10: Fix Blockers
-
-**Goal**: Eliminate invalid Tailwind classes that cause build warnings and potential runtime issues
-
-**Depends on**: Nothing
-
-**Requirements**: UX-01, UX-02
-
-**Success Criteria** (what must be TRUE):
-1. BackgroundMusic.tsx no longer uses invalid `z-100` class (z-50 is max valid)
-2. ErrorBoundary.tsx no longer uses invalid `bg-(--color-gold)` CSS var syntax
-3. Build produces no Tailwind class validation errors for these files
-
-**Plans**: 2 plans
-
-Plans:
-- [ ] 10-01-PLAN.md — Fix invalid z-100 class
-- [ ] 10-02-PLAN.md — Fix invalid CSS var syntax
+Phase 15 planning not yet started. Run `/gsd-plan-phase 15` to begin.
 
 ---
 
-### Phase 11: Design Token Unification
-
-**Goal**: Replace all hardcoded values with design token references for consistency
-
-**Depends on**: Phase 10
-
-**Requirements**: UX-03, UX-04, UX-05, UX-06
-
-**Success Criteria** (what must be TRUE):
-1. Footer.tsx uses only design token colors (no hardcoded hex like #d4af37)
-2. Home page sections use only design token colors
-3. `shadow-gold` is defined in designTokens.ts or replaced with valid token
-4. Avatar components use consistent gradient definition across all usages
-
-**Plans**: 4 plans
-
-Plans:
-- [ ] 11-01-PLAN.md — Replace hardcoded hex in Footer.tsx
-- [ ] 11-02-PLAN.md — Replace hardcoded hex in Home sections
-- [ ] 11-03-PLAN.md — Fix undefined shadow-gold token
-- [ ] 11-04-PLAN.md — Fix Avatar gradient inconsistency
-
----
-
-### Phase 12: Component Consolidation
-
-**Goal**: Eliminate duplicate components and fix token usage
-
-**Depends on**: Phase 10
-
-**Requirements**: UX-07, UX-08
-
-**Success Criteria** (what must be TRUE):
-1. Only one LoadingSpinner implementation exists (remove duplicate)
-2. DarkModeToggle uses gold tokens instead of gray tokens
-
-**Plans**: 1 plan
-
-Plans:
-- [x] 12-01-PLAN.md — Remove duplicate LoadingSpinner; verify DarkModeToggle gold tokens
-
----
-
-### Phase 13: Accessibility & Motion
-
-**Goal**: Improve accessibility compliance and respect user motion preferences
-
-**Depends on**: Phase 11
-
-**Requirements**: UX-09, UX-10, UX-11, UX-12
-
-**Success Criteria** (what must be TRUE):
-1. All interactive elements have appropriate aria-labels
-2. CustomCursor respects `prefers-reduced-motion` media query
-3. Focus ring color is consistent across all focusable elements (gold or neutral)
-4. Theme toggle animation is consistent with other animations
-
-**Plans**: TBD
-
-**UI hint**: yes
-
----
-
-### Phase 14: Animation & Visual Polish
-
-**Goal**: Standardize animation timings and visual properties for cohesive feel
-
-**Depends on**: Phase 12
-
-**Requirements**: UX-13, UX-14, UX-15
-
-**Success Criteria** (what must be TRUE):
-1. Border radius is consistent across components (choose rounded-xl, rounded-2xl, or rounded-3xl as standard)
-2. Animation durations are consistent across components (e.g., 200ms for micro-interactions, 300ms for transitions)
-3. All components use the same border-radius standard
-
-**Plans**: TBD
-
-**UI hint**: yes
-
----
-
-## Archived Phase Details
-
-See `.planning/milestones/` for archived milestone phase details.
-
----
-_Last updated: 2026-04-28 for v2.0 milestone_
+_Last updated: 2026-04-30 after v2.0 milestone_
