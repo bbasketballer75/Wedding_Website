@@ -111,9 +111,14 @@ A polished, complete-feeling wedding archive for Austin & Jordyn (theporadas.com
 - v1.1: Social sharing with OG tags, guest heart reactions, gallery virtualization (200+ photos), moderation queue, PWA offline caching
 - v2.0: Design token unification, invalid Tailwind classes fixed, border radius standardized to rounded-xl, animation durations at 300ms, CustomCursor respects prefers-reduced-motion, aria-labels on interactive elements, gold focus rings
 
-## Current Milestone: v3.0 Planning
+## Current Milestone: v3.0 Guest Experience Enhancements
 
-**Goal:** To be defined via `/gsd-new-milestone`
+**Goal:** Extend the archive's social and self-service capabilities — letting guests see each other's contributions, claim their photos, and enjoy richer photo viewing.
+
+**Target features:**
+- Social Features (round 2) — activity feed, extended reactions, shared album links
+- Guest Self-Service — claim photos, download uploads, print/photo book orders
+- Lightbox Enhancement — zoom, swipe gestures, EXIF display
 
 ## Evolution
 
@@ -133,4 +138,4 @@ This document evolves at phase transitions and milestone boundaries.
 4. Update Context with current state
 
 ---
-*Last updated: 2026-04-30 after v2.0 milestone*
+*Last updated: 2026-04-30 after v2.0 milestone, updated for v3.0 on 2026-04-30*
