@@ -21,6 +21,7 @@ const Admin = lazy(() => import('@/pages/Admin'))
 const AdminLogin = lazy(() => import('@/pages/AdminLogin'))
 const People = lazy(() => import('@/pages/People'))
 const Activity = lazy(() => import('@/pages/Activity'))
+const Verify = lazy(() => import('@/pages/Verify'))
 const NotFound = lazy(() => import('@/pages/NotFound'))
 
 // Page transition wrapper
@@ -185,6 +186,16 @@ function AppContent() {
                   <RouteErrorBoundary>
                     <LazyPage title="Activity">
                       <Activity />
+                    </LazyPage>
+                  </RouteErrorBoundary>
+                }
+              />
+              <Route
+                path="/verify"
+                element={
+                  <RouteErrorBoundary>
+                    <LazyPage title="Verify">
+                      <Verify />
                     </LazyPage>
                   </RouteErrorBoundary>
                 }

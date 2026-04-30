@@ -5,6 +5,8 @@ import { Button } from '@/components/ui/Button'
 import { Input } from '@/components/ui/Input'
 import { Textarea } from '@/components/ui/Textarea'
 import { Label } from '@/components/ui/Label'
+import { ClaimFlow } from '@/components/claim/ClaimFlow'
+import { ClaimButton } from '@/components/claim/ClaimButton'
 import {
   Upload,
   X,
@@ -154,6 +156,7 @@ export default function UploadPage() {
   const [submitError, setSubmitError] = useState<string | null>(null)
   const [shareCopied, setShareCopied] = useState(false)
   const [queueNotice, setQueueNotice] = useState<string | null>(null)
+  const [isClaimFlowOpen, setIsClaimFlowOpen] = useState(false)
 
   // Load stored incomplete uploads on mount
   const [storedUploads, setStoredUploads] = useState<StoredUploadMetadata[]>([])
@@ -633,6 +636,14 @@ export default function UploadPage() {
               <span className="rounded-full border border-white/12 bg-white/8 px-4 py-2">
                 Reviewed before posting
               </span>
+            </div>
+
+            {/* Claim My Photos button - for guests who previously uploaded */}
+            <div className="mt-8 border-t border-gold-200/10 pt-6">
+              <p className="text-sm text-white/50 mb-4">
+                Already uploaded photos? Claim them to see your contributions in the gallery.
+              </p>
+              <ClaimButton onClick={() => setIsClaimFlowOpen(true)} />
             </div>
           </div>
         </motion.section>
@@ -1159,6 +1170,9 @@ export default function UploadPage() {
           </div>
         </motion.section>
       </div>
+
+      {/* Claim My Photos Flow Modal */}
+      <ClaimFlow isOpen={isClaimFlowOpen} onClose={() => setIsClaimFlowOpen(false)} />
     </div>
   )
 }

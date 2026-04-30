@@ -43,6 +43,9 @@ export interface GalleryState {
   filters: SearchFilters
   filteredImages: GalleryImage[]
 
+  // Attribution filter for "My Photos" claiming
+  attributedEmail: string | null
+
   // Selection
   selectedImages: string[]
 
@@ -67,6 +70,9 @@ export interface GalleryState {
   setSearchQuery: (query: string) => void
   setFilters: (filters: SearchFilters) => void
   clearFilters: () => void
+
+  // Attribution filter for claimed photos
+  setAttributedEmail: (email: string | null) => void
 
   toggleImageSelection: (id: string) => void
   selectAllImages: () => void
@@ -116,6 +122,7 @@ export const useGalleryStore = create<GalleryState>()(
           searchQuery: '',
           filters: {},
           filteredImages: [],
+          attributedEmail: null,
           selectedImages: [],
           selectedImageIndex: null,
           isModalOpen: false,
@@ -189,8 +196,13 @@ export const useGalleryStore = create<GalleryState>()(
             get().applyFilters()
           },
 
+          setAttributedEmail: email => {
+            set({ attributedEmail: email })
+            get().applyFilters()
+          },
+
           applyFilters: () => {
-            const { images, searchQuery, filters } = get()
+            const { images, searchQuery, filters, attributedEmail } = get()
             let filtered = [...images]
 
             // Apply search query
@@ -212,6 +224,16 @@ export const useGalleryStore = create<GalleryState>()(
               filtered = filtered.filter(
                 img => filters.tags?.some(tag => img.alt.includes(tag)) ?? false
               )
+            }
+
+            // Apply attributed email filter for "My Photos" claiming
+            if (attributedEmail) {
+              filtered = filtered.filter(img => {
+                // For guest uploads, check if the uploader email matches the attributed email
+                // This is stored in the img object's metadata
+                const uploaderEmail = (img as Record<string, unknown>).uploaderEmail as string | undefined
+                return uploaderEmail?.toLowerCase() === attributedEmail.toLowerCase()
+              })
             }
 
             set({ filteredImages: filtered })
