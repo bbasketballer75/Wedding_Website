@@ -7,12 +7,14 @@ import { Input } from '@/components/ui/Input'
 import { ShareModal } from '@/components/share/ShareModal'
 import {
   X, Heart, Share2, Download, ChevronLeft, ChevronRight,
-  MessageCircle, Send, ZoomIn, ZoomOut, Tag, User, Loader2, Clock
+  MessageCircle, Send, ZoomIn, ZoomOut, Tag, User, Loader2, Clock, Camera
 } from 'lucide-react'
 import { cn } from '@/lib/utils'
 import { focusManager } from '@/accessibility/focusManagement'
 import { useGalleryStore } from '@/stores/galleryStore'
 import type { Photo } from '@/lib/supabase'
+import { useTouchGestures } from '@/hooks/useTouchGestures'
+import exifr from 'exifr'
 
 // UI-only interface for comment display
 interface Comment {
@@ -100,6 +102,36 @@ export function PhotoLightbox({
   }, [currentIndex, photos.length, nextImage])
 
   const lightboxRef = useRef<HTMLDivElement>(null)
+  const lightboxContentRef = useRef<HTMLDivElement>(null)
+  const doubleTapTimer = useRef<{ x: number, y: number, time: number } | null>(null)
+
+  // Wire pinch-to-zoom via useTouchGestures
+  useTouchGestures(lightboxContentRef, {
+    onPinch: (scale) => {
+      setZoom(z => Math.min(Math.max(z * scale, 1), 3))
+    },
+  })
+
+  // EXIF metadata extraction
+  const [exifData, setExifData] = useState<Record<string, string | null> | null>(null)
+  useEffect(() => {
+    if (!currentPhoto?.url) return
+    setExifData(null)
+    exifr.parse(currentPhoto.url)
+      .then(data => {
+        if (data) {
+          setExifData({
+            dateTaken: data.DateTimeOriginal || data.DateTime || null,
+            camera: data.Model ? `${data.Make || ''} ${data.Model}`.trim() : null,
+            lens: data.LensModel || null,
+            aperture: data.FNumber ? `f/${data.FNumber}` : null,
+            shutterSpeed: data.ExposureTime ? `1/${Math.round(1/data.ExposureTime)}s` : null,
+            iso: data.ISO ? `ISO ${data.ISO}` : null,
+          })
+        }
+      })
+      .catch(() => setExifData(null))
+  }, [currentPhoto?.url])
 
   useEffect(() => {
     if (!isOpen || !lightboxRef.current) return
@@ -242,11 +274,13 @@ export function PhotoLightbox({
 
               {/* Image Container with Face Tags */}
               <motion.div
+                ref={lightboxContentRef}
                 className="flex flex-1 items-center justify-center overflow-hidden p-3 sm:p-8"
-                drag="x"
+                drag={zoom === 1 ? "x" : false}
                 dragConstraints={{ left: 0, right: 0 }}
                 dragElastic={0.12}
                 onDragEnd={(_, info) => {
+                  if (zoom > 1) return
                   if (info.offset.x < -50 && info.velocity.x < -80) handleNext()
                   else if (info.offset.x > 50 && info.velocity.x > 80) handlePrevious()
                 }}
@@ -273,6 +307,25 @@ export function PhotoLightbox({
                       exit={{ opacity: 0 }}
                       transition={{ duration: 0.3 }}
                       className="max-h-[calc(100vh-11rem)] max-w-full rounded-lg object-contain sm:max-h-[80vh]"
+                      onClick={(e) => {
+                        const now = Date.now()
+                        const touch = e.nativeEvent
+                        const isMouseEvent = 'clientX' in touch
+                        if (isMouseEvent && doubleTapTimer.current) {
+                          const dx = (touch as MouseEvent).clientX - doubleTapTimer.current.x
+                          const dy = (touch as MouseEvent).clientY - doubleTapTimer.current.y
+                          const dist = Math.sqrt(dx*dx + dy*dy)
+                          if (dist < 30 && now - doubleTapTimer.current.time < 300) {
+                            setZoom(z => z === 1 ? 2 : 1)
+                            doubleTapTimer.current = null
+                            return
+                          }
+                        }
+                        if (isMouseEvent) {
+                          doubleTapTimer.current = { x: (touch as MouseEvent).clientX, y: (touch as MouseEvent).clientY, time: now }
+                          setTimeout(() => { if (doubleTapTimer.current && Date.now() - doubleTapTimer.current.time >= 300) doubleTapTimer.current = null }, 310)
+                        }
+                      }}
                     />
                   </AnimatePresence>
                   {/* Vignette overlay */}
@@ -463,6 +516,29 @@ export function PhotoLightbox({
                               ))}
                             </div>
                           </div>
+                        )}
+
+                        {/* EXIF Metadata */}
+                        {exifData?.camera && (
+                          <div className="flex items-center gap-2 text-charcoal-500 text-sm">
+                            <Camera className="w-4 h-4 text-gold-500" />
+                            <span>{exifData.camera}</span>
+                          </div>
+                        )}
+                        {exifData?.lens && (
+                          <div className="text-charcoal-500 text-sm">
+                            <span>{exifData.lens}</span>
+                          </div>
+                        )}
+                        {(exifData?.aperture || exifData?.shutterSpeed || exifData?.iso) && (
+                          <div className="flex items-center gap-3 text-charcoal-500 text-sm">
+                            {exifData.aperture && <span>{exifData.aperture}</span>}
+                            {exifData.shutterSpeed && <span>{exifData.shutterSpeed}</span>}
+                            {exifData.iso && <span>{exifData.iso}</span>}
+                          </div>
+                        )}
+                        {!exifData && (
+                          <p className="text-sm text-charcoal-500">No metadata available</p>
                         )}
 
                         {!currentPhoto.caption && !(currentPhoto.faces && currentPhoto.faces.length > 0) && (
