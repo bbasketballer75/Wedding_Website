@@ -34,17 +34,13 @@ These features exist and work — they form the foundation we're building on.
 - ✓ Admin error boundaries — No white screens on component failures — v1.0
 - ✓ Auth race condition fix — Serialized auth operations, single Supabase client — v1.0
 - ✓ MediaReviewPanel decomposition — 1716 → 325 lines, 5 components — v1.0
-- ✓ Social sharing with OG tags — v1.1
-- ✓ Guest heart reactions — Optimistic UI on guestbook — v1.1
-- ✓ Gallery virtualization — 200+ photos with @tanstack/react-virtual — v1.1
-- ✓ Moderation queue — Approve/reject/bulk workflow — v1.1
-- ✓ PWA offline caching — Workbox runtimeCaching for gallery images — v1.1
+- ✓ UI/UX consistency — Design tokens unified, invalid Tailwind classes fixed, border radius/animation standardized — v2.0
 
 ### Active
 
 What we're building toward in next release.
 
-- [ ] **UI/UX consistency** — Fix invalid Tailwind classes, standardize design tokens, unify shadows/borders/animation
+- [ ] **Next milestone TBD** — Run `/gsd-new-milestone` to define v3.0 scope
 
 ### Out of Scope
 
@@ -103,20 +99,21 @@ Explicitly excluded — do not add these.
 
 ## Current State
 
-**v1.1 Polish & Feature Expansion shipped** — All v1.1 requirements complete as of 2026-04-28.
+**v2.0 UI/UX Polish Round 2 shipped** — All v2.0 requirements complete as of 2026-04-30.
 
 ### What This Is Now
 
-A polished, complete-feeling wedding archive for Austin & Jordyn (theporadas.com) — all core features working, stable auth, performant gallery with virtualization, elegant design, social sharing, and PWA offline support.
+A polished, complete-feeling wedding archive for Austin & Jordyn (theporadas.com) — all core features working, stable auth, performant gallery with virtualization, elegant design, social sharing, PWA offline support, and fully unified design tokens with consistent animation timings and accessibility compliance.
 
 ### Context Update
 
 - v1.0: MediaReviewPanel decomposed, gallery state centralized, upload progress, skeleton loading, gold theme
 - v1.1: Social sharing with OG tags, guest heart reactions, gallery virtualization (200+ photos), moderation queue, PWA offline caching
+- v2.0: Design token unification, invalid Tailwind classes fixed, border radius standardized to rounded-xl, animation durations at 300ms, CustomCursor respects prefers-reduced-motion, aria-labels on interactive elements, gold focus rings
 
-## Current Milestone: v2.0 UI/UX Polish Round 2
+## Current Milestone: v3.0 Planning
 
-**Goal:** Fix invalid Tailwind classes, standardize design tokens, unify shadows/borders/animation across the entire site
+**Goal:** To be defined via `/gsd-new-milestone`
 
 ## Evolution
 
@@ -136,4 +133,4 @@ This document evolves at phase transitions and milestone boundaries.
 4. Update Context with current state
 
 ---
-*Last updated: 2026-04-28 after v1.1 milestone*
+*Last updated: 2026-04-30 after v2.0 milestone*
