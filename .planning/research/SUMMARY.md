@@ -1,171 +1,151 @@
 # Project Research Summary
 
-**Project:** Wedding Archive v1.1 Feature Expansion
-**Domain:** Wedding Memory Archive Website (theporadas.com)
-**Researched:** 2026-04-24
-**Confidence:** HIGH
+**Project:** Wedding Website v3.0 — Guest Experience Enhancements
+**Domain:** Wedding photo archive guest experience layer
+**Researched:** 2026-04-29
+**Confidence:** MEDIUM
 
 ## Executive Summary
 
-This project expands an existing wedding archive (React 19 + Supabase + Zustand) with 7 new features: gallery virtualization, guest reactions polish, featured spotlight, social sharing with OG tags, upload resume, upload status feedback, and PWA offline support. The key finding: **only ONE new library is needed** (@tanstack/react-virtual). Everything else leverages existing infrastructure or Supabase schema changes.
+The v3.0 features (social round 2, guest self-service, lightbox enhancement) require minimal new infrastructure — only 1 new npm package (react-zoom-pan-pinch) and moderate Supabase schema changes. All features build on existing infrastructure (Supabase Realtime, Auth, Storage, JSZip). The core work is orchestration: new Zustand stores, new pages, wiring existing capabilities together.
 
-The recommended approach is to implement features in dependency order: social sharing and upload resume first (no dependencies), then guest reactions (requires DB migration), then gallery virtualization (core performance), then featured spotlight, then PWA offline. The critical risk is masonry virtualization breaking scroll behavior - this requires row-based virtualizer approach, not item-based. Additionally, OG tags set via useEffect will not be crawled by social bots, requiring SSR or static OG image generation.
+The key constraint is **print ordering**: no photo book API exists for the major providers (Printful has no photo books via API, Shutterfly API is not publicly available). The recommended approach is external redirect to Artifact Uprising or Shutterfly — no internal payment/fulfillment complexity.
+
+**Key risks:** Activity feed can explode in volume as guests upload. Large batch downloads hit client-side memory limits. Photo claiming requires careful identity verification to avoid privacy issues.
 
 ## Key Findings
 
 ### Recommended Stack
 
-The existing stack requires minimal changes. Only **@tanstack/react-virtual 3.13.24** is needed for gallery virtualization. Everything else is implementation work within existing patterns.
+**Core technologies unchanged** — React 19 + Supabase + Zustand + Framer Motion + Tailwind CSS v4 already handle all v3.0 requirements.
 
-**Core technologies (no changes needed):**
-- React 19.2.4, Supabase 2.99.0, Zustand 5.0.11, Framer Motion 12.35.2, Tailwind CSS 4.1.18, Vite 7.3.2
-- vite-plugin-pwa 1.2.0 already configured, needs workbox tuning for offline gallery
-- react-router-dom 7.13.1 with lazy-loaded routes
+**Only 1 new package needed:**
+- `react-zoom-pan-pinch` 3.1.10 — lightbox zoom/swipe gestures (React 19 compatible)
 
-**New library:**
-- @tanstack/react-virtual: Headless virtualization for 200+ photo galleries with masonry support
+**Existing packages covering needs:**
+- JSZip 3.10.1 (already installed) — batch download zip generation
+- exifr 7.1.3 (already installed) — EXIF parsing for lightbox info display
+- Supabase Realtime (already configured) — activity feed subscriptions
 
-**No new libraries needed for:**
-- Guest reactions: Supabase RPC + existing lucide-react Heart icon
-- Social sharing: Native Web Share API with clipboard fallback
-- Upload resume: Zustand persist middleware with localStorage
-- Upload status: Supabase Realtime (already configured)
-- PWA offline: Workbox via vite-plugin-pwa (already bundled)
+**Print ordering:** External redirect only. No API integration. Link to Shutterfly/Artifact Uprising, let them handle payment/fulfillment.
 
 ### Expected Features
 
-**Must have (table stakes - P1):**
-- Gallery virtualization: Handle 200+ photos without scroll lag, use @tanstack/react-virtual with row-based masonry approach
-- Guest reactions polish: Fix optimistic update rollback, ensure reactions persist after page reload
-- Social sharing with OG tags: Per-page OG meta, dynamic og:image for gallery shares (note: needs SSR approach, not useEffect)
-- Upload resume: localStorage queue with metadata only (NOT File objects which are non-serializable)
-- Guest upload status: Post-submission status display with pending/approved/rejected states
+**P1 — Must have (table stakes):**
+- Activity Feed — chronological aggregation of uploads, guestbook, featured moments
+- Lightbox Pinch-to-Zoom — wire existing `useTouchGestures` `onPinch` to `setZoom` (existing hook, not wired)
+- Download Queue — multi-select gallery photos, batch signed URL generation, progress indicator
+- Guest Upload Status Enhancement — make status check more prominent
 
-**Should have (competitive - P2):**
-- Featured content spotlight: Wire admin FeatureContentManager to homepage display
-- PWA offline verification: Full offline gallery test with Supabase storage URL caching
+**P2 — Should have (differentiators):**
+- Photo Claiming — guests claim photos they're in via face cluster linking
+- Shared Album Links — per-guest view of contributions with shareable link
+- EXIF Display — extract date, camera, location from photo metadata
+- Activity Feed Filtering — toggle All/Photos/Guestbook/Moments
 
-**Defer (v2+):**
-- Real-time sync of reactions: Use optimistic updates instead (not worth Supabase Realtime complexity)
-- Photo comments/tagging: Use existing people gallery with face tagging instead
-- Push notifications: Use email notification on approval instead
+**P3 — Nice to have (defer):**
+- Print/Photo Book Ordering — third-party integration, high complexity
+- Comment Threading — nested replies, schema + UI changes
 
 ### Architecture Approach
 
-The architecture extends existing patterns with new stores, hooks, and components. Virtualization wraps PhotoGrid via VirtualizedPhotoGrid component. Upload queue persists to localStorage via new uploadQueueStore. Guest reactions use useGuestReactions hook with optimistic updates and rollback. Featured spotlight uses existing site_editorial_features table with new FeaturedSpotlight component. PWA offline extends workbox with runtime caching for Supabase storage URLs.
+All features extend existing patterns:
 
-**Major components:**
-1. VirtualizedPhotoGrid: Replaces PhotoGrid rendering with @tanstack/react-virtual for visible-only rendering
-2. uploadQueueStore: Zustand store persisting upload queue to localStorage (metadata only, not File objects)
-3. useGuestReactions: Encapsulates optimistic reaction updates with rollback on failure
-4. FeaturedSpotlight: Displays featured content from site_editorial_features on Home
-5. ShareButtons: Social share with per-photo OG image URL generation
+- **Activity Feed:** New `activity_log` table + Realtime subscription in new `activityStore`. Wires into existing `guest_uploads` approval flow.
+- **Photo Claiming:** Email-based identity via existing `guest_email` field. New `guest_identities` + `photo_claims` tables link uploads to face clusters.
+- **Downloads:** Extend `downloadStore`, reuse signed URL pattern from `supabase.ts` line 772-779. Client-side JSZip for small batches.
+- **Lightbox:** Wrap existing `PhotoLightbox` with `TransformComponent` from react-zoom-pan-pinch. Keep face tag overlay working.
+- **Print:** Redirect to external provider — no Supabase involvement after link generation.
+
+**Build order:** Activity Feed → Photo Claiming → Downloads → Lightbox Enhancement → Print (lowest priority)
 
 ### Critical Pitfalls
 
-1. **Masonry virtualization breaks scroll**: Row-based virtualizer required, not item-based. Pre-calculate item heights or use fixed aspect ratio containers. Warning: scroll position jumps, items cut off, blank gaps.
-
-2. **Optimistic update without rollback**: Current Guestbook.tsx catches errors but does nothing. Store previous state, restore in catch block. Warning: reaction counts differ after reload.
-
-3. **OG tags via useEffect not crawled**: Social bots see raw HTML before JS executes. Use SSR or static generation for OG tags. Warning: Facebook debugger shows incorrect thumbnail.
-
-4. **File objects not serializable to localStorage**: File objects are browser constructs, not JSON-serializable. Store metadata only (name, size, type, fingerprint), prompt user to re-select files on restore. Warning: silent failure, empty queue on reload.
-
-5. **PWA cache invalidation causes white screen**: New JS bundles have different hashes. Use registerType: 'prompt' or implement update notification. Warning: white screen after deploy.
+1. **Activity feed explosion** — Each guest upload generates multiple activity entries. Prune activity older than 90 days. Realtime subscriptions work for 0-1k users; pagination needed at scale.
+2. **Large batch download memory** — Client-side JSZip hits memory limits around 50 photos. Edge Function zip for large batches (>20 photos recommended threshold).
+3. **Photo claiming identity fraud** — Email verification must be robust. Use Supabase Magic Link, not just form submission. Link claims to session for continuity.
+4. **Pinch-to-zoom not wired** — `useTouchGestures` has `onPinch` callback but PhotoLightbox doesn't wire it to `setZoom`. 10-line fix that's been missing since hook was added.
+5. **Print ordering anti-pattern** — Don't build e-commerce. External redirect only. Building payment/fulfillment would dwarf the value.
 
 ## Implications for Roadmap
 
-Based on research, suggested phase structure:
+### Phase 1: Activity Feed Foundation
+**Rationale:** Lowest dependency, uses existing Supabase Realtime already configured.
+**Delivers:** `activity_log` table, `activityStore`, `ActivityFeed` page, guest upload approval wiring
+**Addresses:** SOC-01, SOC-02 (P1 table stakes)
+**Avoids:** Realtime polling anti-pattern — use subscriptions, not polling
 
-### Phase 1: Social Sharing & Upload Resume
-**Rationale:** No database changes, no complex patterns, builds on existing infrastructure. These features unlock shareability and upload reliability immediately.
-**Delivers:** ShareButtons component with per-photo OG support, uploadQueueStore with localStorage persistence
-**Addresses:** SOCIAL-01, SOCIAL-02, ADV-02
-**Avoids:** OG tags via useEffect (must use SSR-compatible approach)
+### Phase 2: Lightbox Enhancement
+**Rationale:** Single npm package, isolated change, visible improvement (pinch-to-zoom)
+**Delivers:** `react-zoom-pan-pinch` integration, zoom-to-pinch wiring, EXIF display, swipe navigation refinement
+**Addresses:** LB-01, LB-02, LB-03 (low complexity, high impact)
+**Avoids:** `useTouchGestures` `onPinch` left unwired — the hook exists but wasn't connected
 
-### Phase 2: Guest Reactions Polish
-**Rationale:** Requires DB schema change (reactions column) and Supabase RPC function. Should be in same phase as gallery virtualization since both touch Guestbook.tsx.
-**Delivers:** Reactions JSONB column, atomic RPC, useGuestReactions hook with proper rollback
-**Addresses:** GALLERY-06
-**Avoids:** Optimistic update without rollback pitfall
+### Phase 3: Download Management
+**Rationale:** Reuses existing signed URL pattern, adds queue orchestration
+**Delivers:** `downloadStore`, multi-select batch download, progress UI, Edge Function for large batches
+**Addresses:** DL-01, DL-02 (medium complexity)
+**Avoids:** Blocking download UI during large batch — streaming approach for >20 photos
 
-### Phase 3: Gallery Virtualization
-**Rationale:** Core performance feature. Must be row-based for masonry compatibility. Affects PhotoGrid, galleryStore, and Lightbox integration.
-**Delivers:** VirtualizedPhotoGrid component, masonry-compatible virtualizer
-**Addresses:** GALLERY-05
-**Avoids:** Masonry virtualization breakage - use row-based approach with pre-calculated heights
+### Phase 4: Photo Claiming
+**Rationale:** Depends on guest identity infrastructure, admin moderation
+**Delivers:** `guest_identities` + `photo_claims` tables, `claimStore`, `PhotoClaimModal`, claim flow UI
+**Addresses:** SC-01, SC-02 (medium complexity)
+**Avoids:** Identity fraud — robust email verification via Supabase Magic Link
 
-### Phase 4: Featured Spotlight
-**Rationale:** Depends on moderation queue existing. Home page integration with existing GuestHighlightReel sections.
-**Delivers:** FeaturedSpotlight component, Home page integration
-**Addresses:** GALLERY-07
-**Avoids:** Featured spotlight not reflecting admin selections - ensure status='approved' filter
-
-### Phase 5: PWA Offline Verification
-**Rationale:** Configuration work on vite.config.js workbox settings. Caches Supabase storage URLs for offline gallery browsing.
-**Delivers:** Runtime caching for gallery images, offline fallback testing
-**Addresses:** ADV-01
-**Avoids:** PWA cache invalidation white screen - verify update flow after deploy
+### Phase 5: Shared Album Links + Print
+**Rationale:** Independent of other phases, lower priority
+**Delivers:** Per-guest shareable link, print redirect integration
+**Addresses:** SC-03, SC-04
+**Print ordering:** External redirect, no API complexity
 
 ### Phase Ordering Rationale
 
-- Social sharing and upload resume have no dependencies, come first
-- Guest reactions need DB migration, logically groups with virtualization work
-- Virtualization is the core performance concern, should happen before spotlight which is decorative
-- PWA offline is configuration work, can come last
-- Featured spotlight is lowest priority (P2) among must-haves
+1. **Activity Feed first:** Foundation for social layer. Minimal dependencies, uses existing infrastructure.
+2. **Lightbox second:** Single package, isolated change. Quick win that makes mobile browsing significantly better.
+3. **Downloads third:** Uses existing signed URL pattern. Clear UI improvement with batch download queue.
+4. **Photo Claiming fourth:** Requires identity verification + face cluster linking. More complex.
+5. **Shared/Print last:** Lower priority, can be parallel work.
 
 ### Research Flags
 
-Phases likely needing deeper research during planning:
-- **Phase 3 (Gallery Virtualization):** Complex integration with masonry layout, may need detailed API research for useVirtualizer configuration
-- **Phase 4 (Featured Spotlight):** Verify admin FeatureContentManager fully covers needs before implementing display
-
-Phases with standard patterns (skip research-phase):
-- **Phase 1 (Social Sharing):** Web Share API is well-documented, OG tag patterns are standard
-- **Phase 2 (Guest Reactions):** Optimistic update patterns are standard, Supabase RPC is documented
-- **Phase 5 (PWA Offline):** Workbox configuration is well-documented by Google
+- **Phase 4 (Photo Claiming):** Face cluster linking needs validation — verify `media_review_faces` + `guest_uploads` join works as expected
+- **Phase 5 (Print):** Vendor selection (Shutterfly vs Artifact Uprising) depends on couple preference — needs decision, not research
 
 ## Confidence Assessment
 
 | Area | Confidence | Notes |
 |------|------------|-------|
-| Stack | HIGH | Single new library needed, everything else verified in existing codebase |
-| Features | HIGH | All features identified with implementation approach, priority matrix clear |
-| Architecture | HIGH | New components and integration points mapped, patterns well-understood |
-| Pitfalls | MEDIUM | Some pitfalls (OG tag crawler, masonry virtualization) need verification during implementation |
+| Stack | HIGH | react-zoom-pan-pinch npm verified, JSZip/exifr already in project |
+| Features | MEDIUM | Based on codebase analysis + standard patterns; web search unavailable |
+| Architecture | HIGH | Existing patterns well-understood from codebase |
+| Pitfalls | MEDIUM | Known patterns from codebase, limited external validation |
 
-**Overall confidence:** HIGH
+**Overall confidence:** MEDIUM — research is solid but Context7 was unavailable for some library verification.
 
 ### Gaps to Address
 
-- **OG tag SSR:** Need to verify whether Netlify supports SSR or if static OG image generation is needed. Facebook debugger testing required after implementation.
-- **Masonry virtualizer:** Need to verify row-based approach works with existing MasonryGrid component. May need to create simplified grid layout for virtualization.
-- **RLS policy audit:** Before Phase 4 (Featured Spotlight), verify site_editorial_features RLS policies allow admin access.
+- **Face cluster linking validation:** During Phase 4 planning, verify the join between `guest_uploads` and `media_review_faces` works as described
+- **Print vendor preference:** Artifact Uprising vs Shutterfly — couple decides, not a technical question
+- **Edge Function memory limit:** 150MB limit for large batch zip — streaming approach vs. client-side for >50 photos needs decision during Phase 3
 
 ## Sources
 
 ### Primary (HIGH confidence)
-- STACK.md: Verified existing stack, library compatibility, installation approach
-- FEATURES.md: Feature prioritization matrix with complexity estimates, implementation approach for each
-- ARCHITECTURE.md: Component structure, data flow, build order with dependencies
-- PITFALLS.md: Critical pitfalls with prevention strategies and recovery approaches
+- react-zoom-pan-pinch npm — version 3.1.10, React 19 peer deps confirmed
+- JSZip npm — version 3.10.1, already in project
+- package.json dependencies — current installed versions verified
+- PhotoLightbox.tsx — current zoom implementation, `useTouchGestures` hook location
+- supabase.ts — signed URL pattern at line 772-779
 
-### Codebase Sources (HIGH confidence)
-- package.json: Current installed versions for compatibility verification
-- src/stores/galleryStore.ts: Existing caching implementation
-- src/components/gallery/PhotoGrid.tsx, MasonryGrid.tsx: Current masonry layout structure
-- src/pages/Guestbook.tsx: Current reaction handling with optimistic updates
-- src/pages/Upload.tsx: Current upload flow and progress tracking
-- src/components/seo/SEOHead.tsx: Existing OG tag implementation
-- vite.config.js: Current PWA configuration
+### Secondary (MEDIUM confidence)
+- Supabase Realtime documentation — postgres_changes subscription pattern
+- Architecture docs from `.planning/codebase/ARCHITECTURE.md`
+- Existing Photo type with `photo_faces`, `GuestUpload` type with `guest_email`
 
-### Documentation Sources (HIGH confidence)
-- @tanstack/react-virtual documentation: React 19 compatible, peerDeps verified
-- vite-plugin-pwa docs: Workbox configuration for offline gallery caching
-- MDN Web Share API: Native sharing with fallback
-- Supabase Realtime: Already configured, documented integration
+### Tertiary (LOW confidence)
+- Print provider API availability (Printful photo book confirmation via API docs) — confirmed no photo books via API, external link is recommendation
 
 ---
-*Research completed: 2026-04-24*
+*Research completed: 2026-04-29*
 *Ready for roadmap: yes*
