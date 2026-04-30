@@ -25,6 +25,7 @@ import {
   GuestUpload,
 } from '@/lib/supabase'
 import { useGalleryStore } from '@/stores/galleryStore'
+import { useClaimStore } from '@/stores/claimStore'
 import { useToast } from '@/context/ToastContext'
 import { partyData } from '@/data/weddingParty'
 
@@ -57,6 +58,7 @@ interface GalleryPhoto extends Photo {
   likeCount?: number
   source: 'professional' | 'guest'
   collection: 'Proposal' | 'Bach+ette' | 'Wedding Photos' | 'Guest Photos'
+  uploaderEmail?: string  // For "My Photos" attributed email filter
 }
 
 interface DetectedFace {
@@ -500,6 +502,7 @@ const mapSupabasePhoto = (photo: Photo): GalleryPhoto => normalizeGalleryPhoto({
   tags: photo.tags,
   source: photo.is_professional ? 'professional' : 'guest',
   collection: deriveCollection(photo),
+  uploaderEmail: (photo as Record<string, unknown>).uploaderEmail as string | undefined,
 })
 
 export default function Gallery() {
@@ -610,6 +613,15 @@ export default function Gallery() {
     fetchPhotos()
   }, [engagementSessionId])
 
+  // Sync claimStore.attributedEmail to galleryStore on mount
+  // This activates the "My Photos" filter when user navigates from ClaimedConfirmation
+  useEffect(() => {
+    const claimedEmail = useClaimStore.getState().attributedEmail
+    if (claimedEmail) {
+      useGalleryStore.getState().setAttributedEmail(claimedEmail)
+    }
+  }, [])
+
   // Fetch shared photo metadata from Supabase when ?shared= param is present
   useEffect(() => {
     const requestedShared = searchParams.get('shared')
@@ -647,6 +659,16 @@ export default function Gallery() {
         setSelectMode(true)
         setSelectedPhotoIds(new Set(validIds))
       }
+    }
+
+    if (requestedCollection === 'MyPhotos') {
+      // When ?collection=MyPhotos is set, activate attributedEmail filter
+      // and show "My Photos" view (don't change selectedCollection tab)
+      const claimedEmail = useClaimStore.getState().attributedEmail
+      if (claimedEmail) {
+        useGalleryStore.getState().setAttributedEmail(claimedEmail)
+      }
+      return
     }
 
     if (requestedCollection && collectionTabs.includes(requestedCollection)) {
@@ -796,7 +818,7 @@ export default function Gallery() {
   }, [photos])
 
   const selectedCollectionMeta = collectionMeta[selectedCollection]
-  const hasActiveFilters = Boolean(searchQuery || faceFilter)
+  const hasActiveFilters = Boolean(searchQuery || faceFilter || useGalleryStore.getState().attributedEmail)
 
   const openLightbox = (index: number) => {
     if (index >= 0) {
@@ -1236,6 +1258,20 @@ export default function Gallery() {
                         {faceFilter}
                         <X className="h-3.5 w-3.5" />
                       </button>
+                    )}
+                    {galleryStore.attributedEmail && (
+                      <span className="inline-flex items-center gap-2 rounded-full bg-gold-100 px-3 py-1.5 text-sm text-gold-700">
+                        My Photos
+                        <button
+                          type="button"
+                          onClick={() => {
+                            useGalleryStore.getState().setAttributedEmail(null)
+                          }}
+                          className="ml-1 hover:text-gold-900"
+                        >
+                          <X className="h-3.5 w-3.5" />
+                        </button>
+                      </span>
                     )}
                     <button
                       type="button"
