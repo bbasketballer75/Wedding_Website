@@ -28,7 +28,7 @@
 | 15. Activity Feed | v3.0 | 2/2 | Complete    | 2026-04-30 |
 | 16. Lightbox Enhancement | v3.0 | 1/1 | Complete    | 2026-04-30 |
 | 17. Download Management | v3.0 | 0/1 | Not started | — |
-| 18. Photo Claiming | v3.0 | 0/1 | Not started | — |
+| 18. Photo Claiming | v3.0 | 1/1 | Complete   | 2026-04-30 |
 | 19. Shared Links & Print | v3.0 | 0/1 | Not started | — |
 
 ## Archived Milestones
@@ -161,7 +161,7 @@
 5. Claim requests appear in admin moderation panel for approval
 6. After approval, guest identity links to face cluster and guest name appears on tagged photos
 
-**Plans:** TBD
+**Plans:** 1/1 plans complete
 
 ---
 
