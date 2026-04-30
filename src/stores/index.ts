@@ -2,6 +2,7 @@
 export { useAuthStore } from './authStore'
 export { useGalleryStore } from './galleryStore'
 export { useUIStore } from './uiStore'
+export { activityFeedStore } from './activityFeedStore'
 
 // Types for stores
 export type { AuthState } from './authStore'
