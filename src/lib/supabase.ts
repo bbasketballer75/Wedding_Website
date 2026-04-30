@@ -1044,3 +1044,36 @@ export async function upsertSiteEditorialFeature(input: UpsertSiteEditorialFeatu
     .select('*')
     .single<SiteEditorialFeature>()
 }
+
+// Activity Feed types and functions
+export interface ActivityLogItem {
+  id: string
+  type: 'photo_upload' | 'guestbook_entry' | 'featured_moment'
+  source_id: string
+  source_type: 'guest_uploads' | 'guestbook_messages' | 'site_editorial_features'
+  display_name: string | null
+  thumbnail_url: string | null
+  content_preview: string | null
+  created_at: string
+}
+
+export async function fetchActivityFeed(limit = 100): Promise<ActivityLogItem[]> {
+  const { data, error } = await supabase
+    .from('activity_log')
+    .select('*')
+    .order('created_at', { ascending: false })
+    .limit(limit)
+  if (error) throw error
+  return data ?? []
+}
+
+export async function fetchActivityItem(sourceType: string, sourceId: string): Promise<ActivityLogItem | null> {
+  const { data, error } = await supabase
+    .from('activity_log')
+    .select('*')
+    .eq('source_type', sourceType)
+    .eq('source_id', sourceId)
+    .maybeSingle()
+  if (error) return null
+  return data
+}
