@@ -46,7 +46,7 @@ const DarkModeToggle: React.FC = () => {
   }, [])
 
   if (!mounted) {
-    return <div className='w-10 h-10 rounded-lg bg-gray-200 dark:bg-gray-700 animate-pulse' />
+    return <div className='w-10 h-10 rounded-xl bg-gray-200 dark:bg-gray-700 animate-pulse' />
   }
 
   const themes = [
@@ -68,7 +68,7 @@ const DarkModeToggle: React.FC = () => {
     <div className='relative group'>
       <button
         onClick={handleCycleTheme}
-        className='relative p-2 rounded-lg bg-gray-100 dark:bg-gray-800 hover:bg-gray-200 dark:hover:bg-gray-700 transition-colors focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-(--color-gold)'
+        className='relative p-2 rounded-xl bg-gray-100 dark:bg-gray-800 hover:bg-gray-200 dark:hover:bg-gray-700 transition-colors focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-(--color-gold)'
         aria-label={`Current theme: ${themes[currentIndex].label}. Click to change theme.`}
       >
         <motion.div
@@ -105,7 +105,7 @@ export const ThemeSelector: React.FC = () => {
     <div className='relative'>
       <button
         onClick={() => setIsOpen(!isOpen)}
-        className='flex items-center gap-2 px-3 py-2 rounded-lg bg-gray-100 dark:bg-gray-800 hover:bg-gray-200 dark:hover:bg-gray-700 transition-colors focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-(--color-gold)'
+        className='flex items-center gap-2 px-3 py-2 rounded-xl bg-gray-100 dark:bg-gray-800 hover:bg-gray-200 dark:hover:bg-gray-700 transition-colors focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-(--color-gold)'
       >
         {themes.find(t => t.value === theme)?.icon && (
           <div className='text-gray-700 dark:text-gray-300'>
@@ -133,7 +133,7 @@ export const ThemeSelector: React.FC = () => {
           initial={{ opacity: 0, y: -10 }}
           animate={{ opacity: 1, y: 0 }}
           exit={{ opacity: 0, y: -10 }}
-          className='absolute right-0 mt-2 w-48 bg-white dark:bg-gray-800 rounded-lg shadow-lg border border-gray-200 dark:border-gray-700 py-1 z-50'
+          className='absolute right-0 mt-2 w-48 bg-white dark:bg-gray-800 rounded-2xl shadow-lg border border-gray-200 dark:border-gray-700 py-1 z-50'
         >
           {themes.map(({ value, icon: Icon, label }) => (
             <button

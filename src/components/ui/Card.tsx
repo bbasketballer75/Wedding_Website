@@ -78,7 +78,7 @@ const MemoryCard = React.forwardRef<
   <div
     ref={ref}
     className={cn(
-      'rounded-xl bg-cream-50 border border-gold-200/50',
+      'rounded-2xl bg-cream-50 border border-gold-200/50',
       'p-6 shadow-sm',
       'transition-all duration-300',
       'hover:border-gold-300 hover:shadow-md',
