@@ -271,7 +271,7 @@ export function PhotoLightbox({
                       initial={{ opacity: 0 }}
                       animate={{ opacity: 1 }}
                       exit={{ opacity: 0 }}
-                      transition={{ duration: 0.22 }}
+                      transition={{ duration: 0.3 }}
                       className="max-h-[calc(100vh-11rem)] max-w-full rounded-lg object-contain sm:max-h-[80vh]"
                     />
                   </AnimatePresence>
@@ -314,7 +314,7 @@ export function PhotoLightbox({
                   key={`caption-${currentPhoto.id}`}
                   initial={{ opacity: 0, y: 8 }}
                   animate={{ opacity: 1, y: 0 }}
-                  transition={{ duration: 0.35, delay: 0.12 }}
+                  transition={{ duration: 0.3, delay: 0.12 }}
                   className="absolute bottom-[4.5rem] left-0 right-0 px-6 pb-1 text-center sm:bottom-[5rem]"
                 >
                   <p className="font-display text-sm italic text-white/70 drop-shadow-sm">
