@@ -80,7 +80,7 @@ Phase 19 enables guests to share a public link viewing their contributions (uplo
 
 ### Supporting
 | Library | Version | Purpose | When to Use |
-|---------|---------|---------|-------------|
+|---------|---------|---------|--------------|
 | existing `GuestUpload`, `GuestbookMessage` types | — | Type shared album page data | supabase.ts already has these |
 | existing `supabase.ts` client | — | Database queries | Add new query functions as needed |
 
@@ -323,22 +323,25 @@ const handleOrderPrints = (photoUrl: string) => {
 
 ---
 
-## Open Questions
+## Open Questions (RESOLVED)
 
 1. **Should the share token be generated on first upload OR only when guest clicks "Share"?**
    - **What we know:** Requirements say "on first upload" but don't specify implementation
    - **What's unclear:** Could be lazy generation (on Share button click) — simpler but less discoverable
    - **Recommendation:** Generate on first upload (per requirements) — ensures share link is always ready
+   - **Resolution:** Generate on first upload (per requirements) — ensures share link is always ready
 
 2. **Should the shared album page show ONLY approved uploads, or include pending?**
    - **What we know:** Standard practice is approved only (consistent with gallery)
    - **What's unclear:** Guest might want to share their pending uploads
    - **Recommendation:** Show approved only — align with public gallery behavior
+   - **Resolution:** Show approved only — align with public gallery behavior
 
 3. **Should "Order Prints" pass the photo URL directly or use a product ID?**
    - **What we know:** Requirements say "selected photos" — URL approach is simplest
    - **What's unclear:** Whether print provider supports direct URL or requires product code
    - **Recommendation:** Use direct URL approach with fallback message if provider doesn't accept it
+   - **Resolution:** Use direct URL approach with fallback message if provider doesn't accept it
 
 ---
 
@@ -368,12 +371,12 @@ const handleOrderPrints = (photoUrl: string) => {
 ### Phase Requirements to Test Map
 | Req ID | Behavior | Test Type | Automated Command | File Exists? |
 |--------|----------|-----------|-------------------|--------------|
-| SC-03 | Token lookup returns email | unit | `npm run test -- tests/share.test.ts` | No - Wave 0 |
-| SC-03 | Shared page shows guest uploads | unit | `npm run test -- tests/share.test.ts` | No - Wave 0 |
-| SC-03 | Invalid token shows error page | unit | `npm run test -- tests/share.test.ts` | No - Wave 0 |
-| SC-03 | Share button copies link to clipboard | e2e | Playwright | No - Wave 0 |
-| PR-01 | Order Prints opens correct provider URL | unit | `npm run test -- tests/print.test.ts` | No - Wave 0 |
-| PR-01 | VITE_PRINT_PROVIDER controls vendor | unit | `npm run test -- tests/print.test.ts` | No - Wave 0 |
+| SC-03 | Token lookup returns email | unit | `npm run test -- tests/share.test.ts` | Yes - Wave 0 |
+| SC-03 | Shared page shows guest uploads | unit | `npm run test -- tests/share.test.ts` | Yes - Wave 0 |
+| SC-03 | Invalid token shows error page | unit | `npm run test -- tests/share.test.ts` | Yes - Wave 0 |
+| SC-03 | Share button copies link to clipboard | e2e | Playwright | Yes - Wave 0 |
+| PR-01 | Order Prints opens correct provider URL | unit | `npm run test -- tests/print.test.ts` | Yes - Wave 0 |
+| PR-01 | VITE_PRINT_PROVIDER controls vendor | unit | `npm run test -- tests/print.test.ts` | Yes - Wave 0 |
 
 ### Sampling Rate
 - **Per task commit:** `npm run test -- src/stores/ --passwithno-tests`
@@ -381,11 +384,10 @@ const handleOrderPrints = (photoUrl: string) => {
 - **Phase gate:** Full suite green before `/gsd-verify-work`
 
 ### Wave 0 Gaps
-- [ ] `tests/share.test.ts` — unit tests for token lookup and shared page
-- [ ] `tests/print.test.ts` — unit tests for print URL construction
-- [ ] `src/stores/shareStore.ts` — Wave 0 Zustand store for share state
-- [ ] `src/lib/shareUtils.ts` — Wave 0 token generation and print URL utilities
-- Framework install: Not needed — Vitest already in project
+- [x] `tests/share.test.ts` — unit tests for token lookup and shared page
+- [x] `tests/print.test.ts` — unit tests for print URL construction
+- [x] `src/lib/shareUtils.test.ts` — Wave 0 test for shareUtils
+- [x] Framework install: Not needed — Vitest already in project
 
 ---
 
