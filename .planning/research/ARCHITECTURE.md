@@ -1,292 +1,482 @@
 # Architecture Research
 
-**Domain:** Wedding Archive Website (React 19 SPA + Supabase)
-**Researched:** 2026-04-24
-**Confidence:** HIGH
+**Domain:** Wedding archive guest experience enhancements (activity feeds, photo claiming, download management, print ordering)
+**Researched:** 2026-04-29
+**Confidence:** MEDIUM
 
 ## Executive Summary
 
-The v1.1 feature expansion adds seven new capabilities to an existing wedding archive: gallery virtualization, guest reactions, featured spotlight, social sharing with OG tags, upload resume, upload status feedback, and PWA offline support. These integrate with the existing React + Supabase + Zustand stack requiring new components, store additions, database schema changes, and configuration work.
+The existing React + Supabase architecture provides a solid foundation for v3.0 guest experience enhancements. Activity feeds build on existing Supabase Realtime subscriptions already configured. Photo claiming requires a new guest identity layer linking uploads to session-based or email-based identifiers. Download management leverages Supabase Storage signed URLs (already used in `createMediaReviewArtifactSignedUrl`). Print ordering is best handled by external fulfillment APIs, with the site acting as a curation and referral layer.
 
 **Key findings:**
-- Gallery virtualization replaces PhotoGrid rendering with @tanstack/react-virtual
-- Guest reactions require JSONB column + atomic RPC functions
-- Featured spotlight already has data infrastructure (site_editorial_features table)
-- Upload resume needs a new Zustand store with localStorage persistence
-- PWA offline already configured via VitePWA, needs workbox tuning
-- Social sharing already exists in Upload.tsx, needs per-photo OG enhancement
+- Activity feed uses Supabase Realtime (already configured) + new `activity_log` table
+- Photo claiming extends existing `GuestUpload` type with email-based identity linking
+- Download uses existing signed URL pattern from `supabase.ts` line 772-779
+- Print ordering is a redirect pattern to external providers (no PCI/logistics complexity)
+- Lightbox enhancement wraps existing photo grid with zoom/swipe/EXIF layer
 
 ## System Overview
 
 ```
 ┌─────────────────────────────────────────────────────────────┐
-│                        Pages (Lazy Routes)                  │
-├─────────────────────────────────────────────────────────────┤
-│  ┌─────────┐  ┌─────────┐  ┌─────────┐  ┌─────────┐        │
-│  │  Home   │  │ Gallery │  │ Upload  │  │Guestbook│        │
-│  └────┬────┘  └────┬────┘  └────┬────┘  └────┬────┘        │
-│       │            │            │            │              │
-├───────┴────────────┴────────────┴────────────┴──────────────┤
-│              Components (ui, layout, gallery, sections)      │
+│                        UI Layer (React)                       │
 ├─────────────────────────────────────────────────────────────┤
 │  ┌──────────┐  ┌──────────┐  ┌──────────┐  ┌──────────┐    │
-│  │  auth   │  │  gallery │  │   ui     │  │ upload   │    │
-│  │  store  │  │  store   │  │  store   │  │  queue   │    │
-│  └──────────┘  └──────────┘  └──────────┘  └──────────┘    │
-├─────────────────────────────────────────────────────────────┤
-│                     Supabase Client                          │
-│         (Auth, Database, Storage, Edge Functions)            │
+│  │ActivityFeed│ │ClaimModal│ │DownloadBtn│ │PrintOrder│   │
+│  └────┬─────┘  └────┬─────┘  └────┬─────┘  └────┬─────┘  │
+│       │             │             │             │           │
+├───────┴─────────────┴─────────────┴─────────────┴──────────┤
+│                   State Management (Zustand)                  │
+│  ┌──────────┐  ┌──────────┐  ┌──────────┐  ┌──────────┐   │
+│  │activityStore│ │claimStore│  │downloadStore│ │printStore│ │
+│  └────┬─────┘  └────┬─────┘  └────┬─────┘  └────┬─────┘   │
+└───────┴─────────────┴─────────────┴─────────────┴──────────┘
+│                        Service Layer                          │
+│  ┌─────────────────┐  ┌─────────────────────────────────┐   │
+│  │supabase.ts      │  │PhotoService (download/print)    │   │
+│  │(extended)       │  │ClaimService (identity linking)   │   │
+│  └────────┬────────┘  └──────────────┬──────────────────┘   │
+│           │                          │                        │
+├───────────┴──────────────────────────┴──────────────────────┤
+│                    Data Layer (Supabase)                      │
+│  ┌──────────┐  ┌──────────┐  ┌──────────┐  ┌──────────┐   │
+│  │guest_uploads│ │photos    │  │activity_log│ │print_orders│ │
+│  └──────────┘  └──────────┘  └──────────┘  └──────────┘   │
+│  ┌─────────────────────────────────────────────────────────┐ │
+│  │              Supabase Storage (R2/S3)                   │ │
+│  │  wedding-gallery/  guest-uploads/  prints/             │ │
+│  └─────────────────────────────────────────────────────────┘ │
 └─────────────────────────────────────────────────────────────┘
 ```
 
-### Component Responsibilities
+## Integration with Existing Architecture
 
-| Component | Responsibility | Implementation |
-|-----------|----------------|----------------|
-| galleryStore | Gallery images, filters, pagination, selection, modal state | Zustand with sessionStorage (exists) |
-| uploadQueueStore | Upload queue with localStorage persistence (NEW) | Zustand with persist middleware |
-| authStore | Authentication state | Zustand (exists) |
-| supabase.ts | Typed DB functions, RPC calls | Singleton client with typed wrappers (extends) |
-| SEOHead | Dynamic OG tags per page/photo | Existing component (extends) |
-| VitePWA | PWA registration, service worker | vite-plugin-pwa (configured, needs tuning) |
+### What Reuses Existing Patterns
 
-## New Components
+**Supabase Client (`src/lib/supabase.ts`):**
+- Already configured with realtime enabled (`eventsPerSecond: 10`)
+- `createMediaReviewArtifactSignedUrl` at line 772-779 shows signed URL pattern for storage
+- Photo type already defined with `download_url?: string | null` field
 
-| Component | File | Purpose |
-|-----------|------|---------|
-| VirtualizedPhotoGrid | components/gallery/VirtualizedPhotoGrid.tsx | Renders only visible photos using @tanstack/react-virtual |
-| useUploadQueueStore | stores/uploadQueueStore.ts | Zustand store for upload queue with localStorage |
-| useGuestReactions | hooks/useGuestReactions.ts | Hook for optimistic reaction updates |
-| FeaturedSpotlight | components/sections/FeaturedSpotlight.tsx | Displays featured content on Home |
-| ShareButtons | components/gallery/ShareButtons.tsx | Social share button group |
-| UploadStatusScreen | components/upload/UploadStatusScreen.tsx | "Your photo is being reviewed" feedback |
-| OfflineGalleryProvider | hooks/useOfflineGallery.ts | PWA offline support hook |
+**Zustand Stores:**
+- Pattern: `create()` with `devtools`, `persist` middleware already established
+- Session-based identity can use `safeSessionStorage` pattern from galleryStore
+
+**Auth Store (`src/stores/authStore.ts`):**
+- `authOperationQueue` serialization pattern can be reused for claim operations
+- Session ID tracking for anonymous user identity
+
+### What Is New
+
+| Component | Type | Purpose | Location |
+|-----------|------|---------|----------|
+| `activityStore` | New Zustand store | Activity feed state, realtime subscriptions | `src/stores/` |
+| `claimStore` | New Zustand store | Photo claiming, guest identity linking | `src/stores/` |
+| `downloadStore` | New Zustand store | Download queue, progress tracking | `src/stores/` |
+| `ActivityFeedPage` | New page | Social features round 2, new route | `src/pages/` |
+| `PhotoClaimModal` | New component | Claim interface | `src/components/gallery/` |
+| `DownloadManager` | New component | Batch download handling | `src/components/gallery/` |
+| `PrintOrderPanel` | New component | Print/photo book ordering | `src/components/gallery/` |
+| `LightboxEnhancement` | Modified component | Zoom, swipe, EXIF | `src/components/gallery/` |
+
+## New Data Flows
+
+### Activity Feed Data Flow
+
+```
+[Supabase Realtime Channel]
+    │
+    ├── Photos: INSERT on 'photos' table (after moderation approval)
+    ├── Guest Uploads: INSERT on 'guest_uploads' (when status='approved')
+    ├── Guestbook: INSERT on 'guestbook_messages'
+    └── Photo Likes: INSERT on 'photo_likes'
+    │
+    ▼
+[activityStore.subscribe()] ← Zustand subscribes to realtime channels
+    │
+    ▼
+[UI Components] ← Store state drives ActivityFeed rendering
+```
+
+**Database table needed:**
+```sql
+CREATE TABLE activity_log (
+  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  activity_type TEXT NOT NULL, -- 'photo_uploaded', 'upload_approved', 'guestbook_message', 'photo_liked'
+  entity_type TEXT NOT NULL, -- 'photo', 'guest_upload', 'guestbook_message'
+  entity_id TEXT,
+  actor_session_id TEXT, -- anonymous guests tracked by session
+  actor_name TEXT, -- 'Austin & Jordyn's Wedding' for guests, or guest name
+  metadata JSONB, -- {photo_url, thumbnail, album, etc.}
+  created_at TIMESTAMPTZ DEFAULT now()
+);
+
+CREATE INDEX idx_activity_log_created_at ON activity_log(created_at DESC);
+CREATE INDEX idx_activity_log_activity_type ON activity_log(activity_type);
+```
+
+**RPC function for activity logging:**
+```sql
+CREATE OR REPLACE FUNCTION log_activity(
+  p_activity_type TEXT,
+  p_entity_type TEXT,
+  p_entity_id TEXT DEFAULT NULL,
+  p_actor_session_id TEXT DEFAULT NULL,
+  p_actor_name TEXT DEFAULT NULL,
+  p_metadata JSONB DEFAULT '{}'
+)
+RETURNS UUID AS $$
+DECLARE
+  v_id UUID;
+BEGIN
+  INSERT INTO activity_log (activity_type, entity_type, entity_id, actor_session_id, actor_name, metadata)
+  VALUES (p_activity_type, p_entity_type, p_entity_id, p_actor_session_id, p_actor_name, p_metadata)
+  RETURNING id INTO v_id;
+  RETURN v_id;
+END;
+$$ LANGUAGE plpgsql SECURITY DEFINER;
+```
+
+### Photo Claiming Data Flow
+
+```
+[Guest clicks "Claim Photos" on their upload]
+    │
+    ▼
+[ClaimModal: Enter email used during upload]
+    │
+    ▼
+[claimStore.verifyOwnership(email)] → Supabase query
+    │
+    ├── Matches found → Show claimable photos
+    │   │
+    │   ▼
+    │   [Guest selects photos → Confirm claim]
+    │       │
+    │       ▼
+    │   [Create guest_identity record if not exists]
+    │       │
+    │       ▼
+    │   [Link selected guest_uploads to guest_identity]
+    │       │
+    │       ▼
+    │   [Return success, update gallery UI]
+    │       │
+    └── No matches → Show "No uploads found for this email"
+```
+
+**Database tables needed:**
+```sql
+CREATE TABLE guest_identities (
+  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  email TEXT UNIQUE NOT NULL,
+  session_id TEXT, -- links to photo_likes session_id for identity continuity
+  display_name TEXT,
+  created_at TIMESTAMPTZ DEFAULT now(),
+  updated_at TIMESTAMPTZ DEFAULT now()
+);
+
+CREATE TABLE photo_claims (
+  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  photo_id TEXT NOT NULL, -- references photos.id
+  guest_identity_id UUID REFERENCES guest_identities(id),
+  claimed_at TIMESTAMPTZ DEFAULT now()
+);
+
+CREATE INDEX idx_photo_claims_guest_identity ON photo_claims(guest_identity_id);
+CREATE INDEX idx_guest_identities_email ON guest_identities(email);
+CREATE INDEX idx_guest_identities_session ON guest_identities(session_id);
+```
+
+### Download Management Data Flow
+
+```
+[Guest clicks "Download" or "Download All" on photo(s)]
+    │
+    ▼
+[downloadStore.queueDownload(photoIds)]
+    │
+    ▼
+[DownloadButton shows progress overlay]
+    │
+    ├── Single download:
+    │   └── supabase.storage.from('wedding-gallery').createSignedUrl(path, 60)
+    │       └── Window.open(signedUrl)
+    │
+    └── Batch download:
+        ├── Create temporary zip in edge function OR
+        ├── Stream multiple signed URLs with client-side zip
+        └── Show "Preparing download..." → "Downloading 3 of 12..."
+```
+
+**Signed URL generation (existing pattern in supabase.ts line 772-779):**
+```typescript
+export async function createPhotoDownloadUrl(photoKey: string, expiresInSeconds = 60) {
+  return await supabase.storage
+    .from('wedding-gallery')
+    .createSignedUrl(photoKey, expiresInSeconds)
+}
+```
+
+### Print Ordering Data Flow
+
+```
+[Guest clicks "Order Prints" on photo(s)]
+    │
+    ▼
+[PrintOrderPanel: Shows available print products]
+    │
+    ├── Product selection (4x6, 8x10, canvas, photo book)
+    ├── Quantity per product
+    └── "Continue to Checkout" button
+    │
+    ▼
+[Submit order → Create print_order record]
+    │
+    ▼
+[Redirect to third-party print API with photo URLs]
+    │
+    └── Print provider handles payment, fulfillment, shipping
+```
+
+**Print ordering is fundamentally a redirect to external service.** The site should:
+1. Generate a share link or cart with the selected photos
+2. Open the print provider's site with photo URLs pre-loaded
+3. Let the provider handle payment and fulfillment
 
 ## Recommended Project Structure
 
 ```
 src/
-├── components/gallery/
-│   ├── PhotoGrid.tsx              # EXISTING: standard grid
-│   ├── VirtualizedPhotoGrid.tsx   # NEW: virtualization wrapper
-│   ├── ShareButtons.tsx           # NEW: social share component
-│   └── components/
-│       ├── MasonryGrid.tsx        # EXISTING: masonry layout
-│       └── PhotoItem.tsx          # EXISTING: individual photo
-├── components/sections/
-│   └── FeaturedSpotlight.tsx     # NEW: featured content display
 ├── stores/
-│   ├── galleryStore.ts            # EXISTING: extends for virtualization
-│   └── uploadQueueStore.ts        # NEW: upload queue with localStorage
-├── hooks/
-│   ├── useGuestReactions.ts       # NEW: guest reactions hook
-│   └── useOfflineGallery.ts       # NEW: PWA offline hook
-└── lib/
-    └── supabase.ts                # EXISTING: extends with reaction RPCs
+│   ├── activityStore.ts    # NEW - Activity feed state + realtime
+│   ├── claimStore.ts      # NEW - Photo claiming + guest identity
+│   ├── downloadStore.ts   # NEW - Download queue + progress
+│   └── printStore.ts      # NEW - Print order state
+├── services/
+│   ├── activityService.ts # NEW - Activity logging RPC calls
+│   ├── claimService.ts    # NEW - Claim verification + linking
+│   └── printService.ts   # NEW - Print provider API integration
+├── pages/
+│   └── ActivityFeed.tsx   # NEW - Activity feed page
+├── components/
+│   ├── activity/
+│   │   ├── ActivityFeed.tsx
+│   │   ├── ActivityFeedItem.tsx
+│   │   └── ActivityFilters.tsx
+│   ├── gallery/
+│   │   ├── PhotoClaimModal.tsx   # NEW
+│   │   ├── ClaimedPhotosGrid.tsx # Reuses PhotoGrid
+│   │   ├── DownloadManager.tsx   # NEW
+│   │   ├── DownloadButton.tsx    # Extends existing share/download
+│   │   └── LightboxEnhancement.tsx # Wraps existing lightbox
+│   └── print/
+│       ├── PrintOrderPanel.tsx
+│       └── PrintProductCard.tsx
 ```
 
-### Structure Rationale
+## New Store Patterns
 
-- **`components/gallery/VirtualizedPhotoGrid.tsx`**: Centralizes virtualization logic, wraps existing PhotoGrid pattern
-- **`stores/uploadQueueStore.ts`**: Persists upload queue to localStorage, restores on mount
-- **`hooks/useGuestReactions.ts`**: Encapsulates reaction optimistic updates + Supabase sync
-- **`components/sections/FeaturedSpotlight.tsx`**: Reusable featured content display for Home page
+### activityStore
 
-## Architectural Patterns
-
-### Pattern 1: Virtualized Rendering with @tanstack/react-virtual
-
-**What:** Render only visible items in a large list instead of all items
-**When to use:** Gallery with 200+ photos
-**Trade-offs:** + Handles thousands of images, - Slight complexity for masonry layout
-
-**Implementation approach:**
 ```typescript
-// For masonry, virtualizer tracks row-based indices
-// Masonry columns determined by CSS, virtualizer handles vertical scroll
-// Only photos in visible vertical range render
-// Adjacent photo prefetch preserved from existing code
-```
+interface ActivityItem {
+  id: string
+  type: 'photo_uploaded' | 'upload_approved' | 'guestbook_message' | 'photo_liked'
+  entityId?: string
+  actorName: string
+  metadata: Record<string, unknown>
+  createdAt: string
+}
 
-### Pattern 2: Optimistic Updates with Rollback
-
-**What:** Update UI immediately, sync to server async, rollback on failure
-**When to use:** Reactions, likes, comments
-**Trade-offs:** + Instant UX, - Requires careful error handling
-
-**Implementation:**
-```typescript
-const [localReactions, setLocalReactions] = useState(initial)
-const addReaction = async (key) => {
-  setLocalReactions(prev => ({ ...prev, [key]: (prev[key] ?? 0) + 1 }))
-  try {
-    await supabase.rpc('add_guestbook_reaction', { message_id, reaction_key: key })
-  } catch {
-    setLocalReactions(prev => ({ ...prev, [key]: prev[key] - 1 }))
-  }
+interface ActivityState {
+  items: ActivityItem[]
+  isLoading: boolean
+  hasMore: boolean
+  subscribeToRealtime: () => void
+  unsubscribeFromRealtime: () => void
+  fetchMore: () => Promise<void>
 }
 ```
 
-### Pattern 3: localStorage Persistence with Safe Wrapper
+### claimStore
 
-**What:** Persist state to localStorage with error handling for quota exceeded
-**When to use:** Upload queue, UI preferences
-**Trade-offs:** + Survives refresh, - Can fail (quota, private browsing)
-
-**Implementation (reusing existing safeSessionStorage pattern):**
 ```typescript
-const safeLocalStorage = {
-  getItem: (name) => { try { return localStorage.getItem(name) } catch { return null } },
-  setItem: (name, value) => { try { localStorage.setItem(name, value) } catch {} },
+interface ClaimState {
+  identity: GuestIdentity | null
+  claimedPhotos: Photo[]
+
+  isModalOpen: boolean
+  claimablePhotos: GuestUpload[]
+
+  lookupByEmail: (email: string) => Promise<GuestUpload[]>
+  claimPhotos: (uploadIds: string[]) => Promise<void>
+  linkIdentity: (email: string, sessionId: string) => Promise<void>
+}
+```
+
+### downloadStore
+
+```typescript
+interface DownloadItem {
+  photoId: string
+  url: string
+  status: 'pending' | 'preparing' | 'downloading' | 'complete' | 'error'
+  progress: number
+  error?: string
 }
 
-// Zustand persist with safeLocalStorage
-export const useUploadQueueStore = create(
-  persist(
-    (set, get) => ({
-      files: [],
-      addFiles: (newFiles) => set(state => ({ files: [...state.files, ...newFiles] })),
-      removeFile: (id) => set(state => ({ files: state.files.filter(f => f.id !== id) })),
-    }),
-    { name: 'upload-queue', storage: createJSONStorage(() => safeLocalStorage) }
-  )
-)
+interface DownloadState {
+  queue: DownloadItem[]
+  isPreparing: boolean
+
+  addToQueue: (photoIds: string[]) => void
+  removeFromQueue: (photoId: string) => void
+  startDownload: () => Promise<void>
+}
 ```
 
-### Pattern 4: Dynamic OG Image URL
+## Component Boundaries
 
-**What:** Generate share URLs with photo-specific OG images
-**When to use:** Photo share, gallery share
-**Trade-offs:** + Rich social previews, - Requires image processing infrastructure
+| Component | Responsibility | Communicates With |
+|-----------|---------------|-------------------|
+| `ActivityFeed` | Render activity stream | `activityStore` |
+| `ActivityFeedItem` | Single activity entry | `activityStore`, `Photo` type |
+| `PhotoClaimModal` | Email lookup + claim flow | `claimStore`, `guest_uploads` |
+| `ClaimedPhotosGrid` | Display guest's claimed photos | `claimStore`, `PhotoGrid` |
+| `DownloadButton` | Single/batch download trigger | `downloadStore` |
+| `DownloadProgress` | Per-file and batch progress | `downloadStore` |
+| `PrintOrderPanel` | Product selection + submit | External print API |
+| `LightboxEnhancement` (wrapper) | Zoom, swipe, EXIF layer | Existing lightbox |
 
-**Implementation:**
-```typescript
-// Option A: Query parameter approach
-const shareUrl = `${location.origin}/gallery?photo=${photoId}&share=1`
-// OG image URL: /_og?photo=${photoId} (processed server-side or via CDN)
+## Database Schema Changes
 
-// Option B: Pre-generated OG images per photo
-// Storage path: /og-photos/{photoId}.jpg
-const ogImageUrl = supabase.storage.getPublicUrl('og-photos', `${photoId}.jpg`)
+### New Tables
+
+```sql
+-- Activity log for social features
+CREATE TABLE activity_log (
+  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  activity_type TEXT NOT NULL,
+  entity_type TEXT NOT NULL,
+  entity_id TEXT,
+  actor_session_id TEXT,
+  actor_name TEXT,
+  metadata JSONB DEFAULT '{}',
+  created_at TIMESTAMPTZ DEFAULT now()
+);
+
+-- Guest identity for claiming
+CREATE TABLE guest_identities (
+  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  email TEXT UNIQUE NOT NULL,
+  session_id TEXT,
+  display_name TEXT,
+  created_at TIMESTAMPTZ DEFAULT now(),
+  updated_at TIMESTAMPTZ DEFAULT now()
+);
+
+-- Photo claims linking uploads to identity
+CREATE TABLE photo_claims (
+  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  photo_id TEXT NOT NULL,
+  guest_identity_id UUID REFERENCES guest_identities(id),
+  claimed_at TIMESTAMPTZ DEFAULT now()
+);
+
+-- Print orders
+CREATE TABLE print_orders (
+  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  guest_identity_id UUID REFERENCES guest_identities(id),
+  items JSONB NOT NULL,
+  status TEXT DEFAULT 'pending',
+  external_order_id TEXT,
+  total_cost DECIMAL(10,2),
+  shipping_address JSONB,
+  created_at TIMESTAMPTZ DEFAULT now()
+);
 ```
 
-## Data Flow
+### Existing Tables Extended
 
-### Gallery Virtualization Flow
+| Table | New Columns | Purpose |
+|-------|-------------|---------|
+| `guest_uploads` | Already has `guest_email` | Email lookup for claiming |
+| `photos` | `download_url` (already exists) | Signed download URL generation |
+| `site_editorial_features` | (already exists) | Activity could feature new uploads |
 
-```
-User scrolls
-    ↓
-Virtualizer calculates visible vertical range
-    ↓
-Only photos in range render (PhotoItem components)
-    ↓
-IntersectionObserver triggers prefetch for adjacent
-    ↓
-Next range becomes visible (smooth)
-```
+### RLS Policies
 
-### Upload Queue with Resume Flow
+| Table | Public Read | Authenticated Write | Admin Write |
+|-------|-------------|-------------------|------------|
+| `activity_log` | Yes (recent items) | INSERT only | Full |
+| `guest_identities` | No | Own record only | Full |
+| `photo_claims` | SELECT for own identity | Own identity | Full |
+| `print_orders` | No | Own record only | Full |
 
-```
-User selects files
-    ↓
-Files added to uploadQueueStore (persisted to localStorage)
-    ↓
-uploadFileToR2 processes each file
-    ↓
-On success: status = 'complete'
-On failure: status = 'error', retry available
-    ↓
-On page reload: store restored from localStorage
-    ↓
-User can retry failed or remove them
-```
+## Anti-Patterns to Avoid
 
-### Guest Reaction Flow
+### Anti-Pattern 1: Storing File Objects in localStorage for Resume
 
-```
-User clicks "Add a reaction"
-    ↓
-Reaction picker appears (existing emoji grid)
-    ↓
-User selects emoji
-    ↓
-Optimistic update: localReactions[messageId][emojiKey]++
-    ↓
-Supabase RPC: add_guestbook_reaction(message_id, emoji_key)
-    ↓
-On error: rollback optimistic update
-```
+**What people do:** Attempting to persist `File` objects from upload queue to localStorage for resume capability.
 
-### Featured Spotlight Flow
+**Why it's wrong:** `File` objects are not JSON-serializable. They'll throw errors or silently fail.
 
-```
-Admin sets featured content (FeaturedContentManager - exists)
-    ↓
-site_editorial_features table updated
-    ↓
-Home page fetches active features via fetchSiteEditorialFeatures()
-    ↓
-FeaturedSpotlightSection renders featured slots
-    ↓
-Users see highlighted content on home page
-```
+**Do this instead:** Store only metadata (filename, size, fingerprint) and prompt user to re-select files on page reload.
 
-### Social Share Flow
+---
 
-```
-User clicks share on a photo
-    ↓
-ShareButtons component opens share dialog
-    ↓
-URL generated with photo context: /gallery?photo={id}&share=1
-    ↓
-Platform-specific URL (Facebook, Twitter, etc.)
-    ↓
-Meta tags updated via SEOHead (dynamic OG image)
-```
+### Anti-Pattern 2: Polling for Activity Updates Instead of Realtime
+
+**What people do:** Setting up `setInterval` to poll Supabase every 30 seconds for new activity.
+
+**Why it's wrong:** Wastes bandwidth, increases Supabase usage costs, and delays updates by polling interval.
+
+**Do this instead:** Use Supabase Realtime subscriptions (already configured in the client).
+
+---
+
+### Anti-Pattern 3: Blocking Download UI During Large Batch Preparation
+
+**What people do:** Showing a spinner that never updates while generating a large zip.
+
+**Why it's wrong:** User assumes it's frozen, no feedback on progress.
+
+**Do this instead:** For large batches, generate zip asynchronously via Edge Function, provide job ID for status polling, and show "We'll email you when ready."
+
+---
+
+### Anti-Pattern 4: Implementing Full E-commerce for Print Ordering
+
+**What people do:** Building full shopping cart, payment processing, inventory management, and shipping logistics.
+
+**Why it's wrong:** Wedding photo print ordering is a small, infrequent transaction. E-commerce complexity dwarfs the value.
+
+**Do this instead:** Redirect to third-party print provider. Pass photo URLs as share links. Let them handle everything else.
+
+---
+
+### Anti-Pattern 5: Storing Activity in Same Table as Photos
+
+**What people do:** Adding an `activity_type` column to the photos table to track "new" status.
+
+**Why it's wrong:** Activity feeds need timeline ordering across multiple entity types. Can't query "all recent activity" efficiently.
+
+**Do this instead:** Separate `activity_log` table with `entity_type` for polymorphic activity.
 
 ## Scaling Considerations
 
-| Scale | Architecture Adjustments |
-|-------|--------------------------|
-| 0-1k users | Current architecture sufficient |
-| 1k-10k users | Gallery virtualization, image CDN |
-| 10k-100k users | Edge caching, aggressive asset optimization |
+| Scale | Activity Feed | Downloads | Print Ordering |
+|-------|--------------|-----------|----------------|
+| 0-1k users | Realtime subscriptions sufficient | Client-side JSZip fine | Redirect to external |
+| 1k-10k users | Pagination needed, consider activity pruning | Edge Function for large zip | External provider |
+| 10k+ users | Archive old activity to separate table | Pre-computed zip URLs | External provider |
 
 ### Scaling Priorities
 
-1. **First bottleneck:** Gallery rendering at 200+ photos
-   - Fix: @tanstack/react-virtual
-2. **Second bottleneck:** Image load times
-   - Fix: LQIP, prefetch, CDN (already partially implemented)
-
-## Anti-Patterns
-
-### Anti-Pattern 1: Rendering All Gallery Items
-
-**What happens:** Map over all photos, render every one
-**Why wrong:** DOM grows with photo count, causing lag on scroll, high memory
-**Do this instead:** Use @tanstack/react-virtual to render only visible items
-
-### Anti-Pattern 2: Upload Queue in Component State Only
-
-**What happens:** `const [files, setFiles] = useState([])`
-**Why wrong:** Page refresh loses all progress
-**Do this instead:** Persist to localStorage via Zustand with persist middleware
-
-### Anti-Pattern 3: No Per-Photo OG Image
-
-**What happens:** Single default OG image for all shares
-**Why wrong:** Shared links look generic
-**Do this instead:** Dynamic OG image URLs with photo-specific images
-
-### Anti-Pattern 4: Blocking UI on Network Requests
-
-**What happens:** `await addReaction()` then update UI
-**Why wrong:** User feels lag on every interaction
-**Do this instead:** Optimistic updates, sync in background
+1. **First bottleneck: Activity feed explosion** - Guests upload photos, each generates multiple activity entries. Prune activity older than 90 days.
+2. **Second bottleneck: Large batch downloads** - Client-side zip hits memory limits at ~50 photos. Move to Edge Function at that threshold.
+3. **Third bottleneck: Print ordering volume** - External provider absorbs this; no internal scaling needed.
 
 ## Integration Points
 
@@ -294,103 +484,56 @@ Meta tags updated via SEOHead (dynamic OG image)
 
 | Service | Integration Pattern | Notes |
 |---------|---------------------|-------|
-| Supabase | Single client in src/lib/supabase.ts | Auth, Database, Storage |
-| VitePWA | vite-plugin-pwa in vite.config.js | Already configured, needs workbox tuning |
-| Social Platforms | Share URLs (Facebook, Twitter, SMS, email) | Already implemented in Upload.tsx |
+| Print provider (Printful, etc.) | REST API with OAuth | Redirect flow with photo URLs as parameters |
+| Photo zoom library | npm package | `react-zoom-pinch-pan` or similar |
 
 ### Internal Boundaries
 
 | Boundary | Communication | Notes |
-|----------|---------------|-------|
-| Gallery ↔ Supabase | galleryStore subscribes, supabase.ts functions | State-driven |
-| Upload ↔ Supabase | uploadQueueStore + Upload.tsx | localStorage persistence |
-| Guestbook ↔ Supabase | Direct Supabase calls | Reactions need new RPC |
-| FeaturedContent ↔ Home | fetchSiteEditorialFeatures() | Already exists in supabase.ts |
+|---------|---------------|-------|
+| `activityStore` | `supabase.ts` RPC calls | Activity logging at data layer |
+| `claimStore` | `guest_uploads` SELECT + UPSERT | Email lookup, identity linking |
+| `downloadStore` | `supabase.storage` `createSignedUrl()` | Existing pattern, new callers |
+| `PrintOrderPanel` | External API fetch redirect | No Supabase involvement after order creation |
 
-## Database Schema Changes
+## Build Order Recommendation
 
-### guestbook_messages reactions column
+1. **Phase 1: Activity Feed foundation**
+   - Create `activity_log` table + RLS
+   - Create `activityStore` with realtime subscription
+   - Create `ActivityFeedPage`
+   - Wire `guest_uploads` approval to log activity
 
-```sql
-ALTER TABLE guestbook_messages
-ADD COLUMN IF NOT EXISTS reactions JSONB DEFAULT '{}';
-```
+2. **Phase 2: Photo Claiming**
+   - Create `guest_identities` and `photo_claims` tables + RLS
+   - Create `claimStore`
+   - Create `PhotoClaimModal`
+   - Add "Claim My Photos" entry point on Guest Uploads page
 
-### New RPC for atomic reaction updates
+3. **Phase 3: Download Management**
+   - Extend `downloadStore` with batch download logic
+   - Create `DownloadButton` with progress UI
+   - For large batches: create Edge Function zip handler
 
-```sql
-CREATE OR REPLACE FUNCTION add_guestbook_reaction(
-  p_message_id UUID,
-  p_reaction_key TEXT
-) RETURNS JSONB AS $$
-  UPDATE guestbook_messages
-  SET reactions = jsonb_set(
-    COALESCE(reactions, '{}'),
-    ARRAY[p_reaction_key],
-    to_jsonb(COALESCE((reactions->>p_reaction_key)::int, 0) + 1)
-  )
-  WHERE id = p_message_id
-  RETURNING reactions
-$$ LANGUAGE SQL SECURITY DEFINER;
-```
+4. **Phase 4: Lightbox Enhancement**
+   - Extend existing lightbox with zoom/swipe/EXIF
+   - Add download button to lightbox
+   - Integrate with `downloadStore`
 
-## Build Order (Considering Dependencies)
-
-### Phase 1: Social Sharing & Upload Resume (No Dependencies)
-
-1. **ShareButtons component** -- Simple, no backend changes
-2. **Social OG tag enhancement** -- Extend SEOHead for dynamic per-photo images
-3. **uploadQueueStore** -- localStorage persistence for upload queue
-
-### Phase 2: Guest Reactions (DB Schema Changes)
-
-4. **Add reactions column to guestbook_messages** -- Migration
-5. **Supabase RPC for reactions** -- Atomic update of reactions JSONB
-6. **useGuestReactions hook** -- Optimistic updates with rollback
-
-### Phase 3: Gallery Virtualization (Core Performance)
-
-7. **@tanstack/react-virtual integration** -- Replace PhotoGrid rendering
-8. **Masonry virtualizer** -- Handle masonry layout with virtualization
-9. **Prefetch integration** -- Keep adjacent image prefetch working
-
-### Phase 4: Featured Spotlight (Home Page Changes)
-
-10. **FeaturedSpotlight component** -- Display site_editorial_features
-11. **Home.tsx integration** -- Fetch and render featured content
-12. **Admin FeaturedContentManager** -- Already exists, verify coverage
-
-### Phase 5: PWA Offline (Configuration Work)
-
-13. **Workbox tuning** -- Cache Supabase storage images
-14. **Offline fallback page** -- public/offline.html already exists
-15. **Service worker customization** -- Runtime caching for photos
-
-## Existing Architecture Compatibility
-
-**What to modify:**
-- `src/components/gallery/PhotoGrid.tsx` -- Add VirtualizedPhotoGrid variant
-- `src/stores/galleryStore.ts` -- Add virtualization-related state if needed
-- `src/components/seo/SEOHead.tsx` -- Add dynamic OG image per photo
-- `vite.config.js` -- Workbox runtime caching configuration
-- `src/lib/supabase.ts` -- Add reaction RPC functions
-
-**What to add (new files):**
-- `src/stores/uploadQueueStore.ts`
-- `src/hooks/useGuestReactions.ts`
-- `src/hooks/useOfflineGallery.ts`
-- `src/components/gallery/VirtualizedPhotoGrid.tsx`
-- `src/components/gallery/ShareButtons.tsx`
-- `src/components/sections/FeaturedSpotlight.tsx`
+5. **Phase 5: Print Ordering** (lowest priority)
+   - Create `print_orders` table
+   - Create `printStore` and `PrintOrderPanel`
+   - Integrate with print provider redirect
 
 ## Sources
 
-- [@tanstack/react-virtual documentation](https://tanstack.com/virtual/latest)
-- [Vite PWA Plugin documentation](https://vite-pwa.dev/)
-- [Supabase JSONB operations](https://supabase.com/docs/guides/database/json)
-- [Workbox runtime caching](https://developer.chrome.com/docs/workbox/)
-- Existing codebase: src/stores/, src/components/gallery/, src/pages/
+- Existing codebase: `src/lib/supabase.ts`, `src/stores/galleryStore.ts`, `src/stores/authStore.ts`, `src/components/gallery/PhotoGrid.tsx`, `src/components/gallery/VirtualizedPhotoGrid.tsx`
+- Supabase Storage signed URL pattern (line 772-779 in supabase.ts)
+- Existing `photo_likes` and `photo_comments` schema (`20260315000200_photo_engagement.sql`)
+- Existing `GuestUpload` type with `guest_name`, `guest_email`, `photo_urls`, `status` fields
+- Zustand patterns from existing stores
+- Project requirements: `.planning/REQUIREMENTS.md` v3.0 Guest Experience Enhancements
 
 ---
-*Architecture research for: Wedding Archive v1.1 Feature Expansion*
-*Researched: 2026-04-24*
+*Architecture research for: v3.0 guest experience enhancements*
+*Researched: 2026-04-29*

@@ -1,8 +1,8 @@
 # Feature Research
 
-**Domain:** Wedding archive website (theporadas.com) - v1.1 polish and feature expansion
-**Researched:** 2026-04-24
-**Confidence:** HIGH
+**Domain:** Wedding Photo Archive - Guest Experience Enhancements (v3.0)
+**Researched:** 2026-04-29
+**Confidence:** MEDIUM
 
 ## Feature Landscape
 
@@ -12,11 +12,13 @@ Features users assume exist. Missing these = product feels incomplete.
 
 | Feature | Why Expected | Complexity | Notes |
 |---------|--------------|------------|-------|
-| **Gallery virtualization** | Users expect smooth scrolling with 200+ photos without lag or crashes | MEDIUM | Current PhotoGrid renders all photos at once - works at small scale but will struggle with larger albums. @tanstack/react-virtual is the standard solution. |
-| **Guest reactions** | Modern social platforms have reactions; users click them reflexively | LOW | Guestbook already has reaction UI (emoji picker via Smile button, reactions stored in DB). Just needs to work consistently. |
-| **Upload resume** | Network interruptions happen; users expect uploads to continue where they left off | MEDIUM | Current upload uses XHR with progress tracking. localStorage persistence would allow resume after page refresh or browser close. |
-| **Guest upload status** | Users want to know if their submission was reviewed/approved | LOW | Currently shows "pending review" message on success. Needs visible status indicator visible to guest on confirmation and potentially tracking page. |
-| **Social sharing with OG tags** | Users share wedding content; previews must look good on Facebook, X, Pinterest | LOW | SEOHead.tsx already has comprehensive OG tag support. Need dynamic per-photo/per-gallery sharing with correct og:image. |
+| **Activity Feed** | Guests want to see what others have contributed — new uploads, guestbook entries, featured moments | MEDIUM | Existing guest uploads + guestbook exist; need feed aggregation + UI |
+| **Download Photos** | Users expect to save favorite photos, especially their own guest uploads | MEDIUM | Download button exists in lightbox; needs batch/multi-select + queue management |
+| **Lightbox Zoom** | Mobile photo viewing standard — pinch to zoom on phone | LOW | Zoom buttons exist; pinch-to-zoom not wired to `useTouchGestures` hook |
+| **Lightbox Swipe Navigation** | Mobile photo browsing convention — swipe left/right to navigate | LOW | Framer Motion drag exists for swipe-to-navigate but threshold behavior could be improved |
+| **Photo Info Display** | EXIF, date, location — contextual photo metadata | LOW | Time/date display exists in lightbox; EXIF extraction not implemented |
+| **Guest Upload Status** | After uploading, guests want to see if/when their photos appear | LOW | Status check exists via email lookup; could be more discoverable |
+| **Social Proof** | "12 guests contributed photos" — shows community participation | LOW | Could surface upload count from `guest_uploads` stats |
 
 ### Differentiators (Competitive Advantage)
 
@@ -24,8 +26,12 @@ Features that set the product apart. Not required, but valuable.
 
 | Feature | Value Proposition | Complexity | Notes |
 |---------|-------------------|------------|-------|
-| **Featured content spotlight** | Creates editorial control over what guests see first; makes the archive feel curated, not just uploaded | MEDIUM | FeaturedContentManager.tsx already exists in admin. Need to wire it to homepage and ensure slots display correctly. |
-| **PWA offline gallery browsing** | Guests may have limited connectivity at reception; offline access is a delightful surprise | HIGH | vite-plugin-pwa already configured. Workbox handles caching. Need to verify full gallery works offline including images from Supabase storage. |
+| **Photo Claiming** | Guests can claim photos they're in — "That's me!" engagement | MEDIUM | Requires face-data-to-upload linking; face tagging infrastructure exists (media_review_faces, photo_faces) |
+| **Shared Album Links** | Guests share their contribution collection — "Look at all my photos from the day!" | MEDIUM | Needs per-uploader view, unique shareable link generation |
+| **Download Management** | Queue, progress, zip for multiple photos — premium feel | MEDIUM | No existing infrastructure; needs S3 signed URL generation + client-side zip |
+| **Print/Photo Book Ordering** | Direct ordering removes friction — "Order a print" from lightbox | HIGH | Third-party integration required (Artifact, Printful, or white-label); payment + fulfillment complexity |
+| **Activity Feed Filtering** | "Show only photos" or "Show only guestbook" — personalized feed | LOW | Depends on activity feed implementation |
+| **Comment Threading** | Nested replies on photo comments — conversational feel | LOW | Single-level comments exist; threading requires schema + UI changes |
 
 ### Anti-Features (Commonly Requested, Often Problematic)
 
@@ -33,65 +39,88 @@ Features that seem good but create problems.
 
 | Feature | Why Requested | Why Problematic | Alternative |
 |---------|---------------|-----------------|-------------|
-| **Real-time sync of reactions** | "Why doesn't my reaction appear instantly?" | Requires Supabase Realtime subscription; adds cost, complexity, and potential for inconsistencies | Optimistic updates (already in Guestbook.tsx) - reactions update locally immediately, sync in background |
-| **Photo comments** | "Let me tag friends in photos" | Adds moderation burden, notification complexity, and potential for abuse | People gallery with face tagging (already exists) handles the "who was there" use case |
-| **Push notifications for new uploads** | "Notify me when new photos are approved" | Requires service worker push setup, user permission, and ongoing infrastructure | Email notification on approval (already in upload flow) |
+| **Real-time Activity Feed** | "I want to see uploads appear instantly" | Supabase Realtime at scale costs money, complexity, and creates notification fatigue | Poll-based feed with refresh button; "New activity" banner when updates exist |
+| **Download Original Quality** | "I want the full-res photo" | Storage costs, bandwidth, no quality control, guests sharing originals defeats archive purpose | Provide optimized high-quality (4K) but not raw original; set expectations upfront |
+| **Auto Face Recognition** | "Automatically tag everyone in photos" | Requires ML infrastructure, accuracy issues, privacy concerns | Keep manual face tagging as admin workflow; guests claim from confirmed faces |
+| **Unlimited Downloads** | "Download whatever I want" | Bandwidth costs, no sense of scarcity/value, potential abuse | Implement reasonable limits (e.g., 50 downloads) or album-based limits |
+| **Public Comment Moderation** | "Let guests moderate comments" | Complexity, abuse potential, inconsistent experience | Keep admin-only moderation; guests can report via existing system |
 
 ## Feature Dependencies
 
 ```
-[Guest upload status] ───enhances──> [Upload resume]
-     │
-     └──requires──> [Moderation queue expansion]
+[Activity Feed]
+    └──requires──> [Guest Uploads] (already exists)
+                       └──requires──> [Guest Upload Moderation] (already exists)
+    └──requires──> [Guestbook Messages] (already exists)
+    └──requires──> [Site Editorial Features] (already exists)
 
-[Featured content spotlight] ──requires──> [Moderation queue expansion]
+[Photo Claiming]
+    └──requires──> [Face-tagged People Gallery] (already exists)
+    └──enhances──> [Face Recognition Infrastructure] (already exists in admin)
 
-[Social sharing with OG tags]
-     │
-     └──requires──> [Per-photo OG image generation] (for gallery shares)
+[Download Management]
+    └──requires──> [Photo Selection] (already exists via galleryStore)
+    └──requires──> [Signed URL Generation] (RPC function)
 
-[PWA offline gallery browsing]
-     │
-     └──requires──> [Service worker image caching strategy]
+[Lightbox Enhancement]
+    └──enhances──> [Existing PhotoLightbox] (already exists)
+    └──uses──────> [useTouchGestures] (already exists, not fully wired)
+
+[Print/Photo Book Ordering]
+    └──conflicts──> [Download Original Quality] (both give away full asset)
+    └──requires──> [Third-party Integration] (external service)
 ```
 
 ### Dependency Notes
 
-- **Guest upload status requires moderation queue expansion:** Can't show "your photo is approved" without the approval workflow existing.
-- **Featured content spotlight requires moderation queue expansion:** Admins highlight approved content; needs the approve workflow first.
-- **Social sharing with OG tags requires per-photo OG image:** When sharing a specific photo, the og:image should be that photo, not the default site image.
-- **PWA offline gallery browsing requires service worker image caching strategy:** Supabase storage URLs must be cached by Workbox; need custom runtime caching handler.
+- **Activity Feed requires Guest Uploads + Guestbook Messages:** Feed aggregates existing data; no new infrastructure needed beyond aggregation + display
+- **Photo Claiming enhances Face Recognition:** Guests select from confirmed face clusters; claim creates association between guest identity and face cluster
+- **Download Management requires Photo Selection:** Multi-select already exists in galleryStore; extend to download queue
+- **Lightbox Enhancement uses existing infrastructure:** useTouchGestures has pinch zoom but not wired to PhotoLightbox zoom state
+- **Print/Photo Book conflicts with unlimited downloads:** Both give away asset access; print ordering provides business model to offset storage costs
 
 ## MVP Definition
 
-### Launch With (v1.1)
+### Launch With (v1)
 
-Minimum viable product - what's needed to validate the concept.
+Minimum viable product — what's needed to validate the concept.
 
-- [ ] **Gallery virtualization** - @tanstack/react-virtual on PhotoGrid; renders only visible photos + overscan
-- [ ] **Guest reactions** - Ensure reaction picker works consistently; fix any edge cases in optimistic updates
-- [ ] **Social sharing with OG tags** - Per-page OG meta, dynamic og:image for gallery shares
-- [ ] **Upload resume** - localStorage queue persistence; detect incomplete uploads on page load
-- [ ] **Guest upload status** - Post-submission status page showing pending/approved/rejected states
+- [ ] **Activity Feed** — Aggregate recent uploads, guestbook entries, featured moments into chronological feed. Simple infinite scroll, refresh button.
+- [ ] **Lightbox Pinch-to-Zoom** — Wire existing `useTouchGestures` hook to PhotoLightbox zoom state. Mobile-optimized.
+- [ ] **Download Queue** — Multi-select photos in gallery, add to download queue, batch generate signed URLs, progress indicator.
+- [ ] **Guest Upload Status Page Enhancement** — Make status check more visible; link from upload confirmation screen.
 
 ### Add After Validation (v1.x)
 
 Features to add once core is working.
 
-- [ ] **Featured content spotlight** - Wire FeaturedContentManager to homepage display
-- [ ] **PWA offline verification** - Full offline gallery test; fix any caching gaps
+- [ ] **Photo Claiming** — Guest identifies themselves from face clusters; claim links guest_upload to photo_faces. Moderate before surfacing.
+- [ ] **Shared Album Links** — Per-guest view of their contributions with shareable link.
+- [ ] **Photo Info/EXIF Display** — Extract and display date, time, camera from photo metadata.
+- [ ] **Activity Feed Filtering** — Toggle between All/Photos/Guestbook/Moments.
+
+### Future Consideration (v2+)
+
+Features to defer until product-market fit is established.
+
+- [ ] **Print/Photo Book Ordering** — Third-party integration (Artifact, Printful). Requires payment, fulfillment, customer service.
+- [ ] **Comment Threading** — Nested replies. Schema change + UI complexity.
+- [ ] **Social Sharing Notifications** — "Your photo was shared 5 times" — notification infrastructure.
 
 ## Feature Prioritization Matrix
 
 | Feature | User Value | Implementation Cost | Priority |
 |---------|------------|---------------------|----------|
-| Gallery virtualization | HIGH - Performance at scale | MEDIUM | P1 |
-| Guest reactions polish | MEDIUM - Existing feature | LOW | P1 |
-| Social sharing with OG tags | HIGH - Share quality | LOW | P1 |
-| Upload resume | HIGH - Reliability | MEDIUM | P2 |
-| Guest upload status | HIGH - Trust/closure | LOW | P2 |
-| Featured content spotlight | MEDIUM - Editorial control | MEDIUM | P2 |
-| PWA offline verification | MEDIUM - Edge case handling | HIGH | P3 |
+| Activity Feed | HIGH | MEDIUM | P1 |
+| Lightbox Pinch-to-Zoom | MEDIUM | LOW | P1 |
+| Download Queue | MEDIUM | MEDIUM | P1 |
+| Guest Upload Status Enhancement | MEDIUM | LOW | P2 |
+| Photo Claiming | HIGH | MEDIUM | P2 |
+| Shared Album Links | MEDIUM | MEDIUM | P2 |
+| Photo Info/EXIF Display | LOW | LOW | P2 |
+| Activity Feed Filtering | LOW | LOW | P2 |
+| Print/Photo Book Ordering | MEDIUM | HIGH | P3 |
+| Comment Threading | LOW | MEDIUM | P3 |
 
 **Priority key:**
 - P1: Must have for launch
@@ -100,162 +129,227 @@ Features to add once core is working.
 
 ## Detailed Feature Behavior
 
-### Gallery Virtualization
+### Activity Feed
 
 **Expected behavior:**
-- Initial render: Show first ~24 photos (viewport + overscan)
-- Scroll: New photos render as they enter viewport; old photos unmount when leaving
-- No scroll position jumps (virtualizer must measure items correctly)
-- Maintain masonry layout with varying heights
-- Lightbox opens correctly for virtualized items
+- Chronological feed of recent activity: new guest uploads, guestbook messages, featured moments
+- Each entry shows: type icon, contributor name, thumbnail (for photos), timestamp, content preview
+- Infinite scroll or "Load more" pagination
+- Refresh button to check for new activity
+- Optional: "New activity" banner appears when new items exist (click to load)
 
 **Implementation approach:**
-- Use `@tanstack/react-virtual` with `useVirtualizer` hook
-- Two approaches for masonry:
-  1. Row-based virtualization (simpler): Virtualize rows, each row contains items
-  2. Column-based with absolute positioning (more complex but true masonry)
-- Recommended: Row-based for v1 since PhotoGrid has `viewMode` prop - can virtualize standard grid mode and keep masonry as-is or virtualize rows in masonry
-- Overscan: 4 items above/below viewport to prevent blank spaces during fast scroll
-
-**Known challenges:**
-- Masonry grid with varying heights requires measuring after render
-- LQIP (Low Quality Image Placeholder) blur-up effect may conflict with virtualization timing
-- Framer Motion animations on mount need to work with virtualizer's mount/unmount
-
-### Guest Reactions
-
-**Expected behavior:**
-- Click "Add a reaction" button on message → reaction picker appears
-- Select emoji → reaction count increments optimistically
-- Supabase update happens in background
-- Reaction picker closes after selection
-- Users can add one of each reaction type per message
-
-**Current state (Guestbook.tsx):**
-- Reaction picker exists (reactionPickerForId state)
-- REACTION_TYPES array: love, clap, laugh, wow with emoji
-- handleAddReaction updates localReactions optimistically then calls Supabase
-- Reactions stored as JSON in `reactions` column
-
-**Edge cases to fix:**
-- Reaction picker closes on outside click? (Currently only X button)
-- What happens if Supabase update fails? (Currently silently fails - optimistic update stays)
-- Rate limiting on reactions? (Not currently implemented)
-
-### Social Sharing with OG Tags
-
-**Expected behavior:**
-- Share button on each photo → opens share modal with correct og:image
-- Pinterest: Uses specific image URL
-- Twitter: Card with image preview
-- Facebook: Rich preview with correct image
-- Copy link: Copies URL with correct OG meta
-
-**Current state (ShareButton.tsx, SEOHead.tsx):**
-- ShareButton.tsx: Has native share, copy link, email, Facebook, Twitter, Pinterest
-- SEOHead.tsx: Comprehensive OG tags including og:image:width/height, twitter:card
-- DEFAULT_SOCIAL_IMAGE used as fallback
-- GallerySEO accepts shareImage prop for custom images
-
-**What's missing:**
-- Per-photo share: PhotoGrid needs share button on each photo that passes that photo's URL as og:image
-- Share modal needs to show a preview of what will be shared
-- URL for shared photo should be /gallery?photo={id} format to land on correct image
-
-### Upload Resume
-
-**Expected behavior:**
-- User selects files, starts upload
-- Page refreshes or browser closes mid-upload
-- User returns to upload page
-- Previously selected files (that didn't complete) are restored
-- User can resume from where they left off
-
-**Implementation approach:**
-- Persist upload queue to localStorage: `{ files: [{ id, name, size, type, status, progress, publicUrl? }] }`
-- On page load (Upload.tsx mount): Check localStorage for incomplete uploads
-- If found: Show "You have incomplete uploads - resume or clear" prompt
-- Resume: Re-upload files with status 'pending' (not 'complete')
-- Completed uploads: Don't re-upload; use existing publicUrl
+- New `activity_feed_entries` view or RPC that aggregates from `guest_uploads` (approved), `guestbook_messages`, `site_editorial_features`
+- Order by `created_at` descending, limit 20 per page
+- Feed component with card-style entries
+- Types: photo_upload, guestbook_entry, featured_moment, anniversary_note
 
 **Edge cases:**
-- File on disk is no longer accessible (user closed browser without File object)
-- Handle case gracefully - can't resume video files if user doesn't have original
-- Clear queue when submission succeeds
+- Empty feed: Show friendly "No activity yet" state
+- Feed with only one type: Graceful handling when no uploads exist yet
+- Guest uploads pending: Don't show until approved (moderation gate)
 
-### Guest Upload Status
+**Existing infrastructure:**
+- `fetchApprovedGuestUploads()` returns `GuestUpload[]` with `photo_urls`, `guest_name`, `created_at`
+- `guestbook_messages` table exists with `name`, `content`, `created_at`
+- `site_editorial_features` has slots for featured content
+
+### Lightbox Pinch-to-Zoom
 
 **Expected behavior:**
-- After submitting upload, user sees confirmation with status
-- Status: "Your photo is being reviewed" (pending)
-- User can return to site later and check status (email-based lookup?)
-
-**Implementation approach:**
-- Use Supabase to track guest_uploads.status: 'pending' | 'approved' | 'rejected'
-- After submission: Show "pending review" status
-- Optional: Email guest when status changes (needs email template + trigger)
-- On Upload page: Add "Check your submission status" input (email lookup)
+- On mobile: Two-finger pinch gesture zooms in/out on photo
+- Zoom level persists during session (swiping to next photo resets to 1x)
+- Double-tap to toggle between 1x and 2x zoom
+- Zoom range: 1x to 3x, in 0.25 increments
+- Smooth animation on zoom change
 
 **Current state:**
-- Success screen shows "pending review" messaging
-- No way to check status later without email
+- PhotoLightbox has zoom state (`useState(1)`) and +/- buttons
+- `useTouchGestures` hook has `onPinch` callback with scale factor
+- NOT connected: PhotoLightbox doesn't wire `onPinch` to `setZoom`
 
-### Featured Content Spotlight
+**Implementation:**
+- Wire `onPinch={(scale, e) => setZoom(z => Math.min(Math.max(z * scale, 1), 3))}` in PhotoLightbox
+- Consider debouncing to prevent jittery zoom
+- On double-tap: toggle between 1x and 2x
+
+### Lightbox Swipe Navigation
 
 **Expected behavior:**
-- Admin selects content for spotlight slot (home_moment_of_the_week, home_newest_standout_upload, etc.)
-- Content appears on homepage in designated spot
-- Guests can click through to the featured content
+- Swipe left: Go to next photo
+- Swipe right: Go to previous photo
+- Horizontal drag with velocity detection (fast swipe = navigate)
+- Threshold: ~50px offset + velocity check (already in PhotoLightbox lines 249-252)
+- Visual feedback during drag (slight parallax effect)
 
 **Current state:**
-- FeaturedContentManager.tsx: Admin UI for managing 4 slots
-- Slots stored in site_editorial_features table
-- Homepage has GuestHighlightReel but may not be connected to editorial features
+- Framer Motion `drag="x"` with `dragConstraints`, `dragElastic`
+- `onDragEnd` checks offset.x thresholds and velocity
+- Logic: `if (info.offset.x < -50 && info.velocity.x < -80) handleNext()`
 
-**What's missing:**
-- Homepage display: Verify spotlight content renders in correct location
-- Ensure lightbox modal opens when clicking featured content
-- Add analytics tracking for spotlight clicks
+**Edge cases:**
+- At first photo: swipe right does nothing (disabled state)
+- At last photo: swipe left does nothing (disabled state)
+- Zoom > 1x: Disable swipe navigation (use pan instead for zoomed view)
 
-### PWA Offline Gallery Browsing
+### Download Queue
 
 **Expected behavior:**
-- User installs PWA (Add to Home Screen)
-- Later opens PWA with no internet connection
-- Gallery page loads with cached images
-- User can browse entire gallery (or at least previously viewed photos)
-- Lightbox works for cached photos
+- In gallery: Select multiple photos via long-press or checkbox mode
+- "Add to Download" button appears when photos selected
+- Queue panel shows selected photos with remove option
+- "Download All" generates signed URLs, zips, triggers browser download
+- Progress indicator during zip generation + download
+- Manage queue: clear all, remove individual items
 
-**Current state (vite.config.js):**
-- VitePWA configured with autoUpdate
-- Workbox settings: cleanupOutdatedCaches, clientsClaim, skipWaiting
-- Manifest includes shortcuts to Gallery and Guest Book
+**Implementation:**
+- New Zustand store slice for download queue: `downloadQueue: string[]` (photo IDs)
+- Multi-select mode in gallery: toggle via long-press or dedicated checkbox toggle
+- Download flow:
+  1. Call RPC to batch-generate signed URLs for selected photos
+  2. Client-side JSZip combines images
+  3. Trigger download with zip filename
+- Signed URL expiry: 1 hour (use `createSignedUrl`)
 
-**What's missing:**
-- Service worker needs custom runtime caching for Supabase storage URLs
-- Current workbox config doesn't explicitly cache /gallery route
-- Images from Supabase CDN (storage.supabase.co) need cache strategy
-- Strategy: CacheFirst for images, NetworkFirst for API calls
+**Edge cases:**
+- Large queue (20+ photos): Show warning about download size/time
+- Network failure during download: Retry button per item
+- Download of deleted/removed photo: Graceful error message
+
+**Known challenges:**
+- JSZip memory usage for large batches; consider Web Workers
+- Browser download size limits (varies by browser)
+
+### Photo Claiming
+
+**Expected behavior:**
+- Guest visits "People" gallery or clicks face tag in lightbox
+- Sees face cluster with "Is this you?" prompt
+- Confirms identity (name entry or email verification)
+- Admin receives claim request, approves/rejects
+- Approved claim links guest_upload to photo_faces
+- Guest can then see "Photos of me" collection
+
+**Implementation:**
+- New `guest_claimed_faces` table: `guest_upload_id`, `face_id`, `status: pending|approved|rejected`, `claimed_by_email`
+- Claiming flow UI: Face cluster detail → "Claim these photos" → email/guest name entry
+- Admin moderation: See claim requests in MediaReviewPanel
+- Approved claims surface guest's face tag across photos
+
+**Existing infrastructure:**
+- `media_review_faces` table has `confirmed_name`, `person_key`
+- `photo_faces` in Photo type has `id`, `name`, `x`, `y`, `box`
+- `guest_uploads` links to guest identity (email, name)
+
+**Edge cases:**
+- Multiple guests claim same face: Admin resolves conflict
+- Face already has confirmed name: Still allow claim but link to existing name
+
+### Guest Upload Status Enhancement
+
+**Expected behavior:**
+- After upload: Confirmation screen with clear "What's next" messaging
+- "Check your status" input prominently placed
+- Status shows: pending review → approved (with link to gallery) or rejected (with reason)
+- Email notification when status changes (already exists conceptually)
+
+**Current state:**
+- `fetchGuestUploadStatus(email)` exists in supabase.ts
+- Shows "pending review" on success screen
+
+**Enhancement:**
+- Make status check input more prominent (Upload page, success screen)
+- Show status history: "Submitted on X, reviewed on Y"
+- If rejected: Show reason + option to resubmit
+
+### Shared Album Links
+
+**Expected behavior:**
+- Guest can view all their contributions (uploads, guestbook entries)
+- Get shareable link: `theporadas.com/guest/{unique_token}`
+- Link shows: Guest name, photo grid of their uploads, guestbook messages
+- Public view (no login required)
+
+**Implementation:**
+- Generate unique token per guest on first upload (hash of email + secret)
+- Store in `guest_share_tokens` table: `guest_email`, `token`, `created_at`
+- New `/guest/:token` route renders shared album view
+- Filter `guest_uploads` by email where token matches
+
+**Edge cases:**
+- Guest with no approved uploads: Show "No photos yet" state
+- Token expired or revoked: Show "Link no longer valid" page
+
+### Photo Info/EXIF Display
+
+**Expected behavior:**
+- In lightbox info panel: Show date, time, camera model (if available)
+- EXIF data extracted from photo metadata on upload
+- Fallback: Date from photo filename or upload timestamp
+
+**Current state:**
+- PhotoLightbox shows `currentPhoto.time` and `currentPhoto.date` (lines 436-448)
+- `Site` column in photos table may have location data
+
+**Implementation:**
+- On photo upload: Extract EXIF using exifr or similar library
+- Store in `photo_metadata` JSONB column or individual columns
+- Display in info panel: Camera, Lens, ISO, Aperture, Shutter Speed, Location
+
+### Activity Feed Filtering
+
+**Expected behavior:**
+- Toggle buttons: All | Photos | Guestbook | Moments
+- Filter updates feed without page reload
+- Selection persists during session
+
+**Implementation:**
+- Add `filter: 'all' | 'photos' | 'guestbook' | 'moments'` state
+- RPC query filters based on type
+- Instant UI update (optimistic)
+
+## Existing Infrastructure Analysis
+
+### Already Implemented (v1/v2)
+
+From codebase audit:
+
+- **Gallery Store** (`src/stores/galleryStore.ts`): Pagination, filtering, selection state, sessionStorage persistence, lightbox modal state, image navigation
+- **PhotoLightbox** (`src/components/photo-viewer/PhotoLightbox.tsx`): Zoom buttons (0.5 increments, 0.5-3 range), face tags, comments, likes, share, download button, info panel with tabs, Framer Motion drag swipe navigation, keyboard navigation
+- **useTouchGestures** (`src/hooks/useTouchGestures.ts`): Pinch zoom + swipe callbacks already implemented but not connected to PhotoLightbox
+- **Supabase Schema**: `guest_uploads` (status, guest_name, email), `photos` (faces, likes, comments), `site_editorial_features` (editorial slots), `moderation_audit_log`
+- **Photo Types** (`src/lib/supabase.ts`): `Photo`, `GuestUpload`, `PhotoFace`, `PhotoCommentRecord` all defined
+
+### Gaps to Fill
+
+| Gap | What's Needed |
+|-----|---------------|
+| Activity Feed | New `activity_feed_entries` table + RPC to aggregate + new page component |
+| Pinch-to-Zoom | Connect `onPinch` from `useTouchGestures` to `setZoom` in PhotoLightbox |
+| Download Queue | `download_queue` table or client state + batch signed URL RPC + JSZip integration |
+| Photo Claiming | Link guest_upload to face cluster via new `guest_claimed_photos` table + claiming flow UI |
+| Shared Album Links | Generate unique token per guest + filter guest_uploads by email/token |
 
 ## Competitor Feature Analysis
 
-| Feature | Typical Wedding Platform | Our Approach |
-|---------|--------------------------|--------------|
-| Gallery virtualization | Standard pagination or lazy load | Virtualization for smooth 200+ scroll |
-| Guest reactions | Limited or none | Emoji reactions on guestbook (differentiator) |
-| Upload resume | Often missing | Persist queue to localStorage |
-| Upload status | Often missing | Status page + email notification |
-| Featured spotlight | Often missing | Admin-controlled editorial slots |
-| Social sharing | Basic share buttons | Dynamic per-photo OG tags |
-| PWA offline | Rare for weddings | Full offline gallery support |
+| Feature | Google Photos | Apple Photos | Our Approach |
+|---------|---------------|--------------|---------------|
+| Activity Feed | "Assistant" tab with automatic creations | Memories + Shared albums | Simple chronological aggregation by type (photos, guestbook, moments) |
+| Download Management | "Save to device" per photo or bulk | Export original or optimized | Multi-select + queue + signed URL batch; optimized (not original) quality |
+| Photo Claiming | Face clustering auto-tags | People album with manual confirm | Guests claim from confirmed face clusters; admin approves before surfacing |
+| Print Ordering | "Print Store" partnership | "Order Prints" integration | Defer; high complexity, requires payment infrastructure |
+| Lightbox Gestures | Pinch zoom + swipe navigation | Pinch zoom + swipe navigation | Wire existing useTouchGestures to PhotoLightbox |
 
 ## Sources
 
-- Project codebase: PhotoGrid.tsx, Guestbook.tsx, Upload.tsx, SEOHead.tsx, FeaturedContentManager.tsx, vite.config.js
-- vite-plugin-pwa documentation (vite.config.js references)
-- @tanstack/react-virtual patterns (standard approach for React virtualization)
-- Supabase documentation for storage caching strategies
+- Existing PhotoLightbox.tsx with zoom implementation (lines 58, 193-207)
+- Existing useTouchGestures.ts with pinch zoom (lines 88-97)
+- Existing galleryStore.ts with selection + modal state
+- Existing supabase.ts types: Photo, GuestUpload, PhotoFace
+- Industry standard: Google Photos, Apple Photos gesture patterns
+- Wedding platforms: WithJoy feature analysis
+- Print ordering: Artifact, Printful integration patterns
 
 ---
-*Feature research for: wedding archive v1.1 features*
-*Researched: 2026-04-24*
+*Feature research for: v3.0 Guest Experience Enhancements*
+*Researched: 2026-04-29*
