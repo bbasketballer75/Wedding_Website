@@ -26,7 +26,7 @@
 | 13. Accessibility & Motion | v2.0 | 4/4 | Complete | 2026-04-28 |
 | 14. Animation & Visual Polish | v2.0 | 3/3 | Complete | 2026-04-30 |
 | 15. Activity Feed | v3.0 | 2/2 | Complete    | 2026-04-30 |
-| 16. Lightbox Enhancement | v3.0 | 0/1 | Not started | — |
+| 16. Lightbox Enhancement | v3.0 | 1/1 | Complete    | 2026-04-30 |
 | 17. Download Management | v3.0 | 0/1 | Not started | — |
 | 18. Photo Claiming | v3.0 | 0/1 | Not started | — |
 | 19. Shared Links & Print | v3.0 | 0/1 | Not started | — |
@@ -117,7 +117,9 @@
 5. Info panel shows date taken and camera info from EXIF (graceful fallback)
 6. Download button in lightbox toolbar downloads current photo at high quality
 
-**Plans:** TBD
+**Plans:**
+1/1 plans complete
+- [x] 16-01-PLAN.md — Enhance PhotoLightbox with pinch-to-zoom, swipe refinement, EXIF display, download button
 
 **UI hint:** yes
 

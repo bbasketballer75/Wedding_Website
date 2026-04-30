@@ -1,7 +1,7 @@
 ---
 phase: 17
 slug: download-management
-status: draft
+status: approved
 shadcn_initialized: false
 preset: none
 created: 2026-04-30
@@ -49,7 +49,7 @@ Exceptions: FAB positioned 24px from bottom-right edge (mobile safe area aware)
 |------|------|--------|-------------|
 | Body | 16px | 400 (regular) | 1.5 |
 | Label | 14px | 500 (medium) | 1.4 |
-| Heading | 20px | 600 (semibold) | 1.2 |
+| Heading | 20px | 500 (medium) | 1.2 |
 | Display | 28px | 400 (regular) | 1.1 |
 
 ---
@@ -130,7 +130,7 @@ Project uses manual component approach (no shadcn). All components built from sc
 - [ ] Dimension 1 Copywriting: PASS
 - [ ] Dimension 2 Visuals: PASS
 - [ ] Dimension 3 Color: PASS
-- [ ] Dimension 4 Typography: PASS
+- [ ] Dimension 4 Typography: PASS (weights reduced to 2: 400, 500)
 - [ ] Dimension 5 Spacing: PASS
 - [ ] Dimension 6 Registry Safety: PASS
 
