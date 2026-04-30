@@ -1,5 +1,29 @@
 # Milestones
 
+## v3.0 Guest Experience Enhancements — 2026-04-30
+
+**Status:** Planning
+**Phases:** 5 (15-19) | **Requirements:** 13
+**Timeline:** TBD
+
+### Target Features
+
+1. **Social Features (round 2)** — Activity feed with realtime updates and filtering
+2. **Guest Self-Service** — Photo claiming via email or face cluster, shared album links
+3. **Lightbox Enhancement** — Pinch-to-zoom, swipe refinement, EXIF display, download button
+
+### Phase Structure
+
+| Phase | Name | Focus | Requirements |
+|-------|------|-------|--------------|
+| 15 | Activity Feed | Chronological feed with realtime | SOC-01, SOC-02, SOC-03 |
+| 16 | Lightbox Enhancement | Zoom, navigate, metadata | LB-01, LB-02, LB-03, LB-04 |
+| 17 | Download Management | Multi-select queue, batch download | DL-01, DL-02, DL-03 |
+| 18 | Photo Claiming | Email and face cluster verification | SC-01, SC-02 |
+| 19 | Shared Links & Print | Album sharing, print redirect | SC-03, PR-01 |
+
+---
+
 ## v2.0 UI/UX Polish Round 2 — 2026-04-30
 
 **Shipped:** 2026-04-30
