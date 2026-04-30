@@ -52,7 +52,7 @@ export const useDownloadStore = create<DownloadState>()(
   devtools(
     subscribeWithSelector(
       persist(
-        (set, _get) => ({
+        (set) => ({
           // Initial state - NOT persisted
           queuedPhotos: [],
           isPanelOpen: false,
