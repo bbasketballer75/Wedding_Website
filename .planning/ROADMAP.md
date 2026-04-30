@@ -25,7 +25,7 @@
 | 12. Component Consolidation | v2.0 | 1/1 | Complete | 2026-04-28 |
 | 13. Accessibility & Motion | v2.0 | 4/4 | Complete | 2026-04-28 |
 | 14. Animation & Visual Polish | v2.0 | 3/3 | Complete | 2026-04-30 |
-| 15. Activity Feed | v3.0 | 0/1 | Not started | — |
+| 15. Activity Feed | v3.0 | 2/2 | Complete    | 2026-04-30 |
 | 16. Lightbox Enhancement | v3.0 | 0/1 | Not started | — |
 | 17. Download Management | v3.0 | 0/1 | Not started | — |
 | 18. Photo Claiming | v3.0 | 0/1 | Not started | — |
@@ -93,7 +93,9 @@
 4. "New activity" banner appears when new items arrive
 5. Filter toggles (All / Photos / Guestbook / Moments) work and persist during session
 
-**Plans:** TBD
+**Plans:**
+2/2 plans complete
+- [x] 15-02-PLAN.md — UI (Activity page, components, realtime subscription)
 
 **UI hint:** yes
 
