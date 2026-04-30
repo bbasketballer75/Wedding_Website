@@ -1,5 +1,28 @@
 # Milestones
 
+## v2.0 UI/UX Polish Round 2 — 2026-04-30
+
+**Shipped:** 2026-04-30
+**Phases:** 5 (10-14) | **Plans:** 14 | **Tasks:** ~28
+**Files:** 85 changed, +6820/-404
+**Git range:** Phase 10 → Phase 14 commits
+**Timeline:** 2 days
+
+### Key Accomplishments
+
+1. Fixed invalid Tailwind classes — `z-100` → `z-50`, `bg-(--color-gold)` → `bg-[var(--color-gold)]`
+2. Design token unification — All hardcoded hex values replaced with design token references
+3. Component consolidation — Duplicate LoadingSpinner removed, DarkModeToggle uses gold tokens
+4. Accessibility — CustomCursor respects `prefers-reduced-motion`, aria-labels on interactive elements
+5. Visual polish — Border radius standardized to `rounded-xl`, animation durations at 300ms
+6. Focus ring consistency — All focus rings use `focus:ring-(--color-gold)` CSS variable
+
+### Requirements Coverage
+
+All 15 v2.0 requirements (UX-01 through UX-15) validated and complete.
+
+---
+
 ## v1.0 MVP — 2026-04-25
 
 **Shipped:** 2026-04-25
