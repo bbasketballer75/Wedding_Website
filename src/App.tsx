@@ -22,6 +22,7 @@ const AdminLogin = lazy(() => import('@/pages/AdminLogin'))
 const People = lazy(() => import('@/pages/People'))
 const Activity = lazy(() => import('@/pages/Activity'))
 const Verify = lazy(() => import('@/pages/Verify'))
+const GuestShared = lazy(() => import('@/pages/GuestShared'))
 const NotFound = lazy(() => import('@/pages/NotFound'))
 
 // Page transition wrapper
@@ -75,6 +76,7 @@ function AppContent() {
       '/activity': 'Activity',
       '/admin/login': 'Admin Login',
       '/admin': 'Admin Dashboard',
+      '/guest/:token': 'Shared Album',
     }
     return titles[path]
   }
@@ -216,6 +218,16 @@ function AppContent() {
                   <RouteErrorBoundary>
                     <LazyPage title="Admin Dashboard">
                       <Admin />
+                    </LazyPage>
+                  </RouteErrorBoundary>
+                }
+              />
+              <Route
+                path="/guest/:token"
+                element={
+                  <RouteErrorBoundary>
+                    <LazyPage title="Shared Album">
+                      <GuestShared />
                     </LazyPage>
                   </RouteErrorBoundary>
                 }

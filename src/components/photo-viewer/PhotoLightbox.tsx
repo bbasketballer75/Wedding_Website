@@ -7,12 +7,13 @@ import { Input } from '@/components/ui/Input'
 import { ShareModal } from '@/components/share/ShareModal'
 import {
   X, Heart, Share2, Download, ChevronLeft, ChevronRight,
-  MessageCircle, Send, ZoomIn, ZoomOut, Tag, User, Loader2, Clock, Camera
+  MessageCircle, Send, ZoomIn, ZoomOut, Tag, User, Loader2, Clock, Camera, Printer
 } from 'lucide-react'
 import { cn } from '@/lib/utils'
 import { focusManager } from '@/accessibility/focusManagement'
 import { useGalleryStore } from '@/stores/galleryStore'
 import type { Photo } from '@/lib/supabase'
+import { buildPrintUrl } from '@/lib/shareUtils'
 import { useTouchGestures } from '@/hooks/useTouchGestures'
 import exifr from 'exifr'
 
@@ -422,6 +423,20 @@ export function PhotoLightbox({
                       <Download className="w-5 h-5" />
                     )}
                     <span className="text-sm">Download</span>
+                  </button>
+                  <button
+                    onClick={(e) => {
+                      e.stopPropagation()
+                      if (currentPhoto?.url) {
+                        window.open(buildPrintUrl(currentPhoto.url), '_blank')
+                      }
+                    }}
+                    type="button"
+                    aria-label="Order prints"
+                    className="flex min-h-11 items-center gap-2 px-4 py-2 bg-white/10 text-white/80 rounded-full hover:bg-white/20 transition-colors"
+                  >
+                    <Printer className="w-5 h-5" />
+                    <span className="text-sm">Print</span>
                   </button>
                   <button
                     onClick={(e) => { e.stopPropagation(); setShowInfo(!showInfo); }}
