@@ -5,7 +5,7 @@
 - [x] **v1.0 MVP** — Phases 1-4 (shipped 2026-04-25)
 - [x] **v1.1 Polish & Feature Expansion** — Phases 5-9 (shipped 2026-04-28)
 - [x] **v2.0 UI/UX Polish Round 2** — Phases 10-14 (shipped 2026-04-30)
-- [ ] **v3.0 Guest Experience Enhancements** — Phases 15-19 (planning)
+- [x] **v3.0 Guest Experience Enhancements** — Phases 15-19 (shipped 2026-05-01)
 
 ## Progress
 
