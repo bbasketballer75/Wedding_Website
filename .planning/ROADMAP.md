@@ -29,7 +29,7 @@
 | 16. Lightbox Enhancement | v3.0 | 1/1 | Complete    | 2026-04-30 |
 | 17. Download Management | v3.0 | 0/1 | Not started | — |
 | 18. Photo Claiming | v3.0 | 2/2 | Complete    | 2026-04-30 |
-| 19. Shared Links & Print | v3.0 | 0/1 | Not started | — |
+| 19. Shared Links & Print | v3.0 | 2/2 | Complete   | 2026-05-01 |
 
 ## Archived Milestones
 
@@ -180,7 +180,8 @@
 4. "Order Prints" button visible in lightbox
 5. Clicking "Order Prints" opens external print provider (Shutterfly/Artifact Uprising) in new tab
 
-**Plans:** TBD
+**Plans:** 2/2 plans complete
+- [x] 19-01-PLAN.md — Shared album links (SC-03) + Print ordering redirect (PR-01)
 
 ---
 

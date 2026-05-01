@@ -408,22 +408,16 @@ export const useClaimStore = create<ClaimState>()(
 
 ---
 
-## Open Questions
+## Open Questions (RESOLVED)
 
 1. **How should the magic link handle already-authenticated users?**
-   - What we know: Supabase `signInWithOtp()` handles session automatically
-   - What's unclear: Should an authenticated admin user be able to claim guest photos? Likely no — claiming is for guests
-   - Recommendation: Skip if user is already authenticated with admin role
+   - **Resolution:** Claiming is for guests only (no login required per D-05). If user has admin role, skip claiming flow and redirect with message "Claiming is for guests." Use `authStore.role !== 'admin'` check before initiating claim flow.
 
 2. **Should claimed photos be attributed in the gallery UI with the uploader's name?**
-   - What we know: `guest_uploads` has `guest_name` field
-   - What's unclear: Should this name appear on photos, or just be used for "My Photos" filtering?
-   - Recommendation: Display uploader name as attribution when viewing claimed photos
+   - **Resolution:** Display uploader name as attribution when viewing claimed photos via `guest_name` from `guest_uploads`. The "My Photos" filter uses the attributed email; photo cards show the guest name from `guest_uploads`.
 
 3. **What happens when a guest claims photos, then someone else tries to claim the same email?**
-   - What we know: Email is unique in `guest_identities` via UPSERT
-   - What's unclear: Should the second claim attempt fail, or should it succeed (guest Identity already exists)?
-   - Recommendation: Use UPSERT — if identity exists, just link new uploads (idempotent)
+   - **Resolution:** Use UPSERT — if `guest_identity` already exists for the email, just link any new unclaimed uploads (idempotent). The second claim attempt succeeds silently, creating `photo_claims` for any uploads not yet linked to that identity.
 
 ---
 
