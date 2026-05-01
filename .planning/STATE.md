@@ -21,24 +21,24 @@ See: .planning/PROJECT.md (updated 2026-04-30)
 
 **Core value:** Create a stunning, complete-feeling archive that guests and the couple will treasure for years — every interaction should feel polished and intentional.
 
-**Current focus:** Phase 19 — shared-links-print
+**Current focus:** Phase 20 — download-management
 
 ## Current Position
 
-Phase: 19 (shared-links-print) — EXECUTING
-Plan: 1 of 2
-Status: Executing Phase 19
-Last activity: 2026-05-01 -- Phase 19 execution started
+Phase: 20 (download-management) — EXECUTING
+Plan: 1 of 1
+Status: Executing Phase 20
+Last activity: 2026-05-01 -- Phase 20 execution started
 
 ## Phase Progress
 
 | Phase | Status | Completed |
 |-------|--------|-----------|
 | 15. Activity Feed | Complete | 02/02 plans |
-| 16. Lightbox Enhancement | Not started | — |
+| 16. Lightbox Enhancement | Complete    | 01/01 plans |
 | 17. Download Management | Complete | 01/01 plans |
-| 18. Photo Claiming | Not started | — |
-| 19. Shared Links & Print | Not started | — |
+| 18. Photo Claiming | Complete    | 02/02 plans |
+| 19. Shared Links & Print | Complete    | 02/02 plans |
 
 ## Requirements Coverage
 
