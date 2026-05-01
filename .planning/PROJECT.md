@@ -2,13 +2,13 @@
 
 ## What This Is
 
-A post-wedding digital archive for Austin & Jordyn (theporadas.com) — a permanent home for engagement and wedding memories, accessible to extended guests and the local community. The site serves as a beautiful, elegant memory preservation platform where guests can upload photos, sign the guestbook, and relive the celebration.
+A post-wedding digital archive for Austin & Jordyn (theporadas.com) — a permanent home for engagement and wedding memories, accessible to extended guests and the local community. The site serves as a beautiful, elegant memory preservation platform where guests can upload photos, sign the guestbook, claim their photos, share album links, and relive the celebration.
 
 **Core value:** Create a stunning, complete-feeling archive that guests and the couple will treasure for years — every interaction should feel polished and intentional.
 
 ## Core Value
 
-Guests and the couple can browse, upload, and share wedding memories in a beautiful, elegant experience that feels finished and polished — not a work-in-progress.
+Guests and the couple can browse, upload, and share wedding memories in a beautiful, elegant experience that feels finished and polished — not a work-in-progress. Self-service features let guests claim their photos, share their contributions, and order prints.
 
 ## Requirements
 
@@ -35,12 +35,18 @@ These features exist and work — they form the foundation we're building on.
 - ✓ Auth race condition fix — Serialized auth operations, single Supabase client — v1.0
 - ✓ MediaReviewPanel decomposition — 1716 → 325 lines, 5 components — v1.0
 - ✓ UI/UX consistency — Design tokens unified, invalid Tailwind classes fixed, border radius/animation standardized — v2.0
+- ✓ Activity Feed at /activity with realtime updates and filtering — v3.0
+- ✓ Lightbox pinch-to-zoom (1x-3x), double-tap toggle, zoom-aware swipe, EXIF display — v3.0
+- ✓ Multi-select download queue with sessionStorage persistence — v3.0
+- ✓ Email-based photo claiming with magic link verification — v3.0
+- ✓ Guest shared album links at /guest/:token — v3.0
+- ✓ Order Prints button to Shutterfly/Artifact Uprising — v3.0
 
 ### Active
 
 What we're building toward in next release.
 
-- [ ] **Next milestone TBD** — Run `/gsd-new-milestone` to define v3.0 scope
+- [ ] **Next milestone TBD** — Run `/gsd-new-milestone` to define v4.0 scope
 
 ### Out of Scope
 
@@ -52,6 +58,7 @@ Explicitly excluded — do not add these.
 - Chat or messaging between guests
 - Email campaigns or newsletters
 - Multiple event support (rehearsal dinner, brunch, etc. as separate sections)
+- Face cluster claiming (SC-02) — deferred to post-launch; email claiming (SC-01) is functional
 
 ## Context
 
@@ -96,29 +103,30 @@ Explicitly excluded — do not add these.
 | Foundation before features | Stability and code quality first | ✓ Validated — good engineering practice |
 | Zustand for gallery state | Centralized state with persistence | ✓ Achieved — sessionStorage caching working |
 | XHR for upload progress | Need progress events from fetch | ✓ Achieved — real percentage progress bar |
+| Activity Feed first in v3.0 | Foundation for social layer, minimal dependencies | ✓ Achieved |
+| Hybrid download (JSZip/Edge) | JSZip ≤20 photos, Edge Function >20 | ✓ Achieved — avoids memory issues |
+| Supabase signInWithOtp() | Magic link without deprecated API | ✓ Achieved |
+| Email enumeration protection | Same message regardless of email existence | ✓ Achieved — security best practice |
+| Face cluster claiming deferred | SC-02 deferred to post-launch per D-16 | ⚠ Deferred — SC-01 is functional |
 
 ## Current State
 
-**v2.0 UI/UX Polish Round 2 shipped** — All v2.0 requirements complete as of 2026-04-30.
+**v3.0 Guest Experience Enhancements shipped** — All v3.0 requirements complete as of 2026-05-01.
 
 ### What This Is Now
 
-A polished, complete-feeling wedding archive for Austin & Jordyn (theporadas.com) — all core features working, stable auth, performant gallery with virtualization, elegant design, social sharing, PWA offline support, and fully unified design tokens with consistent animation timings and accessibility compliance.
+A complete-feeling wedding archive with full social and self-service capabilities — activity feed with realtime updates, pinch-to-zoom lightbox, multi-select batch downloads, email-based photo claiming, shared album links, and print ordering. Guests can claim their photos, share their contributions, and enjoy a rich photo viewing experience.
 
 ### Context Update
 
 - v1.0: MediaReviewPanel decomposed, gallery state centralized, upload progress, skeleton loading, gold theme
 - v1.1: Social sharing with OG tags, guest heart reactions, gallery virtualization (200+ photos), moderation queue, PWA offline caching
 - v2.0: Design token unification, invalid Tailwind classes fixed, border radius standardized to rounded-xl, animation durations at 300ms, CustomCursor respects prefers-reduced-motion, aria-labels on interactive elements, gold focus rings
+- v3.0: Activity feed with realtime updates, lightbox enhancement (zoom, swipe, EXIF), download queue with batch download, email-based photo claiming, shared album links, print ordering redirect
 
-## Current Milestone: v3.0 Guest Experience Enhancements
+## Current Milestone: v4.0 TBD
 
-**Goal:** Extend the archive's social and self-service capabilities — letting guests see each other's contributions, claim their photos, and enjoy richer photo viewing.
-
-**Target features:**
-- Social Features (round 2) — activity feed, extended reactions, shared album links
-- Guest Self-Service — claim photos, download uploads, print/photo book orders
-- Lightbox Enhancement — zoom, swipe gestures, EXIF display
+**Goal:** Run `/gsd-new-milestone` to define next milestone scope.
 
 ## Evolution
 
@@ -138,4 +146,4 @@ This document evolves at phase transitions and milestone boundaries.
 4. Update Context with current state
 
 ---
-*Last updated: 2026-04-30 after v2.0 milestone, updated for v3.0 on 2026-04-30*
+*Last updated: 2026-05-01 after v3.0 milestone*
