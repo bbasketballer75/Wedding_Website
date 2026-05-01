@@ -37,10 +37,40 @@ describe('shareUtils', () => {
   })
 
   describe('getShareToken', () => {
-    it('generates a UUID-formatted token', () => {
-      const token = getShareToken()
-      // UUID v4 format: xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx
-      expect(token).toMatch(/^[0-9a-f]{8}-[0-9a-f]{4}-4[0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/)
+    it('returns token when email has existing share token', async () => {
+      const mockSupabaseClient = {
+        from: vi.fn().mockReturnThis(),
+        select: vi.fn().mockReturnThis(),
+        eq: vi.fn().mockReturnThis(),
+        maybeSingle: vi.fn().mockReturnValue({
+          data: { token: 'existing-token-123' },
+          error: null,
+        }),
+      }
+
+      vi.spyOn(supabaseModule, 'supabase', 'get').mockReturnValue(mockSupabaseClient as any)
+
+      const result = await getShareToken('guest@example.com')
+
+      expect(result).toBe('existing-token-123')
+    })
+
+    it('returns null when no share token exists for email', async () => {
+      const mockSupabaseClient = {
+        from: vi.fn().mockReturnThis(),
+        select: vi.fn().mockReturnThis(),
+        eq: vi.fn().mockReturnThis(),
+        maybeSingle: vi.fn().mockReturnValue({
+          data: null,
+          error: null,
+        }),
+      }
+
+      vi.spyOn(supabaseModule, 'supabase', 'get').mockReturnValue(mockSupabaseClient as any)
+
+      const result = await getShareToken('newguest@example.com')
+
+      expect(result).toBeNull()
     })
   })
 
@@ -51,9 +81,8 @@ describe('shareUtils', () => {
         from: vi.fn().mockReturnThis(),
         select: vi.fn().mockReturnThis(),
         eq: vi.fn().mockReturnThis(),
-        not: vi.fn().mockReturnThis(),
-        single: vi.fn().mockReturnValue({
-          data: { share_token: mockToken },
+        maybeSingle: vi.fn().mockReturnValue({
+          data: { token: mockToken },
           error: null,
         }),
       }
@@ -70,13 +99,12 @@ describe('shareUtils', () => {
         from: vi.fn().mockReturnThis(),
         select: vi.fn().mockReturnThis(),
         eq: vi.fn().mockReturnThis(),
-        not: vi.fn().mockReturnThis(),
-        single: vi.fn().mockReturnValue({
+        maybeSingle: vi.fn().mockReturnValue({
           data: null,
           error: null,
         }),
         insert: vi.fn().mockReturnValue({
-          data: { share_token: 'newly-created-token' },
+          data: { token: 'newly-created-token' },
           error: null,
         }),
       }

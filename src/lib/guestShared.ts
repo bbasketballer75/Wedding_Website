@@ -22,12 +22,13 @@ export interface GuestSharedData {
  */
 export async function fetchGuestShareToken(token: string): Promise<GuestShareTokenData | null> {
   const { data } = await supabase
-    .from('guest_uploads')
-    .select('email, share_token')
-    .eq('share_token', token)
-    .single()
+    .from('guest_share_tokens')
+    .select('guest_email, token')
+    .eq('token', token)
+    .maybeSingle()
 
-  return data
+  if (!data) return null
+  return { email: data.guest_email, share_token: data.token }
 }
 
 /**

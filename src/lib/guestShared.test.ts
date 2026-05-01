@@ -13,8 +13,8 @@ describe('GuestShared data fetching', () => {
         from: vi.fn().mockReturnThis(),
         select: vi.fn().mockReturnThis(),
         eq: vi.fn().mockReturnThis(),
-        single: vi.fn().mockReturnValue({
-          data: { email: 'guest@example.com', share_token: 'valid-token-123' },
+        maybeSingle: vi.fn().mockReturnValue({
+          data: { guest_email: 'guest@example.com', token: 'valid-token-123' },
           error: null,
         }),
       }
@@ -31,9 +31,9 @@ describe('GuestShared data fetching', () => {
         from: vi.fn().mockReturnThis(),
         select: vi.fn().mockReturnThis(),
         eq: vi.fn().mockReturnThis(),
-        single: vi.fn().mockReturnValue({
+        maybeSingle: vi.fn().mockReturnValue({
           data: null,
-          error: { message: 'Not found' },
+          error: null,
         }),
       }
 
