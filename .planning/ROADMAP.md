@@ -27,7 +27,7 @@
 | 14. Animation & Visual Polish | v2.0 | 3/3 | Complete | 2026-04-30 |
 | 15. Activity Feed | v3.0 | 2/2 | Complete    | 2026-04-30 |
 | 16. Lightbox Enhancement | v3.0 | 1/1 | Complete    | 2026-04-30 |
-| 17. Download Management | v3.0 | 0/1 | Not started | — |
+| 17. Download Management | v3.0 | 1/1 | Complete   | 2026-05-01 |
 | 18. Photo Claiming | v3.0 | 2/2 | Complete    | 2026-04-30 |
 | 19. Shared Links & Print | v3.0 | 2/2 | Complete   | 2026-05-01 |
 
@@ -141,7 +141,7 @@
 5. "Download All" generates zip file with progress indicator
 6. Queue persists across page reloads via sessionStorage
 
-**Plans:** TBD
+**Plans:** 1/1 plans complete
 
 ---
 
