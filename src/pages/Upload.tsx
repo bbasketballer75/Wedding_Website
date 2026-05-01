@@ -31,6 +31,7 @@ import {
 } from 'lucide-react'
 import { cn } from '@/lib/utils'
 import { supabase } from '@/lib/supabase'
+import { ensureGuestShareToken } from '@/lib/shareUtils'
 import storage from '@/utils/storage'
 
 enum UploadError {
@@ -457,6 +458,9 @@ export default function UploadPage() {
       if (error) {
         throw error
       }
+
+      // Generate share token for this guest (idempotent - safe to call even if exists)
+      await ensureGuestShareToken(email)
 
       setIsSubmitted(true)
       setQueueNotice(null)
