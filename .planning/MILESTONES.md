@@ -1,26 +1,28 @@
 # Milestones
 
-## v3.0 Guest Experience Enhancements — 2026-04-30
+## v3.0 Guest Experience Enhancements — 2026-05-01
 
-**Status:** Planning
-**Phases:** 5 (15-19) | **Requirements:** 13
-**Timeline:** TBD
+**Status:** ✅ SHIPPED 2026-05-01
+**Phases:** 5 (15-19) | **Plans:** 8 | **Tasks:** ~30
+**Files:** 12 files changed, +1348/-47
+**Git range:** Phase 15 → Phase 19 commits
+**Timeline:** 2 days (2026-04-30 to 2026-05-01)
 
-### Target Features
+### Key Accomplishments
 
-1. **Social Features (round 2)** — Activity feed with realtime updates and filtering
-2. **Guest Self-Service** — Photo claiming via email or face cluster, shared album links
-3. **Lightbox Enhancement** — Pinch-to-zoom, swipe refinement, EXIF display, download button
+1. Activity Feed at /activity with Supabase Realtime updates and filter toggles
+2. Lightbox pinch-to-zoom (1x-3x), double-tap toggle, zoom-aware swipe, EXIF display
+3. Multi-select download queue with sessionStorage persistence and batch download
+4. Email-based photo claiming with magic link and 6-digit code verification
+5. Guest shared album links at /guest/:token and Order Prints button to Shutterfly
 
-### Phase Structure
+### Known Deferred Items
 
-| Phase | Name | Focus | Requirements |
-|-------|------|-------|--------------|
-| 15 | Activity Feed | Chronological feed with realtime | SOC-01, SOC-02, SOC-03 |
-| 16 | Lightbox Enhancement | Zoom, navigate, metadata | LB-01, LB-02, LB-03, LB-04 |
-| 17 | Download Management | Multi-select queue, batch download | DL-01, DL-02, DL-03 |
-| 18 | Photo Claiming | Email and face cluster verification | SC-01, SC-02 |
-| 19 | Shared Links & Print | Album sharing, print redirect | SC-03, PR-01 |
+- SC-02 (face cluster claiming) — deferred to post-launch; email claiming (SC-01) is functional
+
+### Requirements Coverage
+
+All 13 v3.0 requirements mapped. 12/13 complete. SC-02 explicitly deferred.
 
 ---
 
