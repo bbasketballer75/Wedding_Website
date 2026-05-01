@@ -1077,3 +1077,52 @@ export async function fetchActivityItem(sourceType: string, sourceId: string): P
   if (error) return null
   return data
 }
+
+// Guest Share Token functions
+export interface GuestShareToken {
+  id: string
+  guest_email: string
+  token: string
+  created_at: string
+}
+
+/**
+ * Lookup guest share token by token value.
+ * Returns null if token not found.
+ */
+export async function fetchGuestShareToken(token: string): Promise<GuestShareToken | null> {
+  const { data, error } = await supabase
+    .from('guest_share_tokens')
+    .select('*')
+    .eq('token', token)
+    .maybeSingle()
+  if (error) return null
+  return data
+}
+
+/**
+ * Fetch guest uploads by email (only approved).
+ */
+export async function fetchGuestUploadsByEmail(email: string): Promise<GuestUpload[]> {
+  const { data, error } = await supabase
+    .from('guest_uploads')
+    .select('*')
+    .eq('guest_email', email)
+    .eq('status', 'approved')
+    .order('created_at', { ascending: false })
+  if (error) throw error
+  return data ?? []
+}
+
+/**
+ * Fetch guestbook messages by email.
+ */
+export async function fetchGuestbookByEmail(email: string): Promise<GuestbookMessage[]> {
+  const { data, error } = await supabase
+    .from('guestbook_messages')
+    .select('*')
+    .eq('email', email)
+    .order('created_at', { ascending: false })
+  if (error) throw error
+  return data ?? []
+}

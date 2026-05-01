@@ -1,60 +1,58 @@
 /**
  * Share utility functions for guest shared links and print URL generation.
- * These are stubs that will be implemented in Wave 1.
  */
 
-// Mock print provider - actual implementation in Wave 1
-const PRINT_PROVIDER_URLS = {
-  shutterfly: 'https://www.shutterfly.com/photos/photo_gift/create',
-  artifact_uprising: 'https://www.artifactuprising.com/photo-print',
-} as const
+import { supabase } from '@/lib/supabase'
 
-type PrintProvider = keyof typeof PRINT_PROVIDER_URLS
+export type PrintProvider = 'shutterfly' | 'artifact_uprising'
+
+// Print URL construction
+const PRINT_URLS: Record<PrintProvider, (photoUrl: string) => string> = {
+  shutterfly: (url) => `https://www.shutterfly.com/photos/print?photo=${encodeURIComponent(url)}`,
+  artifact_uprising: (url) => `https://www.artifactuprising.com/print?photo=${encodeURIComponent(url)}`,
+}
 
 /**
- * Builds a print URL for the given photo URL using the configured provider.
- * @param photoUrl - The URL of the photo to print
- * @returns The print provider URL with photo parameter
+ * Build the print provider URL for a given photo.
+ * Uses VITE_PRINT_PROVIDER env var ('shutterfly' | 'artifact_uprising').
+ * Defaults to Shutterfly if not set or invalid.
  */
 export function buildPrintUrl(photoUrl: string): string {
-  const provider = (import.meta.env.VITE_PRINT_PROVIDER || 'shutterfly') as PrintProvider
-  const baseUrl = PRINT_PROVIDER_URLS[provider] || PRINT_PROVIDER_URLS.shutterfly
-  return `${baseUrl}?photo=${encodeURIComponent(photoUrl)}`
+  const provider = (import.meta.env.VITE_PRINT_PROVIDER as PrintProvider) || 'shutterfly'
+  const builder = PRINT_URLS[provider] ?? PRINT_URLS.shutterfly
+  return builder(photoUrl)
 }
 
 /**
- * Generates a UUID v4 share token.
- * @returns A unique share token
+ * Get existing share token for a guest email, or null if none exists.
  */
-export function getShareToken(): string {
-  return crypto.randomUUID()
+export async function getShareToken(email: string): Promise<string | null> {
+  const { data } = await supabase
+    .from('guest_share_tokens')
+    .select('token')
+    .eq('guest_email', email)
+    .maybeSingle()
+  return data?.token ?? null
 }
 
 /**
- * Ensures a guest has a share token, creating one if needed.
- * @param email - The guest's email
- * @returns The share token for the guest
+ * Ensure a share token exists for the given email.
+ * If one already exists, return it. If not, create a new one.
+ * Called on first guest upload per SC-03 requirements.
  */
 export async function ensureGuestShareToken(email: string): Promise<string> {
-  const { supabase } = await import('@/lib/supabase')
+  // Check if token already exists
+  const existing = await getShareToken(email)
+  if (existing) return existing
 
-  // Check if token exists
-  const { data } = await supabase
-    .from('guest_uploads')
-    .select('share_token')
-    .eq('email', email)
-    .not('share_token', 'is', null)
-    .single()
+  // Generate new UUID token
+  const token = crypto.randomUUID()
 
-  if (data?.share_token) {
-    return data.share_token
-  }
+  const { error } = await supabase
+    .from('guest_share_tokens')
+    .insert({ guest_email: email, token })
 
-  // Create new token
-  const newToken = getShareToken()
-  await supabase
-    .from('guest_uploads')
-    .insert({ email, share_token: newToken })
+  if (error) throw new Error(`Failed to create share token: ${error.message}`)
 
-  return newToken
+  return token
 }
