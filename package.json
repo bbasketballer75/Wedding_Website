@@ -171,7 +171,7 @@
   "overrides": {
     "@rollup/plugin-terser": "1.0.0",
     "serialize-javascript": "7.0.5",
-    "axios": ">=1.15.0",
+    "axios": ">=1.16.1",
     "tmp": ">=0.2.4"
   }
 }
