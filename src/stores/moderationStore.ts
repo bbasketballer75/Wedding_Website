@@ -112,8 +112,8 @@ export const useModerationStore = create<ModerationState>()(
         }
       },
 
-      bulkApprove: async () => {
-        const { selectedUploadIds, uploads } = get()
+bulkApprove: async () => {
+        const { selectedUploadIds } = get()
         const ids = [...selectedUploadIds]
         set((state) => ({ savingIds: new Set([...state.savingIds, ...ids]) }))
         try {

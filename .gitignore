@@ -80,3 +80,4 @@ supabase/.branches/
 /playwright/.cache/
 /playwright/.auth/
 busybox.exe
+.wrangler/

@@ -49,7 +49,7 @@ function walk(directory, extensions = ['.jpg', '.jpeg', '.png', '.webp', '.mp4']
 async function uploadFile(filePath, objectName) {
   const ext = path.extname(filePath).toLowerCase()
   const contentType = CONTENT_TYPES.get(ext) || 'application/octet-stream'
-  const fileSize = fs.statSync(filePath).size
+  const _fileSize = fs.statSync(filePath).size
 
   const upload = new Upload({
     client: s3,

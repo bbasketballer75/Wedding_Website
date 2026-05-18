@@ -7,7 +7,6 @@ export default function ActivityPage() {
   const setItems = activityFeedStore((state) => state.setItems)
   const setIsLoading = activityFeedStore((state) => state.setIsLoading)
   const items = activityFeedStore((state) => state.items)
-  const isLoading = activityFeedStore((state) => state.isLoading)
 
   useEffect(() => {
     async function loadActivity() {

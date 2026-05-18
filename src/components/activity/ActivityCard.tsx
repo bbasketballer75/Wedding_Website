@@ -1,6 +1,5 @@
 import { Camera, MessageCircle, Star } from 'lucide-react'
 import { formatDistanceToNow } from 'date-fns'
-import { cn } from '@/lib/utils'
 import type { ActivityLogItem } from '@/lib/supabase'
 
 interface ActivityCardProps {
