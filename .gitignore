@@ -81,3 +81,7 @@ supabase/.branches/
 /playwright/.auth/
 busybox.exe
 .wrangler/
+.bg-shell/
+.gsd/
+.gsd-id
+.vercel/
