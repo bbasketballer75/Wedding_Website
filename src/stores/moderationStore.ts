@@ -112,9 +112,10 @@ export const useModerationStore = create<ModerationState>()(
         }
       },
 
-bulkApprove: async () => {
+      bulkApprove: async () => {
         const { selectedUploadIds } = get()
         const ids = [...selectedUploadIds]
+        if (ids.length === 0) return
         set((state) => ({ savingIds: new Set([...state.savingIds, ...ids]) }))
         try {
           const actor = useAuthStore.getState().user
@@ -134,8 +135,9 @@ bulkApprove: async () => {
       },
 
       bulkReject: async (reason) => {
-        const { selectedUploadIds, uploads } = get()
+        const { selectedUploadIds } = get()
         const ids = [...selectedUploadIds]
+        if (ids.length === 0) return
         set((state) => ({ savingIds: new Set([...state.savingIds, ...ids]) }))
         try {
           const actor = useAuthStore.getState().user
