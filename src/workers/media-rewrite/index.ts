@@ -588,6 +588,3 @@ const WEDDING_DAY_DSC_MAP: Record<string, string> = {
   'DSC09630.webp': 'tyler-sharpe.webp',
 };
 
-function mapWeddingDayFile(dscFilename: string): string {
-  return WEDDING_DAY_DSC_MAP[dscFilename] || dscFilename;
-}

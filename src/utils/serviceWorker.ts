@@ -48,7 +48,7 @@ export class ServiceWorkerManager {
       })
 
       await this.wb.register()
-    } catch (_e) {
+    } catch {
       // workbox-window not available, fall back to basic SW handling
     }
   }

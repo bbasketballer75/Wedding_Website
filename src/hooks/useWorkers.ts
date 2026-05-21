@@ -30,19 +30,19 @@ export function useWorkers() {
     }
   }, [])
 
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+   
   const processImage = async (type: string, data: any) => {
     if (!imagePoolRef.current) throw new Error('Image worker pool not initialized')
     return imagePoolRef.current.execute(type, data)
   }
 
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+   
   const searchIndex = async (type: string, data: any) => {
     if (!searchPoolRef.current) throw new Error('Search worker pool not initialized')
     return searchPoolRef.current.execute(type, data)
   }
 
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+   
   const queueSync = (data: any) => {
     if (!syncWorkerRef.current) throw new Error('Sync worker not initialized')
     syncWorkerRef.current.postMessage({ type: 'queue', item: data })

@@ -67,14 +67,6 @@ function toSiteMediaPath(relativePath: string) {
   return `/media/${relativePath.replace(/^\/+/, '')}`
 }
 
-function buildChunks<T>(items: T[], size: number) {
-  const chunks: T[][] = []
-  for (let index = 0; index < items.length; index += size) {
-    chunks.push(items.slice(index, index + size))
-  }
-  return chunks
-}
-
 function slugifyPerson(value: string) {
   return value
     .trim()
@@ -470,7 +462,7 @@ export const useMediaReviewStore = create<MediaReviewState>()(
 
         const nextBatches = (data || []).filter(isGuestReviewBatch)
         const { selectedBatchId } = get()
-        set((state) => ({
+        set(() => ({
           batches: nextBatches,
           selectedBatchId: selectedBatchId && nextBatches.some((batch) => batch.id === selectedBatchId) ? selectedBatchId : (nextBatches[0]?.id || null),
           loading: false,

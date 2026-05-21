@@ -107,10 +107,11 @@ export function useVirtualizedMasonry({
       const height = element.getBoundingClientRect().height
       if (height > 0) {
         measurementMapRef.current.set(rowIndex, height)
-        virtualizer.measure()
+        // Don't call virtualizer.measure() here - it triggers infinite loop
+        // The virtualizer will re-measure on scroll
       }
     }
-  }, [virtualizer])
+  }, [])
 
   // Re-measure rows on resize
   useEffect(() => {

@@ -125,7 +125,7 @@ export function FeaturedContentManager() {
   }, [])
 
   useEffect(() => {
-    // eslint-disable-next-line react-hooks/set-state-in-effect
+     
     void loadSlot(activeMeta)
   }, [activeMeta, loadSlot])
 
