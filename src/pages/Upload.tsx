@@ -28,8 +28,10 @@ import {
   RefreshCw,
 } from 'lucide-react'
 import { cn } from '@/lib/utils'
-import { supabase } from '@/lib/supabase'
+import { supabase, getOrCreateShareToken } from '@/lib/supabase'
 import storage from '@/utils/storage'
+import { useClaimStore } from '@/stores/claimStore'
+import { ClaimModal } from '@/components/gallery/ClaimModal'
 
 enum UploadError {
   NETWORK_TIMEOUT = 'NETWORK_TIMEOUT',
@@ -153,6 +155,7 @@ export default function UploadPage() {
   const [isSubmitting, setIsSubmitting] = useState(false)
   const [submitError, setSubmitError] = useState<string | null>(null)
   const [shareCopied, setShareCopied] = useState(false)
+  const [shareToken, setShareToken] = useState<string | null>(null)
   const [queueNotice, setQueueNotice] = useState<string | null>(null)
 
   // Load stored incomplete uploads on mount
@@ -455,6 +458,14 @@ export default function UploadPage() {
         throw error
       }
 
+      // Generate or retrieve the persistent unique share token
+      try {
+        const token = await getOrCreateShareToken(email)
+        setShareToken(token)
+      } catch (tokenErr) {
+        console.error('Failed to generate sharing token:', tokenErr)
+      }
+
       setIsSubmitted(true)
       setQueueNotice(null)
     } catch {
@@ -554,6 +565,60 @@ export default function UploadPage() {
                 </span>
               </div>
 
+              {shareToken && (
+                <motion.div
+                  initial={{ opacity: 0, y: 15 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  transition={{ delay: 0.2, duration: 0.5 }}
+                  className="mt-8 p-6 rounded-xl border border-gold-400/30 bg-gradient-to-br from-gold-500/15 via-gold-500/5 to-transparent text-left relative overflow-hidden"
+                >
+                  <div className="absolute -right-10 -bottom-10 h-32 w-32 rounded-full bg-gold-500/10 blur-2xl pointer-events-none" />
+                  <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+                    <div>
+                      <span className="flex items-center gap-1.5 text-[9px] uppercase tracking-[0.25em] font-semibold text-gold-400">
+                        <Sparkles className="h-3 w-3" /> Your Memory Album Link
+                      </span>
+                      <h3 className="text-lg font-serif text-white mt-1">Share your contributions!</h3>
+                      <p className="text-white/60 text-xs mt-1 leading-relaxed max-w-md">
+                        This unique link compiles all your approved photo uploads and guestbook messages in one gorgeous public showcase.
+                      </p>
+                    </div>
+                    <div className="flex flex-col gap-2 shrink-0 sm:w-48">
+                      <button
+                        type="button"
+                        onClick={async () => {
+                          const guestLink = `${window.location.origin}/guest/${shareToken}`
+                          await navigator.clipboard.writeText(guestLink)
+                          setShareCopied(true)
+                          setTimeout(() => setShareCopied(false), 2000)
+                        }}
+                        className="w-full shrink-0 flex items-center justify-center gap-1.5 rounded-lg bg-gold-500 hover:bg-gold-600 px-4 py-2.5 text-xs font-semibold text-cream-50 transition-all cursor-pointer"
+                      >
+                        {shareCopied ? (
+                          <>
+                            <Check className="h-3.5 w-3.5" />
+                            Copied!
+                          </>
+                        ) : (
+                          <>
+                            <Copy className="h-3.5 w-3.5" />
+                            Copy Album Link
+                          </>
+                        )}
+                      </button>
+                      <Button
+                        to={`/guest/${shareToken}`}
+                        variant="secondary"
+                        size="sm"
+                        className="w-full text-center border-white/10 hover:border-gold-400/30 text-xs py-2 bg-white/5 text-white flex items-center justify-center gap-1"
+                      >
+                        View My Album
+                      </Button>
+                    </div>
+                  </div>
+                </motion.div>
+              )}
+
               <div className="mt-8 grid gap-3 sm:grid-cols-3">
                 <div className="rounded-xl border border-gold-200/15 bg-white/5 px-4 py-4">
                   <p className="text-[10px] uppercase tracking-[0.28em] text-gold-400">Step 1</p>
@@ -635,6 +700,35 @@ export default function UploadPage() {
               </span>
             </div>
           </div>
+        </motion.section>
+
+        {/* Photo Claiming Banner */}
+        <motion.section
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.7, delay: 0.05 }}
+          className="mt-8 relative overflow-hidden rounded-2xl bg-gradient-to-r from-gold-500/15 via-gold-500/5 to-transparent backdrop-blur-md border border-gold-500/20 px-6 py-6 sm:px-8 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4"
+        >
+          <div className="absolute -right-10 -top-10 h-32 w-32 rounded-full bg-gold-500/10 blur-2xl pointer-events-none" />
+          <div className="relative flex items-start gap-4">
+            <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-full border border-gold-400/30 bg-gold-500/10 text-gold-400">
+              <ShieldCheck className="h-6 w-6" />
+            </div>
+            <div>
+              <h3 className="text-xl font-serif text-white">Already uploaded memories?</h3>
+              <p className="mt-1 text-sm text-white/70 max-w-xl">
+                Claim ownership of your uploaded photos or face clusters you appear in. Get your name verified and beautifully displayed in gold italics across the gallery.
+              </p>
+            </div>
+          </div>
+          <button
+            type="button"
+            onClick={() => useClaimStore.getState().openWizard()}
+            className="relative shrink-0 overflow-hidden rounded-lg bg-gold-500 hover:bg-gold-600 px-5 py-2.5 text-sm font-semibold text-cream-50 shadow-md hover:shadow-lg transition-all cursor-pointer flex items-center justify-center gap-1.5"
+          >
+            Claim My Photos
+            <ArrowRight className="h-4 w-4" />
+          </button>
         </motion.section>
 
         <form onSubmit={handleSubmit} className="mt-8 grid gap-8 xl:grid-cols-[minmax(0,1fr)_23rem]">
@@ -1159,6 +1253,7 @@ export default function UploadPage() {
           </div>
         </motion.section>
       </div>
+      <ClaimModal />
     </div>
   )
 }

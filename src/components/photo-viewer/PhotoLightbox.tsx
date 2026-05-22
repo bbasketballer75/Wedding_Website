@@ -5,14 +5,15 @@ import { Button } from '@/components/ui/Button'
 import { Avatar } from '@/components/ui/Avatar'
 import { Input } from '@/components/ui/Input'
 import { ShareModal } from '@/components/share/ShareModal'
+import { PrintModal } from './PrintModal'
 import {
   X, Heart, Share2, Download, ChevronLeft, ChevronRight,
-  MessageCircle, Send, ZoomIn, ZoomOut, Tag, User, Loader2, Clock, Camera
+  MessageCircle, Send, ZoomIn, ZoomOut, Tag, User, Loader2, Clock, Camera, ShieldCheck, Printer
 } from 'lucide-react'
 import { cn } from '@/lib/utils'
 import { focusManager } from '@/accessibility/focusManagement'
 import { useGalleryStore } from '@/stores/galleryStore'
-import type { Photo } from '@/lib/supabase'
+import { type Photo, fetchVerifiedIdentities } from '@/lib/supabase'
 import { useTouchGestures } from '@/hooks/useTouchGestures'
 import exifr from 'exifr'
 
@@ -53,6 +54,22 @@ export function PhotoLightbox({
   const closeImageModal = useGalleryStore(s => s.closeImageModal)
   const nextImage = useGalleryStore(s => s.nextImage)
   const previousImage = useGalleryStore(s => s.previousImage)
+  const [verifiedNames, setVerifiedNames] = useState<string[]>([])
+
+  useEffect(() => {
+    async function loadVerified() {
+      try {
+        const identities = await fetchVerifiedIdentities()
+        setVerifiedNames(identities.map(i => i.display_name.trim().toLowerCase()))
+      } catch (err) {
+        console.error('Error loading verified identities in Lightbox:', err)
+      }
+    }
+    if (isOpen) {
+      void loadVerified()
+    }
+  }, [isOpen])
+
   const [showInfo, setShowInfo] = useState(() =>
     typeof window === 'undefined' ? true : window.innerWidth >= 1024
   )
@@ -69,6 +86,7 @@ export function PhotoLightbox({
   const [activeTab, setActiveTab] = useState<'info' | 'comments'>('info')
   const [selectedFace, setSelectedFace] = useState<string | null>(null)
   const [shareModalOpen, setShareModalOpen] = useState(false)
+  const [printModalOpen, setPrintModalOpen] = useState(false)
   const [isImageHovered, setIsImageHovered] = useState(false)
 
   const currentPhoto = photos[currentIndex]
@@ -331,33 +349,43 @@ export function PhotoLightbox({
                   {/* Vignette overlay */}
                   <div className="pointer-events-none absolute inset-0 rounded-lg bg-[radial-gradient(ellipse_at_center,transparent_45%,rgba(0,0,0,0.32)_100%)]" />
 
-                  {/* Face Tags Overlay */}
-                  {shouldRenderFaceOverlay && visibleFaces.map((face) => (
-                    <button
-                      key={face.id}
-                      onClick={(e) => { e.stopPropagation(); setSelectedFace(face.id); }}
-                      type="button"
-                      aria-label={`Show tag for ${face.name}`}
-                    className="absolute w-14 h-14 sm:w-12 sm:h-12 -translate-x-1/2 -translate-y-1/2"
-                      style={{ left: `${face.x}%`, top: `${face.y}%` }}
-                    >
-                      <div className={cn(
-                        "w-full h-full rounded-full border-2 transition-all",
-                        activeSelectedFaceId === face.id
-                          ? "border-gold-400 bg-gold-400/20"
-                          : "border-white/70 hover:border-gold-400 hover:bg-gold-400/10"
-                      )} />
-                      {(activeSelectedFaceId === face.id || Boolean(highlightedFaceName)) && (
-                        <motion.div
-                          initial={{ opacity: 0, y: 10 }}
-                          animate={{ opacity: 1, y: 0 }}
-                          className="absolute top-full left-1/2 -translate-x-1/2 mt-2 px-3 py-1 bg-gold-500 text-white text-sm rounded-full whitespace-nowrap"
-                        >
-                          {face.name}
-                        </motion.div>
-                      )}
-                    </button>
-                  ))}
+                  {shouldRenderFaceOverlay && visibleFaces.map((face) => {
+                    const isVerified = verifiedNames.includes(face.name.trim().toLowerCase())
+                    return (
+                      <button
+                        key={face.id}
+                        onClick={(e) => { e.stopPropagation(); setSelectedFace(face.id); }}
+                        type="button"
+                        aria-label={`Show tag for ${face.name}`}
+                        className="absolute w-14 h-14 sm:w-12 sm:h-12 -translate-x-1/2 -translate-y-1/2"
+                        style={{ left: `${face.x}%`, top: `${face.y}%` }}
+                      >
+                        <div className={cn(
+                          "w-full h-full rounded-full border-2 transition-all",
+                          activeSelectedFaceId === face.id
+                            ? "border-gold-400 bg-gold-400/20"
+                            : "border-white/70 hover:border-gold-400 hover:bg-gold-400/10"
+                        )} />
+                        {(activeSelectedFaceId === face.id || Boolean(highlightedFaceName)) && (
+                          <motion.div
+                            initial={{ opacity: 0, y: 10 }}
+                            animate={{ opacity: 1, y: 0 }}
+                            className={cn(
+                              "absolute top-full left-1/2 -translate-x-1/2 mt-2 px-3 py-1 text-sm rounded-full whitespace-nowrap shadow-md flex items-center gap-1.5 font-sans",
+                              isVerified
+                                ? "bg-gold-500 text-white font-medium italic border border-gold-400/30"
+                                : "bg-charcoal-900 text-white"
+                            )}
+                          >
+                            {isVerified && (
+                              <ShieldCheck className="w-3.5 h-3.5 text-white flex-shrink-0" />
+                            )}
+                            {face.name}
+                          </motion.div>
+                        )}
+                      </button>
+                    )
+                  })}
                 </motion.div>
               </motion.div>
 
@@ -422,6 +450,15 @@ export function PhotoLightbox({
                       <Download className="w-5 h-5" />
                     )}
                     <span className="text-sm">Download</span>
+                  </button>
+                  <button
+                    onClick={(e) => { e.stopPropagation(); setPrintModalOpen(true); }}
+                    type="button"
+                    aria-label="Order physical prints"
+                    className="flex min-h-11 items-center gap-2 px-4 py-2 bg-white/10 text-white/80 rounded-full hover:bg-white/20 transition-colors"
+                  >
+                    <Printer className="w-5 h-5" />
+                    <span className="text-sm">Order Prints</span>
                   </button>
                   <button
                     onClick={(e) => { e.stopPropagation(); setShowInfo(!showInfo); }}
@@ -505,15 +542,32 @@ export function PhotoLightbox({
                           <div>
                             <h4 className="text-charcoal-400 text-sm mb-2">People in this photo</h4>
                             <div className="flex flex-wrap gap-2">
-                              {currentPhoto.faces.map(face => (
-                                <div
-                                  key={face.id}
-                                  className="flex items-center gap-2 px-3 py-1 bg-charcoal-800 rounded-full"
-                                >
-                                  <User className="w-3 h-3 text-gold-500" />
-                                  <span className="text-charcoal-300 text-sm">{face.name}</span>
-                                </div>
-                              ))}
+                              {currentPhoto.faces.map(face => {
+                                const isVerified = verifiedNames.includes(face.name.trim().toLowerCase())
+                                return (
+                                  <div
+                                    key={face.id}
+                                    className={cn(
+                                      "flex items-center gap-2 px-3 py-1.5 rounded-full border transition-all",
+                                      isVerified
+                                        ? "bg-gold-500/10 border-gold-500/30 text-gold-500"
+                                        : "bg-charcoal-800 border-charcoal-700 text-charcoal-300"
+                                    )}
+                                  >
+                                    {isVerified ? (
+                                      <ShieldCheck className="w-3.5 h-3.5 text-gold-500" />
+                                    ) : (
+                                      <User className="w-3.5 h-3.5 text-gold-500" />
+                                    )}
+                                    <span className={cn(
+                                      "text-sm font-sans",
+                                      isVerified ? "font-medium italic text-gold-500" : "text-charcoal-300"
+                                    )}>
+                                      {face.name}
+                                    </span>
+                                  </div>
+                                )
+                              })}
                             </div>
                           </div>
                         )}
@@ -603,6 +657,13 @@ export function PhotoLightbox({
         title={currentPhoto?.caption || "Wedding Photo"}
         description="Check out this beautiful moment from Austin & Jordyn's wedding!"
         imageUrl={currentPhoto?.url}
+      />
+
+      {/* Print Modal */}
+      <PrintModal
+        isOpen={printModalOpen}
+        onClose={() => setPrintModalOpen(false)}
+        photoUrl={currentPhoto?.url || ''}
       />
     </>
   )

@@ -3,6 +3,7 @@ import { Heart, Images, CheckCircle2 } from 'lucide-react'
 import { cn } from '@/lib/utils'
 import MasonryGrid from './components/MasonryGrid'
 import type { Photo } from '@/lib/supabase'
+import { useLongPress } from '@/hooks/useLongPress'
 
 interface PhotoGridProps {
   photos: Photo[]
@@ -68,67 +69,148 @@ function SelectOverlay({ selected, onToggle }: { selected: boolean; onToggle: ()
 
 }
 
-function MasonryPhotoGrid({ photos, onPhotoClick, onLike, selectMode, selectedIds, onToggleSelect }: PhotoGridProps) {
+interface PhotoGridItemProps {
+  photo: Photo
+  index: number
+  selectMode?: boolean
+  isSelected: boolean
+  onToggleSelect?: (photoId: string) => void
+  onPhotoClick?: (photo: Photo, index: number) => void
+  onLike?: (photoId: string) => void
+  viewMode: 'masonry' | 'grid'
+}
 
+function PhotoGridItem({
+  photo,
+  index,
+  selectMode,
+  isSelected,
+  onToggleSelect,
+  onPhotoClick,
+  onLike,
+  viewMode,
+}: PhotoGridItemProps) {
+  const handleLongPress = () => {
+    if (!selectMode) {
+      onToggleSelect?.(photo.id)
+    }
+  }
+
+  const handleClick = () => {
+    if (selectMode) {
+      onToggleSelect?.(photo.id)
+    } else {
+      onPhotoClick?.(photo, index)
+    }
+  }
+
+  const longPressProps = useLongPress({
+    onLongPress: handleLongPress,
+    onClick: handleClick,
+    delay: 500,
+    threshold: 10,
+  })
+
+  const isMasonry = viewMode === 'masonry'
+
+  // Animations & Transitions
+  const initial = isMasonry ? { opacity: 0, y: 20 } : { opacity: 0, scale: 0.96 }
+  const animate = isMasonry ? { opacity: 1, y: 0 } : { opacity: 1, scale: 1 }
+  const whileHover = !selectMode ? (isMasonry ? { y: -6, scale: 1.02 } : { y: -6, scale: 1.03 }) : {}
+  const transition = isMasonry
+    ? { duration: 0.5, delay: Math.min(index * 0.04, 0.5) }
+    : { duration: 0.4, delay: index * 0.03 }
+
+  const baseShadow = isMasonry ? '0 26px 60px -42px rgba(46,33,13,0.24)' : '0 22px 58px -44px rgba(46,33,13,0.22)'
+  const hoverShadow = isMasonry
+    ? '0 34px 80px -46px rgba(201,160,92,0.35), 0 8px 20px -10px rgba(201,160,92,0.2)'
+    : '0 32px 75px -44px rgba(201,160,92,0.32), 0 8px 20px -10px rgba(201,160,92,0.2)'
+
+  return (
+    <motion.div
+      initial={initial}
+      animate={animate}
+      whileHover={whileHover}
+      transition={transition}
+      className={cn(
+        'group relative overflow-hidden rounded-[1.8rem] border bg-white text-left',
+        isMasonry ? 'p-1' : 'p-2',
+        selectMode ? 'cursor-default' : 'cursor-pointer',
+        isSelected ? 'border-gold-400/80' : 'border-white/80'
+      )}
+      style={{
+        boxShadow: baseShadow,
+        transition: 'box-shadow 0.3s ease'
+      }}
+      onMouseEnter={(e) => {
+        if (!selectMode) {
+          e.currentTarget.style.boxShadow = hoverShadow
+        }
+      }}
+      onMouseLeave={(e) => {
+        e.currentTarget.style.boxShadow = baseShadow
+      }}
+      onKeyDown={(event) => {
+        if (event.key === 'Enter' || event.key === ' ') {
+          event.preventDefault()
+          if (selectMode) {
+            onToggleSelect?.(photo.id)
+          } else {
+            onPhotoClick?.(photo, index)
+          }
+        }
+      }}
+      role="button"
+      tabIndex={0}
+      aria-label={
+        selectMode
+          ? (isSelected ? `Deselect ${photo.caption || 'photo'}` : `Select ${photo.caption || 'photo'}`)
+          : (photo.caption ? `Open photo: ${photo.caption}` : 'Open photo')
+      }
+      aria-pressed={selectMode ? isSelected : undefined}
+      {...longPressProps}
+    >
+      <div className={cn(
+        'relative overflow-hidden bg-charcoal-200',
+        isMasonry ? 'rounded-[1.45rem]' : 'aspect-square rounded-[1.35rem]'
+      )}>
+        <motion.img
+          src={photo.thumbnail || photo.url}
+          alt={photo.caption || 'Wedding photo'}
+          className={cn('object-cover', isMasonry ? 'w-full h-auto' : 'h-full w-full')}
+          loading="lazy"
+          whileHover={{ scale: isMasonry ? 1.08 : 1.1 }}
+          transition={{ duration: isMasonry ? 0.6 : 0.5, ease: 'easeOut' }}
+        />
+        {/* Gradient overlay on hover */}
+        <div className="absolute inset-0 bg-gradient-to-t from-black/30 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
+        {selectMode ? (
+          <SelectOverlay selected={isSelected} onToggle={() => onToggleSelect?.(photo.id)} />
+        ) : (
+          <PhotoLikeButton photo={photo} onLike={onLike} />
+        )}
+      </div>
+    </motion.div>
+  )
+}
+
+function MasonryPhotoGrid({ photos, onPhotoClick, onLike, selectMode, selectedIds, onToggleSelect }: PhotoGridProps) {
   return (
     <MasonryGrid columns={MASONRY_COLUMNS}>
       {photos.map((photo, index) => {
         const isSelected = selectedIds?.has(photo.id) ?? false
         return (
-          <motion.div
+          <PhotoGridItem
             key={photo.id}
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            whileHover={!selectMode ? { y: -6, scale: 1.02 } : {}}
-            transition={{ duration: 0.5, delay: Math.min(index * 0.04, 0.5) }}
-            className={cn(
-              'group relative overflow-hidden rounded-[1.8rem] border bg-white p-1 text-left',
-              selectMode ? 'cursor-default' : 'cursor-pointer',
-              isSelected ? 'border-gold-400/80' : 'border-white/80'
-            )}
-            style={{
-              boxShadow: '0 26px 60px -42px rgba(46,33,13,0.24)',
-              transition: 'box-shadow 0.3s ease'
-            }}
-            onMouseEnter={(e) => {
-              if (!selectMode) {
-                e.currentTarget.style.boxShadow = '0 34px 80px -46px rgba(201,160,92,0.35), 0 8px 20px -10px rgba(201,160,92,0.2)'
-              }
-            }}
-            onMouseLeave={(e) => {
-              e.currentTarget.style.boxShadow = '0 26px 60px -42px rgba(46,33,13,0.24)'
-            }}
-            onClick={() => selectMode ? onToggleSelect?.(photo.id) : onPhotoClick?.(photo, index)}
-            onKeyDown={(event) => {
-
-              if (event.key === 'Enter' || event.key === ' ') {
-                event.preventDefault()
-                selectMode ? onToggleSelect?.(photo.id) : onPhotoClick?.(photo, index)
-              }
-            }}
-            role="button"
-            tabIndex={0}
-            aria-label={selectMode ? (isSelected ? `Deselect ${photo.caption || 'photo'}` : `Select ${photo.caption || 'photo'}`) : (photo.caption ? `Open photo: ${photo.caption}` : 'Open photo')}
-            aria-pressed={selectMode ? isSelected : undefined}
-          >
-            <div className="relative overflow-hidden rounded-[1.45rem] bg-charcoal-200">
-              <motion.img
-                src={photo.thumbnail || photo.url}
-                alt={photo.caption || 'Wedding photo'}
-                className="w-full h-auto object-cover"
-                loading="lazy"
-                whileHover={{ scale: 1.08 }}
-                transition={{ duration: 0.6, ease: 'easeOut' }}
-              />
-              {/* Gradient overlay on hover */}
-              <div className="absolute inset-0 bg-gradient-to-t from-black/30 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
-              {selectMode
-                ? <SelectOverlay selected={isSelected} onToggle={() => onToggleSelect?.(photo.id)} />
-                : <PhotoLikeButton photo={photo} onLike={onLike} />
-              }
-            </div>
-
-          </motion.div>
+            photo={photo}
+            index={index}
+            selectMode={selectMode}
+            isSelected={isSelected}
+            onToggleSelect={onToggleSelect}
+            onPhotoClick={onPhotoClick}
+            onLike={onLike}
+            viewMode="masonry"
+          />
         )
       })}
     </MasonryGrid>
@@ -136,70 +218,25 @@ function MasonryPhotoGrid({ photos, onPhotoClick, onLike, selectMode, selectedId
 }
 
 function StandardGrid({ photos, onPhotoClick, onLike, selectMode, selectedIds, onToggleSelect }: PhotoGridProps) {
-
   return (
     <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 xl:grid-cols-4">
       {photos.map((photo, index) => {
         const isSelected = selectedIds?.has(photo.id) ?? false
         return (
-          <motion.div
+          <PhotoGridItem
             key={photo.id}
-            initial={{ opacity: 0, scale: 0.96 }}
-            animate={{ opacity: 1, scale: 1 }}
-            whileHover={!selectMode ? { y: -6, scale: 1.03 } : {}}
-            transition={{ duration: 0.4, delay: index * 0.03 }}
-            className={cn(
-              'group overflow-hidden rounded-[1.8rem] border bg-white p-2 text-left',
-              selectMode ? 'cursor-default' : 'cursor-pointer',
-              isSelected ? 'border-gold-400/80' : 'border-white/80'
-            )}
-            style={{
-              boxShadow: '0 22px 58px -44px rgba(46,33,13,0.22)',
-              transition: 'box-shadow 0.3s ease'
-            }}
-            onMouseEnter={(e) => {
-              if (!selectMode) {
-                e.currentTarget.style.boxShadow = '0 32px 75px -44px rgba(201,160,92,0.32), 0 8px 20px -10px rgba(201,160,92,0.2)'
-              }
-            }}
-            onMouseLeave={(e) => {
-              e.currentTarget.style.boxShadow = '0 22px 58px -44px rgba(46,33,13,0.22)'
-            }}
-            onClick={() => selectMode ? onToggleSelect?.(photo.id) : onPhotoClick?.(photo, index)}
-            onKeyDown={(event) => {
-
-              if (event.key === 'Enter' || event.key === ' ') {
-                event.preventDefault()
-                selectMode ? onToggleSelect?.(photo.id) : onPhotoClick?.(photo, index)
-              }
-            }}
-            role="button"
-            tabIndex={0}
-            aria-label={selectMode ? (isSelected ? `Deselect ${photo.caption || 'photo'}` : `Select ${photo.caption || 'photo'}`) : (photo.caption ? `Open photo: ${photo.caption}` : 'Open photo')}
-            aria-pressed={selectMode ? isSelected : undefined}
-          >
-            <div className="relative aspect-square overflow-hidden rounded-[1.35rem] bg-charcoal-200">
-              <motion.img
-                src={photo.thumbnail || photo.url}
-                alt={photo.caption || 'Wedding photo'}
-                className="h-full w-full object-cover"
-                loading="lazy"
-                whileHover={{ scale: 1.1 }}
-                transition={{ duration: 0.5, ease: 'easeOut' }}
-              />
-              {/* Gradient overlay on hover */}
-              <div className="absolute inset-0 bg-gradient-to-t from-black/30 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
-              {selectMode
-                ? <SelectOverlay selected={isSelected} onToggle={() => onToggleSelect?.(photo.id)} />
-                : <PhotoLikeButton photo={photo} onLike={onLike} />
-              }
-            </div>
-
-          </motion.div>
+            photo={photo}
+            index={index}
+            selectMode={selectMode}
+            isSelected={isSelected}
+            onToggleSelect={onToggleSelect}
+            onPhotoClick={onPhotoClick}
+            onLike={onLike}
+            viewMode="grid"
+          />
         )
       })}
     </div>
-
   )
 }
 

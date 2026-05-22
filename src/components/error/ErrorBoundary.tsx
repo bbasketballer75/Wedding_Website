@@ -85,6 +85,9 @@ class ErrorBoundary extends Component<Props, State> {
   componentDidCatch(error: Error, errorInfo: ErrorInfo) {
     this.setState({ error, errorInfo })
 
+    // Log error to console.error so E2E test runs capture it
+    console.error('[ErrorBoundary caught error]', error, errorInfo)
+
     // Log error using the error logging service
     logError(error, 'ErrorBoundary', {
       componentStack: errorInfo.componentStack ?? undefined,

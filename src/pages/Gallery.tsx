@@ -3,6 +3,9 @@ import { AnimatePresence, motion } from 'framer-motion'
 import { useSearchParams } from 'react-router-dom'
 import { GallerySEO } from '@/components/seo/SEOHead'
 import { VirtualizedPhotoGrid } from '@/components/gallery/VirtualizedPhotoGrid'
+import { useDownloadStore } from '@/stores/downloadStore'
+import { DownloadQueuePanel } from '@/components/gallery/DownloadQueuePanel'
+import { ProgressModal } from '@/components/gallery/ProgressModal'
 import { PhotoLightbox } from '@/components/photo-viewer/PhotoLightbox'
 import { FaceRecognition } from '@/components/face-recognition/FaceRecognition'
 import { Button } from '@/components/ui/Button'
@@ -514,7 +517,16 @@ export default function Gallery() {
   const [downloadingId, setDownloadingId] = useState<string | null>(null)
   const [isLoading, setIsLoading] = useState(true)
   const [selectMode, setSelectMode] = useState(false)
-  const [selectedPhotoIds, setSelectedPhotoIds] = useState<Set<string>>(new Set())
+  const queue = useDownloadStore(state => state.queue)
+  const addToQueue = useDownloadStore(state => state.addToQueue)
+  const removeFromQueue = useDownloadStore(state => state.removeFromQueue)
+  const clearQueue = useDownloadStore(state => state.clearQueue)
+  const setDownloading = useDownloadStore(state => state.setDownloading)
+  const setProgress = useDownloadStore(state => state.setProgress)
+  const setProgressStatus = useDownloadStore(state => state.setProgressStatus)
+  const setPanelOpen = useDownloadStore(state => state.setPanelOpen)
+
+  const selectedPhotoIds = useMemo(() => new Set(queue.map(p => p.id)), [queue])
   const [isDownloadingPack, setIsDownloadingPack] = useState(false)
   const [loadError, setLoadError] = useState<string | null>(null)
   const [engagementSessionId] = useState(getPhotoEngagementSessionId)
@@ -642,10 +654,22 @@ export default function Gallery() {
 
     if (requestedShare && photos.length > 0) {
       const ids = requestedShare.split(',').filter(Boolean)
-      const validIds = ids.filter((id) => photos.some((p) => p.id === id))
-      if (validIds.length > 0) {
+      const validPhotos = ids
+        .map((id) => photos.find((p) => p.id === id))
+        .filter((p): p is GalleryPhoto => p !== undefined)
+
+      if (validPhotos.length > 0) {
         setSelectMode(true)
-        setSelectedPhotoIds(new Set(validIds))
+        for (const photo of validPhotos) {
+          addToQueue({
+            id: photo.id,
+            url: photo.url,
+            thumbnail: photo.thumbnail || photo.url,
+            caption: photo.caption,
+            downloadUrl: photo.downloadUrl,
+            collection: photo.collection,
+          })
+        }
       }
     }
 
@@ -842,40 +866,84 @@ export default function Gallery() {
   }
 
   const handleToggleSelect = (photoId: string) => {
-    setSelectedPhotoIds((prev) => {
-      const next = new Set(prev)
-      if (next.has(photoId)) next.delete(photoId)
-      else next.add(photoId)
-      return next
-    })
+    if (selectedPhotoIds.has(photoId)) {
+      removeFromQueue(photoId)
+    } else {
+      const photo = photos.find((p) => p.id === photoId)
+      if (photo) {
+        addToQueue({
+          id: photo.id,
+          url: photo.url,
+          thumbnail: photo.thumbnail || photo.url,
+          caption: photo.caption,
+          downloadUrl: photo.downloadUrl,
+          collection: photo.collection,
+        })
+      }
+    }
   }
 
   const handleExitSelectMode = () => {
     setSelectMode(false)
-    setSelectedPhotoIds(new Set())
+    clearQueue()
+  }
+
+  const handleSelectAllVisible = () => {
+    let addedCount = 0
+    const currentQueueIds = new Set(queue.map((p) => p.id))
+    const photosToSelect = filteredPhotos
+
+    for (const photo of photosToSelect) {
+      if (!currentQueueIds.has(photo.id)) {
+        if (queue.length + addedCount >= 50) {
+          addToast('Maximum 50 photos can be downloaded as a batch.', 'warning')
+          break
+        }
+        addToQueue({
+          id: photo.id,
+          url: photo.url,
+          thumbnail: photo.thumbnail || photo.url,
+          caption: photo.caption,
+          downloadUrl: photo.downloadUrl,
+          collection: photo.collection,
+        })
+        addedCount++
+      }
+    }
   }
 
   const handleDownloadPack = async () => {
-    if (selectedPhotoIds.size === 0) return
+    if (queue.length === 0) return
     setIsDownloadingPack(true)
     try {
-      const res = await fetch('/.netlify/functions/download-pack', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ photoIds: [...selectedPhotoIds] }),
+      setDownloading(true)
+      setProgress(0)
+      setProgressStatus('Initializing downloads...')
+      
+      const { downloadBatch } = await import('@/utils/download')
+      await downloadBatch(queue, (prog, stat) => {
+        setProgress(prog)
+        setProgressStatus(stat)
       })
-      if (!res.ok) throw new Error(await res.text())
-      const blob = await res.blob()
-      const url = URL.createObjectURL(blob)
-      const a = document.createElement('a')
-      a.href = url
-      a.download = 'theporadas-photos.zip'
-      a.click()
-      URL.revokeObjectURL(url)
-    } catch {
-      addToast('Download failed. Please try again.', 'error')
+
+      // Complete!
+      setTimeout(() => {
+        setDownloading(false)
+        setPanelOpen(false)
+        clearQueue()
+        handleExitSelectMode()
+      }, 1000)
+    } catch (error) {
+      console.error(error)
+      setProgressStatus(error instanceof Error ? error.message : 'Download failed')
+      setProgress(0)
+      
+      setTimeout(() => {
+        setDownloading(false)
+      }, 3000)
+    } finally {
+      setIsDownloadingPack(false)
     }
-    setIsDownloadingPack(false)
   }
 
   const handleShareSelection = () => {
@@ -1138,7 +1206,7 @@ export default function Gallery() {
                   })}
                 </div>
 
-                <div className="mt-4 grid gap-3 md:grid-cols-[minmax(0,1fr)_auto] md:items-center">
+                <div data-testid="gallery-filter-bar" className="mt-4 grid gap-3 md:grid-cols-[minmax(0,1fr)_auto] md:items-center">
                   <div className="relative">
                     <Search className="pointer-events-none absolute left-4 top-1/2 h-4 w-4 -translate-y-1/2 text-charcoal-400" />
                     <Input
@@ -1203,6 +1271,40 @@ export default function Gallery() {
                   </div>
 
                 </div>
+
+                {selectMode && (
+                  <motion.div
+                    initial={{ opacity: 0, y: -10 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    className="mt-3 flex flex-wrap items-center justify-between gap-3 rounded-2xl border border-gold-200 bg-cream-50/50 p-3"
+                  >
+                    <div className="flex items-center gap-3">
+                      <span className="text-sm font-medium text-charcoal-700">
+                        {selectedPhotoIds.size} photo{selectedPhotoIds.size !== 1 ? 's' : ''} in queue (max 50)
+                      </span>
+                    </div>
+                    <div className="flex items-center gap-2">
+                      <Button
+                        variant="secondary"
+                        size="sm"
+                        onClick={handleSelectAllVisible}
+                        className="h-9 rounded-full px-4 text-xs font-medium"
+                      >
+                        Select All Visible
+                      </Button>
+                      {selectedPhotoIds.size > 0 && (
+                        <Button
+                          variant="secondary"
+                          size="sm"
+                          onClick={() => clearQueue()}
+                          className="h-9 rounded-full px-4 text-xs font-medium border-rose-200 text-rose-700 hover:bg-rose-50 hover:text-rose-800"
+                        >
+                          Clear Selection
+                        </Button>
+                      )}
+                    </div>
+                  </motion.div>
+                )}
 
                 <div className="mt-3 flex items-center justify-between border-t border-charcoal-900/6 pt-3">
                   <FaceRecognition onPhotoFilter={handleFaceFilter} detectedFaces={detectedFaces} />
@@ -1460,6 +1562,10 @@ export default function Gallery() {
         isSubmittingComment={submittingCommentPhotoId === filteredPhotos[lightboxIndex ?? 0]?.id}
         highlightedFaceName={faceFilter}
       />
+
+      {/* Download queue overlay and progress modal */}
+      <DownloadQueuePanel />
+      <ProgressModal />
     </div>
   )
 }

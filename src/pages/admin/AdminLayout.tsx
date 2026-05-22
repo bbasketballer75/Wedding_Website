@@ -12,6 +12,7 @@ import { adminNavSections, getAdminRouteMeta } from './utils'
 const Dashboard = lazy(() => import('./Dashboard').then(m => ({ default: m.Dashboard })))
 const PhotoModeration = lazy(() => import('./PhotoModeration').then(m => ({ default: m.PhotoModeration })))
 const GuestbookModeration = lazy(() => import('./GuestbookModeration').then(m => ({ default: m.GuestbookModeration })))
+const ClaimsModeration = lazy(() => import('./ClaimsModeration').then(m => ({ default: m.ClaimsModeration })))
 const AuditLogView = lazy(() => import('./AuditLogView').then(m => ({ default: m.AuditLogView })))
 const FeaturedContentManager = lazy(() => import('./FeaturedContentManager').then(m => ({ default: m.FeaturedContentManager })))
 const Analytics = lazy(() => import('./Analytics').then(m => ({ default: m.Analytics })))
@@ -111,6 +112,7 @@ export function AdminLayout() {
                 <Route path="photos" element={<PhotoModeration />} />
                 <Route path="albums" element={<AlbumOrganizer />} />
                 <Route path="review" element={<MediaReviewPanel />} />
+                <Route path="claims" element={<ClaimsModeration />} />
                 <Route path="guestbook" element={<GuestbookModeration />} />
                 <Route path="featured" element={<FeaturedContentManager />} />
                 <Route path="audit" element={<AuditLogView />} />
@@ -179,6 +181,7 @@ export function AdminLayout() {
                 <Route path="photos" element={<PhotoModeration />} />
                 <Route path="albums" element={<AlbumOrganizer />} />
                 <Route path="review" element={<MediaReviewPanel />} />
+                <Route path="claims" element={<ClaimsModeration />} />
                 <Route path="guestbook" element={<GuestbookModeration />} />
                 <Route path="featured" element={<FeaturedContentManager />} />
                 <Route path="audit" element={<AuditLogView />} />

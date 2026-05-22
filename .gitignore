@@ -85,3 +85,27 @@ busybox.exe
 .gsd/
 .gsd-id
 .vercel/
+
+# ── GSD baseline (auto-generated) ──
+.gsd
+*.swp
+*.swo
+*~
+.idea/
+.vscode/
+*.code-workspace
+.env.*
+!.env.example
+node_modules/
+.next/
+dist/
+build/
+__pycache__/
+*.pyc
+.venv/
+venv/
+target/
+vendor/
+coverage/
+.cache/
+tmp/

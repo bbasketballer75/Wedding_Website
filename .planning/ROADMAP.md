@@ -5,7 +5,7 @@
 - [x] **v1.0 MVP** — Phases 1-4 (shipped 2026-04-25)
 - [x] **v1.1 Polish & Feature Expansion** — Phases 5-9 (shipped 2026-04-28)
 - [x] **v2.0 UI/UX Polish Round 2** — Phases 10-14 (shipped 2026-04-30)
-- [ ] **v3.0 Guest Experience Enhancements** — Phases 15-19 (planning)
+- [x] **v3.0 Guest Experience Enhancements** — Phases 15-19 (planning)
 
 ## Progress
 
@@ -26,9 +26,9 @@
 | 13. Accessibility & Motion | v2.0 | 4/4 | Complete | 2026-04-28 |
 | 14. Animation & Visual Polish | v2.0 | 3/3 | Complete | 2026-04-30 |
 | 15. Activity Feed | v3.0 | 2/2 | Complete    | 2026-04-30 |
-| 16. Lightbox Enhancement | v3.0 | 0/1 | Not started | — |
-| 17. Download Management | v3.0 | 0/1 | Not started | — |
-| 18. Photo Claiming | v3.0 | 0/1 | Not started | — |
+| 16. Lightbox Enhancement | v3.0 | 1/1 | Complete | 2026-04-30 |
+| 17. Download Management | v3.0 | 1/1 | Complete | 2026-05-21 |
+| 18. Photo Claiming | v3.0 | 1/1 | Complete | 2026-05-21 |
 | 19. Shared Links & Print | v3.0 | 0/1 | Not started | — |
 
 ## Archived Milestones
@@ -116,8 +116,9 @@
 4. When zoomed > 1x, swipe pans instead of navigating
 5. Info panel shows date taken and camera info from EXIF (graceful fallback)
 6. Download button in lightbox toolbar downloads current photo at high quality
-
-**Plans:** TBD
+**Plans:**
+1/1 plans complete
+- [x] 16-01-PLAN.md — Lightbox zoom, double tap, zoom-aware swipe, EXIF metadata display
 
 **UI hint:** yes
 
@@ -139,7 +140,8 @@
 5. "Download All" generates zip file with progress indicator
 6. Queue persists across page reloads via sessionStorage
 
-**Plans:** TBD
+**Plans:** 1/1 plans complete
+- [x] 17-01-PLAN.md — Gestures, Zustand persistent queue, hybrid download zipping, frontend FAB overlays, and page integration
 
 ---
 
@@ -159,7 +161,9 @@
 5. Claim requests appear in admin moderation panel for approval
 6. After approval, guest identity links to face cluster and guest name appears on tagged photos
 
-**Plans:** TBD
+**Plans:**
+1/1 plans complete
+- [x] 18-01-PLAN.md — Client Zustand store, claiming wizard, admin moderation panel, and lightbox verified tags highlighting
 
 ---
 

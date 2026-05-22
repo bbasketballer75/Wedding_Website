@@ -16,6 +16,7 @@ import {
   BarChart3,
   Users,
   Sparkles,
+  ShieldCheck,
 } from 'lucide-react'
 
 // ─── Local types ─────────────────────────────────────────────────────────────
@@ -77,6 +78,7 @@ export const adminNavSections: AdminNavSection[] = [
       { path: '/admin/photos', label: 'Photos', icon: Image, description: 'Moderate uploads, publish photos, and run guest tagging.' },
       { path: '/admin/albums', label: 'Albums', icon: FolderOpen, description: 'Arrange the live order inside each public album.' },
       { path: '/admin/review', label: 'People Review', icon: Users, description: 'Work through face review and named people.' },
+      { path: '/admin/claims', label: 'Photo Claims', icon: ShieldCheck, description: 'Review and approve photo ownership and face tag claims.' },
       { path: '/admin/guestbook', label: 'Guestbook', icon: MessageSquare, description: 'Moderate text messages.' },
     ],
   },
@@ -110,6 +112,12 @@ export const adminRouteMeta: Record<string, { eyebrow: string; title: string; de
     title: 'Turn face detections into a browsable people archive.',
     description:
       'Use photo-first review for accuracy, then clean up recurring people in bulk so the public gallery stays useful instead of noisy.',
+  },
+  '/admin/claims': {
+    eyebrow: 'Claims workflow',
+    title: 'Review and approve photo ownership and face tag claims.',
+    description:
+      'Manage self-service verification claims. Confirm identities, review photos/faces, and approve them to display names in elegant gold italics.',
   },
   '/admin/albums': {
     eyebrow: 'Album workflow',
@@ -420,4 +428,6 @@ export const auditActionLabels: Record<ModerationAuditAction, string> = {
   upload_bulk_rejected: 'Bulk rejected',
   guestbook_message_deleted: 'Deleted message',
   guestbook_bulk_deleted: 'Bulk deleted message',
+  claim_approved: 'Approved claim',
+  claim_rejected: 'Rejected claim',
 }

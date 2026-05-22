@@ -42,7 +42,7 @@ export class ServiceWorkerManager {
       })
 
       this.wb.addEventListener('activated', (event: any) => {
-        if (!event.detail.isUpdate) {
+        if (event.detail && !event.detail.isUpdate) {
           // First install, no notification needed
         }
       })

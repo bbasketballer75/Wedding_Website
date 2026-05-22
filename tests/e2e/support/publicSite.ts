@@ -111,6 +111,14 @@ export async function installPublicSiteMocks(page: Page) {
 }
 
 export async function preparePublicPage(page: Page) {
+  page.on('console', (msg) => {
+    if (msg.type() === 'error') {
+      console.log(`[Browser Console Error] ${msg.text()}`)
+    }
+  })
+  page.on('pageerror', (err) => {
+    console.log(`[Browser Page Error] ${err.stack || err.message}`)
+  })
   await page.emulateMedia({ reducedMotion: 'reduce', colorScheme: 'light' })
 }
 
@@ -127,7 +135,7 @@ export async function waitForPageReady(page: Page) {
     if ('fonts' in document) {
       await document.fonts.ready
     }
-  })
+  }).catch(() => {})
   await page.waitForTimeout(150)
 }
 

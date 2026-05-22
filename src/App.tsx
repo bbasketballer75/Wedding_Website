@@ -22,6 +22,7 @@ const AdminLogin = lazy(() => import('@/pages/AdminLogin'))
 const People = lazy(() => import('@/pages/People'))
 const Activity = lazy(() => import('@/pages/Activity'))
 const NotFound = lazy(() => import('@/pages/NotFound'))
+const GuestShare = lazy(() => import('@/pages/GuestShare'))
 
 // Page transition wrapper
 function PageTransition({ children }: { children: React.ReactNode }) {
@@ -63,6 +64,9 @@ function AppContent() {
 
   // Page titles for screen reader announcements
   const getPageTitle = (path: string): string | undefined => {
+    if (path.startsWith('/guest/')) {
+      return 'Guest Album'
+    }
     const titles: Record<string, string> = {
       '/': 'Home',
       '/film': 'Wedding Film',
@@ -205,6 +209,16 @@ function AppContent() {
                   <RouteErrorBoundary>
                     <LazyPage title="Admin Dashboard">
                       <Admin />
+                    </LazyPage>
+                  </RouteErrorBoundary>
+                }
+              />
+              <Route
+                path="/guest/:token"
+                element={
+                  <RouteErrorBoundary>
+                    <LazyPage title="Guest Album">
+                      <GuestShare />
                     </LazyPage>
                   </RouteErrorBoundary>
                 }

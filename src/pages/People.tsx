@@ -1,13 +1,15 @@
 import { useState, useEffect, useMemo } from 'react'
 import { motion } from 'framer-motion'
 import { useNavigate } from 'react-router-dom'
-import { Users, ArrowRight } from 'lucide-react'
+import { Users, ArrowRight, ShieldCheck } from 'lucide-react'
 import { fetchPhotosWithFaces } from '@/lib/supabase'
 import type { Photo } from '@/lib/supabase'
 import { getMediaPath } from '@/utils/media'
 import { partyData } from '@/data/weddingParty'
 import { PeopleSEO } from '@/components/seo/SEOHead'
 import { cn } from '@/lib/utils'
+import { useClaimStore } from '@/stores/claimStore'
+import { ClaimModal } from '@/components/gallery/ClaimModal'
 
 const ALL_PARTY = [...partyData.couple, ...partyData.parents, ...partyData.groomsmen, ...partyData.bridesmaids]
 
@@ -236,20 +238,42 @@ export default function People() {
         ) : (
           <div className="grid grid-cols-2 gap-4 sm:grid-cols-3 md:grid-cols-4">
             {people.map((person, i) => (
-              <motion.button
+              <motion.div
                 key={person.name}
-                type="button"
-                onClick={() => goToGallery(person.name)}
                 initial={{ opacity: 0, y: 16 }}
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ duration: 0.4, delay: i * 0.03 }}
                 whileHover={{ y: -3 }}
+                onClick={() => goToGallery(person.name)}
                 className={cn(
-                  'group flex flex-col items-center gap-3 p-5 rounded-2xl border border-charcoal-200/40 bg-white shadow-sm cursor-pointer',
+                  'group relative flex flex-col items-center gap-3 p-5 rounded-2xl border border-charcoal-200/40 bg-white shadow-sm cursor-pointer',
                   'hover:border-gold-300/70 hover:shadow-lg transition-all duration-200 text-center focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-gold-400'
                 )}
+                role="button"
+                tabIndex={0}
+                onKeyDown={(e) => {
+                  if (e.key === 'Enter' || e.key === ' ') {
+                    goToGallery(person.name)
+                  }
+                }}
                 aria-label={`Browse photos of ${person.name}`}
               >
+                {/* Claim face trigger overlay */}
+                <button
+                  type="button"
+                  onClick={(e) => {
+                    e.stopPropagation()
+                    useClaimStore.getState().openWizard({
+                      faceId: `simulated_face_${  person.name}`,
+                      faceName: person.name
+                    })
+                  }}
+                  title={`Is this you? Claim ${person.name}`}
+                  className="absolute top-3 right-3 p-1.5 rounded-full border border-gold-500/20 bg-gold-500/5 text-gold-600 opacity-0 group-hover:opacity-100 focus:opacity-100 hover:bg-gold-500 hover:text-cream-50 transition-all duration-200 z-10 cursor-pointer"
+                >
+                  <ShieldCheck className="h-4 w-4" />
+                </button>
+
                 {/* Avatar — curated portrait if available, otherwise face-cropped thumbnail */}
                 {person.curatedPortrait ? (
                   <img
@@ -298,11 +322,12 @@ export default function People() {
                 <span className="flex items-center gap-1 text-[10px] uppercase tracking-[0.18em] text-gold-500/0 transition-all duration-200 group-hover:text-gold-500">
                   View photos <ArrowRight className="h-3 w-3" />
                 </span>
-              </motion.button>
+              </motion.div>
             ))}
           </div>
         )}
       </div>
+      <ClaimModal />
     </div>
   )
 }

@@ -37,7 +37,7 @@ export function VirtualizedMasonryGrid({
     <div
       ref={scrollRef}
       className="h-full w-full overflow-auto"
-      style={{ contain: 'strict' }}
+      style={{ contain: 'content' }}
     >
       <div
         className="relative w-full"

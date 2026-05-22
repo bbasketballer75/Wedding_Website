@@ -701,6 +701,91 @@ export type Database = {
         }
         Relationships: []
       }
+      guest_identities: {
+        Row: {
+          id: string
+          email: string
+          session_id: string | null
+          display_name: string
+          is_verified: boolean
+          created_at: string
+        }
+        Insert: {
+          id?: string
+          email: string
+          session_id?: string | null
+          display_name: string
+          is_verified?: boolean
+          created_at?: string
+        }
+        Update: {
+          id?: string
+          email?: string
+          session_id?: string | null
+          display_name?: string
+          is_verified?: boolean
+          created_at?: string
+        }
+        Relationships: []
+      }
+      photo_claims: {
+        Row: {
+          id: string
+          guest_identity_id: string
+          photo_id: string | null
+          face_id: string | null
+          claim_type: string
+          status: string
+          rejection_reason: string | null
+          created_at: string
+          updated_at: string
+        }
+        Insert: {
+          id?: string
+          guest_identity_id: string
+          photo_id?: string | null
+          face_id?: string | null
+          claim_type: string
+          status?: string
+          rejection_reason?: string | null
+          created_at?: string
+          updated_at?: string
+        }
+        Update: {
+          id?: string
+          guest_identity_id?: string
+          photo_id?: string | null
+          face_id?: string | null
+          claim_type?: string
+          status?: string
+          rejection_reason?: string | null
+          created_at?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "photo_claims_guest_identity_id_fkey"
+            columns: ["guest_identity_id"]
+            isOneToOne: false
+            referencedRelation: "guest_identities"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "photo_claims_photo_id_fkey"
+            columns: ["photo_id"]
+            isOneToOne: false
+            referencedRelation: "photos"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "photo_claims_face_id_fkey"
+            columns: ["face_id"]
+            isOneToOne: false
+            referencedRelation: "media_review_faces"
+            referencedColumns: ["id"]
+          }
+        ]
+      }
     }
     Views: {
       [_ in never]: never
