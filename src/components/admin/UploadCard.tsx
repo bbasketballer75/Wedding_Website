@@ -49,6 +49,7 @@ export function UploadCard({
           checked={isSelected}
           onChange={onSelect}
           className="mt-1 h-4 w-4 rounded border-gold-300 text-gold-500 focus:ring-gold-400"
+          aria-label={`Select upload from ${upload.guest_name}`}
         />
 
         {/* Upload content */}

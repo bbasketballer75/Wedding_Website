@@ -63,7 +63,7 @@ export function GuestUploadModerationList() {
   }
 
   return (
-    <div className="space-y-4">
+    <div className="space-y-4" data-testid="upload-queue">
       {/* Filter tabs */}
       <div className="flex items-center gap-1 rounded-xl border border-gold-100 bg-white p-1">
         {STATUS_TABS.map((tab) => (
@@ -137,6 +137,7 @@ export function GuestUploadModerationList() {
             checked={selectedCount === uploads.length && uploads.length > 0}
             onChange={(e) => (e.target.checked ? selectAll() : deselectAll())}
             className="h-4 w-4 rounded border-gold-300 text-gold-500 focus:ring-gold-400"
+            aria-label="Select all pending uploads"
           />
           <span>Select all {uploads.length} pending uploads</span>
         </div>
