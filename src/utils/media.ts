@@ -12,24 +12,27 @@ export function toRemoteMediaPath(path: string): string {
 }
 
 export function getMediaPath(path: string): string {
-  if (!path.startsWith('/')) {
+  if (/^https?:\/\//.test(path)) {
     return path
   }
 
+  // Ensure path starts with a leading slash for checking offload prefixes
+  const normalizedPath = path.startsWith('/') ? path : `/${path}`
+
   const mediaBaseUrl = trimTrailingSlash(import.meta.env.VITE_MEDIA_BASE_URL || '')
-  const shouldOffload = OFFLOADED_MEDIA_PREFIXES.some(prefix => path.startsWith(prefix))
+  const shouldOffload = OFFLOADED_MEDIA_PREFIXES.some(prefix => normalizedPath.startsWith(prefix))
 
   if (!mediaBaseUrl || !shouldOffload) {
-    return path
+    return normalizedPath
   }
 
   // Don't sanitize path segments - the + in Bach+ette must be preserved
   // so the Cloudflare Worker can correctly rewrite the URL
   if (import.meta.env.DEV) {
-    return `${DEV_MEDIA_PROXY_PREFIX}/${toRemoteMediaPath(path)}`
+    return `${DEV_MEDIA_PROXY_PREFIX}/${toRemoteMediaPath(normalizedPath)}`
   }
 
-  return `${mediaBaseUrl}/${toRemoteMediaPath(path)}`
+  return `${mediaBaseUrl}/${toRemoteMediaPath(normalizedPath)}`
 }
 
 export function getAbsoluteUrl(path: string): string {
