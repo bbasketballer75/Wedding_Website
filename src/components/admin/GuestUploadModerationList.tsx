@@ -6,6 +6,8 @@ import { ModerationConfirmDialog } from './ModerationConfirmDialog'
 import { BulkActionToolbar } from './BulkActionToolbar'
 import { UploadCard } from './UploadCard'
 import { useModerationStore } from '@/stores/moderationStore'
+import { useToast } from '@/context/ToastContext'
+import type { PhotoAlbum } from '@/lib/supabase'
 
 type UploadStatus = 'pending' | 'approved' | 'rejected'
 
@@ -31,11 +33,22 @@ export function GuestUploadModerationList() {
     rejectUpload,
     bulkApprove,
     bulkReject,
+    bulkPublishToGallery,
     setActiveFilter,
   } = useModerationStore()
 
+  const { addToast } = useToast()
   const [showBulkRejectDialog, setShowBulkRejectDialog] = useState(false)
   const [bulkRejectReason, setBulkRejectReason] = useState('')
+
+  const handlePublishToGallery = async (album: PhotoAlbum) => {
+    const count = await bulkPublishToGallery(album)
+    if (count > 0) {
+      addToast(`${count} photo${count === 1 ? '' : 's'} published to ${album}.`, 'success')
+    } else {
+      addToast('No photos found to publish (uploads may have no photo URLs).', 'info')
+    }
+  }
 
   // Load uploads on mount
   useEffect(() => {
@@ -84,14 +97,19 @@ export function GuestUploadModerationList() {
         ))}
       </div>
 
-      {/* Bulk action toolbar */}
+      {/* Bulk action toolbar — approve/reject for pending, publish for approved */}
       <BulkActionToolbar
         selectedCount={selectedCount}
-        onApproveAll={() => void bulkApprove()}
-        onRejectAll={() => {
-          setBulkRejectReason('')
-          setShowBulkRejectDialog(true)
-        }}
+        onApproveAll={activeFilter === 'pending' ? () => void bulkApprove() : undefined}
+        onRejectAll={
+          activeFilter !== 'approved'
+            ? () => {
+                setBulkRejectReason('')
+                setShowBulkRejectDialog(true)
+              }
+            : undefined
+        }
+        onPublishToGallery={activeFilter === 'approved' ? handlePublishToGallery : undefined}
         onDeselectAll={deselectAll}
         isLoading={isLoading}
       />

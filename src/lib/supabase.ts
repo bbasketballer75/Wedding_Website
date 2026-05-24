@@ -1027,6 +1027,57 @@ export async function bulkRejectGuestUploads(
   }
 }
 
+// Publish selected guest upload photos to the main photos gallery under an album.
+// Each photo_url in the selected uploads is inserted as a new photos row so it
+// appears in the live gallery alongside professional photos.
+export async function publishGuestUploadPhotosToAlbum(
+  uploadIds: string[],
+  album: PhotoAlbum,
+  actor?: ModerationAuditActor
+): Promise<{ published: number }> {
+  if (uploadIds.length === 0) return { published: 0 }
+
+  const { data: uploads, error: fetchError } = await supabase
+    .from('guest_uploads')
+    .select('id, guest_name, photo_urls')
+    .in('id', uploadIds)
+
+  if (fetchError) throw fetchError
+
+  const photoRows = (uploads ?? []).flatMap(
+    (upload: { id: string; guest_name: string; photo_urls: string[] }) =>
+      upload.photo_urls.map(url => ({
+        url,
+        thumbnail: url,
+        album,
+        category: album,
+        is_professional: false,
+        caption: upload.guest_name ? `Photo by ${upload.guest_name}` : null,
+      }))
+  )
+
+  if (photoRows.length === 0) return { published: 0 }
+
+  const { data, error } = await supabase.from('photos').insert(photoRows).select('id')
+
+  if (error) throw error
+
+  for (const uploadId of uploadIds) {
+    await recordModerationAudit({
+      entityType: 'guest_upload',
+      entityId: uploadId,
+      action: 'upload_approved_published',
+      fromStatus: 'approved',
+      toStatus: 'approved',
+      summary: `Guest upload photos published to ${album} album`,
+      metadata: { album },
+      actor,
+    })
+  }
+
+  return { published: data?.length ?? 0 }
+}
+
 // Fetch rejection reason for guest upload status page
 export async function fetchGuestUploadStatus(email: string): Promise<GuestUpload | null> {
   const { data, error } = await supabase
