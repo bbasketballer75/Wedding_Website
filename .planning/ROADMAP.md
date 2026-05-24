@@ -5,31 +5,31 @@
 - [x] **v1.0 MVP** — Phases 1-4 (shipped 2026-04-25)
 - [x] **v1.1 Polish & Feature Expansion** — Phases 5-9 (shipped 2026-04-28)
 - [x] **v2.0 UI/UX Polish Round 2** — Phases 10-14 (shipped 2026-04-30)
-- [x] **v3.0 Guest Experience Enhancements** — Phases 15-19 (planning)
+- [x] **v3.0 Guest Experience Enhancements** — Phases 15-19 (completed 2026-05-23)
 
 ## Progress
 
-| Phase | Milestone | Plans Complete | Status | Completed |
-|-------|-----------|----------------|--------|-----------|
-| 1. Foundation & Polish | v1.0 | 4/4 | Complete | 2026-04-24 |
-| 2. Gallery Performance & UX | v1.0 | 4/4 | Complete | 2026-04-24 |
-| 3. Upload Experience | v1.0 | 1/1 | Complete | 2026-04-24 |
-| 4. Navigation & Design Consistency | v1.0 | 3/3 | Complete | 2026-04-25 |
-| 5. Social Sharing & Upload Resume | v1.1 | 2/2 | Complete | 2026-04-25 |
-| 6. Guest Reactions & Upload Status | v1.1 | 1/1 | Complete | 2026-04-25 |
-| 7. Gallery Virtualization | v1.1 | 2/2 | Complete | 2026-04-25 |
-| 8. Moderation Queue & Featured Spotlight | v1.1 | 2/2 | Complete | 2026-04-28 |
-| 9. PWA Offline Verification | v1.1 | 1/1 | Complete | 2026-04-28 |
-| 10. Fix Blockers | v2.0 | 2/2 | Complete | 2026-04-28 |
-| 11. Design Token Unification | v2.0 | 4/4 | Complete | 2026-04-28 |
-| 12. Component Consolidation | v2.0 | 1/1 | Complete | 2026-04-28 |
-| 13. Accessibility & Motion | v2.0 | 4/4 | Complete | 2026-04-28 |
-| 14. Animation & Visual Polish | v2.0 | 3/3 | Complete | 2026-04-30 |
-| 15. Activity Feed | v3.0 | 2/2 | Complete    | 2026-04-30 |
-| 16. Lightbox Enhancement | v3.0 | 1/1 | Complete | 2026-04-30 |
-| 17. Download Management | v3.0 | 1/1 | Complete | 2026-05-21 |
-| 18. Photo Claiming | v3.0 | 1/1 | Complete | 2026-05-21 |
-| 19. Shared Links & Print | v3.0 | 0/1 | Not started | — |
+| Phase                                    | Milestone | Plans Complete | Status   | Completed  |
+| ---------------------------------------- | --------- | -------------- | -------- | ---------- |
+| 1. Foundation & Polish                   | v1.0      | 4/4            | Complete | 2026-04-24 |
+| 2. Gallery Performance & UX              | v1.0      | 4/4            | Complete | 2026-04-24 |
+| 3. Upload Experience                     | v1.0      | 1/1            | Complete | 2026-04-24 |
+| 4. Navigation & Design Consistency       | v1.0      | 3/3            | Complete | 2026-04-25 |
+| 5. Social Sharing & Upload Resume        | v1.1      | 2/2            | Complete | 2026-04-25 |
+| 6. Guest Reactions & Upload Status       | v1.1      | 1/1            | Complete | 2026-04-25 |
+| 7. Gallery Virtualization                | v1.1      | 2/2            | Complete | 2026-04-25 |
+| 8. Moderation Queue & Featured Spotlight | v1.1      | 2/2            | Complete | 2026-04-28 |
+| 9. PWA Offline Verification              | v1.1      | 1/1            | Complete | 2026-04-28 |
+| 10. Fix Blockers                         | v2.0      | 2/2            | Complete | 2026-04-28 |
+| 11. Design Token Unification             | v2.0      | 4/4            | Complete | 2026-04-28 |
+| 12. Component Consolidation              | v2.0      | 1/1            | Complete | 2026-04-28 |
+| 13. Accessibility & Motion               | v2.0      | 4/4            | Complete | 2026-04-28 |
+| 14. Animation & Visual Polish            | v2.0      | 3/3            | Complete | 2026-04-30 |
+| 15. Activity Feed                        | v3.0      | 2/2            | Complete | 2026-04-30 |
+| 16. Lightbox Enhancement                 | v3.0      | 1/1            | Complete | 2026-04-30 |
+| 17. Download Management                  | v3.0      | 1/1            | Complete | 2026-05-21 |
+| 18. Photo Claiming                       | v3.0      | 1/1            | Complete | 2026-05-21 |
+| 19. Shared Links & Print                 | v3.0      | 1/1            | Complete | 2026-05-23 |
 
 ## Archived Milestones
 
@@ -66,6 +66,7 @@
 - [x] Phase 14: Animation & Visual Polish (3/3 plans) — completed 2026-04-30
 
 **Key accomplishments:**
+
 - Fixed invalid Tailwind classes (z-100, CSS var syntax)
 - Design tokens unified across all components
 - Border radius standardized to rounded-xl
@@ -87,6 +88,7 @@
 **Requirements:** SOC-01, SOC-02, SOC-03
 
 **Success Criteria** (what must be TRUE):
+
 1. Activity feed page renders at `/activity` with chronological listing
 2. Feed shows approved guest uploads, guestbook messages, and featured moments in order
 3. New activity appears in feed without page refresh via Supabase Realtime subscription
@@ -95,6 +97,7 @@
 
 **Plans:**
 2/2 plans complete
+
 - [x] 15-02-PLAN.md — UI (Activity page, components, realtime subscription)
 
 **UI hint:** yes
@@ -110,14 +113,16 @@
 **Requirements:** LB-01, LB-02, LB-03, LB-04
 
 **Success Criteria** (what must be TRUE):
+
 1. Pinch-to-zoom works on mobile with zoom range 1x to 3x
 2. Double-tap toggles between 1x and 2x zoom
 3. Swipe left/right navigates to next/previous photo with proper threshold
 4. When zoomed > 1x, swipe pans instead of navigating
 5. Info panel shows date taken and camera info from EXIF (graceful fallback)
 6. Download button in lightbox toolbar downloads current photo at high quality
-**Plans:**
-1/1 plans complete
+   **Plans:**
+   1/1 plans complete
+
 - [x] 16-01-PLAN.md — Lightbox zoom, double tap, zoom-aware swipe, EXIF metadata display
 
 **UI hint:** yes
@@ -133,6 +138,7 @@
 **Requirements:** DL-01, DL-02, DL-03
 
 **Success Criteria** (what must be TRUE):
+
 1. Long-press or checkbox toggle selects multiple photos in gallery
 2. Selected count displays in header during multi-select mode
 3. "Add to Download" button appears when photos are selected
@@ -141,6 +147,7 @@
 6. Queue persists across page reloads via sessionStorage
 
 **Plans:** 1/1 plans complete
+
 - [x] 17-01-PLAN.md — Gestures, Zustand persistent queue, hybrid download zipping, frontend FAB overlays, and page integration
 
 ---
@@ -154,6 +161,7 @@
 **Requirements:** SC-01, SC-02
 
 **Success Criteria** (what must be TRUE):
+
 1. "Claim My Photos" button visible on Guest Uploads page
 2. Email entry shows matching uploads (if any) for verification
 3. Magic Link email sent for identity verification before claim finalization
@@ -163,6 +171,7 @@
 
 **Plans:**
 1/1 plans complete
+
 - [x] 18-01-PLAN.md — Client Zustand store, claiming wizard, admin moderation panel, and lightbox verified tags highlighting
 
 ---
@@ -176,13 +185,16 @@
 **Requirements:** SC-03, PR-01
 
 **Success Criteria** (what must be TRUE):
+
 1. Share button generates unique link per guest
 2. `/guest/:token` route renders public view of guest's uploads and guestbook entries
 3. Invalid or expired token shows friendly error message
 4. "Order Prints" button visible in lightbox
 5. Clicking "Order Prints" opens external print provider (Shutterfly/Artifact Uprising) in new tab
+   **Plans:**
+   1/1 plans complete
 
-**Plans:** TBD
+- [x] 19-01-PLAN.md — UI, sharing generation, clipboard print bridge, and Lazy route integration
 
 ---
 
@@ -190,22 +202,22 @@
 
 **Requirements:** 13/13 mapped
 
-| Requirement | Phase |
-|-------------|-------|
-| SOC-01 Activity Feed Page | 15 |
-| SOC-02 Realtime Updates | 15 |
-| SOC-03 Filtering | 15 |
-| LB-01 Pinch-to-Zoom | 16 |
-| LB-02 Swipe Refinement | 16 |
-| LB-03 EXIF Display | 16 |
-| LB-04 Lightbox Download | 16 |
-| DL-01 Multi-Select Queue | 17 |
-| DL-02 Batch Download | 17 |
-| DL-03 Queue Persistence | 17 |
-| SC-01 Photo Claiming Email | 18 |
-| SC-02 Photo Claiming Face | 18 |
-| SC-03 Shared Album Links | 19 |
-| PR-01 Print Redirect | 19 |
+| Requirement                | Phase |
+| -------------------------- | ----- |
+| SOC-01 Activity Feed Page  | 15    |
+| SOC-02 Realtime Updates    | 15    |
+| SOC-03 Filtering           | 15    |
+| LB-01 Pinch-to-Zoom        | 16    |
+| LB-02 Swipe Refinement     | 16    |
+| LB-03 EXIF Display         | 16    |
+| LB-04 Lightbox Download    | 16    |
+| DL-01 Multi-Select Queue   | 17    |
+| DL-02 Batch Download       | 17    |
+| DL-03 Queue Persistence    | 17    |
+| SC-01 Photo Claiming Email | 18    |
+| SC-02 Photo Claiming Face  | 18    |
+| SC-03 Shared Album Links   | 19    |
+| PR-01 Print Redirect       | 19    |
 
 **No orphaned requirements.** All requirements mapped.
 

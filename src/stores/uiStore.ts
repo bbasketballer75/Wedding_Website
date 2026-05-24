@@ -44,9 +44,13 @@ export interface UIState {
 export const useUIStore = create<UIState>()(
   persist(
     (set, get) => ({
-      // Theme
-      currentTheme: defaultThemeName, // Initialize with the default theme name
-      systemTheme: window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light',
+      currentTheme: defaultThemeName,
+      systemTheme:
+        typeof window !== 'undefined' && window.matchMedia
+          ? window.matchMedia('(prefers-color-scheme: dark)').matches
+            ? 'dark'
+            : 'light'
+          : 'light',
       setCurrentTheme: themeName => set({ currentTheme: themeName }),
       setSystemTheme: theme => set({ systemTheme: theme }),
 

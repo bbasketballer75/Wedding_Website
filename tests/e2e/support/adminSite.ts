@@ -9,12 +9,21 @@ import {
   dashboardPhotosCount,
   featuredSlots,
   pendingUploads,
+  mockPendingClaims,
+  mockApprovedClaims,
+  mockRejectedClaims,
 } from './adminMockData'
 import { galleryPhotos } from './mockData'
 
 // ─── Types ────────────────────────────────────────────────────────────────────
 
-type JsonValue = null | boolean | number | string | readonly JsonValue[] | { [key: string]: JsonValue }
+type JsonValue =
+  | null
+  | boolean
+  | number
+  | string
+  | readonly JsonValue[]
+  | { [key: string]: JsonValue }
 
 // ─── Constants ────────────────────────────────────────────────────────────────
 
@@ -62,7 +71,7 @@ export async function injectAdminSession(page: Page) {
  * Install Supabase route mocks for all admin page data requirements.
  */
 export async function installAdminMocks(page: Page) {
-  await page.route('**/*', async (route) => {
+  await page.route('**/*', async route => {
     const request = route.request()
     const url = new URL(request.url())
 
@@ -128,6 +137,29 @@ export async function installAdminMocks(page: Page) {
       return
     }
 
+    // ── photo_claims ────────────────────────────────────────────────────────
+    if (path.includes('/rest/v1/photo_claims')) {
+      if (request.method() === 'GET') {
+        const idParam = url.searchParams.get('id')
+        if (idParam === 'eq.claim-pending-1') {
+          await fulfillJson(route, mockPendingClaims[0])
+          return
+        }
+        const statusParam = url.searchParams.get('status')
+        if (statusParam === 'eq.approved') {
+          await fulfillJson(route, mockApprovedClaims)
+        } else if (statusParam === 'eq.rejected') {
+          await fulfillJson(route, mockRejectedClaims)
+        } else {
+          await fulfillJson(route, mockPendingClaims)
+        }
+        return
+      }
+      // PATCH/POST/DELETE — approve, reject, log audit
+      await fulfillJson(route, [])
+      return
+    }
+
     // ── site_editorial_features ─────────────────────────────────────────────
     if (path.includes('/rest/v1/site_editorial_features')) {
       if (request.method() === 'GET') {
@@ -145,7 +177,10 @@ export async function installAdminMocks(page: Page) {
     }
 
     // ── moderation_audit_log ────────────────────────────────────────────────
-    if (path.includes('/rest/v1/moderation_audit_log') || path.includes('/rpc/fetch_moderation_audit')) {
+    if (
+      path.includes('/rest/v1/moderation_audit_log') ||
+      path.includes('/rpc/fetch_moderation_audit')
+    ) {
       await fulfillJson(route, auditLogEntries as unknown as JsonValue)
       return
     }
@@ -190,20 +225,22 @@ export async function gotoAdminPage(page: Page, route: string) {
 export async function waitForPageReady(page: Page) {
   await page.waitForLoadState('domcontentloaded')
   await page.waitForLoadState('networkidle', { timeout: 8000 }).catch(() => {})
-  await page.evaluate(async () => {
-    if ('fonts' in document) await document.fonts.ready
-  })
+  await page
+    .evaluate(async () => {
+      if ('fonts' in document) await document.fonts.ready
+    })
+    .catch(() => {}) // page may navigate (auth redirect) — swallow context-destroyed errors
   await page.waitForTimeout(200)
 }
 
 // ─── Accessibility helper ─────────────────────────────────────────────────────
 
 export async function expectNoCriticalViolations(page: Page) {
-  const results = await new AxeBuilder({ page })
-    .withTags(['wcag2a', 'wcag2aa'])
-    .analyze()
-  const critical = results.violations.filter((v) => v.impact === 'critical')
-  expect(critical, `Critical a11y violations: ${critical.map((v) => v.id).join(', ')}`).toHaveLength(0)
+  const results = await new AxeBuilder({ page }).withTags(['wcag2a', 'wcag2aa']).analyze()
+  const critical = results.violations.filter(v => v.impact === 'critical')
+  expect(critical, `Critical a11y violations: ${critical.map(v => v.id).join(', ')}`).toHaveLength(
+    0
+  )
 }
 
 // ─── Screenshot helper ────────────────────────────────────────────────────────
@@ -233,6 +270,9 @@ export async function expectAdminScreenshot(page: Page, snapshotName: string) {
 
 export const test = base.extend({
   page: async ({ page }, runPage) => {
+    await page.addInitScript(() => {
+      ;(window as any).__E2E__ = true
+    })
     await page.emulateMedia({ reducedMotion: 'reduce', colorScheme: 'light' })
     await runPage(page)
   },

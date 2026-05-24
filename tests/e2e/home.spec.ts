@@ -1,7 +1,17 @@
-import { expect, expectVisibleFocus, expectSectionScreenshot, gotoPublicPage, pauseMedia, test, viewports } from './support/publicSite'
+import {
+  expect,
+  expectVisibleFocus,
+  expectSectionScreenshot,
+  gotoPublicPage,
+  pauseMedia,
+  test,
+  viewports,
+} from './support/publicSite'
 
 test.describe('Home Page', () => {
-  test('keeps the bespoke home nav and lets keyboard users skip to main content', async ({ page }) => {
+  test('keeps the bespoke home nav and lets keyboard users skip to main content', async ({
+    page,
+  }) => {
     await gotoPublicPage(page, '/')
 
     await expect(page.getByTestId('home-nav')).toBeVisible()
@@ -18,17 +28,35 @@ test.describe('Home Page', () => {
 
   test('routes top-level home nav links into the public experience', async ({ page }) => {
     await gotoPublicPage(page, '/')
-    // The home-nav becomes interactive only after scrolling past the hero
-    await page.evaluate(() => window.scrollBy(0, window.innerHeight * 1.5))
-    await page.waitForTimeout(600)
 
-    await page.getByTestId('home-nav').getByRole('link', { name: 'Watch Film' }).click()
+    // Wait for showUI timer (1200ms from mount) then scroll well past the hero
+    await page.waitForTimeout(1400)
+    await page.evaluate(() => window.scrollBy(0, window.innerHeight * 2.5))
+
+    // Wait until the nav sheds pointer-events-none (heroMateriallyVisible = false AND showUI = true)
+    const nav = page.getByTestId('home-nav')
+    await page.waitForFunction(
+      () => {
+        const el = document.querySelector('[data-testid="home-nav"]')
+        return el && window.getComputedStyle(el).pointerEvents !== 'none'
+      },
+      { timeout: 8000 }
+    )
+
+    await nav.getByRole('link', { name: 'Watch Film' }).click()
     await expect(page).toHaveURL(/\/film$/)
 
     await gotoPublicPage(page, '/')
-    await page.evaluate(() => window.scrollBy(0, window.innerHeight * 1.5))
-    await page.waitForTimeout(600)
-    await page.getByTestId('home-nav').getByRole('link', { name: 'Guestbook' }).click()
+    await page.waitForTimeout(1400)
+    await page.evaluate(() => window.scrollBy(0, window.innerHeight * 2.5))
+    await page.waitForFunction(
+      () => {
+        const el = document.querySelector('[data-testid="home-nav"]')
+        return el && window.getComputedStyle(el).pointerEvents !== 'none'
+      },
+      { timeout: 8000 }
+    )
+    await nav.getByRole('link', { name: 'Guestbook' }).click()
     await expect(page).toHaveURL(/\/guestbook$/)
   })
 
@@ -44,7 +72,7 @@ for (const viewport of Object.keys(viewports) as Array<keyof typeof viewports>) 
   test(`home hero visual baseline (${viewport})`, async ({ page }) => {
     await gotoPublicPage(page, '/', viewport)
     await pauseMedia(page)
-    await page.locator('[data-testid="home-hero"] video').evaluateAll((nodes) => {
+    await page.locator('[data-testid="home-hero"] video').evaluateAll(nodes => {
       for (const node of nodes) {
         const video = node as HTMLVideoElement
         video.pause()
@@ -53,6 +81,10 @@ for (const viewport of Object.keys(viewports) as Array<keyof typeof viewports>) 
         video.style.visibility = 'hidden'
       }
     })
-    await expectSectionScreenshot(page.getByTestId('home-hero'), `home-hero-${viewport}.png`)
+    const hero = page.getByTestId('home-hero')
+    // Wait for the hero element to be attached and stable before screenshotting
+    await hero.waitFor({ state: 'attached', timeout: 10000 })
+    await page.waitForTimeout(400)
+    await expectSectionScreenshot(hero, `home-hero-${viewport}.png`)
   })
 }

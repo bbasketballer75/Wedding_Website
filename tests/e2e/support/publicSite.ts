@@ -1,8 +1,21 @@
 import AxeBuilder from '@axe-core/playwright'
 import { expect, type Locator, type Page, type Route, test as base } from '@playwright/test'
-import { approvedGuestUploads, galleryPhotos, guestUploadInsertResponse, guestbookMessagesWithComments, guestbookSubmitResponse } from './mockData'
+import {
+  approvedGuestUploads,
+  galleryPhotos,
+  guestUploadInsertResponse,
+  guestbookMessagesWithComments,
+  guestbookSubmitResponse,
+  mockActivityLog,
+} from './mockData'
 
-type JsonValue = null | boolean | number | string | readonly JsonValue[] | { [key: string]: JsonValue }
+type JsonValue =
+  | null
+  | boolean
+  | number
+  | string
+  | readonly JsonValue[]
+  | { [key: string]: JsonValue }
 
 const JSON_HEADERS = {
   'access-control-allow-origin': '*',
@@ -29,7 +42,7 @@ async function fulfillJson(route: Route, body: JsonValue, status = 200) {
 export async function installPublicSiteMocks(page: Page) {
   let uploadAttempt = 0
 
-  await page.route('**/*', async (route) => {
+  await page.route('**/*', async route => {
     const request = route.request()
     const url = new URL(request.url())
 
@@ -39,7 +52,11 @@ export async function installPublicSiteMocks(page: Page) {
 
       if (uploadAttempt === 2) {
         // Simulate a slot request failure for the second file (e.g. the video)
-        await route.fulfill({ status: 500, headers: JSON_HEADERS, body: 'Server configuration error' })
+        await route.fulfill({
+          status: 500,
+          headers: JSON_HEADERS,
+          body: 'Server configuration error',
+        })
         return
       }
 
@@ -106,23 +123,63 @@ export async function installPublicSiteMocks(page: Page) {
       return
     }
 
+    if (url.pathname.includes('/rest/v1/guest_share_tokens')) {
+      const tokenParam = url.searchParams.get('token')
+      if (tokenParam === 'eq.invalid-token') {
+        await fulfillJson(route, null)
+      } else {
+        await fulfillJson(route, { guest_email: 'jane@example.com', token: 'valid-showcase-token' })
+      }
+      return
+    }
+
+    if (url.pathname.includes('/rest/v1/guest_identities')) {
+      if (url.searchParams.get('select')?.includes('photo_claims')) {
+        await fulfillJson(route, {
+          id: 'identity-jane',
+          photo_claims: [
+            {
+              id: 'claim-1',
+              status: 'approved',
+              photos: galleryPhotos[0],
+            },
+          ],
+        })
+      } else {
+        await fulfillJson(route, { display_name: 'Jane Miller' })
+      }
+      return
+    }
+
+    if (url.pathname.includes('/rest/v1/activity_log')) {
+      await fulfillJson(route, mockActivityLog)
+      return
+    }
+
     await fulfillJson(route, [], 200)
   })
 }
 
 export async function preparePublicPage(page: Page) {
-  page.on('console', (msg) => {
+  await page.addInitScript(() => {
+    ;(window as any).__E2E__ = true
+  })
+  page.on('console', msg => {
     if (msg.type() === 'error') {
       console.log(`[Browser Console Error] ${msg.text()}`)
     }
   })
-  page.on('pageerror', (err) => {
+  page.on('pageerror', err => {
     console.log(`[Browser Page Error] ${err.stack || err.message}`)
   })
   await page.emulateMedia({ reducedMotion: 'reduce', colorScheme: 'light' })
 }
 
-export async function gotoPublicPage(page: Page, route: string, viewport: ViewportName = 'desktop') {
+export async function gotoPublicPage(
+  page: Page,
+  route: string,
+  viewport: ViewportName = 'desktop'
+) {
   await page.setViewportSize(viewports[viewport])
   await page.goto(route)
   await waitForPageReady(page)
@@ -131,34 +188,40 @@ export async function gotoPublicPage(page: Page, route: string, viewport: Viewpo
 export async function waitForPageReady(page: Page) {
   await page.waitForLoadState('domcontentloaded')
   await page.waitForLoadState('networkidle', { timeout: 5000 }).catch(() => {})
-  await page.evaluate(async () => {
-    if ('fonts' in document) {
-      await document.fonts.ready
-    }
-  }).catch(() => {})
+  await page
+    .evaluate(async () => {
+      if ('fonts' in document) {
+        await document.fonts.ready
+      }
+    })
+    .catch(() => {})
   await page.waitForTimeout(150)
 }
 
 export async function pauseMedia(page: Page) {
-  await page.evaluate(() => {
-    for (const key of Object.keys(window.localStorage)) {
-      if (key.startsWith('video-progress-')) {
-        window.localStorage.removeItem(key)
+  await page
+    .evaluate(() => {
+      for (const key of Object.keys(window.localStorage)) {
+        if (key.startsWith('video-progress-')) {
+          window.localStorage.removeItem(key)
+        }
       }
-    }
-  }).catch(() => {})
+    })
+    .catch(() => {})
 
   const videos = page.locator('video')
   const count = await videos.count()
 
   for (let index = 0; index < count; index += 1) {
     const video = videos.nth(index)
-    await video.evaluate((node) => {
-      const element = node as HTMLVideoElement
-      element.pause()
-      element.currentTime = 0
-      element.dispatchEvent(new Event('timeupdate'))
-    }).catch(() => {})
+    await video
+      .evaluate(node => {
+        const element = node as HTMLVideoElement
+        element.pause()
+        element.currentTime = 0
+        element.dispatchEvent(new Event('timeupdate'))
+      })
+      .catch(() => {})
   }
 
   await page.waitForTimeout(100)
@@ -166,14 +229,17 @@ export async function pauseMedia(page: Page) {
 
 export async function expectNoCriticalViolations(page: Page) {
   const results = await new AxeBuilder({ page }).analyze()
-  const criticalViolations = results.violations.filter((violation) => violation.impact === 'critical')
-  expect(criticalViolations, `Critical accessibility violations: ${criticalViolations.map((item) => item.id).join(', ')}`).toEqual([])
+  const criticalViolations = results.violations.filter(violation => violation.impact === 'critical')
+  expect(
+    criticalViolations,
+    `Critical accessibility violations: ${criticalViolations.map(item => item.id).join(', ')}`
+  ).toEqual([])
 }
 
 export async function expectVisibleFocus(locator: Locator) {
   await expect(locator).toBeFocused()
 
-  const hasVisibleFocus = await locator.evaluate((node) => {
+  const hasVisibleFocus = await locator.evaluate(node => {
     const styles = window.getComputedStyle(node)
     const outlineWidth = Number.parseFloat(styles.outlineWidth || '0')
     return (
@@ -191,7 +257,7 @@ export async function expectSectionScreenshot(locator: Locator, snapshotName: st
   const publicHeader = page.getByTestId('public-header')
 
   await publicHeader
-    .evaluateAll((nodes) => {
+    .evaluateAll(nodes => {
       for (const node of nodes) {
         const element = node as HTMLElement
         element.dataset.codexScreenshotVisibility = element.style.visibility
@@ -208,7 +274,8 @@ export async function expectSectionScreenshot(locator: Locator, snapshotName: st
   // overflow:auto is required for scrollbar-gutter to take effect; overflow:hidden
   // would prevent toHaveScreenshot's internal scrollIntoView from working.
   await page.evaluate(() => {
-    document.documentElement.dataset.prevScrollbarGutter = document.documentElement.style.scrollbarGutter
+    document.documentElement.dataset.prevScrollbarGutter =
+      document.documentElement.style.scrollbarGutter
     document.documentElement.dataset.prevOverflow = document.documentElement.style.overflow
     document.documentElement.style.overflow = 'auto'
     document.documentElement.style.scrollbarGutter = 'stable'
@@ -227,13 +294,14 @@ export async function expectSectionScreenshot(locator: Locator, snapshotName: st
     })
   } finally {
     await page.evaluate(() => {
-      document.documentElement.style.scrollbarGutter = document.documentElement.dataset.prevScrollbarGutter ?? ''
+      document.documentElement.style.scrollbarGutter =
+        document.documentElement.dataset.prevScrollbarGutter ?? ''
       document.documentElement.style.overflow = document.documentElement.dataset.prevOverflow ?? ''
       delete document.documentElement.dataset.prevScrollbarGutter
       delete document.documentElement.dataset.prevOverflow
     })
     await publicHeader
-      .evaluateAll((nodes) => {
+      .evaluateAll(nodes => {
         for (const node of nodes) {
           const element = node as HTMLElement
           element.style.visibility = element.dataset.codexScreenshotVisibility ?? ''

@@ -1,11 +1,11 @@
-import { useMemo, useCallback } from 'react'
+import { useMemo, useCallback, useEffect } from 'react'
 import { ActivityCard } from './ActivityCard'
 import { ActivityFilters } from './ActivityFilters'
 import { NewActivityBanner } from './NewActivityBanner'
 import { EmptyActivityState } from './EmptyActivityState'
 import { useActivityRealtime } from '@/hooks/useActivityRealtime'
 import { activityFeedStore } from '@/stores/activityFeedStore'
-import { useInfiniteScroll } from '@/hooks/useInfiniteScroll'
+import { useIntersectionObserver } from '@/hooks/useIntersectionObserver'
 import { fetchActivityFeed } from '@/lib/supabase'
 
 const typeFilterMap = {
@@ -16,13 +16,13 @@ const typeFilterMap = {
 } as const
 
 export function ActivityFeed() {
-  const items = activityFeedStore((state) => state.items)
-  const activeFilter = activityFeedStore((state) => state.activeFilter)
-  const isLoading = activityFeedStore((state) => state.isLoading)
-  const hasMore = activityFeedStore((state) => state.hasMore)
-  const setItems = activityFeedStore((state) => state.setItems)
-  const setHasMore = activityFeedStore((state) => state.setHasMore)
-  const setIsLoading = activityFeedStore((state) => state.setIsLoading)
+  const items = activityFeedStore(state => state.items)
+  const activeFilter = activityFeedStore(state => state.activeFilter)
+  const isLoading = activityFeedStore(state => state.isLoading)
+  const hasMore = activityFeedStore(state => state.hasMore)
+  const setItems = activityFeedStore(state => state.setItems)
+  const setHasMore = activityFeedStore(state => state.setHasMore)
+  const setIsLoading = activityFeedStore(state => state.setIsLoading)
 
   // Subscribe to realtime updates
   useActivityRealtime()
@@ -47,17 +47,22 @@ export function ActivityFeed() {
   }, [isLoading, hasMore, items, setItems, setHasMore, setIsLoading])
 
   // Infinite scroll trigger at threshold
-  const { targetRef } = useInfiniteScroll({
-    threshold: 200,
-    onLoadMore: loadMore,
-    enabled: hasMore && !isLoading,
+  const [targetRef, isIntersecting] = useIntersectionObserver({
+    rootMargin: '200px',
+    threshold: 0.1,
   })
+
+  useEffect(() => {
+    if (isIntersecting && hasMore && !isLoading) {
+      loadMore()
+    }
+  }, [isIntersecting, hasMore, isLoading, loadMore])
 
   // Client-side filtering
   const filteredItems = useMemo(() => {
     const filterType = typeFilterMap[activeFilter]
     if (!filterType) return items
-    return items.filter((item) => item.type === filterType)
+    return items.filter(item => item.type === filterType)
   }, [items, activeFilter])
 
   if (items.length === 0 && !isLoading) {
@@ -65,19 +70,19 @@ export function ActivityFeed() {
   }
 
   return (
-    <div className="w-full max-w-2xl mx-auto" ref={targetRef}>
+    <div className='w-full max-w-2xl mx-auto'>
       <NewActivityBanner />
       <ActivityFilters />
 
-      <div className="flex flex-col gap-3">
-        {filteredItems.map((item) => (
+      <div className='flex flex-col gap-3'>
+        {filteredItems.map(item => (
           <ActivityCard key={item.id} item={item} />
         ))}
       </div>
 
       {hasMore && items.length > 0 && (
-        <div className="mt-6 text-center">
-          <p className="text-sm text-charcoal-500">
+        <div ref={targetRef} className='mt-6 text-center py-4'>
+          <p className='text-sm text-charcoal-500'>
             {isLoading ? 'Loading more...' : 'Scroll for more or end of feed'}
           </p>
         </div>

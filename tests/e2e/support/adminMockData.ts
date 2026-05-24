@@ -30,7 +30,10 @@ export const pendingUploads = [
     guest_name: 'Riley Thompson',
     guest_email: 'riley@example.com',
     message: 'Captured a few special moments from our table!',
-    photo_urls: ['/images/engagement/PoradaProposal-29.webp', '/images/engagement/PoradaProposal-11.webp'],
+    photo_urls: [
+      '/images/engagement/PoradaProposal-29.webp',
+      '/images/engagement/PoradaProposal-11.webp',
+    ],
     video_urls: [],
     status: 'pending',
     created_at: '2025-05-11T09:00:00.000Z',
@@ -127,7 +130,7 @@ export const auditLogEntries = [
     actor_id: 'mock-admin-id',
     actor_email: 'admin@test.wedding',
     actor_name: 'Admin',
-    summary: "Rejected upload from Sam Garcia.",
+    summary: 'Rejected upload from Sam Garcia.',
     metadata: { guest_name: 'Sam Garcia' },
     created_at: '2025-05-13T12:00:00.000Z',
   },
@@ -196,3 +199,64 @@ export const dashboardPhotosCount = [{ count: 42 }]
 export const dashboardPendingCount = [{ count: 3 }]
 export const dashboardMessagesCount = [{ count: 18 }]
 export const dashboardApprovedUploadsCount = [{ count: 7 }]
+
+// ─── Photo Claims (v3.0 Guest Identity verification) ──────────────────────────
+
+export const mockPendingClaims = [
+  {
+    id: 'claim-pending-1',
+    status: 'pending',
+    claim_type: 'face',
+    created_at: '2025-05-12T10:00:00.000Z',
+    face_id: 'face-1',
+    guest_identities: {
+      id: 'identity-jane',
+      display_name: 'Jane Miller',
+      email: 'jane@example.com',
+    },
+    photos: {
+      id: 'photo-1',
+      url: '/images/engagement/PoradaProposal-29.webp',
+      thumbnail: '/images/engagement/PoradaProposal-29.webp',
+    },
+  },
+]
+
+export const mockApprovedClaims = [
+  {
+    id: 'claim-approved-1',
+    status: 'approved',
+    claim_type: 'photo',
+    created_at: '2025-05-11T12:00:00.000Z',
+    guest_identities: {
+      id: 'identity-bob',
+      display_name: 'Bob Baker',
+      email: 'bob@example.com',
+    },
+    photos: {
+      id: 'photo-2',
+      url: '/images/engagement/PoradaProposal-11.webp',
+      thumbnail: '/images/engagement/PoradaProposal-11.webp',
+    },
+  },
+]
+
+export const mockRejectedClaims = [
+  {
+    id: 'claim-rejected-1',
+    status: 'rejected',
+    claim_type: 'face',
+    created_at: '2025-05-10T14:00:00.000Z',
+    rejection_reason: 'Face belongs to another guest',
+    guest_identities: {
+      id: 'identity-charlie',
+      display_name: 'Charlie Carter',
+      email: 'charlie@example.com',
+    },
+    photos: {
+      id: 'photo-3',
+      url: '/images/engagement/PoradaProposal-150.webp',
+      thumbnail: '/images/engagement/PoradaProposal-150.webp',
+    },
+  },
+]

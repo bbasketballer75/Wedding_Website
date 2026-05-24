@@ -14,7 +14,19 @@ import { GallerySkeleton } from '@/components/ui/Skeleton'
 import { downloadFile } from '@/utils/download'
 import { getMediaPath } from '@/utils/media'
 import { useInfiniteScroll } from '@/hooks/useInfiniteScroll'
-import { Search, Grid3X3, LayoutGrid, CalendarDays, Filter, Loader2, Images, X, CheckSquare, Download, Share2 } from 'lucide-react'
+import {
+  Search,
+  Grid3X3,
+  LayoutGrid,
+  CalendarDays,
+  Filter,
+  Loader2,
+  Images,
+  X,
+  CheckSquare,
+  Download,
+  Share2,
+} from 'lucide-react'
 import { cn } from '@/lib/utils'
 import {
   addPhotoComment,
@@ -35,7 +47,12 @@ import { partyData } from '@/data/weddingParty'
 // are treated as the same person in filters and the detected-faces widget.
 const FACE_NAME_ALIASES: Record<string, string> = (() => {
   const map: Record<string, string> = {}
-  for (const person of [...partyData.couple, ...partyData.parents, ...partyData.groomsmen, ...partyData.bridesmaids]) {
+  for (const person of [
+    ...partyData.couple,
+    ...partyData.parents,
+    ...partyData.groomsmen,
+    ...partyData.bridesmaids,
+  ]) {
     if (person.name && person.fullName && person.name !== person.fullName) {
       map[person.name] = person.fullName
     }
@@ -122,215 +139,695 @@ const COLLECTION_COVERS: Record<CollectionTab, string> = {
   Proposal: '/images/engagement/PoradaProposal-29.webp',
   'Bach+ette': getMediaPath('/media/_thumbs/Bach+ette/Photos/PXL_20240816_221115487.MP.webp'),
   'Wedding Photos': getMediaPath('/media/_thumbs/Professional/Wedding Day/Photos/DSC06261.webp'),
-  'Guest Photos': getMediaPath('/media/_thumbs/Guest Uploads/Wedding Day/Live Photos/Stills/20250511_180812-0b9c.webp'),
+  'Guest Photos': getMediaPath(
+    '/media/_thumbs/Guest Uploads/Wedding Day/Live Photos/Stills/20250511_180812-0b9c.webp'
+  ),
 }
 
-const curatedPhotos = ([
-  { 
-    id: 'curated-1', 
-    url: '/images/engagement/PoradaProposal-29.webp', 
-    thumbnail: '/images/engagement/PoradaProposal-29.webp', 
-    caption: 'The walk into the surprise', 
-    category: 'Arrival', 
-    likes: 24, 
-    aspectRatio: 1.5,
-    time: 'Golden hour',
-    location: 'Proposal spot',
-    photographer: 'Emma Photography',
-    date: '2024-10-31',
-    createdAt: '2024-10-31T18:00:00',
-    faces: [
-      { id: 'f1', name: 'Jordyn', x: 40, y: 35 },
-      { id: 'f2', name: 'Austin', x: 65, y: 40 }
-    ],
-    tags: ['engagement', 'proposal', 'arrival'],
-    comments: [
-      { id: 'c1', author: 'Emma Photography', content: 'The exact moment the surprise started to click.', timestamp: 'Curated note' }
-    ],
-    source: 'professional',
-    collection: 'Proposal',
-  },
-  { 
-    id: 'curated-2', 
-    url: '/images/engagement/PoradaProposal-11.webp', 
-    thumbnail: '/images/engagement/PoradaProposal-11.webp', 
-    caption: 'A quiet pause before forever', 
-    category: 'Portraits', 
-    likes: 56, 
-    aspectRatio: 0.67,
-    time: 'Golden hour',
-    location: 'Proposal spot',
-    photographer: 'Emma Photography',
-    date: '2024-10-31',
-    createdAt: '2024-10-31T18:05:00',
-    faces: [{ id: 'f3', name: 'Jordyn', x: 50, y: 45 }],
-    tags: ['engagement', 'portrait', 'jordyn'],
-    source: 'professional',
-    collection: 'Proposal',
-  },
-  { 
-    id: 'curated-3', 
-    url: '/images/engagement/PoradaProposal-150.webp', 
-    thumbnail: '/images/engagement/PoradaProposal-150.webp', 
-    caption: 'The question already answered in her smile', 
-    category: 'Proposal', 
-    likes: 42, 
-    aspectRatio: 1.5,
-    time: 'Proposal',
-    location: 'Proposal spot',
-    photographer: 'Emma Photography',
-    date: '2024-10-31',
-    createdAt: '2024-10-31T18:08:00',
-    faces: [
-      { id: 'f4', name: 'Austin', x: 35, y: 40 },
-      { id: 'f5', name: 'Jordyn', x: 65, y: 40 }
-    ],
-    tags: ['engagement', 'proposal', 'yes'],
-    source: 'professional',
-    collection: 'Proposal',
-  },
-  { 
-    id: 'curated-4', 
-    url: '/images/engagement/PoradaProposal-181.webp', 
-    thumbnail: '/images/engagement/PoradaProposal-181.webp', 
-    caption: 'Right after the yes', 
-    category: 'Proposal', 
-    likes: 89, 
-    aspectRatio: 1.5,
-    time: 'Immediately after',
-    location: 'Proposal spot',
-    photographer: 'Emma Photography',
-    date: '2024-10-31',
-    createdAt: '2024-10-31T18:10:00',
-    faces: [
-      { id: 'f6', name: 'Austin', x: 45, y: 45 },
-      { id: 'f7', name: 'Jordyn', x: 55, y: 45 }
-    ],
-    tags: ['engagement', 'celebration', 'couple'],
-    comments: [
-      { id: 'c2', author: 'Emma Photography', content: 'The easiest smiles of the whole session.', timestamp: 'Curated note' }
-    ],
-    source: 'professional',
-    collection: 'Proposal',
-  },
-  { 
-    id: 'curated-5', 
-    url: '/images/engagement/PoradaProposal-255.webp', 
-    thumbnail: '/images/engagement/PoradaProposal-255.webp', 
-    caption: 'Calling the people who had to know first', 
-    category: 'Celebration', 
-    likes: 31, 
-    aspectRatio: 1,
-    time: 'Blue hour',
-    location: 'After the proposal',
-    photographer: 'Emma Photography',
-    date: '2024-10-31',
-    createdAt: '2024-10-31T18:18:00',
-    faces: [
-      { id: 'f8', name: 'Austin', x: 30, y: 50 },
-      { id: 'f9', name: 'Jordyn', x: 70, y: 50 }
-    ],
-    tags: ['engagement', 'celebration', 'phone call'],
-    source: 'professional',
-    collection: 'Proposal',
-  },
-  { 
-    id: 'curated-6', 
-    url: '/images/engagement/PoradaProposal-277.webp', 
-    thumbnail: '/images/engagement/PoradaProposal-277.webp', 
-    caption: 'The just-engaged portraits', 
-    category: 'Portraits', 
-    likes: 67, 
-    aspectRatio: 0.75,
-    time: 'Blue hour',
-    location: 'Portraits',
-    photographer: 'Emma Photography',
-    date: '2024-10-31',
-    createdAt: '2024-10-31T18:22:00',
-    faces: [
-      { id: 'f10', name: 'Austin', x: 40, y: 45 },
-      { id: 'f11', name: 'Jordyn', x: 60, y: 45 }
-    ],
-    tags: ['engagement', 'portrait', 'romantic'],
-    comments: [
-      { id: 'c3', author: 'Emma Photography', content: 'These are the frames that already felt like them.', timestamp: 'Curated note' }
-    ],
-    source: 'professional',
-    collection: 'Proposal',
-  },
-  { 
-    id: 'curated-7', 
-    url: '/images/engagement/PoradaProposal-310.webp', 
-    thumbnail: '/images/engagement/PoradaProposal-310.webp', 
-    caption: 'A closer look at the ring', 
-    category: 'Details', 
-    likes: 45, 
-    aspectRatio: 1.5,
-    time: 'Detail frame',
-    location: 'Portraits',
-    photographer: 'Emma Photography',
-    date: '2024-10-31',
-    createdAt: '2024-10-31T18:26:00',
-    faces: [
-      { id: 'f12', name: 'Austin', x: 45, y: 40 },
-      { id: 'f13', name: 'Jordyn', x: 55, y: 40 }
-    ],
-    tags: ['engagement', 'ring', 'details'],
-    source: 'professional',
-    collection: 'Proposal',
-  },
-  { 
-    id: 'curated-8', 
-    url: '/images/engagement/PoradaProposal-375.webp', 
-    thumbnail: '/images/engagement/PoradaProposal-375.webp', 
-    caption: 'The exhale after everything changed', 
-    category: 'Portraits', 
-    likes: 38, 
-    aspectRatio: 1.5,
-    time: 'End of the session',
-    location: 'Portraits',
-    photographer: 'Emma Photography',
-    date: '2024-10-31',
-    createdAt: '2024-10-31T18:32:00',
-    faces: [
-      { id: 'f14', name: 'Jordyn', x: 25, y: 50 },
-      { id: 'f15', name: 'Austin', x: 50, y: 45 }
-    ],
-    tags: ['engagement', 'portrait', 'quiet moment'],
-    source: 'professional',
-    collection: 'Proposal',
-  },
-  { id: 'curated-9', url: '/images/engagement/PoradaProposal-4.webp', thumbnail: '/images/engagement/PoradaProposal-4.webp', caption: undefined, category: 'Portraits', likes: 0, aspectRatio: 1.5, time: undefined, location: 'Proposal spot', photographer: 'Emma Photography', date: '2024-10-31', createdAt: '2024-10-31T17:30:00', faces: [], tags: ['engagement', 'portrait'], source: 'professional', collection: 'Proposal' },
-  { id: 'curated-10', url: '/images/engagement/PoradaProposal-6.webp', thumbnail: '/images/engagement/PoradaProposal-6.webp', caption: undefined, category: 'Portraits', likes: 0, aspectRatio: 1.5, time: undefined, location: 'Proposal spot', photographer: 'Emma Photography', date: '2024-10-31', createdAt: '2024-10-31T17:31:00', faces: [], tags: ['engagement', 'portrait'], source: 'professional', collection: 'Proposal' },
-  { id: 'curated-11', url: '/images/engagement/PoradaProposal-28.webp', thumbnail: '/images/engagement/PoradaProposal-28.webp', caption: undefined, category: 'Portraits', likes: 0, aspectRatio: 0.667, time: undefined, location: 'Proposal spot', photographer: 'Emma Photography', date: '2024-10-31', createdAt: '2024-10-31T17:32:00', faces: [], tags: ['engagement', 'portrait'], source: 'professional', collection: 'Proposal' },
-  { id: 'curated-12', url: '/images/engagement/PoradaProposal-31.webp', thumbnail: '/images/engagement/PoradaProposal-31.webp', caption: undefined, category: 'Portraits', likes: 0, aspectRatio: 1.5, time: undefined, location: 'Proposal spot', photographer: 'Emma Photography', date: '2024-10-31', createdAt: '2024-10-31T17:33:00', faces: [], tags: ['engagement', 'portrait'], source: 'professional', collection: 'Proposal' },
-  { id: 'curated-13', url: '/images/engagement/PoradaProposal-36.webp', thumbnail: '/images/engagement/PoradaProposal-36.webp', caption: undefined, category: 'Portraits', likes: 0, aspectRatio: 1.5, time: undefined, location: 'Proposal spot', photographer: 'Emma Photography', date: '2024-10-31', createdAt: '2024-10-31T17:34:00', faces: [], tags: ['engagement', 'portrait'], source: 'professional', collection: 'Proposal' },
-  { id: 'curated-14', url: '/images/engagement/PoradaProposal-40.webp', thumbnail: '/images/engagement/PoradaProposal-40.webp', caption: undefined, category: 'Portraits', likes: 0, aspectRatio: 1.5, time: undefined, location: 'Proposal spot', photographer: 'Emma Photography', date: '2024-10-31', createdAt: '2024-10-31T17:35:00', faces: [], tags: ['engagement', 'portrait'], source: 'professional', collection: 'Proposal' },
-  { id: 'curated-15', url: '/images/engagement/PoradaProposal-58.webp', thumbnail: '/images/engagement/PoradaProposal-58.webp', caption: undefined, category: 'Portraits', likes: 0, aspectRatio: 1.5, time: undefined, location: 'Proposal spot', photographer: 'Emma Photography', date: '2024-10-31', createdAt: '2024-10-31T17:36:00', faces: [], tags: ['engagement', 'portrait'], source: 'professional', collection: 'Proposal' },
-  { id: 'curated-16', url: '/images/engagement/PoradaProposal-62.webp', thumbnail: '/images/engagement/PoradaProposal-62.webp', caption: undefined, category: 'Portraits', likes: 0, aspectRatio: 1.5, time: undefined, location: 'Proposal spot', photographer: 'Emma Photography', date: '2024-10-31', createdAt: '2024-10-31T17:37:00', faces: [], tags: ['engagement', 'portrait'], source: 'professional', collection: 'Proposal' },
-  { id: 'curated-17', url: '/images/engagement/PoradaProposal-67.webp', thumbnail: '/images/engagement/PoradaProposal-67.webp', caption: undefined, category: 'Portraits', likes: 0, aspectRatio: 1.5, time: undefined, location: 'Proposal spot', photographer: 'Emma Photography', date: '2024-10-31', createdAt: '2024-10-31T17:38:00', faces: [], tags: ['engagement', 'portrait'], source: 'professional', collection: 'Proposal' },
-  { id: 'curated-18', url: '/images/engagement/PoradaProposal-75.webp', thumbnail: '/images/engagement/PoradaProposal-75.webp', caption: undefined, category: 'Portraits', likes: 0, aspectRatio: 0.667, time: undefined, location: 'Proposal spot', photographer: 'Emma Photography', date: '2024-10-31', createdAt: '2024-10-31T17:39:00', faces: [], tags: ['engagement', 'portrait'], source: 'professional', collection: 'Proposal' },
-  { id: 'curated-19', url: '/images/engagement/PoradaProposal-78.webp', thumbnail: '/images/engagement/PoradaProposal-78.webp', caption: undefined, category: 'Portraits', likes: 0, aspectRatio: 0.667, time: undefined, location: 'Proposal spot', photographer: 'Emma Photography', date: '2024-10-31', createdAt: '2024-10-31T17:40:00', faces: [], tags: ['engagement', 'portrait'], source: 'professional', collection: 'Proposal' },
-  { id: 'curated-20', url: '/images/engagement/PoradaProposal-146.webp', thumbnail: '/images/engagement/PoradaProposal-146.webp', caption: undefined, category: 'Portraits', likes: 0, aspectRatio: 1.5, time: undefined, location: 'Proposal spot', photographer: 'Emma Photography', date: '2024-10-31', createdAt: '2024-10-31T17:41:00', faces: [], tags: ['engagement', 'portrait'], source: 'professional', collection: 'Proposal' },
-  { id: 'curated-21', url: '/images/engagement/PoradaProposal-156.webp', thumbnail: '/images/engagement/PoradaProposal-156.webp', caption: undefined, category: 'Portraits', likes: 0, aspectRatio: 1.5, time: undefined, location: 'Proposal spot', photographer: 'Emma Photography', date: '2024-10-31', createdAt: '2024-10-31T17:42:00', faces: [], tags: ['engagement', 'portrait'], source: 'professional', collection: 'Proposal' },
-  { id: 'curated-22', url: '/images/engagement/PoradaProposal-198.webp', thumbnail: '/images/engagement/PoradaProposal-198.webp', caption: undefined, category: 'Portraits', likes: 0, aspectRatio: 1.5, time: undefined, location: 'Proposal spot', photographer: 'Emma Photography', date: '2024-10-31', createdAt: '2024-10-31T17:43:00', faces: [], tags: ['engagement', 'portrait'], source: 'professional', collection: 'Proposal' },
-  { id: 'curated-23', url: '/images/engagement/PoradaProposal-259.webp', thumbnail: '/images/engagement/PoradaProposal-259.webp', caption: undefined, category: 'Portraits', likes: 0, aspectRatio: 1.5, time: undefined, location: 'Proposal spot', photographer: 'Emma Photography', date: '2024-10-31', createdAt: '2024-10-31T17:44:00', faces: [], tags: ['engagement', 'portrait'], source: 'professional', collection: 'Proposal' },
-  { id: 'curated-24', url: '/images/engagement/PoradaProposal-262.webp', thumbnail: '/images/engagement/PoradaProposal-262.webp', caption: undefined, category: 'Portraits', likes: 0, aspectRatio: 1.5, time: undefined, location: 'Proposal spot', photographer: 'Emma Photography', date: '2024-10-31', createdAt: '2024-10-31T17:45:00', faces: [], tags: ['engagement', 'portrait'], source: 'professional', collection: 'Proposal' },
-  { id: 'curated-25', url: '/images/engagement/PoradaProposal-268.webp', thumbnail: '/images/engagement/PoradaProposal-268.webp', caption: undefined, category: 'Portraits', likes: 0, aspectRatio: 1.5, time: undefined, location: 'Proposal spot', photographer: 'Emma Photography', date: '2024-10-31', createdAt: '2024-10-31T17:46:00', faces: [], tags: ['engagement', 'portrait'], source: 'professional', collection: 'Proposal' },
-  { id: 'curated-26', url: '/images/engagement/PoradaProposal-273.webp', thumbnail: '/images/engagement/PoradaProposal-273.webp', caption: undefined, category: 'Portraits', likes: 0, aspectRatio: 1.5, time: undefined, location: 'Proposal spot', photographer: 'Emma Photography', date: '2024-10-31', createdAt: '2024-10-31T17:47:00', faces: [], tags: ['engagement', 'portrait'], source: 'professional', collection: 'Proposal' },
-  { id: 'curated-27', url: '/images/engagement/PoradaProposal-286.webp', thumbnail: '/images/engagement/PoradaProposal-286.webp', caption: undefined, category: 'Portraits', likes: 0, aspectRatio: 1.5, time: undefined, location: 'Proposal spot', photographer: 'Emma Photography', date: '2024-10-31', createdAt: '2024-10-31T17:48:00', faces: [], tags: ['engagement', 'portrait'], source: 'professional', collection: 'Proposal' },
-  { id: 'curated-28', url: '/images/engagement/PoradaProposal-309.webp', thumbnail: '/images/engagement/PoradaProposal-309.webp', caption: undefined, category: 'Portraits', likes: 0, aspectRatio: 0.667, time: undefined, location: 'Proposal spot', photographer: 'Emma Photography', date: '2024-10-31', createdAt: '2024-10-31T17:49:00', faces: [], tags: ['engagement', 'portrait'], source: 'professional', collection: 'Proposal' },
-  { id: 'curated-29', url: '/images/engagement/PoradaProposal-316.webp', thumbnail: '/images/engagement/PoradaProposal-316.webp', caption: undefined, category: 'Portraits', likes: 0, aspectRatio: 0.667, time: undefined, location: 'Proposal spot', photographer: 'Emma Photography', date: '2024-10-31', createdAt: '2024-10-31T17:50:00', faces: [], tags: ['engagement', 'portrait'], source: 'professional', collection: 'Proposal' },
-  { id: 'curated-30', url: '/images/engagement/PoradaProposal-318.webp', thumbnail: '/images/engagement/PoradaProposal-318.webp', caption: undefined, category: 'Portraits', likes: 0, aspectRatio: 0.667, time: undefined, location: 'Proposal spot', photographer: 'Emma Photography', date: '2024-10-31', createdAt: '2024-10-31T17:51:00', faces: [], tags: ['engagement', 'portrait'], source: 'professional', collection: 'Proposal' },
-  { id: 'curated-31', url: '/images/engagement/PoradaProposal-320.webp', thumbnail: '/images/engagement/PoradaProposal-320.webp', caption: undefined, category: 'Portraits', likes: 0, aspectRatio: 0.667, time: undefined, location: 'Proposal spot', photographer: 'Emma Photography', date: '2024-10-31', createdAt: '2024-10-31T17:52:00', faces: [], tags: ['engagement', 'portrait'], source: 'professional', collection: 'Proposal' },
-  { id: 'curated-32', url: '/images/engagement/PoradaProposal-359.webp', thumbnail: '/images/engagement/PoradaProposal-359.webp', caption: undefined, category: 'Portraits', likes: 0, aspectRatio: 0.667, time: undefined, location: 'Proposal spot', photographer: 'Emma Photography', date: '2024-10-31', createdAt: '2024-10-31T17:53:00', faces: [], tags: ['engagement', 'portrait'], source: 'professional', collection: 'Proposal' },
-  { id: 'curated-33', url: '/images/engagement/PoradaProposal-421.webp', thumbnail: '/images/engagement/PoradaProposal-421.webp', caption: undefined, category: 'Portraits', likes: 0, aspectRatio: 0.667, time: undefined, location: 'Proposal spot', photographer: 'Emma Photography', date: '2024-10-31', createdAt: '2024-10-31T17:54:00', faces: [], tags: ['engagement', 'portrait'], source: 'professional', collection: 'Proposal' },
-  { id: 'curated-34', url: '/images/engagement/PoradaProposal-458.webp', thumbnail: '/images/engagement/PoradaProposal-458.webp', caption: undefined, category: 'Portraits', likes: 0, aspectRatio: 1.5, time: undefined, location: 'Proposal spot', photographer: 'Emma Photography', date: '2024-10-31', createdAt: '2024-10-31T17:55:00', faces: [], tags: ['engagement', 'portrait'], source: 'professional', collection: 'Proposal' },
-  { id: 'curated-35', url: '/images/engagement/PoradaProposal-482.webp', thumbnail: '/images/engagement/PoradaProposal-482.webp', caption: undefined, category: 'Portraits', likes: 0, aspectRatio: 0.667, time: undefined, location: 'Proposal spot', photographer: 'Emma Photography', date: '2024-10-31', createdAt: '2024-10-31T17:56:00', faces: [], tags: ['engagement', 'portrait'], source: 'professional', collection: 'Proposal' },
- ] satisfies Array<Omit<GalleryPhoto, 'albumSortOrder'>>).map((photo, index): GalleryPhoto => ({
-  ...photo,
-  albumSortOrder: index + 1,
-}))
+const curatedPhotos = (
+  [
+    {
+      id: 'curated-1',
+      url: '/images/engagement/PoradaProposal-29.webp',
+      thumbnail: '/images/engagement/PoradaProposal-29.webp',
+      caption: 'The walk into the surprise',
+      category: 'Arrival',
+      likes: 24,
+      aspectRatio: 1.5,
+      time: 'Golden hour',
+      location: 'Proposal spot',
+      photographer: 'Emma Photography',
+      date: '2024-10-31',
+      createdAt: '2024-10-31T18:00:00',
+      faces: [
+        { id: 'f1', name: 'Jordyn', x: 40, y: 35 },
+        { id: 'f2', name: 'Austin', x: 65, y: 40 },
+      ],
+      tags: ['engagement', 'proposal', 'arrival'],
+      comments: [
+        {
+          id: 'c1',
+          author: 'Emma Photography',
+          content: 'The exact moment the surprise started to click.',
+          timestamp: 'Curated note',
+        },
+      ],
+      source: 'professional',
+      collection: 'Proposal',
+    },
+    {
+      id: 'curated-2',
+      url: '/images/engagement/PoradaProposal-11.webp',
+      thumbnail: '/images/engagement/PoradaProposal-11.webp',
+      caption: 'A quiet pause before forever',
+      category: 'Portraits',
+      likes: 56,
+      aspectRatio: 0.67,
+      time: 'Golden hour',
+      location: 'Proposal spot',
+      photographer: 'Emma Photography',
+      date: '2024-10-31',
+      createdAt: '2024-10-31T18:05:00',
+      faces: [{ id: 'f3', name: 'Jordyn', x: 50, y: 45 }],
+      tags: ['engagement', 'portrait', 'jordyn'],
+      source: 'professional',
+      collection: 'Proposal',
+    },
+    {
+      id: 'curated-3',
+      url: '/images/engagement/PoradaProposal-150.webp',
+      thumbnail: '/images/engagement/PoradaProposal-150.webp',
+      caption: 'The question already answered in her smile',
+      category: 'Proposal',
+      likes: 42,
+      aspectRatio: 1.5,
+      time: 'Proposal',
+      location: 'Proposal spot',
+      photographer: 'Emma Photography',
+      date: '2024-10-31',
+      createdAt: '2024-10-31T18:08:00',
+      faces: [
+        { id: 'f4', name: 'Austin', x: 35, y: 40 },
+        { id: 'f5', name: 'Jordyn', x: 65, y: 40 },
+      ],
+      tags: ['engagement', 'proposal', 'yes'],
+      source: 'professional',
+      collection: 'Proposal',
+    },
+    {
+      id: 'curated-4',
+      url: '/images/engagement/PoradaProposal-181.webp',
+      thumbnail: '/images/engagement/PoradaProposal-181.webp',
+      caption: 'Right after the yes',
+      category: 'Proposal',
+      likes: 89,
+      aspectRatio: 1.5,
+      time: 'Immediately after',
+      location: 'Proposal spot',
+      photographer: 'Emma Photography',
+      date: '2024-10-31',
+      createdAt: '2024-10-31T18:10:00',
+      faces: [
+        { id: 'f6', name: 'Austin', x: 45, y: 45 },
+        { id: 'f7', name: 'Jordyn', x: 55, y: 45 },
+      ],
+      tags: ['engagement', 'celebration', 'couple'],
+      comments: [
+        {
+          id: 'c2',
+          author: 'Emma Photography',
+          content: 'The easiest smiles of the whole session.',
+          timestamp: 'Curated note',
+        },
+      ],
+      source: 'professional',
+      collection: 'Proposal',
+    },
+    {
+      id: 'curated-5',
+      url: '/images/engagement/PoradaProposal-255.webp',
+      thumbnail: '/images/engagement/PoradaProposal-255.webp',
+      caption: 'Calling the people who had to know first',
+      category: 'Celebration',
+      likes: 31,
+      aspectRatio: 1,
+      time: 'Blue hour',
+      location: 'After the proposal',
+      photographer: 'Emma Photography',
+      date: '2024-10-31',
+      createdAt: '2024-10-31T18:18:00',
+      faces: [
+        { id: 'f8', name: 'Austin', x: 30, y: 50 },
+        { id: 'f9', name: 'Jordyn', x: 70, y: 50 },
+      ],
+      tags: ['engagement', 'celebration', 'phone call'],
+      source: 'professional',
+      collection: 'Proposal',
+    },
+    {
+      id: 'curated-6',
+      url: '/images/engagement/PoradaProposal-277.webp',
+      thumbnail: '/images/engagement/PoradaProposal-277.webp',
+      caption: 'The just-engaged portraits',
+      category: 'Portraits',
+      likes: 67,
+      aspectRatio: 0.75,
+      time: 'Blue hour',
+      location: 'Portraits',
+      photographer: 'Emma Photography',
+      date: '2024-10-31',
+      createdAt: '2024-10-31T18:22:00',
+      faces: [
+        { id: 'f10', name: 'Austin', x: 40, y: 45 },
+        { id: 'f11', name: 'Jordyn', x: 60, y: 45 },
+      ],
+      tags: ['engagement', 'portrait', 'romantic'],
+      comments: [
+        {
+          id: 'c3',
+          author: 'Emma Photography',
+          content: 'These are the frames that already felt like them.',
+          timestamp: 'Curated note',
+        },
+      ],
+      source: 'professional',
+      collection: 'Proposal',
+    },
+    {
+      id: 'curated-7',
+      url: '/images/engagement/PoradaProposal-310.webp',
+      thumbnail: '/images/engagement/PoradaProposal-310.webp',
+      caption: 'A closer look at the ring',
+      category: 'Details',
+      likes: 45,
+      aspectRatio: 1.5,
+      time: 'Detail frame',
+      location: 'Portraits',
+      photographer: 'Emma Photography',
+      date: '2024-10-31',
+      createdAt: '2024-10-31T18:26:00',
+      faces: [
+        { id: 'f12', name: 'Austin', x: 45, y: 40 },
+        { id: 'f13', name: 'Jordyn', x: 55, y: 40 },
+      ],
+      tags: ['engagement', 'ring', 'details'],
+      source: 'professional',
+      collection: 'Proposal',
+    },
+    {
+      id: 'curated-8',
+      url: '/images/engagement/PoradaProposal-375.webp',
+      thumbnail: '/images/engagement/PoradaProposal-375.webp',
+      caption: 'The exhale after everything changed',
+      category: 'Portraits',
+      likes: 38,
+      aspectRatio: 1.5,
+      time: 'End of the session',
+      location: 'Portraits',
+      photographer: 'Emma Photography',
+      date: '2024-10-31',
+      createdAt: '2024-10-31T18:32:00',
+      faces: [
+        { id: 'f14', name: 'Jordyn', x: 25, y: 50 },
+        { id: 'f15', name: 'Austin', x: 50, y: 45 },
+      ],
+      tags: ['engagement', 'portrait', 'quiet moment'],
+      source: 'professional',
+      collection: 'Proposal',
+    },
+    {
+      id: 'curated-9',
+      url: '/images/engagement/PoradaProposal-4.webp',
+      thumbnail: '/images/engagement/PoradaProposal-4.webp',
+      caption: undefined,
+      category: 'Portraits',
+      likes: 0,
+      aspectRatio: 1.5,
+      time: undefined,
+      location: 'Proposal spot',
+      photographer: 'Emma Photography',
+      date: '2024-10-31',
+      createdAt: '2024-10-31T17:30:00',
+      faces: [],
+      tags: ['engagement', 'portrait'],
+      source: 'professional',
+      collection: 'Proposal',
+    },
+    {
+      id: 'curated-10',
+      url: '/images/engagement/PoradaProposal-6.webp',
+      thumbnail: '/images/engagement/PoradaProposal-6.webp',
+      caption: undefined,
+      category: 'Portraits',
+      likes: 0,
+      aspectRatio: 1.5,
+      time: undefined,
+      location: 'Proposal spot',
+      photographer: 'Emma Photography',
+      date: '2024-10-31',
+      createdAt: '2024-10-31T17:31:00',
+      faces: [],
+      tags: ['engagement', 'portrait'],
+      source: 'professional',
+      collection: 'Proposal',
+    },
+    {
+      id: 'curated-11',
+      url: '/images/engagement/PoradaProposal-28.webp',
+      thumbnail: '/images/engagement/PoradaProposal-28.webp',
+      caption: undefined,
+      category: 'Portraits',
+      likes: 0,
+      aspectRatio: 0.667,
+      time: undefined,
+      location: 'Proposal spot',
+      photographer: 'Emma Photography',
+      date: '2024-10-31',
+      createdAt: '2024-10-31T17:32:00',
+      faces: [],
+      tags: ['engagement', 'portrait'],
+      source: 'professional',
+      collection: 'Proposal',
+    },
+    {
+      id: 'curated-12',
+      url: '/images/engagement/PoradaProposal-31.webp',
+      thumbnail: '/images/engagement/PoradaProposal-31.webp',
+      caption: undefined,
+      category: 'Portraits',
+      likes: 0,
+      aspectRatio: 1.5,
+      time: undefined,
+      location: 'Proposal spot',
+      photographer: 'Emma Photography',
+      date: '2024-10-31',
+      createdAt: '2024-10-31T17:33:00',
+      faces: [],
+      tags: ['engagement', 'portrait'],
+      source: 'professional',
+      collection: 'Proposal',
+    },
+    {
+      id: 'curated-13',
+      url: '/images/engagement/PoradaProposal-36.webp',
+      thumbnail: '/images/engagement/PoradaProposal-36.webp',
+      caption: undefined,
+      category: 'Portraits',
+      likes: 0,
+      aspectRatio: 1.5,
+      time: undefined,
+      location: 'Proposal spot',
+      photographer: 'Emma Photography',
+      date: '2024-10-31',
+      createdAt: '2024-10-31T17:34:00',
+      faces: [],
+      tags: ['engagement', 'portrait'],
+      source: 'professional',
+      collection: 'Proposal',
+    },
+    {
+      id: 'curated-14',
+      url: '/images/engagement/PoradaProposal-40.webp',
+      thumbnail: '/images/engagement/PoradaProposal-40.webp',
+      caption: undefined,
+      category: 'Portraits',
+      likes: 0,
+      aspectRatio: 1.5,
+      time: undefined,
+      location: 'Proposal spot',
+      photographer: 'Emma Photography',
+      date: '2024-10-31',
+      createdAt: '2024-10-31T17:35:00',
+      faces: [],
+      tags: ['engagement', 'portrait'],
+      source: 'professional',
+      collection: 'Proposal',
+    },
+    {
+      id: 'curated-15',
+      url: '/images/engagement/PoradaProposal-58.webp',
+      thumbnail: '/images/engagement/PoradaProposal-58.webp',
+      caption: undefined,
+      category: 'Portraits',
+      likes: 0,
+      aspectRatio: 1.5,
+      time: undefined,
+      location: 'Proposal spot',
+      photographer: 'Emma Photography',
+      date: '2024-10-31',
+      createdAt: '2024-10-31T17:36:00',
+      faces: [],
+      tags: ['engagement', 'portrait'],
+      source: 'professional',
+      collection: 'Proposal',
+    },
+    {
+      id: 'curated-16',
+      url: '/images/engagement/PoradaProposal-62.webp',
+      thumbnail: '/images/engagement/PoradaProposal-62.webp',
+      caption: undefined,
+      category: 'Portraits',
+      likes: 0,
+      aspectRatio: 1.5,
+      time: undefined,
+      location: 'Proposal spot',
+      photographer: 'Emma Photography',
+      date: '2024-10-31',
+      createdAt: '2024-10-31T17:37:00',
+      faces: [],
+      tags: ['engagement', 'portrait'],
+      source: 'professional',
+      collection: 'Proposal',
+    },
+    {
+      id: 'curated-17',
+      url: '/images/engagement/PoradaProposal-67.webp',
+      thumbnail: '/images/engagement/PoradaProposal-67.webp',
+      caption: undefined,
+      category: 'Portraits',
+      likes: 0,
+      aspectRatio: 1.5,
+      time: undefined,
+      location: 'Proposal spot',
+      photographer: 'Emma Photography',
+      date: '2024-10-31',
+      createdAt: '2024-10-31T17:38:00',
+      faces: [],
+      tags: ['engagement', 'portrait'],
+      source: 'professional',
+      collection: 'Proposal',
+    },
+    {
+      id: 'curated-18',
+      url: '/images/engagement/PoradaProposal-75.webp',
+      thumbnail: '/images/engagement/PoradaProposal-75.webp',
+      caption: undefined,
+      category: 'Portraits',
+      likes: 0,
+      aspectRatio: 0.667,
+      time: undefined,
+      location: 'Proposal spot',
+      photographer: 'Emma Photography',
+      date: '2024-10-31',
+      createdAt: '2024-10-31T17:39:00',
+      faces: [],
+      tags: ['engagement', 'portrait'],
+      source: 'professional',
+      collection: 'Proposal',
+    },
+    {
+      id: 'curated-19',
+      url: '/images/engagement/PoradaProposal-78.webp',
+      thumbnail: '/images/engagement/PoradaProposal-78.webp',
+      caption: undefined,
+      category: 'Portraits',
+      likes: 0,
+      aspectRatio: 0.667,
+      time: undefined,
+      location: 'Proposal spot',
+      photographer: 'Emma Photography',
+      date: '2024-10-31',
+      createdAt: '2024-10-31T17:40:00',
+      faces: [],
+      tags: ['engagement', 'portrait'],
+      source: 'professional',
+      collection: 'Proposal',
+    },
+    {
+      id: 'curated-20',
+      url: '/images/engagement/PoradaProposal-146.webp',
+      thumbnail: '/images/engagement/PoradaProposal-146.webp',
+      caption: undefined,
+      category: 'Portraits',
+      likes: 0,
+      aspectRatio: 1.5,
+      time: undefined,
+      location: 'Proposal spot',
+      photographer: 'Emma Photography',
+      date: '2024-10-31',
+      createdAt: '2024-10-31T17:41:00',
+      faces: [],
+      tags: ['engagement', 'portrait'],
+      source: 'professional',
+      collection: 'Proposal',
+    },
+    {
+      id: 'curated-21',
+      url: '/images/engagement/PoradaProposal-156.webp',
+      thumbnail: '/images/engagement/PoradaProposal-156.webp',
+      caption: undefined,
+      category: 'Portraits',
+      likes: 0,
+      aspectRatio: 1.5,
+      time: undefined,
+      location: 'Proposal spot',
+      photographer: 'Emma Photography',
+      date: '2024-10-31',
+      createdAt: '2024-10-31T17:42:00',
+      faces: [],
+      tags: ['engagement', 'portrait'],
+      source: 'professional',
+      collection: 'Proposal',
+    },
+    {
+      id: 'curated-22',
+      url: '/images/engagement/PoradaProposal-198.webp',
+      thumbnail: '/images/engagement/PoradaProposal-198.webp',
+      caption: undefined,
+      category: 'Portraits',
+      likes: 0,
+      aspectRatio: 1.5,
+      time: undefined,
+      location: 'Proposal spot',
+      photographer: 'Emma Photography',
+      date: '2024-10-31',
+      createdAt: '2024-10-31T17:43:00',
+      faces: [],
+      tags: ['engagement', 'portrait'],
+      source: 'professional',
+      collection: 'Proposal',
+    },
+    {
+      id: 'curated-23',
+      url: '/images/engagement/PoradaProposal-259.webp',
+      thumbnail: '/images/engagement/PoradaProposal-259.webp',
+      caption: undefined,
+      category: 'Portraits',
+      likes: 0,
+      aspectRatio: 1.5,
+      time: undefined,
+      location: 'Proposal spot',
+      photographer: 'Emma Photography',
+      date: '2024-10-31',
+      createdAt: '2024-10-31T17:44:00',
+      faces: [],
+      tags: ['engagement', 'portrait'],
+      source: 'professional',
+      collection: 'Proposal',
+    },
+    {
+      id: 'curated-24',
+      url: '/images/engagement/PoradaProposal-262.webp',
+      thumbnail: '/images/engagement/PoradaProposal-262.webp',
+      caption: undefined,
+      category: 'Portraits',
+      likes: 0,
+      aspectRatio: 1.5,
+      time: undefined,
+      location: 'Proposal spot',
+      photographer: 'Emma Photography',
+      date: '2024-10-31',
+      createdAt: '2024-10-31T17:45:00',
+      faces: [],
+      tags: ['engagement', 'portrait'],
+      source: 'professional',
+      collection: 'Proposal',
+    },
+    {
+      id: 'curated-25',
+      url: '/images/engagement/PoradaProposal-268.webp',
+      thumbnail: '/images/engagement/PoradaProposal-268.webp',
+      caption: undefined,
+      category: 'Portraits',
+      likes: 0,
+      aspectRatio: 1.5,
+      time: undefined,
+      location: 'Proposal spot',
+      photographer: 'Emma Photography',
+      date: '2024-10-31',
+      createdAt: '2024-10-31T17:46:00',
+      faces: [],
+      tags: ['engagement', 'portrait'],
+      source: 'professional',
+      collection: 'Proposal',
+    },
+    {
+      id: 'curated-26',
+      url: '/images/engagement/PoradaProposal-273.webp',
+      thumbnail: '/images/engagement/PoradaProposal-273.webp',
+      caption: undefined,
+      category: 'Portraits',
+      likes: 0,
+      aspectRatio: 1.5,
+      time: undefined,
+      location: 'Proposal spot',
+      photographer: 'Emma Photography',
+      date: '2024-10-31',
+      createdAt: '2024-10-31T17:47:00',
+      faces: [],
+      tags: ['engagement', 'portrait'],
+      source: 'professional',
+      collection: 'Proposal',
+    },
+    {
+      id: 'curated-27',
+      url: '/images/engagement/PoradaProposal-286.webp',
+      thumbnail: '/images/engagement/PoradaProposal-286.webp',
+      caption: undefined,
+      category: 'Portraits',
+      likes: 0,
+      aspectRatio: 1.5,
+      time: undefined,
+      location: 'Proposal spot',
+      photographer: 'Emma Photography',
+      date: '2024-10-31',
+      createdAt: '2024-10-31T17:48:00',
+      faces: [],
+      tags: ['engagement', 'portrait'],
+      source: 'professional',
+      collection: 'Proposal',
+    },
+    {
+      id: 'curated-28',
+      url: '/images/engagement/PoradaProposal-309.webp',
+      thumbnail: '/images/engagement/PoradaProposal-309.webp',
+      caption: undefined,
+      category: 'Portraits',
+      likes: 0,
+      aspectRatio: 0.667,
+      time: undefined,
+      location: 'Proposal spot',
+      photographer: 'Emma Photography',
+      date: '2024-10-31',
+      createdAt: '2024-10-31T17:49:00',
+      faces: [],
+      tags: ['engagement', 'portrait'],
+      source: 'professional',
+      collection: 'Proposal',
+    },
+    {
+      id: 'curated-29',
+      url: '/images/engagement/PoradaProposal-316.webp',
+      thumbnail: '/images/engagement/PoradaProposal-316.webp',
+      caption: undefined,
+      category: 'Portraits',
+      likes: 0,
+      aspectRatio: 0.667,
+      time: undefined,
+      location: 'Proposal spot',
+      photographer: 'Emma Photography',
+      date: '2024-10-31',
+      createdAt: '2024-10-31T17:50:00',
+      faces: [],
+      tags: ['engagement', 'portrait'],
+      source: 'professional',
+      collection: 'Proposal',
+    },
+    {
+      id: 'curated-30',
+      url: '/images/engagement/PoradaProposal-318.webp',
+      thumbnail: '/images/engagement/PoradaProposal-318.webp',
+      caption: undefined,
+      category: 'Portraits',
+      likes: 0,
+      aspectRatio: 0.667,
+      time: undefined,
+      location: 'Proposal spot',
+      photographer: 'Emma Photography',
+      date: '2024-10-31',
+      createdAt: '2024-10-31T17:51:00',
+      faces: [],
+      tags: ['engagement', 'portrait'],
+      source: 'professional',
+      collection: 'Proposal',
+    },
+    {
+      id: 'curated-31',
+      url: '/images/engagement/PoradaProposal-320.webp',
+      thumbnail: '/images/engagement/PoradaProposal-320.webp',
+      caption: undefined,
+      category: 'Portraits',
+      likes: 0,
+      aspectRatio: 0.667,
+      time: undefined,
+      location: 'Proposal spot',
+      photographer: 'Emma Photography',
+      date: '2024-10-31',
+      createdAt: '2024-10-31T17:52:00',
+      faces: [],
+      tags: ['engagement', 'portrait'],
+      source: 'professional',
+      collection: 'Proposal',
+    },
+    {
+      id: 'curated-32',
+      url: '/images/engagement/PoradaProposal-359.webp',
+      thumbnail: '/images/engagement/PoradaProposal-359.webp',
+      caption: undefined,
+      category: 'Portraits',
+      likes: 0,
+      aspectRatio: 0.667,
+      time: undefined,
+      location: 'Proposal spot',
+      photographer: 'Emma Photography',
+      date: '2024-10-31',
+      createdAt: '2024-10-31T17:53:00',
+      faces: [],
+      tags: ['engagement', 'portrait'],
+      source: 'professional',
+      collection: 'Proposal',
+    },
+    {
+      id: 'curated-33',
+      url: '/images/engagement/PoradaProposal-421.webp',
+      thumbnail: '/images/engagement/PoradaProposal-421.webp',
+      caption: undefined,
+      category: 'Portraits',
+      likes: 0,
+      aspectRatio: 0.667,
+      time: undefined,
+      location: 'Proposal spot',
+      photographer: 'Emma Photography',
+      date: '2024-10-31',
+      createdAt: '2024-10-31T17:54:00',
+      faces: [],
+      tags: ['engagement', 'portrait'],
+      source: 'professional',
+      collection: 'Proposal',
+    },
+    {
+      id: 'curated-34',
+      url: '/images/engagement/PoradaProposal-458.webp',
+      thumbnail: '/images/engagement/PoradaProposal-458.webp',
+      caption: undefined,
+      category: 'Portraits',
+      likes: 0,
+      aspectRatio: 1.5,
+      time: undefined,
+      location: 'Proposal spot',
+      photographer: 'Emma Photography',
+      date: '2024-10-31',
+      createdAt: '2024-10-31T17:55:00',
+      faces: [],
+      tags: ['engagement', 'portrait'],
+      source: 'professional',
+      collection: 'Proposal',
+    },
+    {
+      id: 'curated-35',
+      url: '/images/engagement/PoradaProposal-482.webp',
+      thumbnail: '/images/engagement/PoradaProposal-482.webp',
+      caption: undefined,
+      category: 'Portraits',
+      likes: 0,
+      aspectRatio: 0.667,
+      time: undefined,
+      location: 'Proposal spot',
+      photographer: 'Emma Photography',
+      date: '2024-10-31',
+      createdAt: '2024-10-31T17:56:00',
+      faces: [],
+      tags: ['engagement', 'portrait'],
+      source: 'professional',
+      collection: 'Proposal',
+    },
+  ] satisfies Array<Omit<GalleryPhoto, 'albumSortOrder'>>
+).map(
+  (photo, index): GalleryPhoto => ({
+    ...photo,
+    albumSortOrder: index + 1,
+  })
+)
 
 const viewOptions = [
   {
@@ -442,7 +939,10 @@ const normalizeCollectionValue = (value?: string | null): Photo['collection'] | 
 }
 
 const deriveCollection = (
-  photo: Pick<Photo, 'album' | 'is_professional' | 'category' | 'caption' | 'tags' | 'location' | 'url' | 'thumbnail'>
+  photo: Pick<
+    Photo,
+    'album' | 'is_professional' | 'category' | 'caption' | 'tags' | 'location' | 'url' | 'thumbnail'
+  >
 ): GalleryPhoto['collection'] => {
   const normalizedAlbum = normalizeCollectionValue(photo.album)
   if (normalizedAlbum) {
@@ -458,11 +958,7 @@ const deriveCollection = (
     return 'Guest Photos'
   }
 
-  const pathAndTags = [
-    photo.url,
-    photo.thumbnail,
-    ...(photo.tags || []),
-  ]
+  const pathAndTags = [photo.url, photo.thumbnail, ...(photo.tags || [])]
     .filter(Boolean)
     .join(' ')
     .toLowerCase()
@@ -483,27 +979,30 @@ const deriveCollection = (
   return 'Wedding Photos'
 }
 
-const mapSupabasePhoto = (photo: Photo): GalleryPhoto => normalizeGalleryPhoto({
-  id: photo.id,
-  url: photo.url,
-  thumbnail: photo.thumbnail,
-  downloadUrl: photo.download_url ?? photo.url,
-  caption: photo.caption,
-  album: photo.album,
-  albumSortOrder: photo.album_sort_order ?? undefined,
-  category: photo.category || 'Uncategorized',
-  likes: photo.likes,
-  aspectRatio: 1, // Default, could be calculated from image dimensions
-  time: photo.date ? new Date(photo.date).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }) : undefined,
-  location: photo.location,
-  photographer: photo.photographer,
-  date: photo.date,
-  createdAt: photo.created_at,
-  faces: photo.faces || [],
-  tags: photo.tags,
-  source: photo.is_professional ? 'professional' : 'guest',
-  collection: deriveCollection(photo),
-})
+const mapSupabasePhoto = (photo: Photo): GalleryPhoto =>
+  normalizeGalleryPhoto({
+    id: photo.id,
+    url: photo.url,
+    thumbnail: photo.thumbnail,
+    downloadUrl: photo.download_url ?? photo.url,
+    caption: photo.caption,
+    album: photo.album,
+    albumSortOrder: photo.album_sort_order ?? undefined,
+    category: photo.category || 'Uncategorized',
+    likes: photo.likes,
+    aspectRatio: 1, // Default, could be calculated from image dimensions
+    time: photo.date
+      ? new Date(photo.date).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
+      : undefined,
+    location: photo.location,
+    photographer: photo.photographer,
+    date: photo.date,
+    createdAt: photo.created_at,
+    faces: photo.faces || [],
+    tags: photo.tags,
+    source: photo.is_professional ? 'professional' : 'guest',
+    collection: deriveCollection(photo),
+  })
 
 export default function Gallery() {
   const { addToast } = useToast()
@@ -513,7 +1012,9 @@ export default function Gallery() {
   const [viewMode, setViewMode] = useState<'masonry' | 'grid' | 'timeline'>('masonry')
   const [lightboxIndex, setLightboxIndex] = useState<number | null>(null)
   const [faceFilter, setFaceFilter] = useState<string | null>(null)
-  const [photos, setPhotos] = useState<GalleryPhoto[]>(() => curatedPhotos.map(normalizeGalleryPhoto))
+  const [photos, setPhotos] = useState<GalleryPhoto[]>(() =>
+    curatedPhotos.map(normalizeGalleryPhoto)
+  )
   const [downloadingId, setDownloadingId] = useState<string | null>(null)
   const [isLoading, setIsLoading] = useState(true)
   const [selectMode, setSelectMode] = useState(false)
@@ -531,7 +1032,9 @@ export default function Gallery() {
   const [loadError, setLoadError] = useState<string | null>(null)
   const [engagementSessionId] = useState(getPhotoEngagementSessionId)
   const [submittingCommentPhotoId, setSubmittingCommentPhotoId] = useState<string | null>(null)
-  const [sharedPhotoMeta, setSharedPhotoMeta] = useState<{ url: string; caption?: string } | null>(null)
+  const [sharedPhotoMeta, setSharedPhotoMeta] = useState<{ url: string; caption?: string } | null>(
+    null
+  )
   const deferredSearchQuery = useDeferredValue(searchQuery)
   const galleryScrollRef = useRef<HTMLDivElement>(null)
   const collectionSwitchDirectionRef = useRef(0)
@@ -549,22 +1052,44 @@ export default function Gallery() {
         setIsLoading(true)
         setLoadError(null)
 
-        const { data, error } = await supabase
-          .from('photos')
-          .select('*')
-          .order('created_at', { ascending: false })
+        const PAGE_SIZE = 1000
+        let allRows: typeof data = []
+        let from = 0
+        let fetchError = null
 
-        if (error) {
-          setLoadError('The live gallery is taking a moment — the collections below are still ready to explore.')
+        while (true) {
+          const { data, error } = await supabase
+            .from('photos')
+            .select('*')
+            .order('created_at', { ascending: false })
+            .range(from, from + PAGE_SIZE - 1)
+
+          if (error) {
+            fetchError = error
+            break
+          }
+          if (!data || data.length === 0) break
+          allRows = [...allRows, ...data]
+          if (data.length < PAGE_SIZE) break
+          from += PAGE_SIZE
+        }
+
+        if (fetchError) {
+          setLoadError(
+            'The live gallery is taking a moment — the collections below are still ready to explore.'
+          )
           return
         }
 
-        const livePhotos = (data || []).map(mapSupabasePhoto)
-        const mergedPhotos = [...curatedPhotos.map(normalizeGalleryPhoto), ...livePhotos].reduce<GalleryPhoto[]>((acc, photo) => {
-          const duplicateIndex = acc.findIndex(existing =>
-            existing.id === photo.id ||
-            existing.url === photo.url ||
-            existing.thumbnail === photo.thumbnail
+        const livePhotos = (allRows || []).map(mapSupabasePhoto)
+        const mergedPhotos = [...curatedPhotos.map(normalizeGalleryPhoto), ...livePhotos].reduce<
+          GalleryPhoto[]
+        >((acc, photo) => {
+          const duplicateIndex = acc.findIndex(
+            existing =>
+              existing.id === photo.id ||
+              existing.url === photo.url ||
+              existing.thumbnail === photo.thumbnail
           )
 
           if (duplicateIndex >= 0) {
@@ -581,25 +1106,27 @@ export default function Gallery() {
 
         const [likeStatusResult, engagementSummaryResult] = await Promise.all([
           fetchPhotoLikeStatuses(
-            mergedPhotos.map((photo) => photo.id),
+            mergedPhotos.map(photo => photo.id),
             engagementSessionId
           ),
-          fetchPhotoEngagementSummary(mergedPhotos.map((photo) => photo.id)),
+          fetchPhotoEngagementSummary(mergedPhotos.map(photo => photo.id)),
         ])
 
         const likeStatusResponse = likeStatusResult.data
         const likeStatuses = Array.isArray(likeStatusResponse) ? likeStatusResponse : []
-        const engagementSummaries = Array.isArray(engagementSummaryResult.data) ? engagementSummaryResult.data : []
+        const engagementSummaries = Array.isArray(engagementSummaryResult.data)
+          ? engagementSummaryResult.data
+          : []
 
         const likeStatusByPhotoId = new Map(
-          likeStatuses.map((status) => [status.photo_key, status] as const)
+          likeStatuses.map(status => [status.photo_key, status] as const)
         )
         const engagementSummaryByPhotoId = new Map(
-          engagementSummaries.map((summary) => [summary.photo_key, summary] as const)
+          engagementSummaries.map(summary => [summary.photo_key, summary] as const)
         )
 
         setPhotos(
-          mergedPhotos.map((photo) => {
+          mergedPhotos.map(photo => {
             const likeStatus = likeStatusByPhotoId.get(photo.id)
             const engagementSummary = engagementSummaryByPhotoId.get(photo.id)
 
@@ -613,7 +1140,9 @@ export default function Gallery() {
           })
         )
       } catch {
-        setLoadError('Could not connect to the live gallery right now. The curated collections below are still ready to browse.')
+        setLoadError(
+          'Could not connect to the live gallery right now. The curated collections below are still ready to browse.'
+        )
       } finally {
         setIsLoading(false)
       }
@@ -649,13 +1178,13 @@ export default function Gallery() {
     const requestedPerson = searchParams.get('person')
     const requestedShare = searchParams.get('share')
 
-    setSearchQuery((current) => (current !== requestedQuery ? requestedQuery : current))
-    setFaceFilter((current) => (current !== requestedPerson ? requestedPerson : current))
+    setSearchQuery(current => (current !== requestedQuery ? requestedQuery : current))
+    setFaceFilter(current => (current !== requestedPerson ? requestedPerson : current))
 
     if (requestedShare && photos.length > 0) {
       const ids = requestedShare.split(',').filter(Boolean)
       const validPhotos = ids
-        .map((id) => photos.find((p) => p.id === id))
+        .map(id => photos.find(p => p.id === id))
         .filter((p): p is GalleryPhoto => p !== undefined)
 
       if (validPhotos.length > 0) {
@@ -674,14 +1203,18 @@ export default function Gallery() {
     }
 
     if (requestedCollection && collectionTabs.includes(requestedCollection)) {
-      setSelectedCollection((current) => (current !== requestedCollection ? requestedCollection : current))
+      setSelectedCollection(current =>
+        current !== requestedCollection ? requestedCollection : current
+      )
       return
     }
 
     if (!requestedCollection && requestedPhotoId) {
-      const targetPhoto = photos.find((photo) => photo.id === requestedPhotoId)
+      const targetPhoto = photos.find(photo => photo.id === requestedPhotoId)
       if (targetPhoto) {
-        setSelectedCollection((current) => (current !== targetPhoto.collection ? targetPhoto.collection : current))
+        setSelectedCollection(current =>
+          current !== targetPhoto.collection ? targetPhoto.collection : current
+        )
       }
     }
   }, [photos, searchParams])
@@ -689,8 +1222,12 @@ export default function Gallery() {
   const albumOrderedPhotos = useMemo(
     () =>
       [...photos].sort((a, b) => {
-        const leftOrder = Number.isFinite(a.albumSortOrder) ? Number(a.albumSortOrder) : Number.MAX_SAFE_INTEGER
-        const rightOrder = Number.isFinite(b.albumSortOrder) ? Number(b.albumSortOrder) : Number.MAX_SAFE_INTEGER
+        const leftOrder = Number.isFinite(a.albumSortOrder)
+          ? Number(a.albumSortOrder)
+          : Number.MAX_SAFE_INTEGER
+        const rightOrder = Number.isFinite(b.albumSortOrder)
+          ? Number(b.albumSortOrder)
+          : Number.MAX_SAFE_INTEGER
 
         if (leftOrder !== rightOrder) {
           return leftOrder - rightOrder
@@ -698,7 +1235,7 @@ export default function Gallery() {
 
         return new Date(b.createdAt || 0).getTime() - new Date(a.createdAt || 0).getTime()
       }),
-    [photos],
+    [photos]
   )
 
   const collectionScopedPhotos = useMemo(() => {
@@ -708,14 +1245,14 @@ export default function Gallery() {
   const filteredPhotos = useMemo(() => {
     const normalizedQuery = deferredSearchQuery.trim().toLowerCase()
 
-    return collectionScopedPhotos.filter((photo) => {
+    return collectionScopedPhotos.filter(photo => {
       const searchableText = [
         photo.caption,
         photo.location,
         photo.photographer,
         photo.collection,
         photo.source,
-        ...(photo.faces || []).map((face) => face.name),
+        ...(photo.faces || []).map(face => face.name),
         ...(photo.tags || []),
       ]
         .filter(Boolean)
@@ -723,8 +1260,9 @@ export default function Gallery() {
         .toLowerCase()
 
       const matchesSearch = !normalizedQuery || searchableText.includes(normalizedQuery)
-      const matchesFace = !faceFilter || photo.faces?.some(f => resolveAlias(f.name) === resolveAlias(faceFilter))
-      
+      const matchesFace =
+        !faceFilter || photo.faces?.some(f => resolveAlias(f.name) === resolveAlias(faceFilter))
+
       return matchesSearch && matchesFace
     })
   }, [collectionScopedPhotos, deferredSearchQuery, faceFilter])
@@ -736,7 +1274,7 @@ export default function Gallery() {
     if (!isLoading) {
       // Handle ?shared= param
       if (sharedParam && photos.length > 0) {
-        const photoIndex = photos.findIndex((photo) => photo.id === sharedParam)
+        const photoIndex = photos.findIndex(photo => photo.id === sharedParam)
         if (photoIndex >= 0 && lightboxIndex !== photoIndex) {
           setLightboxIndex(photoIndex)
           useGalleryStore.getState().openImageModal(photoIndex)
@@ -744,7 +1282,7 @@ export default function Gallery() {
       }
       // Handle ?photo= param
       else if (requestedPhotoId) {
-        const photoIndex = filteredPhotos.findIndex((photo) => photo.id === requestedPhotoId)
+        const photoIndex = filteredPhotos.findIndex(photo => photo.id === requestedPhotoId)
         if (photoIndex >= 0 && lightboxIndex !== photoIndex) {
           setLightboxIndex(photoIndex)
         }
@@ -768,55 +1306,60 @@ export default function Gallery() {
   const detectedFaces = useMemo<DetectedFace[]>(
     () =>
       Array.from(
-        photos.reduce<Map<string, DetectedFace>>((acc, photo) => {
-          for (const face of photo.faces || []) {
-            const resolvedName = resolveAlias(face.name)
-            const existing = acc.get(resolvedName)
-            if (existing) {
-              existing.photoCount += 1
-              if (!existing.thumbnail) {
-                existing.thumbnail = photo.thumbnail || photo.url
-              }
-              if (!existing.latestMoment && photo.caption) {
-                existing.latestMoment = photo.caption
-              }
-              if (!existing.collections?.includes(photo.collection)) {
-                existing.collections = [...(existing.collections || []), photo.collection]
-              }
-              if (photo.source === 'professional') {
-                existing.professionalCount = (existing.professionalCount || 0) + 1
+        photos
+          .reduce<Map<string, DetectedFace>>((acc, photo) => {
+            for (const face of photo.faces || []) {
+              const resolvedName = resolveAlias(face.name)
+              const existing = acc.get(resolvedName)
+              if (existing) {
+                existing.photoCount += 1
+                if (!existing.thumbnail) {
+                  existing.thumbnail = photo.thumbnail || photo.url
+                }
+                if (!existing.latestMoment && photo.caption) {
+                  existing.latestMoment = photo.caption
+                }
+                if (!existing.collections?.includes(photo.collection)) {
+                  existing.collections = [...(existing.collections || []), photo.collection]
+                }
+                if (photo.source === 'professional') {
+                  existing.professionalCount = (existing.professionalCount || 0) + 1
+                } else {
+                  existing.guestCount = (existing.guestCount || 0) + 1
+                }
               } else {
-                existing.guestCount = (existing.guestCount || 0) + 1
+                acc.set(resolvedName, {
+                  id: face.id || resolvedName.toLowerCase().replace(/\s+/g, '-'),
+                  name: resolvedName,
+                  photoCount: 1,
+                  thumbnail: photo.thumbnail || photo.url,
+                  latestMoment: photo.caption,
+                  collections: [photo.collection],
+                  professionalCount: photo.source === 'professional' ? 1 : 0,
+                  guestCount: photo.source === 'guest' ? 1 : 0,
+                })
               }
-            } else {
-              acc.set(resolvedName, {
-                id: face.id || resolvedName.toLowerCase().replace(/\s+/g, '-'),
-                name: resolvedName,
-                photoCount: 1,
-                thumbnail: photo.thumbnail || photo.url,
-                latestMoment: photo.caption,
-                collections: [photo.collection],
-                professionalCount: photo.source === 'professional' ? 1 : 0,
-                guestCount: photo.source === 'guest' ? 1 : 0,
-              })
             }
-          }
 
-          return acc
-        }, new Map()).values()
+            return acc
+          }, new Map())
+          .values()
       ).sort((a, b) => b.photoCount - a.photoCount || a.name.localeCompare(b.name)),
     [photos]
   )
   const collectionCounts = useMemo(() => {
-    return collectionTabs.reduce<Record<CollectionTab, number>>((acc, tab) => {
-      acc[tab] = photos.filter(photo => photo.collection === tab).length
-      return acc
-    }, {
-      Proposal: 0,
-      'Bach+ette': 0,
-      'Wedding Photos': 0,
-      'Guest Photos': 0,
-    })
+    return collectionTabs.reduce<Record<CollectionTab, number>>(
+      (acc, tab) => {
+        acc[tab] = photos.filter(photo => photo.collection === tab).length
+        return acc
+      },
+      {
+        Proposal: 0,
+        'Bach+ette': 0,
+        'Wedding Photos': 0,
+        'Guest Photos': 0,
+      }
+    )
   }, [photos])
 
   const selectedCollectionMeta = collectionMeta[selectedCollection]
@@ -836,8 +1379,8 @@ export default function Gallery() {
         return
       }
 
-      setPhotos((prev) =>
-        prev.map((photo) =>
+      setPhotos(prev =>
+        prev.map(photo =>
           photo.id === photoId
             ? {
                 ...photo,
@@ -854,7 +1397,7 @@ export default function Gallery() {
   const handleDownload = async (photoId: string) => {
     const photo = photos.find(p => p.id === photoId)
     if (!photo) return
-    
+
     setDownloadingId(photoId)
     try {
       const filename = `Austin-Jordyn-Wedding-${photo.caption || photo.id}.jpg`
@@ -869,7 +1412,7 @@ export default function Gallery() {
     if (selectedPhotoIds.has(photoId)) {
       removeFromQueue(photoId)
     } else {
-      const photo = photos.find((p) => p.id === photoId)
+      const photo = photos.find(p => p.id === photoId)
       if (photo) {
         addToQueue({
           id: photo.id,
@@ -890,7 +1433,7 @@ export default function Gallery() {
 
   const handleSelectAllVisible = () => {
     let addedCount = 0
-    const currentQueueIds = new Set(queue.map((p) => p.id))
+    const currentQueueIds = new Set(queue.map(p => p.id))
     const photosToSelect = filteredPhotos
 
     for (const photo of photosToSelect) {
@@ -919,7 +1462,7 @@ export default function Gallery() {
       setDownloading(true)
       setProgress(0)
       setProgressStatus('Initializing downloads...')
-      
+
       const { downloadBatch } = await import('@/utils/download')
       await downloadBatch(queue, (prog, stat) => {
         setProgress(prog)
@@ -937,7 +1480,7 @@ export default function Gallery() {
       console.error(error)
       setProgressStatus(error instanceof Error ? error.message : 'Download failed')
       setProgress(0)
-      
+
       setTimeout(() => {
         setDownloading(false)
       }, 3000)
@@ -954,7 +1497,10 @@ export default function Gallery() {
     addToast('Share link copied to clipboard', 'success')
   }
 
-  const handleAddComment = async (photoId: string, payload: { author: string; content: string }) => {
+  const handleAddComment = async (
+    photoId: string,
+    payload: { author: string; content: string }
+  ) => {
     const normalizedContent = payload.content.trim()
     const normalizedAuthor = payload.author.trim() || 'Guest'
 
@@ -974,8 +1520,8 @@ export default function Gallery() {
     }
 
     setSubmittingCommentPhotoId(photoId)
-    setPhotos((prev) =>
-      prev.map((photo) =>
+    setPhotos(prev =>
+      prev.map(photo =>
         photo.id === photoId
           ? {
               ...photo,
@@ -986,22 +1532,29 @@ export default function Gallery() {
       )
     )
 
-    const { data, error } = await addPhotoComment(photoId, normalizedContent, normalizedAuthor, engagementSessionId)
+    const { data, error } = await addPhotoComment(
+      photoId,
+      normalizedContent,
+      normalizedAuthor,
+      engagementSessionId
+    )
 
     if (error || !data) {
-      setPhotos((prev) =>
-        prev.map((photo) =>
+      setPhotos(prev =>
+        prev.map(photo =>
           photo.id === photoId
             ? {
                 ...photo,
-                comments: (photo.comments || []).filter((comment) => comment.id !== optimisticComment.id),
+                comments: (photo.comments || []).filter(
+                  comment => comment.id !== optimisticComment.id
+                ),
                 commentCount: Math.max((photo.commentCount ?? photo.comments?.length ?? 1) - 1, 0),
               }
             : photo
         )
       )
-      setSubmittingCommentPhotoId((current) => (current === photoId ? null : current))
-      addToast('That didn\'t go through — try again in a moment.', 'error')
+      setSubmittingCommentPhotoId(current => (current === photoId ? null : current))
+      addToast("That didn't go through — try again in a moment.", 'error')
       return false
     }
 
@@ -1012,19 +1565,19 @@ export default function Gallery() {
       timestamp: formatPhotoCommentTimestamp(data.created_at),
     }
 
-    setPhotos((prev) =>
-      prev.map((photo) =>
+    setPhotos(prev =>
+      prev.map(photo =>
         photo.id === photoId
           ? {
               ...photo,
-              comments: (photo.comments || []).map((comment) =>
+              comments: (photo.comments || []).map(comment =>
                 comment.id === optimisticComment.id ? newComment : comment
               ),
             }
           : photo
       )
     )
-    setSubmittingCommentPhotoId((current) => (current === photoId ? null : current))
+    setSubmittingCommentPhotoId(current => (current === photoId ? null : current))
     return true
   }
 
@@ -1093,15 +1646,15 @@ export default function Gallery() {
         return
       }
 
-      const mappedComments = data.map((comment) => ({
+      const mappedComments = data.map(comment => ({
         id: comment.id,
         author: comment.author,
         content: comment.content,
         timestamp: formatPhotoCommentTimestamp(comment.created_at),
       }))
 
-      setPhotos((prev) =>
-        prev.map((photo) =>
+      setPhotos(prev =>
+        prev.map(photo =>
           photo.id === activePhoto.id
             ? {
                 ...photo,
@@ -1121,55 +1674,54 @@ export default function Gallery() {
   const shareParam = searchParams.get('share')
   const sharedParam = searchParams.get('shared')
   const shareImageUrl = shareParam
-    ? photos.find((p) => p.id === shareParam.split(',')[0])?.thumbnail
+    ? photos.find(p => p.id === shareParam.split(',')[0])?.thumbnail
     : sharedParam
-    ? sharedPhotoMeta?.url
-    : undefined
+      ? sharedPhotoMeta?.url
+      : undefined
 
   return (
-    <div className="min-h-screen bg-cream-50 pt-24 pb-20">
+    <div className='min-h-screen bg-cream-50 pt-24 pb-20'>
       <GallerySEO shareImage={shareImageUrl} />
 
-      <section className="px-4 pb-6">
-        <div className="mx-auto max-w-7xl">
+      <section className='px-4 pb-6'>
+        <div className='mx-auto max-w-7xl'>
           <motion.div
             initial={{ opacity: 0, y: 18 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.45 }}
-            className="space-y-4"
+            className='space-y-4'
           >
-            <div className="flex flex-col gap-3 lg:flex-row lg:items-end lg:justify-between">
+            <div className='flex flex-col gap-3 lg:flex-row lg:items-end lg:justify-between'>
               <div>
-                <p className="text-[10px] uppercase tracking-[0.34em] text-gold-700">
-                  Gallery
-                </p>
-                <h1 className="mt-2 font-display text-4xl text-charcoal-900 sm:text-5xl">
+                <p className='text-[10px] uppercase tracking-[0.34em] text-gold-700'>Gallery</p>
+                <h1 className='mt-2 font-display text-4xl text-charcoal-900 sm:text-5xl'>
                   Browse the archive
                 </h1>
-                <p className="mt-3 max-w-2xl text-sm leading-7 text-charcoal-600 sm:text-base">
-                  Start with the album you want, then use search or people browsing only when you need it.
+                <p className='mt-3 max-w-2xl text-sm leading-7 text-charcoal-600 sm:text-base'>
+                  Start with the album you want, then use search or people browsing only when you
+                  need it.
                 </p>
               </div>
 
-              <div className="inline-flex items-center gap-2 rounded-full border border-gold-200/70 bg-white/80 px-4 py-2 text-sm text-charcoal-500 shadow-sm">
-                <Images className="h-4 w-4 text-gold-500" />
+              <div className='inline-flex items-center gap-2 rounded-full border border-gold-200/70 bg-white/80 px-4 py-2 text-sm text-charcoal-500 shadow-sm'>
+                <Images className='h-4 w-4 text-gold-500' />
                 {filteredPhotos.length} visible
               </div>
             </div>
 
-            <div className="mt-8 border-t border-charcoal-900/8 pt-6">
+            <div className='mt-8 border-t border-charcoal-900/8 pt-6'>
               <div
-                data-testid="gallery-control-bar"
-                className="rounded-[1.6rem] border border-white/80 bg-white/78 p-4 shadow-[0_24px_64px_-48px_rgba(46,33,13,0.34)] backdrop-blur-sm sm:p-5"
+                data-testid='gallery-control-bar'
+                className='rounded-[1.6rem] border border-white/80 bg-white/78 p-4 shadow-[0_24px_64px_-48px_rgba(46,33,13,0.34)] backdrop-blur-sm sm:p-5'
               >
-                <div className="grid grid-cols-2 gap-3 lg:grid-cols-4">
-                  {collectionTabs.map((tab) => {
+                <div className='grid grid-cols-2 gap-3 lg:grid-cols-4'>
+                  {collectionTabs.map(tab => {
                     const isActive = selectedCollection === tab
                     const coverUrl = COLLECTION_COVERS[tab]
                     return (
                       <button
                         key={tab}
-                        type="button"
+                        type='button'
                         onClick={() => handleCollectionChange(tab)}
                         aria-pressed={isActive}
                         className={cn(
@@ -1180,7 +1732,7 @@ export default function Gallery() {
                             : 'scale-[0.98] hover:scale-[1.00] hover:shadow-md'
                         )}
                         style={{
-                          backgroundImage: `url(${coverUrl})`,
+                          backgroundImage: `url('${coverUrl}')`,
                           backgroundSize: 'cover',
                           backgroundPosition: 'center',
                         }}
@@ -1193,11 +1745,9 @@ export default function Gallery() {
                               : 'bg-gradient-to-t from-black/65 via-black/25 to-transparent'
                           )}
                         />
-                        <div className="absolute bottom-0 left-0 p-3 text-left">
-                          <p className="font-display text-sm leading-tight text-white">
-                            {tab}
-                          </p>
-                          <p className="mt-0.5 text-xs text-white/70">
+                        <div className='absolute bottom-0 left-0 p-3 text-left'>
+                          <p className='font-display text-sm leading-tight text-white'>{tab}</p>
+                          <p className='mt-0.5 text-xs text-white/70'>
                             {collectionCounts[tab]} photos
                           </p>
                         </div>
@@ -1206,38 +1756,41 @@ export default function Gallery() {
                   })}
                 </div>
 
-                <div data-testid="gallery-filter-bar" className="mt-4 grid gap-3 md:grid-cols-[minmax(0,1fr)_auto] md:items-center">
-                  <div className="relative">
-                    <Search className="pointer-events-none absolute left-4 top-1/2 h-4 w-4 -translate-y-1/2 text-charcoal-400" />
+                <div
+                  data-testid='gallery-filter-bar'
+                  className='mt-4 grid gap-3 md:grid-cols-[minmax(0,1fr)_auto] md:items-center'
+                >
+                  <div className='relative'>
+                    <Search className='pointer-events-none absolute left-4 top-1/2 h-4 w-4 -translate-y-1/2 text-charcoal-400' />
                     <Input
-                      type="text"
-                      placeholder="Search by caption, location, photographer, or tags"
+                      type='text'
+                      placeholder='Search by caption, location, photographer, or tags'
                       value={searchQuery}
-                      onChange={(event) => setSearchQuery(event.target.value)}
-                      className="h-12 rounded-full border-gold-200/70 bg-cream-50/85 pl-11 pr-11 shadow-none"
+                      onChange={event => setSearchQuery(event.target.value)}
+                      className='h-12 rounded-full border-gold-200/70 bg-cream-50/85 pl-11 pr-11 shadow-none'
                     />
                     {searchQuery && (
                       <button
-                        type="button"
+                        type='button'
                         onClick={() => setSearchQuery('')}
-                        aria-label="Clear gallery search"
-                        className="absolute right-3 top-1/2 flex h-7 w-7 -translate-y-1/2 items-center justify-center rounded-full text-charcoal-400 transition-colors hover:bg-white hover:text-charcoal-600"
+                        aria-label='Clear gallery search'
+                        className='absolute right-3 top-1/2 flex h-7 w-7 -translate-y-1/2 items-center justify-center rounded-full text-charcoal-400 transition-colors hover:bg-white hover:text-charcoal-600'
                       >
-                        <X className="h-4 w-4" />
+                        <X className='h-4 w-4' />
                       </button>
                     )}
                   </div>
 
-                  <div className="flex items-center gap-2">
-                    <div className="inline-flex items-center gap-2 rounded-full border border-gold-200/70 bg-cream-50/90 p-1">
-                      {viewOptions.map((option) => {
+                  <div className='flex items-center gap-2'>
+                    <div className='inline-flex items-center gap-2 rounded-full border border-gold-200/70 bg-cream-50/90 p-1'>
+                      {viewOptions.map(option => {
                         const Icon = option.icon
                         const isActive = viewMode === option.key
 
                         return (
                           <button
                             key={option.key}
-                            type="button"
+                            type='button'
                             onClick={() => setViewMode(option.key)}
                             aria-pressed={isActive}
                             className={cn(
@@ -1247,7 +1800,7 @@ export default function Gallery() {
                                 : 'text-charcoal-500 hover:bg-white hover:text-charcoal-700'
                             )}
                           >
-                            <Icon className="h-4 w-4" />
+                            <Icon className='h-4 w-4' />
                             {option.label}
                           </button>
                         )
@@ -1255,8 +1808,8 @@ export default function Gallery() {
                     </div>
 
                     <button
-                      type="button"
-                      onClick={() => selectMode ? handleExitSelectMode() : setSelectMode(true)}
+                      type='button'
+                      onClick={() => (selectMode ? handleExitSelectMode() : setSelectMode(true))}
                       aria-pressed={selectMode}
                       className={cn(
                         'inline-flex items-center gap-2 rounded-full border px-4 py-2 text-sm transition-all',
@@ -1265,39 +1818,39 @@ export default function Gallery() {
                           : 'border-gold-200/70 bg-cream-50/90 text-charcoal-500 hover:bg-white hover:text-charcoal-700'
                       )}
                     >
-                      <CheckSquare className="h-4 w-4" />
+                      <CheckSquare className='h-4 w-4' />
                       Select
                     </button>
                   </div>
-
                 </div>
 
                 {selectMode && (
                   <motion.div
                     initial={{ opacity: 0, y: -10 }}
                     animate={{ opacity: 1, y: 0 }}
-                    className="mt-3 flex flex-wrap items-center justify-between gap-3 rounded-2xl border border-gold-200 bg-cream-50/50 p-3"
+                    className='mt-3 flex flex-wrap items-center justify-between gap-3 rounded-2xl border border-gold-200 bg-cream-50/50 p-3'
                   >
-                    <div className="flex items-center gap-3">
-                      <span className="text-sm font-medium text-charcoal-700">
-                        {selectedPhotoIds.size} photo{selectedPhotoIds.size !== 1 ? 's' : ''} in queue (max 50)
+                    <div className='flex items-center gap-3'>
+                      <span className='text-sm font-medium text-charcoal-700'>
+                        {selectedPhotoIds.size} photo{selectedPhotoIds.size !== 1 ? 's' : ''} in
+                        queue (max 50)
                       </span>
                     </div>
-                    <div className="flex items-center gap-2">
+                    <div className='flex items-center gap-2'>
                       <Button
-                        variant="secondary"
-                        size="sm"
+                        variant='secondary'
+                        size='sm'
                         onClick={handleSelectAllVisible}
-                        className="h-9 rounded-full px-4 text-xs font-medium"
+                        className='h-9 rounded-full px-4 text-xs font-medium'
                       >
                         Select All Visible
                       </Button>
                       {selectedPhotoIds.size > 0 && (
                         <Button
-                          variant="secondary"
-                          size="sm"
+                          variant='secondary'
+                          size='sm'
                           onClick={() => clearQueue()}
-                          className="h-9 rounded-full px-4 text-xs font-medium border-rose-200 text-rose-700 hover:bg-rose-50 hover:text-rose-800"
+                          className='h-9 rounded-full px-4 text-xs font-medium border-rose-200 text-rose-700 hover:bg-rose-50 hover:text-rose-800'
                         >
                           Clear Selection
                         </Button>
@@ -1306,50 +1859,49 @@ export default function Gallery() {
                   </motion.div>
                 )}
 
-                <div className="mt-3 flex items-center justify-between border-t border-charcoal-900/6 pt-3">
+                <div className='mt-3 flex items-center justify-between border-t border-charcoal-900/6 pt-3'>
                   <FaceRecognition onPhotoFilter={handleFaceFilter} detectedFaces={detectedFaces} />
                   <a
-                    href="/people"
-                    className="text-xs text-charcoal-400 hover:text-gold-600 transition-colors"
+                    href='/people'
+                    className='text-xs text-charcoal-400 hover:text-gold-600 transition-colors'
                   >
                     People page →
                   </a>
                 </div>
 
                 {hasActiveFilters && (
-                  <div className="mt-4 flex flex-wrap items-center gap-2 border-t border-charcoal-900/8 pt-4">
-                    <span className="text-[10px] uppercase tracking-[0.28em] text-charcoal-500">
+                  <div className='mt-4 flex flex-wrap items-center gap-2 border-t border-charcoal-900/8 pt-4'>
+                    <span className='text-[10px] uppercase tracking-[0.28em] text-charcoal-500'>
                       Active filters
                     </span>
-                    <span className="inline-flex items-center gap-2 rounded-full bg-cream-50 px-3 py-1.5 text-sm text-charcoal-600">
+                    <span className='inline-flex items-center gap-2 rounded-full bg-cream-50 px-3 py-1.5 text-sm text-charcoal-600'>
                       {selectedCollection}
                     </span>
                     {searchQuery && (
-                      <span className="inline-flex items-center gap-2 rounded-full bg-cream-50 px-3 py-1.5 text-sm text-charcoal-600">
+                      <span className='inline-flex items-center gap-2 rounded-full bg-cream-50 px-3 py-1.5 text-sm text-charcoal-600'>
                         {`Search: "${searchQuery}"`}
                       </span>
                     )}
                     {faceFilter && (
                       <button
-                        type="button"
+                        type='button'
                         onClick={clearFaceFilter}
-                        className="inline-flex items-center gap-2 rounded-full bg-cream-50 px-3 py-1.5 text-sm text-charcoal-600 transition-colors hover:text-gold-700"
+                        className='inline-flex items-center gap-2 rounded-full bg-cream-50 px-3 py-1.5 text-sm text-charcoal-600 transition-colors hover:text-gold-700'
                       >
                         {faceFilter}
-                        <X className="h-3.5 w-3.5" />
+                        <X className='h-3.5 w-3.5' />
                       </button>
                     )}
                     <button
-                      type="button"
+                      type='button'
                       onClick={clearAllFilters}
-                      className="text-sm text-gold-700 transition-colors hover:text-gold-800 sm:ml-auto"
+                      className='text-sm text-gold-700 transition-colors hover:text-gold-800 sm:ml-auto'
                     >
                       Clear all
                     </button>
                   </div>
                 )}
               </div>
-
             </div>
           </motion.div>
         </div>
@@ -1357,35 +1909,35 @@ export default function Gallery() {
 
       {/* Selection action bar */}
       {selectMode && selectedPhotoIds.size > 0 && (
-        <div className="sticky top-20 z-40 px-4 pb-2">
-          <div className="mx-auto max-w-7xl">
+        <div className='sticky top-20 z-40 px-4 pb-2'>
+          <div className='mx-auto max-w-7xl'>
             <motion.div
               initial={{ opacity: 0, y: -8 }}
               animate={{ opacity: 1, y: 0 }}
-              className="flex items-center justify-between rounded-2xl border border-gold-300/60 bg-gradient-to-r from-cream-100/95 via-gold-50/95 to-cream-100/95 px-4 py-3 shadow-lg backdrop-blur-md"
+              className='flex items-center justify-between rounded-2xl border border-gold-300/60 bg-gradient-to-r from-cream-100/95 via-gold-50/95 to-cream-100/95 px-4 py-3 shadow-lg backdrop-blur-md'
             >
-              <span className="text-sm font-medium text-charcoal-700">
+              <span className='text-sm font-medium text-charcoal-700'>
                 {selectedPhotoIds.size} photo{selectedPhotoIds.size !== 1 ? 's' : ''} selected
               </span>
-              <div className="flex items-center gap-2">
+              <div className='flex items-center gap-2'>
                 <button
-                  type="button"
+                  type='button'
                   onClick={handleShareSelection}
-                  className="inline-flex items-center gap-1.5 rounded-full border border-gold-200/80 bg-white/80 px-4 py-2 text-sm text-charcoal-600 transition-colors hover:text-charcoal-800"
+                  className='inline-flex items-center gap-1.5 rounded-full border border-gold-200/80 bg-white/80 px-4 py-2 text-sm text-charcoal-600 transition-colors hover:text-charcoal-800'
                 >
-                  <Share2 className="h-3.5 w-3.5" />
+                  <Share2 className='h-3.5 w-3.5' />
                   Copy link
                 </button>
                 <button
-                  type="button"
+                  type='button'
                   onClick={() => void handleDownloadPack()}
                   disabled={isDownloadingPack}
-                  className="inline-flex items-center gap-1.5 rounded-full bg-gold-500 px-4 py-2 text-sm font-medium text-white shadow-sm transition-colors hover:bg-gold-600 disabled:opacity-60"
+                  className='inline-flex items-center gap-1.5 rounded-full bg-gold-500 px-4 py-2 text-sm font-medium text-white shadow-sm transition-colors hover:bg-gold-600 disabled:opacity-60'
                 >
                   {isDownloadingPack ? (
-                    <Loader2 className="h-3.5 w-3.5 animate-spin" />
+                    <Loader2 className='h-3.5 w-3.5 animate-spin' />
                   ) : (
-                    <Download className="h-3.5 w-3.5" />
+                    <Download className='h-3.5 w-3.5' />
                   )}
                   Download zip
                 </button>
@@ -1395,63 +1947,76 @@ export default function Gallery() {
         </div>
       )}
 
-      <section className="flex-1 min-h-0 px-4 pb-8">
-        <div className="mx-auto max-w-7xl">
-            {loadError && (
+      <section className='flex-1 min-h-0 px-4 pb-8'>
+        <div className='mx-auto max-w-7xl'>
+          {loadError && (
             <motion.div
               initial={{ opacity: 0, y: -10 }}
               animate={{ opacity: 1, y: 0 }}
-              className="mb-4 rounded-[1.25rem] border border-amber-200/80 bg-amber-50/90 p-4 text-sm text-amber-700"
+              className='mb-4 rounded-[1.25rem] border border-amber-200/80 bg-amber-50/90 p-4 text-sm text-amber-700'
             >
               {loadError}
             </motion.div>
           )}
 
           {/* Upload Status Lookup Section */}
-          <div className="mb-6 rounded-[1.4rem] border border-gold-100 bg-white p-5 shadow-sm">
-            <h3 className="font-display text-lg text-charcoal-900 mb-3">Check Your Upload Status</h3>
-            <p className="text-sm text-charcoal-500 mb-4">Enter the email address you used when uploading to see your status.</p>
-            <form onSubmit={handleLookupUploadStatus} className="flex gap-3 max-w-md">
+          <div className='mb-6 rounded-[1.4rem] border border-gold-100 bg-white p-5 shadow-sm'>
+            <h3 className='font-display text-lg text-charcoal-900 mb-3'>
+              Check Your Upload Status
+            </h3>
+            <p className='text-sm text-charcoal-500 mb-4'>
+              Enter the email address you used when uploading to see your status.
+            </p>
+            <form onSubmit={handleLookupUploadStatus} className='flex gap-3 max-w-md'>
               <Input
-                type="email"
-                placeholder="your@email.com"
+                type='email'
+                placeholder='your@email.com'
                 value={uploadStatusEmail}
-                onChange={(e) => setUploadStatusEmail(e.target.value)}
-                className="flex-1"
+                onChange={e => setUploadStatusEmail(e.target.value)}
+                className='flex-1'
               />
-              <Button type="submit" isLoading={lookupLoading}>
+              <Button type='submit' isLoading={lookupLoading}>
                 Look up
               </Button>
             </form>
-            {lookupError && (
-              <p className="mt-3 text-sm text-rose-600">{lookupError}</p>
-            )}
+            {lookupError && <p className='mt-3 text-sm text-rose-600'>{lookupError}</p>}
             {uploadStatusResult && (
-              <div className="mt-4 rounded-xl border border-gold-200 bg-cream-50/70 p-4">
-                <div className="flex items-center justify-between">
+              <div className='mt-4 rounded-xl border border-gold-200 bg-cream-50/70 p-4'>
+                <div className='flex items-center justify-between'>
                   <div>
-                    <p className="font-medium text-charcoal-900">{uploadStatusResult.guest_name}</p>
-                    <p className="text-sm text-charcoal-500">{uploadStatusResult.guest_email}</p>
+                    <p className='font-medium text-charcoal-900'>{uploadStatusResult.guest_name}</p>
+                    <p className='text-sm text-charcoal-500'>{uploadStatusResult.guest_email}</p>
                   </div>
-                  <span className={cn(
-                    'inline-flex rounded-full px-3 py-1 text-sm font-medium',
-                    uploadStatusResult.status === 'approved' && 'bg-green-100 text-green-700',
-                    uploadStatusResult.status === 'pending' && 'bg-gold-100 text-gold-700',
-                    uploadStatusResult.status === 'rejected' && 'bg-rose-100 text-rose-700'
-                  )}>
-                    {uploadStatusResult.status.charAt(0).toUpperCase() + uploadStatusResult.status.slice(1)}
+                  <span
+                    className={cn(
+                      'inline-flex rounded-full px-3 py-1 text-sm font-medium',
+                      uploadStatusResult.status === 'approved' && 'bg-green-100 text-green-700',
+                      uploadStatusResult.status === 'pending' && 'bg-gold-100 text-gold-700',
+                      uploadStatusResult.status === 'rejected' && 'bg-rose-100 text-rose-700'
+                    )}
+                  >
+                    {uploadStatusResult.status.charAt(0).toUpperCase() +
+                      uploadStatusResult.status.slice(1)}
                   </span>
                 </div>
-                {uploadStatusResult.status === 'rejected' && uploadStatusResult.rejection_reason && (
-                  <div className="mt-3 rounded-lg border border-rose-200 bg-rose-50/80 p-3">
-                    <p className="text-xs font-medium text-rose-700">Rejection reason:</p>
-                    <p className="mt-1 text-sm text-rose-600">{uploadStatusResult.rejection_reason}</p>
-                  </div>
-                )}
+                {uploadStatusResult.status === 'rejected' &&
+                  uploadStatusResult.rejection_reason && (
+                    <div className='mt-3 rounded-lg border border-rose-200 bg-rose-50/80 p-3'>
+                      <p className='text-xs font-medium text-rose-700'>Rejection reason:</p>
+                      <p className='mt-1 text-sm text-rose-600'>
+                        {uploadStatusResult.rejection_reason}
+                      </p>
+                    </div>
+                  )}
                 {uploadStatusResult.photo_urls.length > 0 && (
-                  <div className="mt-3 flex gap-2">
+                  <div className='mt-3 flex gap-2'>
                     {uploadStatusResult.photo_urls.slice(0, 3).map((url, idx) => (
-                      <img key={idx} src={url} alt={`Upload ${idx + 1}`} className="h-12 w-12 rounded-lg object-cover" />
+                      <img
+                        key={idx}
+                        src={url}
+                        alt={`Upload ${idx + 1}`}
+                        className='h-12 w-12 rounded-lg object-cover'
+                      />
                     ))}
                   </div>
                 )}
@@ -1459,41 +2024,55 @@ export default function Gallery() {
             )}
           </div>
 
-          <div className="mb-5">
-            <h2 className="font-display text-3xl text-charcoal-900 sm:text-4xl">
+          <div className='mb-5'>
+            <h2 className='font-display text-3xl text-charcoal-900 sm:text-4xl'>
               {selectedCollection}
             </h2>
           </div>
 
           <div
-            data-testid="gallery-results"
-            className="rounded-[2rem] border border-white/80 bg-white/72 p-4 shadow-[0_28px_70px_-48px_rgba(46,33,13,0.38)] backdrop-blur-sm sm:p-6"
+            data-testid='gallery-results'
+            className='rounded-[2rem] border border-white/80 bg-white/72 p-4 shadow-[0_28px_70px_-48px_rgba(46,33,13,0.38)] backdrop-blur-sm sm:p-6'
           >
             <div
               ref={galleryScrollRef}
-              className="overflow-hidden lg:h-[calc(100vh-18rem)] lg:min-h-[32rem] lg:overflow-y-auto lg:pr-2 [&::-webkit-scrollbar]:w-1.5 [&::-webkit-scrollbar-track]:rounded-full [&::-webkit-scrollbar-track]:bg-gold-100/40 [&::-webkit-scrollbar-thumb]:rounded-full [&::-webkit-scrollbar-thumb]:bg-gold-400/50 hover:[&::-webkit-scrollbar-thumb]:bg-gold-500/70"
+              className='overflow-hidden lg:h-[calc(100vh-18rem)] lg:min-h-[32rem] lg:overflow-y-auto lg:pr-2 [&::-webkit-scrollbar]:w-1.5 [&::-webkit-scrollbar-track]:rounded-full [&::-webkit-scrollbar-track]:bg-gold-100/40 [&::-webkit-scrollbar-thumb]:rounded-full [&::-webkit-scrollbar-thumb]:bg-gold-400/50 hover:[&::-webkit-scrollbar-thumb]:bg-gold-500/70'
             >
-            {isLoading ? (
-              <GallerySkeleton count={12} />
-            ) : filteredPhotos.length > 0 ? (
-              <>
-                <AnimatePresence mode="wait" custom={collectionSwitchDirectionRef.current}>
-                  <motion.div
-                    key={`${selectedCollection}-${viewMode}`}
-                    custom={collectionSwitchDirectionRef.current}
-                    variants={{
-                      initial: (dir: number) => ({ opacity: 0, x: dir >= 0 ? 30 : -30 }),
-                      animate: { opacity: 1, x: 0 },
-                      exit: (dir: number) => ({ opacity: 0, x: dir >= 0 ? -30 : 30 }),
-                    }}
-                    initial="initial"
-                    animate="animate"
-                    exit="exit"
-                    transition={{ duration: 0.28, ease: [0.25, 0.46, 0.45, 0.94] }}
-                  >
-                    {viewMode === 'timeline' ? (
-                      <div>
-                        <h2 className="mb-4 font-display text-2xl text-charcoal-900">Timeline view</h2>
+              {isLoading ? (
+                <GallerySkeleton count={12} />
+              ) : filteredPhotos.length > 0 ? (
+                <>
+                  <AnimatePresence mode='wait' custom={collectionSwitchDirectionRef.current}>
+                    <motion.div
+                      key={`${selectedCollection}-${viewMode}`}
+                      custom={collectionSwitchDirectionRef.current}
+                      variants={{
+                        initial: (dir: number) => ({ opacity: 0, x: dir >= 0 ? 30 : -30 }),
+                        animate: { opacity: 1, x: 0 },
+                        exit: (dir: number) => ({ opacity: 0, x: dir >= 0 ? -30 : 30 }),
+                      }}
+                      initial='initial'
+                      animate='animate'
+                      exit='exit'
+                      transition={{ duration: 0.28, ease: [0.25, 0.46, 0.45, 0.94] }}
+                    >
+                      {viewMode === 'timeline' ? (
+                        <div>
+                          <h2 className='mb-4 font-display text-2xl text-charcoal-900'>
+                            Timeline view
+                          </h2>
+                          <VirtualizedPhotoGrid
+                            photos={displayedItems}
+                            onPhotoClick={
+                              selectMode ? undefined : (_, index) => openLightbox(index)
+                            }
+                            onLike={selectMode ? undefined : handleLike}
+                            selectMode={selectMode}
+                            selectedIds={selectedPhotoIds}
+                            onToggleSelect={handleToggleSelect}
+                          />
+                        </div>
+                      ) : (
                         <VirtualizedPhotoGrid
                           photos={displayedItems}
                           onPhotoClick={selectMode ? undefined : (_, index) => openLightbox(index)}
@@ -1502,51 +2081,37 @@ export default function Gallery() {
                           selectedIds={selectedPhotoIds}
                           onToggleSelect={handleToggleSelect}
                         />
-                      </div>
-                    ) : (
-                      <VirtualizedPhotoGrid
-                        photos={displayedItems}
-                        onPhotoClick={selectMode ? undefined : (_, index) => openLightbox(index)}
-                        onLike={selectMode ? undefined : handleLike}
-                        selectMode={selectMode}
-                        selectedIds={selectedPhotoIds}
-                        onToggleSelect={handleToggleSelect}
-                      />
-                    )}
-                  </motion.div>
-                </AnimatePresence>
+                      )}
+                    </motion.div>
+                  </AnimatePresence>
 
-                {hasMore && (
-                  <div ref={observerRef} className="flex justify-center py-8">
-                    {isLoadingMore ? (
-                      <div className="flex items-center gap-2 rounded-full bg-cream-50 px-4 py-2 text-charcoal-500">
-                        <Loader2 className="h-4 w-4 animate-spin text-gold-500" />
-                        Loading more moments...
-                      </div>
-                    ) : (
-                      <Button variant="secondary" onClick={loadMore}>
-                        Load more
-                      </Button>
-                    )}
+                  {hasMore && (
+                    <div ref={observerRef} className='flex justify-center py-8'>
+                      {isLoadingMore ? (
+                        <div className='flex items-center gap-2 rounded-full bg-cream-50 px-4 py-2 text-charcoal-500'>
+                          <Loader2 className='h-4 w-4 animate-spin text-gold-500' />
+                          Loading more moments...
+                        </div>
+                      ) : (
+                        <Button variant='secondary' onClick={loadMore}>
+                          Load more
+                        </Button>
+                      )}
+                    </div>
+                  )}
+                </>
+              ) : (
+                <div className='flex min-h-[20rem] flex-col items-center justify-center text-center'>
+                  <div className='flex h-16 w-16 items-center justify-center rounded-full bg-gold-100 text-gold-600'>
+                    <Filter className='h-7 w-7' />
                   </div>
-                )}
-              </>
-            ) : (
-              <div className="flex min-h-[20rem] flex-col items-center justify-center text-center">
-                <div className="flex h-16 w-16 items-center justify-center rounded-full bg-gold-100 text-gold-600">
-                  <Filter className="h-7 w-7" />
+                  <p className='mt-6 font-display text-2xl text-charcoal-900'>{emptyStateTitle}</p>
+                  <p className='mt-2 max-w-md text-charcoal-500'>{emptyStateBody}</p>
+                  <Button variant='secondary' className='mt-6' onClick={clearAllFilters}>
+                    Return to all collections
+                  </Button>
                 </div>
-                <p className="mt-6 font-display text-2xl text-charcoal-900">
-                  {emptyStateTitle}
-                </p>
-                <p className="mt-2 max-w-md text-charcoal-500">
-                  {emptyStateBody}
-                </p>
-                <Button variant="secondary" className="mt-6" onClick={clearAllFilters}>
-                  Return to all collections
-                </Button>
-              </div>
-            )}
+              )}
             </div>
           </div>
         </div>

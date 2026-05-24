@@ -1,4 +1,11 @@
-import { expect, expectSectionScreenshot, gotoPublicPage, test, viewports, waitForPageReady } from './support/publicSite'
+import {
+  expect,
+  expectSectionScreenshot,
+  gotoPublicPage,
+  test,
+  viewports,
+  waitForPageReady,
+} from './support/publicSite'
 
 test.describe('Guestbook Page', () => {
   test('renders the guestbook feed', async ({ page }) => {
@@ -8,7 +15,9 @@ test.describe('Guestbook Page', () => {
     await expect(page.getByTestId('guestbook-feed')).toBeVisible()
   })
 
-  test('opens the composer and submits a text message against mocked responses', async ({ page }) => {
+  test('opens the composer and submits a text message against mocked responses', async ({
+    page,
+  }) => {
     await gotoPublicPage(page, '/guestbook')
 
     await page.getByRole('button', { name: 'Start your message' }).click()
@@ -16,32 +25,50 @@ test.describe('Guestbook Page', () => {
 
     await page.getByLabel('Your Name').fill('Taylor Guest')
     await page.getByLabel('Email').fill('taylor@example.com')
-    await page.getByLabel('Your Message').fill('We felt the joy from the back row and still cannot stop smiling.')
+    await page
+      .getByLabel('Your Message')
+      .fill('We felt the joy from the back row and still cannot stop smiling.')
     await page.getByRole('button', { name: 'Post to the guestbook' }).click()
 
-    await expect(page.getByRole('heading', { name: 'Your note is part of the book now.' })).toBeVisible()
+    await expect(
+      page.getByRole('heading', { name: 'Your note is part of the book now.' })
+    ).toBeVisible()
   })
 
   test('updates reactions and replies in the feed', async ({ page }) => {
     await gotoPublicPage(page, '/guestbook')
     const firstEntry = page.locator('article').first()
 
+    // Articles use framer-motion whileInView: scroll into view so IntersectionObserver
+    // fires and the article becomes fully visible/actionable before we interact
+    await firstEntry.scrollIntoViewIfNeeded()
+    await page.waitForTimeout(300)
+
     await firstEntry.getByRole('button', { name: 'Add a reaction' }).click()
-    await page.locator('#reaction-picker').getByRole('button', { name: 'Love' }).click()
+    const picker = page.locator('#reaction-picker')
+    await picker.waitFor({ state: 'visible' })
+    await picker.getByRole('button', { name: 'Love' }).click()
     await expect(firstEntry.getByRole('button', { name: /Love reaction, 13 votes/i })).toBeVisible()
 
     await firstEntry.getByRole('button', { name: /Reply \(1\)|Reply/i }).click()
-    await firstEntry.getByLabel('Add a reply').fill('We are still talking about the dance floor, too.')
+    await firstEntry
+      .getByLabel('Add a reply')
+      .fill('We are still talking about the dance floor, too.')
     await firstEntry.getByRole('button', { name: 'Send' }).click()
 
-    await expect(firstEntry.getByText('We are still talking about the dance floor, too.')).toBeVisible()
+    await expect(
+      firstEntry.getByText('We are still talking about the dance floor, too.')
+    ).toBeVisible()
   })
 })
 
 for (const viewport of Object.keys(viewports) as Array<keyof typeof viewports>) {
   test(`guestbook visual baselines (${viewport})`, async ({ page }) => {
     await gotoPublicPage(page, '/guestbook', viewport)
-    await expectSectionScreenshot(page.getByTestId('guestbook-feed'), `guestbook-feed-${viewport}.png`)
+    await expectSectionScreenshot(
+      page.getByTestId('guestbook-feed'),
+      `guestbook-feed-${viewport}.png`
+    )
 
     await page.getByRole('button', { name: 'Start your message' }).click()
     await waitForPageReady(page)
@@ -50,6 +77,9 @@ for (const viewport of Object.keys(viewports) as Array<keyof typeof viewports>) 
         document.activeElement.blur()
       }
     })
-    await expectSectionScreenshot(page.getByTestId('guestbook-composer'), `guestbook-composer-${viewport}.png`)
+    await expectSectionScreenshot(
+      page.getByTestId('guestbook-composer'),
+      `guestbook-composer-${viewport}.png`
+    )
   })
 }

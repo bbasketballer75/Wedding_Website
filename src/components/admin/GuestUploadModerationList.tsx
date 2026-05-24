@@ -56,17 +56,17 @@ export function GuestUploadModerationList() {
 
   if (loading) {
     return (
-      <div className="rounded-xl border border-gold-100 bg-white p-8">
+      <div className='rounded-xl border border-gold-100 bg-white p-8'>
         <ListSkeleton count={5} />
       </div>
     )
   }
 
   return (
-    <div className="space-y-4" data-testid="upload-queue">
+    <div className='space-y-4' data-testid='upload-queue'>
       {/* Filter tabs */}
-      <div className="flex items-center gap-1 rounded-xl border border-gold-100 bg-white p-1">
-        {STATUS_TABS.map((tab) => (
+      <div className='flex items-center gap-1 rounded-xl border border-gold-100 bg-white p-1'>
+        {STATUS_TABS.map(tab => (
           <button
             key={tab.value}
             onClick={() => setActiveFilter(tab.value)}
@@ -77,7 +77,7 @@ export function GuestUploadModerationList() {
             }`}
           >
             {tab.label}
-            <span className="ml-2 text-xs opacity-70">
+            <span className='ml-2 text-xs opacity-70'>
               ({uploads.filter(u => u.status === tab.value).length})
             </span>
           </button>
@@ -98,8 +98,8 @@ export function GuestUploadModerationList() {
 
       {/* Upload list */}
       {uploads.length > 0 ? (
-        <div className="space-y-3">
-          {uploads.map((upload) => (
+        <div className='space-y-3'>
+          {uploads.map(upload => (
             <UploadCard
               key={upload.id}
               upload={upload}
@@ -111,16 +111,16 @@ export function GuestUploadModerationList() {
                   : selectUpload(upload.id)
               }
               onApprove={() => void approveUpload(upload.id)}
-              onReject={(reason) => void rejectUpload(upload.id, reason)}
+              onReject={reason => void rejectUpload(upload.id, reason)}
             />
           ))}
         </div>
       ) : (
-        <div className="rounded-xl border border-dashed border-gold-200 bg-white">
-          <div className="flex flex-col items-center gap-3 py-16 text-center text-charcoal-500">
-            <Inbox className="h-12 w-12 opacity-30" />
-            <p className="font-medium text-charcoal-700">No {activeFilter} uploads</p>
-            <p className="text-sm">
+        <div className='rounded-xl border border-dashed border-gold-200 bg-white'>
+          <div className='flex flex-col items-center gap-3 py-16 text-center text-charcoal-500'>
+            <Inbox className='h-12 w-12 opacity-30' />
+            <p className='font-medium text-charcoal-700'>No {activeFilter} uploads</p>
+            <p className='text-sm'>
               {activeFilter === 'pending'
                 ? 'New guest uploads will appear here for moderation.'
                 : `All guest uploads have been moderated.`}
@@ -131,13 +131,13 @@ export function GuestUploadModerationList() {
 
       {/* Select all checkbox (when items exist) */}
       {uploads.length > 0 && activeFilter === 'pending' && (
-        <div className="flex items-center gap-2 text-sm text-charcoal-600">
+        <div className='flex items-center gap-2 text-sm text-charcoal-600'>
           <input
-            type="checkbox"
+            type='checkbox'
             checked={selectedCount === uploads.length && uploads.length > 0}
-            onChange={(e) => (e.target.checked ? selectAll() : deselectAll())}
-            className="h-4 w-4 rounded border-gold-300 text-gold-500 focus:ring-gold-400"
-            aria-label="Select all pending uploads"
+            onChange={e => (e.target.checked ? selectAll() : deselectAll())}
+            className='h-4 w-4 rounded border-gold-300 text-gold-500 focus:ring-gold-400'
+            aria-label='Select all pending uploads'
           />
           <span>Select all {uploads.length} pending uploads</span>
         </div>
@@ -149,21 +149,26 @@ export function GuestUploadModerationList() {
         onClose={() => setShowBulkRejectDialog(false)}
         onConfirm={handleBulkReject}
         title={`Reject ${selectedCount} Upload${selectedCount !== 1 ? 's' : ''}`}
-        confirmLabel="Reject All"
-        confirmVariant="danger"
+        confirmLabel='Reject All'
+        confirmVariant='danger'
       >
-        <div className="space-y-4">
-          <p className="text-sm text-charcoal-600">
-            Are you sure? These {selectedCount} upload{selectedCount !== 1 ? 's' : ''} will be declined. Guests will see the rejection reason when they check status.
+        <div className='space-y-4'>
+          <p className='text-sm text-charcoal-600'>
+            Are you sure? These {selectedCount} upload{selectedCount !== 1 ? 's' : ''} will be
+            declined. Guests will see the rejection reason when they check status.
           </p>
           <div>
-            <label className="mb-2 block text-sm font-medium text-charcoal-700">
+            <label
+              htmlFor='bulk-reject-reason'
+              className='mb-2 block text-sm font-medium text-charcoal-700'
+            >
               Rejection reason (optional)
             </label>
             <Textarea
+              id='bulk-reject-reason'
               value={bulkRejectReason}
-              onChange={(e) => setBulkRejectReason(e.target.value)}
-              placeholder="Optional: Let the guest know why..."
+              onChange={e => setBulkRejectReason(e.target.value)}
+              placeholder='Optional: Let the guest know why...'
               rows={3}
             />
           </div>

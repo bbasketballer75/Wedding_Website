@@ -200,3 +200,25 @@ export const approvedGuestUploads = [
   },
 ]
 
+export const mockActivityLog = [
+  {
+    id: 'act-1',
+    type: 'photo_upload',
+    source_id: 'photo-1',
+    source_type: 'guest_uploads',
+    display_name: 'John Doe',
+    thumbnail_url: '/images/engagement/PoradaProposal-29.webp',
+    content_preview: 'Shared a photo from the dance floor!',
+    created_at: '2025-05-10T14:00:00.000Z',
+  },
+  {
+    id: 'act-2',
+    type: 'guestbook_entry',
+    source_id: 'message-1',
+    source_type: 'guestbook_messages',
+    display_name: 'Sarah Mitchell',
+    thumbnail_url: null,
+    content_preview: 'Your vows made the whole room disappear for a second.',
+    created_at: '2025-05-12T18:00:00.000Z',
+  },
+]

@@ -8,13 +8,13 @@ const supabaseKey = import.meta.env.VITE_SUPABASE_ANON_KEY
 if (!supabaseUrl || !supabaseKey) {
   throw new Error(
     'Missing Supabase environment variables. ' +
-    'Please ensure VITE_SUPABASE_URL and VITE_SUPABASE_ANON_KEY are set in your .env file.'
+      'Please ensure VITE_SUPABASE_URL and VITE_SUPABASE_ANON_KEY are set in your .env file.'
   )
 }
 
 /**
  * Single Supabase client instance for the entire application.
- * 
+ *
  * Configuration:
  * - Auth: Auto-refresh tokens, persist session, detect session in URL
  * - Realtime: Limited to 10 events per second to prevent flooding
@@ -224,7 +224,12 @@ export interface ModerationAuditTimelineFilters {
 }
 
 export type MediaReviewBatchStatus = 'pending' | 'in_review' | 'approved' | 'archived'
-export type MediaReviewClusterStatus = 'pending' | 'confirmed' | 'ignored' | 'merged' | 'split_requested'
+export type MediaReviewClusterStatus =
+  | 'pending'
+  | 'confirmed'
+  | 'ignored'
+  | 'merged'
+  | 'split_requested'
 export type MediaReviewFaceStatus = 'pending' | 'confirmed' | 'ignored'
 export type GuestFaceTaggingBatchStatus = 'prepared' | 'synced' | 'failed'
 
@@ -479,8 +484,8 @@ export async function fetchKnownPeopleNames() {
     }
 
     const rows = data || []
-    rows.forEach((row) => {
-      ;(row.faces || []).forEach((face) => {
+    rows.forEach(row => {
+      ;(row.faces || []).forEach(face => {
         const name = face.name?.trim()
         if (name) names.add(name)
       })
@@ -503,7 +508,7 @@ export async function fetchKnownPeopleNames() {
     return { data: null, error: reviewError }
   }
 
-  ;(reviewFaces || []).forEach((row) => {
+  ;(reviewFaces || []).forEach(row => {
     const name = row.confirmed_name?.trim()
     if (name) names.add(name)
   })
@@ -540,11 +545,10 @@ export async function fetchPhotoEngagementSummary(photoKeys: string[]) {
 }
 
 export async function togglePhotoLike(photoKey: string, sessionId: string) {
-  const response = await supabase
-    .rpc('toggle_photo_like_v2', {
-      p_photo_key: photoKey,
-      p_session_id: sessionId,
-    })
+  const response = await supabase.rpc('toggle_photo_like_v2', {
+    p_photo_key: photoKey,
+    p_session_id: sessionId,
+  })
 
   if (response.error || !Array.isArray(response.data) || response.data.length === 0) {
     return {
@@ -579,7 +583,7 @@ export async function addPhotoComment(
   photoKey: string,
   content: string,
   author = 'Guest',
-  sessionId: string,
+  sessionId: string
 ) {
   return await supabase
     .rpc('create_photo_comment_v1', {
@@ -629,7 +633,7 @@ export async function fetchAlbumPhotos(album: PhotoAlbum) {
 
 export async function fetchPhotoAlbumCounts() {
   const results = await Promise.all(
-    PHOTO_ALBUMS.map(async (album) => {
+    PHOTO_ALBUMS.map(async album => {
       const response = await supabase
         .from('photos')
         .select('*', { count: 'exact', head: true })
@@ -665,13 +669,13 @@ export async function saveAlbumOrganization(
   album: PhotoAlbum,
   orderedPhotoIds: string[],
   moves: AlbumOrganizerMoveInput[],
-  deletePhotoIds: string[] = [],
+  deletePhotoIds: string[] = []
 ) {
   return await supabase
     .rpc('save_album_organization_v2', {
       p_album: album,
       p_ordered_photo_ids: orderedPhotoIds,
-      p_moves: moves.map((move) => ({
+      p_moves: moves.map(move => ({
         photoId: move.photoId,
         targetAlbum: move.targetAlbum,
       })),
@@ -713,7 +717,10 @@ export async function fetchMediaReviewFaces(batchId: string) {
     .returns<MediaReviewFace[]>()
 }
 
-export async function updateMediaReviewBatchStatus(batchId: string, status: MediaReviewBatchStatus) {
+export async function updateMediaReviewBatchStatus(
+  batchId: string,
+  status: MediaReviewBatchStatus
+) {
   return await supabase
     .from('media_review_batches')
     .update({
@@ -725,7 +732,10 @@ export async function updateMediaReviewBatchStatus(batchId: string, status: Medi
     .single<MediaReviewBatch>()
 }
 
-export async function updateMediaReviewCluster(clusterId: string, input: UpdateMediaReviewClusterInput) {
+export async function updateMediaReviewCluster(
+  clusterId: string,
+  input: UpdateMediaReviewClusterInput
+) {
   return await supabase
     .from('media_review_clusters')
     .update({
@@ -756,7 +766,10 @@ export async function updateMediaReviewFace(faceId: string, input: UpdateMediaRe
     .single<MediaReviewFace>()
 }
 
-export async function updateManyMediaReviewFaces(faceIds: string[], input: UpdateMediaReviewFaceInput) {
+export async function updateManyMediaReviewFaces(
+  faceIds: string[],
+  input: UpdateMediaReviewFaceInput
+) {
   return await supabase
     .from('media_review_faces')
     .update({
@@ -776,15 +789,11 @@ export async function createMediaReviewArtifactSignedUrl(
   objectPath: string,
   expiresInSeconds = 60 * 60
 ) {
-  return await supabase.storage
-    .from(bucket)
-    .createSignedUrl(objectPath, expiresInSeconds)
+  return await supabase.storage.from(bucket).createSignedUrl(objectPath, expiresInSeconds)
 }
 
 export async function downloadMediaReviewArtifact(bucket: string, objectPath: string) {
-  return await supabase.storage
-    .from(bucket)
-    .download(objectPath)
+  return await supabase.storage.from(bucket).download(objectPath)
 }
 
 export async function fetchSiteEditorialFeatures(slot?: SiteEditorialFeatureSlot) {
@@ -832,7 +841,9 @@ export interface RecordSiteEditorialFeatureHistoryInput {
   actor?: ModerationAuditActor | null
 }
 
-export async function recordSiteEditorialFeatureHistory(input: RecordSiteEditorialFeatureHistoryInput) {
+export async function recordSiteEditorialFeatureHistory(
+  input: RecordSiteEditorialFeatureHistoryInput
+) {
   return await supabase
     .from('site_editorial_feature_history')
     .insert({
@@ -892,7 +903,9 @@ export async function fetchPendingGuestUploads(): Promise<GuestUpload[]> {
 }
 
 // Fetch all guest uploads by status (for filter tabs)
-export async function fetchGuestUploadsByStatus(status: 'pending' | 'approved' | 'rejected'): Promise<GuestUpload[]> {
+export async function fetchGuestUploadsByStatus(
+  status: 'pending' | 'approved' | 'rejected'
+): Promise<GuestUpload[]> {
   const { data, error } = await supabase
     .from('guest_uploads')
     .select('*')
@@ -903,7 +916,10 @@ export async function fetchGuestUploadsByStatus(status: 'pending' | 'approved' |
 }
 
 // Approve a single guest upload
-export async function approveGuestUpload(uploadId: string, actor?: ModerationAuditActor): Promise<void> {
+export async function approveGuestUpload(
+  uploadId: string,
+  actor?: ModerationAuditActor
+): Promise<void> {
   const { data: existing } = await supabase
     .from('guest_uploads')
     .select('status')
@@ -929,7 +945,11 @@ export async function approveGuestUpload(uploadId: string, actor?: ModerationAud
 }
 
 // Reject a single guest upload with optional reason
-export async function rejectGuestUpload(uploadId: string, reason?: string, actor?: ModerationAuditActor): Promise<void> {
+export async function rejectGuestUpload(
+  uploadId: string,
+  reason?: string,
+  actor?: ModerationAuditActor
+): Promise<void> {
   const { data: existing } = await supabase
     .from('guest_uploads')
     .select('status')
@@ -956,7 +976,10 @@ export async function rejectGuestUpload(uploadId: string, reason?: string, actor
 }
 
 // Bulk approve guest uploads
-export async function bulkApproveGuestUploads(uploadIds: string[], actor?: ModerationAuditActor): Promise<void> {
+export async function bulkApproveGuestUploads(
+  uploadIds: string[],
+  actor?: ModerationAuditActor
+): Promise<void> {
   const { error } = await supabase
     .from('guest_uploads')
     .update({ status: 'approved' })
@@ -978,7 +1001,11 @@ export async function bulkApproveGuestUploads(uploadIds: string[], actor?: Moder
 }
 
 // Bulk reject guest uploads with optional reason
-export async function bulkRejectGuestUploads(uploadIds: string[], reason?: string, actor?: ModerationAuditActor): Promise<void> {
+export async function bulkRejectGuestUploads(
+  uploadIds: string[],
+  reason?: string,
+  actor?: ModerationAuditActor
+): Promise<void> {
   const { error } = await supabase
     .from('guest_uploads')
     .update({ status: 'rejected', rejection_reason: reason ?? null })
@@ -1004,7 +1031,9 @@ export async function bulkRejectGuestUploads(uploadIds: string[], reason?: strin
 export async function fetchGuestUploadStatus(email: string): Promise<GuestUpload | null> {
   const { data, error } = await supabase
     .from('guest_uploads')
-    .select('id, status, rejection_reason, created_at, photo_urls, guest_name, guest_email, message')
+    .select(
+      'id, status, rejection_reason, created_at, photo_urls, guest_name, guest_email, message'
+    )
     .eq('guest_email', email)
     .order('created_at', { ascending: false })
     .limit(1)
@@ -1069,7 +1098,10 @@ export async function fetchActivityFeed(limit = 100): Promise<ActivityLogItem[]>
   return data ?? []
 }
 
-export async function fetchActivityItem(sourceType: string, sourceId: string): Promise<ActivityLogItem | null> {
+export async function fetchActivityItem(
+  sourceType: string,
+  sourceId: string
+): Promise<ActivityLogItem | null> {
   const { data, error } = await supabase
     .from('activity_log')
     .select('*')
@@ -1156,7 +1188,7 @@ export async function submitClaims(
         email,
         display_name: displayName,
         session_id: sessionId ?? null,
-        is_verified: false
+        is_verified: false,
       })
       .select('id')
       .single()
@@ -1165,18 +1197,15 @@ export async function submitClaims(
   }
 
   // 2. Submit claims bulk
-  const claimInserts = claims.map((c) => ({
+  const claimInserts = claims.map(c => ({
     guest_identity_id: identityId,
     photo_id: c.photoId,
     face_id: c.faceId ?? null,
     claim_type: c.claimType,
-    status: 'pending'
+    status: 'pending',
   }))
 
-  const { data, error } = await supabase
-    .from('photo_claims')
-    .insert(claimInserts)
-    .select('*')
+  const { data, error } = await supabase.from('photo_claims').insert(claimInserts).select('*')
 
   if (error) throw error
   return data ?? []
@@ -1256,7 +1285,10 @@ export async function fetchRejectedClaims(): Promise<PhotoClaim[]> {
 /**
  * Approve a guest's photo or face claim (Admin only).
  */
-export async function approvePhotoClaim(claimId: string, actor?: ModerationAuditActor): Promise<void> {
+export async function approvePhotoClaim(
+  claimId: string,
+  actor?: ModerationAuditActor
+): Promise<void> {
   const { data: claim, error: fetchError } = await supabase
     .from('photo_claims')
     .select('*, guest_identities(*)')
@@ -1290,7 +1322,7 @@ export async function approvePhotoClaim(claimId: string, actor?: ModerationAudit
       .update({
         confirmed_name: identity.display_name,
         review_status: 'confirmed',
-        updated_at: new Date().toISOString()
+        updated_at: new Date().toISOString(),
       })
       .eq('id', claim.face_id)
     if (syncError) console.error('Error syncing face cluster name:', syncError)
@@ -1332,7 +1364,7 @@ export async function rejectPhotoClaim(
     .update({
       status: 'rejected',
       rejection_reason: reason ?? null,
-      updated_at: new Date().toISOString()
+      updated_at: new Date().toISOString(),
     })
     .eq('id', claimId)
 
@@ -1358,10 +1390,7 @@ export async function rejectPhotoClaim(
  */
 export async function fetchPhotosByUrls(urls: string[]): Promise<Photo[]> {
   if (urls.length === 0) return []
-  const { data, error } = await supabase
-    .from('photos')
-    .select('*')
-    .in('url', urls)
+  const { data, error } = await supabase.from('photos').select('*').in('url', urls)
 
   if (error) throw error
   return (data ?? []) as Photo[]
@@ -1380,7 +1409,7 @@ export async function fetchPotentialPhotosToClaimByEmail(email: string): Promise
   if (error) throw error
   if (!uploads || uploads.length === 0) return []
 
-  const allUrls = uploads.flatMap((u) => u.photo_urls || [])
+  const allUrls = uploads.flatMap(u => u.photo_urls || [])
   if (allUrls.length === 0) return []
 
   return await fetchPhotosByUrls(allUrls)
@@ -1391,9 +1420,9 @@ export async function fetchPotentialPhotosToClaimByEmail(email: string): Promise
  */
 export async function getOrCreateShareToken(email: string): Promise<string> {
   const formattedEmail = email.trim().toLowerCase()
-  
+
   // 1. Try to fetch existing token
-  const { data, error: fetchError } = await supabase
+  const { data } = await supabase
     .from('guest_share_tokens')
     .select('token')
     .eq('guest_email', formattedEmail)
@@ -1416,7 +1445,7 @@ export async function getOrCreateShareToken(email: string): Promise<string> {
 
   if (insertError) {
     // Handle race conditions where another call inserted first
-    const { data: retryData, error: retryError } = await supabase
+    const { data: retryData } = await supabase
       .from('guest_share_tokens')
       .select('token')
       .eq('guest_email', formattedEmail)
@@ -1462,7 +1491,7 @@ export async function fetchGuestContributionsByToken(token: string): Promise<{
       .eq('guest_email', email)
       .eq('status', 'approved')
       .order('created_at', { ascending: false }),
-      
+
     // Fetch guestbook messages matching the email
     supabase
       .from('guestbook_messages')
@@ -1479,21 +1508,17 @@ export async function fetchGuestContributionsByToken(token: string): Promise<{
       .maybeSingle(),
 
     // Fetch any identity record to get verified name
-    supabase
-      .from('guest_identities')
-      .select('display_name')
-      .eq('email', email)
-      .maybeSingle()
+    supabase.from('guest_identities').select('display_name').eq('email', email).maybeSingle(),
   ])
 
   const uploads = uploadsRes.data ?? []
   const guestbook = guestbookRes.data ?? []
-  
+
   // Resolve claimed photos
   const claimedPhotos: any[] = []
   if (claimedRes.data?.photo_claims) {
     const claims = claimedRes.data.photo_claims as any[]
-    claims.forEach((claim) => {
+    claims.forEach(claim => {
       if (claim.status === 'approved' && claim.photos) {
         claimedPhotos.push(claim.photos)
       }
@@ -1519,5 +1544,3 @@ export async function fetchGuestContributionsByToken(token: string): Promise<{
     claimedPhotos,
   }
 }
-
-

@@ -1,6 +1,7 @@
 /* eslint-disable react-refresh/only-export-components */
 import React, { createContext, useContext, useState, useCallback } from 'react'
 import { AnimatePresence, motion } from 'framer-motion'
+import { CheckCircle, AlertTriangle, Info, XCircle } from 'lucide-react'
 
 type ToastType = 'success' | 'error' | 'warning' | 'info'
 
@@ -76,17 +77,17 @@ const ToastItem = ({ message, type, onDismiss }: ToastItemProps) => {
   }
 
   const bgColors: Record<ToastType, string> = {
-    success: 'bg-charcoal-900 border-gold-500 text-white',
+    success: 'bg-white border-gold-300 text-charcoal-900 shadow-[0_8px_32px_rgba(219,180,92,0.18)]',
     error: 'bg-red-950/90 border-red-500/50 text-white',
     warning: 'bg-amber-950/90 border-amber-500/50 text-white',
-    info: 'bg-charcoal-900 border-white/20 text-white',
+    info: 'bg-white border-gold-100 text-charcoal-800',
   }
 
-  const icons: Record<ToastType, string> = {
-    success: '✨',
-    error: '⚠️',
-    warning: '⚠️',
-    info: 'ℹ️',
+  const icons: Record<ToastType, React.ReactNode> = {
+    success: <CheckCircle className='h-5 w-5 text-gold-400 shrink-0' />,
+    error: <XCircle className='h-5 w-5 text-red-400 shrink-0' />,
+    warning: <AlertTriangle className='h-5 w-5 text-amber-400 shrink-0' />,
+    info: <Info className='h-5 w-5 text-white/70 shrink-0' />,
   }
 
   return (
@@ -100,7 +101,7 @@ const ToastItem = ({ message, type, onDismiss }: ToastItemProps) => {
       className={`pointer-events-auto flex items-center gap-3 px-6 py-4 rounded-xl border backdrop-blur-md shadow-2xl ${bgColors[type]} cursor-pointer hover:scale-[1.02] transition-transform`}
       role='alert'
     >
-      <span className='text-xl'>{icons[type]}</span>
+      {icons[type]}
       <p className='m-0 text-sm font-medium'>{message}</p>
     </motion.div>
   )

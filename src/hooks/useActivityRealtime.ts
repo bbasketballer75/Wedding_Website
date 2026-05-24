@@ -5,9 +5,14 @@ import type { ActivityLogItem } from '@/lib/supabase'
 
 export function useActivityRealtime() {
   const channelRef = useRef<ReturnType<typeof supabase.channel> | null>(null)
-  const addNewItems = activityFeedStore((state) => state.addNewItems)
+  const addNewItems = activityFeedStore(state => state.addNewItems)
 
   useEffect(() => {
+    if (typeof window !== 'undefined' && (window as any).__E2E__) {
+      console.log('[E2E sandbox] Bypassing realtime activity feed subscription.')
+      return
+    }
+
     // Clean up any existing channel
     if (channelRef.current) {
       supabase.removeChannel(channelRef.current)
@@ -23,7 +28,7 @@ export function useActivityRealtime() {
           schema: 'public',
           table: 'activity_log',
         },
-        (payload) => {
+        payload => {
           addNewItems([payload.new as ActivityLogItem])
         }
       )
