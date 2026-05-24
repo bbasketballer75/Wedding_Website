@@ -75,6 +75,9 @@ supabase/.branches/
 # Local Netlify folder
 .netlify
 
+# Auto-generated tracking files
+.dependency-updates.json
+
 # Playwright
 /playwright-report/
 /blob-report/
