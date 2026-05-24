@@ -23,6 +23,7 @@ dev-dist
 
 # Git worktrees
 .worktrees/
+.claude/worktrees/
 
 # IDE
 .vscode/*
