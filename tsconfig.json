@@ -42,7 +42,8 @@
     "vite.config.js",
     ".storybook/**/*",
     "tests/**/*",
-    "playwright.config.ts"
+    "playwright.config.ts",
+    "playwright.config.visual.ts"
   ],
   "exclude": ["node_modules", "dist", "build"],
   "references": [
