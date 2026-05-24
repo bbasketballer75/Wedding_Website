@@ -37,7 +37,7 @@ const EVENT_DETAILS = {
 
 /**
  * SEOHead - Comprehensive SEO meta tags
- * 
+ *
  * Features:
  * - Title and meta description
  * - Open Graph tags (Facebook, LinkedIn)
@@ -75,7 +75,7 @@ export function SEOHead({
     const updateMeta = (name: string, content: string, property = false) => {
       const selector = property ? `meta[property="${name}"]` : `meta[name="${name}"]`
       let meta = document.querySelector(selector) as HTMLMetaElement
-      
+
       if (!meta) {
         meta = document.createElement('meta')
         if (property) {
@@ -85,7 +85,7 @@ export function SEOHead({
         }
         document.head.appendChild(meta)
       }
-      
+
       meta.content = content
     }
 
@@ -147,7 +147,18 @@ export function SEOHead({
       // Note: We don't remove meta tags on unmount to prevent flickering
       // between route changes. The next SEOHead will update them.
     }
-  }, [fullTitle, description, fullImageUrl, fullCanonical, type, twitterCard, additionalMeta, structuredData, noIndex, siteName])
+  }, [
+    fullTitle,
+    description,
+    fullImageUrl,
+    fullCanonical,
+    type,
+    twitterCard,
+    additionalMeta,
+    structuredData,
+    noIndex,
+    siteName,
+  ])
 
   return null
 }
@@ -156,9 +167,9 @@ export function SEOHead({
 export function HomeSEO() {
   return (
     <SEOHead
-      title="Home"
-      description="Join us in celebrating the wedding of Austin and Jordyn. View our story, photos, and share your memories."
-      canonical="/"
+      title='Home'
+      description='Join us in celebrating the wedding of Austin and Jordyn. View our story, photos, and share your memories.'
+      canonical='/'
       image={DEFAULT_SOCIAL_IMAGE}
       structuredData={{
         '@context': 'https://schema.org',
@@ -171,7 +182,8 @@ export function HomeSEO() {
           {
             '@type': 'Event',
             name: SITE_NAME,
-            description: 'Relive the ceremony, portraits, guestbook, and shared memories from Austin and Jordyn’s wedding day.',
+            description:
+              'Relive the ceremony, portraits, guestbook, and shared memories from Austin and Jordyn’s wedding day.',
             startDate: EVENT_DETAILS.date,
             eventStatus: 'https://schema.org/EventCompleted',
             eventAttendanceMode: 'https://schema.org/OfflineEventAttendanceMode',
@@ -202,15 +214,16 @@ export function HomeSEO() {
 export function FilmSEO() {
   return (
     <SEOHead
-      title="Wedding Film"
-      description="Watch the full wedding film for Austin and Jordyn, from getting ready through the last dance."
-      canonical="/film"
+      title='Wedding Film'
+      description='Watch the full wedding film for Austin and Jordyn, from getting ready through the last dance.'
+      canonical='/film'
       image={FILM_SOCIAL_IMAGE}
       structuredData={{
         '@context': 'https://schema.org',
         '@type': 'VideoObject',
         name: "Austin & Jordyn's Wedding Film",
-        description: 'A feature-length wedding film covering the ceremony, speeches, and celebration.',
+        description:
+          'A feature-length wedding film covering the ceremony, speeches, and celebration.',
         thumbnailUrl: `${import.meta.env.VITE_SITE_URL || SITE_URL}${FILM_SOCIAL_IMAGE}`,
         uploadDate: '2025-05-10',
         embedUrl: `${import.meta.env.VITE_SITE_URL || SITE_URL}/film`,
@@ -222,19 +235,20 @@ export function FilmSEO() {
 export function GallerySEO({ shareImage }: { shareImage?: string }) {
   return (
     <SEOHead
-      title={shareImage ? "Shared Wedding Photos" : "Photo Gallery"}
+      title={shareImage ? 'Shared Wedding Photos' : 'Photo Gallery'}
       description={
         shareImage
           ? "Check out these wedding photos from Austin & Jordyn's special day."
-          : "Browse our wedding photos and share your own. A collection of memories from our special day."
+          : 'Browse our wedding photos and share your own. A collection of memories from our special day.'
       }
-      canonical="/gallery"
+      canonical='/gallery'
       image={shareImage ?? DEFAULT_SOCIAL_IMAGE}
       structuredData={{
         '@context': 'https://schema.org',
         '@type': 'ImageGallery',
         name: 'Wedding Photo Gallery',
-        description: 'A collection of wedding portraits, candids, and guest photos from Austin and Jordyn’s wedding.',
+        description:
+          'A collection of wedding portraits, candids, and guest photos from Austin and Jordyn’s wedding.',
       }}
     />
   )
@@ -243,9 +257,9 @@ export function GallerySEO({ shareImage }: { shareImage?: string }) {
 export function GuestbookSEO() {
   return (
     <SEOHead
-      title="Guestbook"
-      description="Leave a message for Austin and Jordyn. Share your favorite memories from our wedding day."
-      canonical="/guestbook"
+      title='Guestbook'
+      description='Leave a message for Austin and Jordyn. Share your favorite memories from our wedding day.'
+      canonical='/guestbook'
       image={DEFAULT_SOCIAL_IMAGE}
       structuredData={{
         '@context': 'https://schema.org',
@@ -260,15 +274,16 @@ export function GuestbookSEO() {
 export function UploadSEO() {
   return (
     <SEOHead
-      title="Share Memories"
-      description="Share the wedding site, upload your photos and videos, and help Austin and Jordyn keep the day alive from every angle."
-      canonical="/upload"
+      title='Share Memories'
+      description='Share the wedding site, upload your photos and videos, and help Austin and Jordyn keep the day alive from every angle.'
+      canonical='/upload'
       image={DEFAULT_SOCIAL_IMAGE}
       structuredData={{
         '@context': 'https://schema.org',
         '@type': 'WebPage',
         name: 'Share Wedding Memories',
-        description: 'A guest sharing page for sending photos, videos, and the wedding site itself to loved ones.',
+        description:
+          'A guest sharing page for sending photos, videos, and the wedding site itself to loved ones.',
       }}
     />
   )
@@ -277,9 +292,9 @@ export function UploadSEO() {
 export function PeopleSEO() {
   return (
     <SEOHead
-      title="People"
-      description="Browse photos by person. See who appeared in the engagement session, wedding day, and guest uploads."
-      canonical="/people"
+      title='People'
+      description='Browse photos by person. See who appeared in the engagement session, wedding day, and guest uploads.'
+      canonical='/people'
       image={DEFAULT_SOCIAL_IMAGE}
       structuredData={{
         '@context': 'https://schema.org',
@@ -294,9 +309,9 @@ export function PeopleSEO() {
 export function NotFoundSEO() {
   return (
     <SEOHead
-      title="Page Not Found"
-      description="This page could not be found."
-      canonical="/404"
+      title='Page Not Found'
+      description='This page could not be found.'
+      canonical='/404'
       image={DEFAULT_SOCIAL_IMAGE}
       noIndex
       structuredData={{
@@ -304,6 +319,24 @@ export function NotFoundSEO() {
         '@type': 'WebPage',
         name: '404 Page Not Found',
         description: 'A missing page on the Austin and Jordyn wedding website.',
+      }}
+    />
+  )
+}
+
+export function PrintSEO() {
+  return (
+    <SEOHead
+      title='Memory Book'
+      description="Print a photo book or guestbook keepsake from Austin & Jordyn's wedding archive."
+      canonical='/print'
+      image={DEFAULT_SOCIAL_IMAGE}
+      noIndex
+      structuredData={{
+        '@context': 'https://schema.org',
+        '@type': 'WebPage',
+        name: 'Memory Book — Print & Export',
+        description: 'A print-ready photo book and guestbook keepsake from the wedding archive.',
       }}
     />
   )

@@ -23,6 +23,7 @@ const People = lazy(() => import('@/pages/People'))
 const Activity = lazy(() => import('@/pages/Activity'))
 const NotFound = lazy(() => import('@/pages/NotFound'))
 const GuestShare = lazy(() => import('@/pages/GuestShare'))
+const Print = lazy(() => import('@/pages/Print'))
 
 // Page transition wrapper
 function PageTransition({ children }: { children: React.ReactNode }) {
@@ -60,7 +61,8 @@ function LazyPage({ children, title }: { children: React.ReactNode; title?: stri
 function AppContent() {
   const location = useLocation()
   const isHome = location.pathname === '/'
-  const isAdminRoute = location.pathname === '/admin/login' || location.pathname.startsWith('/admin/')
+  const isAdminRoute =
+    location.pathname === '/admin/login' || location.pathname.startsWith('/admin/')
 
   // Page titles for screen reader announcements
   const getPageTitle = (path: string): string | undefined => {
@@ -78,6 +80,7 @@ function AppContent() {
       '/activity': 'Activity',
       '/admin/login': 'Admin Login',
       '/admin': 'Admin Dashboard',
+      '/print': 'Memory Book',
     }
     return titles[path]
   }
@@ -96,138 +99,146 @@ function AppContent() {
   }, [location.pathname, location.search, location.hash])
 
   return (
-    <div className="min-h-screen bg-cream-50">
+    <div className='min-h-screen bg-cream-50'>
       {/* Skip Link for keyboard navigation */}
       <SkipLink />
       <KeyboardShortcutsModal />
-      
+
       {/* Header with navigation role */}
-      {!isHome && !isAdminRoute && (
-        <Header />
-      )}
+      {!isHome && !isAdminRoute && <Header />}
       {!isAdminRoute && <OfflineIndicator />}
-      
+
       {/* Main content area with proper ARIA landmarks */}
       <main
-        id="main-content"
-        role="main"
+        id='main-content'
+        role='main'
         aria-label={getPageTitle(location.pathname) || 'Page content'}
         tabIndex={-1}
-        className="outline-none"
+        className='outline-none'
       >
         {/* Outer boundary: last-resort catch-all */}
         <RouteErrorBoundary>
-          <AnimatePresence mode="wait">
+          <AnimatePresence mode='wait'>
             <Routes location={location} key={location.pathname}>
               <Route
-                path="/"
+                path='/'
                 element={
                   <RouteErrorBoundary>
-                    <LazyPage title="Home">
+                    <LazyPage title='Home'>
                       <Home />
                     </LazyPage>
                   </RouteErrorBoundary>
                 }
               />
               <Route
-                path="/film"
+                path='/film'
                 element={
                   <RouteErrorBoundary>
-                    <LazyPage title="Wedding Film">
+                    <LazyPage title='Wedding Film'>
                       <Film />
                     </LazyPage>
                   </RouteErrorBoundary>
                 }
               />
               <Route
-                path="/gallery"
+                path='/gallery'
                 element={
                   <RouteErrorBoundary>
-                    <LazyPage title="Photo Gallery">
+                    <LazyPage title='Photo Gallery'>
                       <Gallery />
                     </LazyPage>
                   </RouteErrorBoundary>
                 }
               />
               <Route
-                path="/upload"
+                path='/upload'
                 element={
                   <RouteErrorBoundary>
-                    <LazyPage title="Share Memories">
+                    <LazyPage title='Share Memories'>
                       <Upload />
                     </LazyPage>
                   </RouteErrorBoundary>
                 }
               />
               <Route
-                path="/guestbook"
+                path='/guestbook'
                 element={
                   <RouteErrorBoundary>
-                    <LazyPage title="Guestbook">
+                    <LazyPage title='Guestbook'>
                       <Guestbook />
                     </LazyPage>
                   </RouteErrorBoundary>
                 }
               />
               <Route
-                path="/guest-photos"
-                element={<Navigate to="/gallery?collection=Guest+Photos" replace />}
+                path='/guest-photos'
+                element={<Navigate to='/gallery?collection=Guest+Photos' replace />}
               />
               <Route
-                path="/people"
+                path='/people'
                 element={
                   <RouteErrorBoundary>
-                    <LazyPage title="People">
+                    <LazyPage title='People'>
                       <People />
                     </LazyPage>
                   </RouteErrorBoundary>
                 }
               />
               <Route
-                path="/activity"
+                path='/activity'
                 element={
                   <RouteErrorBoundary>
-                    <LazyPage title="Activity">
+                    <LazyPage title='Activity'>
                       <Activity />
                     </LazyPage>
                   </RouteErrorBoundary>
                 }
               />
               <Route
-                path="/admin/login"
+                path='/admin/login'
                 element={
                   <RouteErrorBoundary>
-                    <LazyPage title="Admin Login">
+                    <LazyPage title='Admin Login'>
                       <AdminLogin />
                     </LazyPage>
                   </RouteErrorBoundary>
                 }
               />
               <Route
-                path="/admin/*"
+                path='/admin/*'
                 element={
                   <RouteErrorBoundary>
-                    <LazyPage title="Admin Dashboard">
+                    <LazyPage title='Admin Dashboard'>
                       <Admin />
                     </LazyPage>
                   </RouteErrorBoundary>
                 }
               />
               <Route
-                path="/guest/:token"
+                path='/guest/:token'
                 element={
                   <RouteErrorBoundary>
-                    <LazyPage title="Guest Album">
+                    <LazyPage title='Guest Album'>
                       <GuestShare />
                     </LazyPage>
                   </RouteErrorBoundary>
                 }
               />
               <Route
-                path="*"
+                path='/print'
                 element={
                   <RouteErrorBoundary>
-                    <LazyPage title="Page Not Found">
+                    <LazyPage title='Memory Book'>
+                      <Print />
+                    </LazyPage>
+                  </RouteErrorBoundary>
+                }
+              />
+              <Route
+                path='*'
+                element={
+                  <RouteErrorBoundary>
+                    <LazyPage title='Page Not Found'>
                       <NotFound />
                     </LazyPage>
                   </RouteErrorBoundary>

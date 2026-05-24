@@ -1,0 +1,64 @@
+/* Print-specific styles for the Memory Book page (/print) */
+
+@media print {
+  /* Hide the control panel, site header, and footer */
+  .no-print,
+  header,
+  footer {
+    display: none !important;
+  }
+
+  /* Reset page background */
+  body {
+    background: white !important;
+  }
+
+  * {
+    -webkit-print-color-adjust: exact;
+    print-color-adjust: exact;
+  }
+
+  /* Page margins */
+  @page {
+    margin: 1.5cm;
+    size: letter portrait;
+  }
+
+  /* Photo grid: 2 columns on letter */
+  .photo-grid {
+    display: grid !important;
+    grid-template-columns: 1fr 1fr !important;
+    gap: 0.8cm !important;
+  }
+
+  .photo-item {
+    break-inside: avoid;
+    page-break-inside: avoid;
+  }
+
+  /* Start each album on a new page (except the first) */
+  .album-section {
+    page-break-before: always;
+  }
+
+  .album-section:first-of-type {
+    page-break-before: avoid;
+  }
+
+  /* Guestbook */
+  .message-item {
+    break-inside: avoid;
+    page-break-inside: avoid;
+  }
+
+  .guestbook-section {
+    page-break-before: always;
+  }
+}
+
+@media screen {
+  .print-book {
+    max-width: 800px;
+    margin: 0 auto;
+  }
+}
