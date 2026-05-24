@@ -61,6 +61,7 @@ function LazyPage({ children, title }: { children: React.ReactNode; title?: stri
 function AppContent() {
   const location = useLocation()
   const isHome = location.pathname === '/'
+  const isPrintRoute = location.pathname === '/print'
   const isAdminRoute =
     location.pathname === '/admin/login' || location.pathname.startsWith('/admin/')
 
@@ -105,7 +106,7 @@ function AppContent() {
       <KeyboardShortcutsModal />
 
       {/* Header with navigation role */}
-      {!isHome && !isAdminRoute && <Header />}
+      {!isHome && !isPrintRoute && !isAdminRoute && <Header />}
       {!isAdminRoute && <OfflineIndicator />}
 
       {/* Main content area with proper ARIA landmarks */}
@@ -250,7 +251,7 @@ function AppContent() {
       </main>
 
       {/* Footer with contentinfo role */}
-      {!isAdminRoute && <Footer />}
+      {!isAdminRoute && !isPrintRoute && <Footer />}
     </div>
   )
 }
