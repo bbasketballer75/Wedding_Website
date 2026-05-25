@@ -1,7 +1,15 @@
-import { useState, useEffect, useMemo, useCallback } from 'react'
+import { useState, useEffect, useMemo, useCallback, useRef } from 'react'
 import { AnimatePresence, motion } from 'framer-motion'
 import { useNavigate } from 'react-router-dom'
-import { Users, ArrowRight, ShieldCheck, X, ExternalLink } from 'lucide-react'
+import {
+  Users,
+  ArrowRight,
+  ShieldCheck,
+  X,
+  ExternalLink,
+  ChevronLeft,
+  ChevronRight,
+} from 'lucide-react'
 import { fetchPhotosWithFaces } from '@/lib/supabase'
 import type { Photo } from '@/lib/supabase'
 import { getMediaPath } from '@/utils/media'
@@ -182,6 +190,38 @@ function buildPeopleFromPhotos(photos: Photo[]): PersonCard[] {
   return result.sort((a, b) => b.photoCount - a.photoCount)
 }
 
+// ─── Focus trap ───────────────────────────────────────────────────────────────
+
+const FOCUSABLE_SELECTORS =
+  'a[href],button:not([disabled]),input,select,textarea,[tabindex]:not([tabindex="-1"])'
+
+function useFocusTrap(containerRef: React.RefObject<HTMLElement | null>) {
+  useEffect(() => {
+    const el = containerRef.current
+    if (!el) return
+    const focusable = el.querySelectorAll<HTMLElement>(FOCUSABLE_SELECTORS)
+    const first = focusable[0]
+    const last = focusable[focusable.length - 1]
+    first?.focus()
+    function onKeyDown(e: KeyboardEvent) {
+      if (e.key !== 'Tab') return
+      if (e.shiftKey) {
+        if (document.activeElement === first) {
+          e.preventDefault()
+          last?.focus()
+        }
+      } else {
+        if (document.activeElement === last) {
+          e.preventDefault()
+          first?.focus()
+        }
+      }
+    }
+    el.addEventListener('keydown', onKeyDown)
+    return () => el.removeEventListener('keydown', onKeyDown)
+  }, [containerRef])
+}
+
 // ─── Person Photo Modal ───────────────────────────────────────────────────────
 
 interface PersonPhotoModalProps {
@@ -191,7 +231,12 @@ interface PersonPhotoModalProps {
   onGoToGallery: (name: string) => void
 }
 
-function PersonPhotoModal({ person, photos, onClose, onGoToGallery }: PersonPhotoModalProps) {
+export function PersonPhotoModal({
+  person,
+  photos,
+  onClose,
+  onGoToGallery,
+}: PersonPhotoModalProps) {
   // Lock body scroll while the modal is open
   useEffect(() => {
     const prev = document.body.style.overflow
@@ -214,6 +259,10 @@ function PersonPhotoModal({ person, photos, onClose, onGoToGallery }: PersonPhot
   }, [person.name, photos])
 
   const [lightboxIdx, setLightboxIdx] = useState<number | null>(null)
+
+  // Focus trap — keep keyboard focus inside the modal sheet
+  const sheetRef = useRef<HTMLDivElement>(null)
+  useFocusTrap(sheetRef)
 
   // Close on Escape
   useEffect(() => {
@@ -244,10 +293,14 @@ function PersonPhotoModal({ person, photos, onClose, onGoToGallery }: PersonPhot
       onClick={onClose}
     >
       {/* Backdrop */}
-      <div className='absolute inset-0 bg-charcoal-900/80 backdrop-blur-sm' />
+      <div className='absolute inset-0 bg-charcoal-900/80 backdrop-blur-sm' aria-hidden='true' />
 
       {/* Sheet */}
       <motion.div
+        ref={sheetRef}
+        role='dialog'
+        aria-modal='true'
+        aria-labelledby='person-modal-title'
         initial={{ y: 40, opacity: 0 }}
         animate={{ y: 0, opacity: 1 }}
         exit={{ y: 40, opacity: 0 }}
@@ -276,7 +329,9 @@ function PersonPhotoModal({ person, photos, onClose, onGoToGallery }: PersonPhot
               />
             )}
             <div>
-              <p className='font-display text-base text-charcoal-900'>{person.name}</p>
+              <p id='person-modal-title' className='font-display text-base text-charcoal-900'>
+                {person.name}
+              </p>
               <p className='text-xs text-charcoal-400'>
                 {personPhotos.length} {personPhotos.length === 1 ? 'photo' : 'photos'}
               </p>
@@ -356,24 +411,26 @@ function PersonPhotoModal({ person, photos, onClose, onGoToGallery }: PersonPhot
             {/* Prev / Next */}
             {lightboxIdx !== null && lightboxIdx > 0 && (
               <button
+                aria-label='Previous photo'
                 onClick={e => {
                   e.stopPropagation()
                   setLightboxIdx(i => (i !== null ? i - 1 : i))
                 }}
                 className='absolute left-4 top-1/2 -translate-y-1/2 rounded-full bg-white/15 p-3 text-white hover:bg-white/30 transition-colors'
               >
-                ‹
+                <ChevronLeft className='h-5 w-5' />
               </button>
             )}
             {lightboxIdx !== null && lightboxIdx < personPhotos.length - 1 && (
               <button
+                aria-label='Next photo'
                 onClick={e => {
                   e.stopPropagation()
                   setLightboxIdx(i => (i !== null ? i + 1 : i))
                 }}
                 className='absolute right-4 top-1/2 -translate-y-1/2 rounded-full bg-white/15 p-3 text-white hover:bg-white/30 transition-colors'
               >
-                ›
+                <ChevronRight className='h-5 w-5' />
               </button>
             )}
             <button

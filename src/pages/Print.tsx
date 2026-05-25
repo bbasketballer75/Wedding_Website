@@ -80,15 +80,17 @@ function PhotoGrid({
   photos,
   album,
   maxPhotos,
+  isFirst = false,
 }: {
   photos: Photo[]
   album: string
   maxPhotos: number
+  isFirst?: boolean
 }) {
   const displayed = photos.slice(0, maxPhotos)
   if (displayed.length === 0) return null
   return (
-    <div className='album-section mb-10'>
+    <div className={cn('album-section mb-10', isFirst && 'album-section--first')}>
       <h2 className='mb-4 border-b border-charcoal-200 pb-2 font-display text-xl text-charcoal-700'>
         {album}
       </h2>
@@ -337,7 +339,7 @@ export default function Print() {
             </div>
 
             {/* Photo sections */}
-            {includedAlbums.map(s =>
+            {includedAlbums.map((s, i) =>
               s.loading ? (
                 <div
                   key={s.album}
@@ -352,6 +354,7 @@ export default function Print() {
                   photos={s.photos}
                   album={s.album}
                   maxPhotos={maxPhotosPerAlbum}
+                  isFirst={i === 0}
                 />
               )
             )}

@@ -531,7 +531,12 @@ export default function Guestbook() {
     const highlightedIndex = filteredMessages.findIndex(
       message => message.id === highlightedMessageId
     )
-    if (highlightedIndex === -1) return
+    if (highlightedIndex === -1) {
+      // The deep-linked message is filtered out by the current search — clear it so the
+      // link destination becomes visible rather than silently failing.
+      if (searchQuery) setSearchQuery('')
+      return
+    }
 
     if (highlightedIndex >= visibleCount) {
       setVisibleCount(highlightedIndex + 1)
@@ -544,7 +549,7 @@ export default function Guestbook() {
     }, 220)
 
     return () => window.clearTimeout(timeoutId)
-  }, [filteredMessages, highlightedMessageId, visibleCount])
+  }, [filteredMessages, highlightedMessageId, visibleCount, searchQuery])
 
   return (
     <div className='min-h-screen bg-[linear-gradient(to_bottom,rgba(12,8,5,1),rgba(22,14,6,1))] pb-20 pt-28 sm:pt-32'>

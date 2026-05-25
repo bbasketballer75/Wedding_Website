@@ -1193,8 +1193,11 @@ export default function Gallery() {
 
       if (validPhotos.length > 0) {
         setSelectMode(true)
+        // Use getState() so this effect doesn't need addToQueue as a dep —
+        // Zustand actions are stable but ESLint can't verify that.
+        const enqueue = useDownloadStore.getState().addToQueue
         for (const photo of validPhotos) {
-          addToQueue({
+          enqueue({
             id: photo.id,
             url: photo.url,
             thumbnail: photo.thumbnail || photo.url,
@@ -1284,15 +1287,16 @@ export default function Gallery() {
           useGalleryStore.getState().openImageModal(photoIndex)
         }
       }
-      // Handle ?photo= param
-      else if (requestedPhotoId) {
+      // Handle ?photo= param — only when lightbox is not yet open so that
+      // subsequent filter changes don't jump the already-open lightbox.
+      else if (requestedPhotoId && lightboxIndex === null) {
         const photoIndex = filteredPhotos.findIndex(photo => photo.id === requestedPhotoId)
-        if (photoIndex >= 0 && lightboxIndex !== photoIndex) {
+        if (photoIndex >= 0) {
           setLightboxIndex(photoIndex)
         }
       }
     }
-  }, [isLoading, lightboxIndex, searchParams, photos])
+  }, [isLoading, lightboxIndex, searchParams, photos, filteredPhotos])
 
   // Infinite scroll for masonry/grid views
   const {

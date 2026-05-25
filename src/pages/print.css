@@ -36,13 +36,15 @@
     page-break-inside: avoid;
   }
 
-  /* Start each album on a new page (except the first) */
+  /* Start each album on a new page (except the first).
+     album-section--first is set via JSX isFirst prop because :first-of-type
+     matches the first <div> among all siblings, not the first .album-section. */
   .album-section {
     break-before: always;
     page-break-before: always; /* legacy */
   }
 
-  .album-section:first-of-type {
+  .album-section--first {
     break-before: avoid;
     page-break-before: avoid;
   }
@@ -60,7 +62,8 @@
   }
 
   .guestbook-section {
-    page-break-before: always;
+    break-before: always; /* modern */
+    page-break-before: always; /* legacy */
   }
 }
 
