@@ -41,6 +41,18 @@ const NAME_ALIASES: Record<string, string> = (() => {
   return map
 })()
 
+// Reverse of NAME_ALIASES: maps full names back to their short-name tag variant.
+// Used by PersonPhotoModal to match photos tagged as "Austin" when viewing "Austin Porada".
+const FULL_TO_SHORT_ALIASES: Record<string, string> = (() => {
+  const map: Record<string, string> = {}
+  for (const person of ALL_PARTY) {
+    if (person.name && person.fullName && person.name !== person.fullName) {
+      map[person.fullName] = person.name
+    }
+  }
+  return map
+})()
+
 const PROFESSIONAL_ALBUMS = ['Engagement', 'Bach+ette', 'Wedding Day']
 
 interface PersonCard {
@@ -180,26 +192,20 @@ interface PersonPhotoModalProps {
 }
 
 function PersonPhotoModal({ person, photos, onClose, onGoToGallery }: PersonPhotoModalProps) {
-  // Filter all loaded photos to those featuring this person
+  // Lock body scroll while the modal is open
+  useEffect(() => {
+    const prev = document.body.style.overflow
+    document.body.style.overflow = 'hidden'
+    return () => {
+      document.body.style.overflow = prev
+    }
+  }, [])
+
+  // Filter all loaded photos to those featuring this person (either full name or short alias)
   const personPhotos = useMemo(() => {
     const nameVariants = new Set([person.name])
-    // Also accept first-name-only matches for the reverse alias direction
-    for (const [short, full] of Object.entries(
-      (() => {
-        const m: Record<string, string> = {}
-        for (const p of [
-          ...partyData.couple,
-          ...partyData.parents,
-          ...partyData.groomsmen,
-          ...partyData.bridesmaids,
-        ]) {
-          if (p.name && p.fullName && p.name !== p.fullName) m[p.fullName] = p.name
-        }
-        return m
-      })()
-    )) {
-      if (short === person.name) nameVariants.add(full)
-    }
+    const shortAlias = FULL_TO_SHORT_ALIASES[person.name]
+    if (shortAlias) nameVariants.add(shortAlias)
 
     return photos.filter(
       photo =>
@@ -431,6 +437,17 @@ export default function People() {
     [navigate]
   )
 
+  // Stable callbacks for PersonPhotoModal — prevents the keydown effect from
+  // re-subscribing on every parent render.
+  const handleModalClose = useCallback(() => setSelectedPerson(null), [])
+  const handleGoToGallery = useCallback(
+    (name: string) => {
+      setSelectedPerson(null)
+      goToGallery(name)
+    },
+    [goToGallery]
+  )
+
   return (
     <div data-testid='people-page' className='min-h-screen bg-cream-50'>
       <PeopleSEO />
@@ -583,10 +600,10 @@ export default function People() {
                         />
                       </div>
                     ))}
-                    {person.photoCount > 4 && (
+                    {person.photoCount > Math.min(person.previewThumbnails.length, 4) && (
                       <div className='flex h-8 w-8 items-center justify-center rounded border border-cream-200 bg-cream-100 opacity-50 transition-opacity duration-200 group-hover:opacity-100'>
                         <span className='text-[9px] font-medium text-charcoal-500'>
-                          +{person.photoCount - 4}
+                          +{person.photoCount - Math.min(person.previewThumbnails.length, 4)}
                         </span>
                       </div>
                     )}
@@ -611,11 +628,8 @@ export default function People() {
             key={selectedPerson.name}
             person={selectedPerson}
             photos={photos}
-            onClose={() => setSelectedPerson(null)}
-            onGoToGallery={name => {
-              setSelectedPerson(null)
-              goToGallery(name)
-            }}
+            onClose={handleModalClose}
+            onGoToGallery={handleGoToGallery}
           />
         )}
       </AnimatePresence>

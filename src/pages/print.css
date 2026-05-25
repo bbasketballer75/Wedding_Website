@@ -38,7 +38,7 @@
 
   /* Start each album on a new page (except the first) */
   .album-section {
-    break-before: page;
+    break-before: always;
     page-break-before: always; /* legacy */
   }
 

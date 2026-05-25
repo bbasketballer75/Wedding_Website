@@ -515,7 +515,9 @@ export default function Guestbook() {
         return m.name.toLowerCase().includes(q) || m.content.toLowerCase().includes(q)
       })
     : messages
-  const visibleMessages = filteredMessages.slice(0, visibleCount)
+  // Cap slice synchronously so visibleCount being stale for one frame never shows
+  // more items than exist in the current filtered set.
+  const visibleMessages = filteredMessages.slice(0, Math.min(visibleCount, filteredMessages.length))
   const hasMoreMessages = filteredMessages.length > visibleCount
 
   // Reset visible count when search changes so pagination stays accurate
