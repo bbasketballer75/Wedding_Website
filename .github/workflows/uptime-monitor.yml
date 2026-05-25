@@ -15,7 +15,7 @@ jobs:
       contents: read
       issues: write
     env:
-      SITE_URL: https://theporadas.com
+      SITE_URL: https://www.theporadas.com
       EXPECTED_TEXT: Austin & Jordyn
     steps:
       - name: Check site availability
