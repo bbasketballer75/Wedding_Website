@@ -35,16 +35,19 @@ describe('UI Components', () => {
 
     it('returns null when prefers-reduced-motion is enabled', () => {
       // Mock matchMedia to return reduced motion preference
-      vi.mocked(window.matchMedia).mockImplementation(query => ({
-        matches: query === '(prefers-reduced-motion: reduce)',
-        media: query,
-        onchange: null,
-        addListener: vi.fn(),
-        removeListener: vi.fn(),
-        addEventListener: vi.fn(),
-        removeEventListener: vi.fn(),
-        dispatchEvent: vi.fn(),
-      } as MediaQueryList))
+      vi.mocked(window.matchMedia).mockImplementation(
+        query =>
+          ({
+            matches: query === '(prefers-reduced-motion: reduce)',
+            media: query,
+            onchange: null,
+            addListener: vi.fn(),
+            removeListener: vi.fn(),
+            addEventListener: vi.fn(),
+            removeEventListener: vi.fn(),
+            dispatchEvent: vi.fn(),
+          }) as MediaQueryList
+      )
 
       const { container } = render(<CustomCursor />)
       expect(container.firstChild).toBeNull()
@@ -69,16 +72,19 @@ describe('UI Components', () => {
       })
 
       // Mock matchMedia to return portrait mode
-      vi.mocked(window.matchMedia).mockImplementation(query => ({
-        matches: query === '(orientation: portrait)',
-        media: query,
-        onchange: null,
-        addListener: vi.fn(),
-        removeListener: vi.fn(),
-        addEventListener: vi.fn(),
-        removeEventListener: vi.fn(),
-        dispatchEvent: vi.fn(),
-      } as MediaQueryList))
+      vi.mocked(window.matchMedia).mockImplementation(
+        query =>
+          ({
+            matches: query === '(orientation: portrait)',
+            media: query,
+            onchange: null,
+            addListener: vi.fn(),
+            removeListener: vi.fn(),
+            addEventListener: vi.fn(),
+            removeEventListener: vi.fn(),
+            dispatchEvent: vi.fn(),
+          }) as MediaQueryList
+      )
 
       const { container } = render(<RotateDevicePrompt />)
       expect(container).toBeTruthy()
@@ -119,7 +125,7 @@ describe('Aria-Label Verification', () => {
       // Should contain aria-label attributes
       const ariaLabelMatches = content.match(/aria-label\s*=/g)
       expect(ariaLabelMatches).toBeTruthy()
-      expect(ariaLabelMatches.length).toBeGreaterThan(0)
+      expect(ariaLabelMatches!.length).toBeGreaterThan(0)
     })
   })
 

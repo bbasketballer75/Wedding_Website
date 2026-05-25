@@ -57,11 +57,11 @@ const MPREG_FACE_REGEX =
 
 function decodeXml(value: string) {
   return value
-    .replaceAll('&quot;', '"')
-    .replaceAll('&apos;', "'")
-    .replaceAll('&lt;', '<')
-    .replaceAll('&gt;', '>')
-    .replaceAll('&amp;', '&')
+    .replace(/&quot;/g, '"')
+    .replace(/&apos;/g, "'")
+    .replace(/&lt;/g, '<')
+    .replace(/&gt;/g, '>')
+    .replace(/&amp;/g, '&')
     .trim()
 }
 
@@ -124,7 +124,7 @@ function parseDigikamFaces(metadataText: string) {
   while ((match = MPREG_FACE_REGEX.exec(metadataText)) !== null) {
     const [, rawName, rawRectangle] = match
     const name = decodeXml(rawName)
-    const [xText, yText, widthText, heightText] = rawRectangle.split(',').map((value) => value.trim())
+    const [xText, yText, widthText, heightText] = rawRectangle.split(',').map(value => value.trim())
     const x = numberFromText(xText)
     const y = numberFromText(yText)
     const width = numberFromText(widthText)
@@ -185,8 +185,12 @@ async function parseTaggedFileFaces(file: File, sidecarFile?: File | null) {
 
     const box = dimensions
       ? {
-          left: Number(clamp((face.x - (face.width / 2)) * dimensions.width, 0, dimensions.width).toFixed(2)),
-          top: Number(clamp((face.y - (face.height / 2)) * dimensions.height, 0, dimensions.height).toFixed(2)),
+          left: Number(
+            clamp((face.x - face.width / 2) * dimensions.width, 0, dimensions.width).toFixed(2)
+          ),
+          top: Number(
+            clamp((face.y - face.height / 2) * dimensions.height, 0, dimensions.height).toFixed(2)
+          ),
           width: Number((face.width * dimensions.width).toFixed(2)),
           height: Number((face.height * dimensions.height).toFixed(2)),
         }
@@ -203,14 +207,11 @@ async function parseTaggedFileFaces(file: File, sidecarFile?: File | null) {
 }
 
 function findManifestFile(files: File[]) {
-  return files.find((file) => file.name === 'guest-tagging-manifest.json') ?? null
+  return files.find(file => file.name === 'guest-tagging-manifest.json') ?? null
 }
 
 function getSidecarCandidates(filename: string) {
-  return [
-    `${filename}.xmp`.toLowerCase(),
-    `${filename.replace(/\.[^.]+$/, '')}.xmp`.toLowerCase(),
-  ]
+  return [`${filename}.xmp`.toLowerCase(), `${filename.replace(/\.[^.]+$/, '')}.xmp`.toLowerCase()]
 }
 
 export async function buildGuestTaggingSyncPayloadFromFiles(files: FileList | File[]) {
@@ -222,16 +223,17 @@ export async function buildGuestTaggingSyncPayloadFromFiles(files: FileList | Fi
   }
 
   const manifest = JSON.parse(await manifestFile.text()) as GuestTaggingManifest
-  const filesByName = new Map(fileArray.map((file) => [file.name.toLowerCase(), file]))
+  const filesByName = new Map(fileArray.map(file => [file.name.toLowerCase(), file]))
   const updates: GuestTaggingSyncUpdate[] = []
 
   for (const item of manifest.items) {
     const imageFile = filesByName.get(item.filename.toLowerCase())
     if (!imageFile) continue
 
-    const sidecar = getSidecarCandidates(item.filename)
-      .map((candidate) => filesByName.get(candidate) ?? null)
-      .find(Boolean) ?? null
+    const sidecar =
+      getSidecarCandidates(item.filename)
+        .map(candidate => filesByName.get(candidate) ?? null)
+        .find(Boolean) ?? null
 
     const faces = await parseTaggedFileFaces(imageFile, sidecar)
     if (faces.length === 0) continue
@@ -254,7 +256,7 @@ export async function buildGuestTaggingSyncPayloadFromFiles(files: FileList | Fi
 
 export async function downloadGuestTaggingBatchZip(
   manifest: GuestTaggingManifest,
-  onProgress?: (completed: number, total: number) => void,
+  onProgress?: (completed: number, total: number) => void
 ) {
   const zip = new JSZip()
   zip.file('guest-tagging-manifest.json', JSON.stringify(manifest, null, 2))

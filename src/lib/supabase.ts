@@ -47,6 +47,14 @@ export interface PhotoFace {
   } | null
 }
 
+export interface PhotoComment {
+  id: string
+  author: string
+  avatar?: string
+  content: string
+  timestamp: string
+}
+
 export interface Photo {
   id: string
   url: string
@@ -65,6 +73,12 @@ export interface Photo {
   faces: PhotoFace[]
   blurHash?: string | null
   created_at: string
+  // Optional UI-enrichment fields (not always fetched from DB)
+  liked?: boolean
+  likeCount?: number
+  commentCount?: number
+  comments?: PhotoComment[]
+  time?: string
 }
 
 export interface GuestUpload {
@@ -1083,7 +1097,7 @@ export async function fetchGuestUploadStatus(email: string): Promise<GuestUpload
   const { data, error } = await supabase
     .from('guest_uploads')
     .select(
-      'id, status, rejection_reason, created_at, photo_urls, guest_name, guest_email, message'
+      'id, status, rejection_reason, created_at, photo_urls, photo_fingerprints, video_urls, video_fingerprints, guest_name, guest_email, message'
     )
     .eq('guest_email', email)
     .order('created_at', { ascending: false })

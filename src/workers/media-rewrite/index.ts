@@ -1,148 +1,155 @@
+// Local stubs for Cloudflare Worker types (not installed as a dev-dep)
+type R2Bucket = any
+type ExportedHandler<E> = { fetch: (req: Request, env: E) => Promise<Response> }
+
 export default {
   async fetch(request: Request, env: { MEDIA_BUCKET: R2Bucket }): Promise<Response> {
-    const url = new URL(request.url);
-    let path = url.pathname;
-    path = decodeURIComponent(path);
+    const url = new URL(request.url)
+    let path = url.pathname
+    path = decodeURIComponent(path)
 
-    let rewrittenPath = path;
+    let rewrittenPath = path
 
     // Case 1: /media/_thumbs/Album/Photos/filename.webp
     if (rewrittenPath.startsWith('/media/_thumbs/')) {
-      const inner = rewrittenPath.slice(15);
+      const inner = rewrittenPath.slice(15)
 
       if (inner.startsWith('Engagement/Photos/')) {
-        const filename = inner.slice(18);
-        rewrittenPath = `professional/photos/proposal/${  filename}`;
+        const filename = inner.slice(18)
+        rewrittenPath = `professional/photos/proposal/${filename}`
       } else if (inner.startsWith('Bach+ette/Photos/') || inner.startsWith('Bach ette/Photos/')) {
-        const filename = inner.slice(17);
-        let mappedName = filename;
+        const filename = inner.slice(17)
+        let mappedName = filename
         if (mappedName.endsWith('.webp')) {
-          mappedName = `${mappedName.slice(0, -5)  }.jpg`;
+          mappedName = `${mappedName.slice(0, -5)}.jpg`
         }
-        rewrittenPath = `media/Bach+ette/Photos/${  mappedName}`;
+        rewrittenPath = `media/Bach+ette/Photos/${mappedName}`
       } else if (inner.startsWith('Professional/Wedding Day/Photos/')) {
-        let filename = inner.slice(32);
+        let filename = inner.slice(32)
         if (filename.endsWith('.webp')) {
-          filename = `${filename.slice(0, -5)  }.jpg`;
+          filename = `${filename.slice(0, -5)}.jpg`
         }
-        rewrittenPath = `media/Professional/Wedding Day/Photos/${  filename}`;
+        rewrittenPath = `media/Professional/Wedding Day/Photos/${filename}`
       } else if (inner.startsWith('Professional/')) {
-        const afterPro = inner.slice(12);
-        const slashIdx = afterPro.indexOf('/');
+        const afterPro = inner.slice(12)
+        const slashIdx = afterPro.indexOf('/')
         if (slashIdx > 0) {
-          const album = afterPro.slice(0, slashIdx);
-          const rest = afterPro.slice(slashIdx + 1);
-          rewrittenPath = `media/Professional/${album}/Photos/${  rest}`;
+          const album = afterPro.slice(0, slashIdx)
+          const rest = afterPro.slice(slashIdx + 1)
+          rewrittenPath = `media/Professional/${album}/Photos/${rest}`
         }
       } else if (inner.startsWith('Guest Uploads/') || inner.startsWith('GuestUploads/')) {
         // Extract filename after "Guest Uploads/Wedding Day/Live Photos/Stills/"
-        const afterGuest = inner.slice(14); // Skip "Guest Uploads/"
+        const afterGuest = inner.slice(14) // Skip "Guest Uploads/"
         // Find the Stills/ boundary
-        const stillsIdx = afterGuest.indexOf('Stills/');
+        const stillsIdx = afterGuest.indexOf('Stills/')
         if (stillsIdx > 0) {
-          let filename = afterGuest.slice(stillsIdx + 7); // Skip "Stills/"
+          let filename = afterGuest.slice(stillsIdx + 7) // Skip "Stills/"
           if (filename.endsWith('.webp')) {
-            filename = `${filename.slice(0, -5)  }.jpg`;
+            filename = `${filename.slice(0, -5)}.jpg`
           }
-          rewrittenPath = `media/Guest Uploads/Wedding Day/Live Photos/Stills/${  filename}`;
+          rewrittenPath = `media/Guest Uploads/Wedding Day/Live Photos/Stills/${filename}`
         } else {
-          let filename = afterGuest;
+          let filename = afterGuest
           if (filename.endsWith('.webp')) {
-            filename = `${filename.slice(0, -5)  }.jpg`;
+            filename = `${filename.slice(0, -5)}.jpg`
           }
-          rewrittenPath = `media/Guest Uploads/${  filename}`;
+          rewrittenPath = `media/Guest Uploads/${filename}`
         }
       } else {
-        rewrittenPath = `media/${  inner}`;
+        rewrittenPath = `media/${inner}`
       }
     }
     // Case 2: /_thumbs/Album/Photos/filename.webp
     else if (rewrittenPath.startsWith('/_thumbs/')) {
-      const inner = rewrittenPath.slice(9);
+      const inner = rewrittenPath.slice(9)
 
       if (inner.startsWith('Engagement/Photos/')) {
-        const filename = inner.slice(18);
-        rewrittenPath = `professional/photos/proposal/${  filename}`;
+        const filename = inner.slice(18)
+        rewrittenPath = `professional/photos/proposal/${filename}`
       } else if (inner.startsWith('Bach+ette/Photos/') || inner.startsWith('Bach ette/Photos/')) {
-        const filename = inner.slice(17);
-        let mappedName = filename;
+        const filename = inner.slice(17)
+        let mappedName = filename
         if (mappedName.endsWith('.webp')) {
-          mappedName = `${mappedName.slice(0, -5)  }.jpg`;
+          mappedName = `${mappedName.slice(0, -5)}.jpg`
         }
-        rewrittenPath = `media/Bach+ette/Photos/${  mappedName}`;
+        rewrittenPath = `media/Bach+ette/Photos/${mappedName}`
       } else if (inner.startsWith('Professional/Wedding Day/Photos/')) {
-        let filename = inner.slice(32);
+        let filename = inner.slice(32)
         if (filename.endsWith('.webp')) {
-          filename = `${filename.slice(0, -5)  }.jpg`;
+          filename = `${filename.slice(0, -5)}.jpg`
         }
-        rewrittenPath = `media/Professional/Wedding Day/Photos/${  filename}`;
+        rewrittenPath = `media/Professional/Wedding Day/Photos/${filename}`
       } else if (inner.startsWith('Professional/')) {
-        const afterPro = inner.slice(12);
-        const slashIdx = afterPro.indexOf('/');
+        const afterPro = inner.slice(12)
+        const slashIdx = afterPro.indexOf('/')
         if (slashIdx > 0) {
-          const album = afterPro.slice(0, slashIdx);
-          const rest = afterPro.slice(slashIdx + 1);
-          rewrittenPath = `media/Professional/${album}/Photos/${  rest}`;
+          const album = afterPro.slice(0, slashIdx)
+          const rest = afterPro.slice(slashIdx + 1)
+          rewrittenPath = `media/Professional/${album}/Photos/${rest}`
         }
       } else if (inner.startsWith('Guest Uploads/') || inner.startsWith('GuestUploads/')) {
         // Extract filename after "Guest Uploads/Wedding Day/Live Photos/Stills/"
-        const afterGuest = inner.slice(14); // Skip "Guest Uploads/"
+        const afterGuest = inner.slice(14) // Skip "Guest Uploads/"
         // Find the Stills/ boundary
-        const stillsIdx = afterGuest.indexOf('Stills/');
+        const stillsIdx = afterGuest.indexOf('Stills/')
         if (stillsIdx > 0) {
-          let filename = afterGuest.slice(stillsIdx + 7); // Skip "Stills/"
+          let filename = afterGuest.slice(stillsIdx + 7) // Skip "Stills/"
           if (filename.endsWith('.webp')) {
-            filename = `${filename.slice(0, -5)  }.jpg`;
+            filename = `${filename.slice(0, -5)}.jpg`
           }
-          rewrittenPath = `media/Guest Uploads/Wedding Day/Live Photos/Stills/${  filename}`;
+          rewrittenPath = `media/Guest Uploads/Wedding Day/Live Photos/Stills/${filename}`
         } else {
-          let filename = afterGuest;
+          let filename = afterGuest
           if (filename.endsWith('.webp')) {
-            filename = `${filename.slice(0, -5)  }.jpg`;
+            filename = `${filename.slice(0, -5)}.jpg`
           }
-          rewrittenPath = `media/Guest Uploads/${  filename}`;
+          rewrittenPath = `media/Guest Uploads/${filename}`
         }
       } else {
-        rewrittenPath = `media/${  inner}`;
+        rewrittenPath = `media/${inner}`
       }
     }
     // Case 3: /media/Bach+ette/... - direct access
     else if (rewrittenPath.startsWith('/media/Bach+ette/')) {
-      rewrittenPath = path.slice(1);
+      rewrittenPath = path.slice(1)
     }
     // Case 4: /media/Professional/... - direct access
     else if (rewrittenPath.startsWith('/media/Professional/')) {
-      rewrittenPath = path.slice(1);
+      rewrittenPath = path.slice(1)
     }
     // Case 5: /media/Guest Uploads/... - keep media prefix
-    else if (rewrittenPath.startsWith('/media/Guest Uploads/') || rewrittenPath.startsWith('/media/Guest%20Uploads/')) {
-      rewrittenPath = path.slice(1);
+    else if (
+      rewrittenPath.startsWith('/media/Guest Uploads/') ||
+      rewrittenPath.startsWith('/media/Guest%20Uploads/')
+    ) {
+      rewrittenPath = path.slice(1)
     }
     // Case 6: /media/Engagement/... - keep media prefix
     else if (rewrittenPath.startsWith('/media/Engagement/')) {
-      rewrittenPath = path.slice(1);
+      rewrittenPath = path.slice(1)
     }
     // Case 7: /media/timeline/... - keep media prefix
     else if (rewrittenPath.startsWith('/media/timeline/')) {
-      rewrittenPath = path.slice(1);
+      rewrittenPath = path.slice(1)
     }
     // Case 8: /media/... - strip /media prefix (catch-all, must be last)
     else if (rewrittenPath.startsWith('/media/')) {
-      rewrittenPath = path.slice(7);
+      rewrittenPath = path.slice(7)
     }
     // Case 9: /background_audio/... - audio in R2 root
     else if (rewrittenPath.startsWith('/background_audio/')) {
-      rewrittenPath = rewrittenPath.slice(1);
+      rewrittenPath = rewrittenPath.slice(1)
     }
 
     try {
-      const object = await env.MEDIA_BUCKET.get(rewrittenPath);
+      const object = await env.MEDIA_BUCKET.get(rewrittenPath)
 
       if (!object) {
         return new Response(`Not Found: ${rewrittenPath}`, {
           status: 404,
-          headers: { 'Content-Type': 'text/plain' }
-        });
+          headers: { 'Content-Type': 'text/plain' },
+        })
       }
 
       return new Response(object.body, {
@@ -150,16 +157,18 @@ export default {
           'Content-Type': object.httpMetadata?.contentType || 'application/octet-stream',
           'Cache-Control': 'public, max-age=31536000, immutable',
         },
-      });
+      })
     } catch (e) {
-      return new Response(`Error: ${e.message}`, { status: 500 });
+      const msg = e instanceof Error ? e.message : String(e)
+      return new Response(`Error: ${msg}`, { status: 500 })
     }
   },
-} satisfies ExportedHandler<{ MEDIA_BUCKET: R2Bucket }>;
+} satisfies ExportedHandler<{ MEDIA_BUCKET: R2Bucket }>
 
 // Map DSC filename to actual R2 filename by position
 // Supabase photos are ordered 1-503 by album_sort_order, matching sorted R2 files
-const WEDDING_DAY_DSC_MAP: Record<string, string> = {
+// Mapping retained for future use in fetch handler
+export const WEDDING_DAY_DSC_MAP: Record<string, string> = {
   'DSC00006.webp': '20250511_180812-0b9c.jpg',
   'DSC00014.webp': '20250511_180812-0f19.webp',
   'DSC00023.webp': '20250511_180812-29ee.webp',
@@ -586,5 +595,4 @@ const WEDDING_DAY_DSC_MAP: Record<string, string> = {
   'DSC09605.webp': 'micaela-helsel.webp',
   'DSC09615.webp': 'nate-berkebile.webp',
   'DSC09630.webp': 'tyler-sharpe.webp',
-};
-
+}

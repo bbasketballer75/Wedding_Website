@@ -1,5 +1,5 @@
 import { useEffect } from 'react'
-import { Eye, CheckCircle, XCircle, Video } from 'lucide-react'
+import { Eye, CheckCircle, XCircle } from 'lucide-react'
 import { ComponentErrorBoundary } from '@/components/error/ErrorBoundary'
 import { GuestUploadModerationList } from '@/components/admin/GuestUploadModerationList'
 import { useModerationStore } from '@/stores/moderationStore'
@@ -40,8 +40,8 @@ function StatCard({
         <Icon className={`h-5 w-5 ${iconColorMap[color]}`} />
       </div>
       <div>
-        <p className="text-2xl font-display">{value}</p>
-        <p className="text-xs opacity-80">{title}</p>
+        <p className='text-2xl font-display'>{value}</p>
+        <p className='text-xs opacity-80'>{title}</p>
       </div>
     </div>
   )
@@ -57,25 +57,32 @@ export function PhotoModeration() {
     return () => window.clearTimeout(timeoutId)
   }, [loadUploads])
 
-  const pending = uploads.filter((u) => u.status === 'pending').length
-  const approved = uploads.filter((u) => u.status === 'approved').length
-  const rejected = uploads.filter((u) => u.status === 'rejected').length
+  const pending = uploads.filter(u => u.status === 'pending').length
+  const approved = uploads.filter(u => u.status === 'approved').length
+  const rejected = uploads.filter(u => u.status === 'rejected').length
 
   return (
-    <ComponentErrorBoundary componentName="Photo Moderation">
-      <div className="space-y-6">
-        <div className="space-y-1">
-          <h2 className="text-2xl font-display text-charcoal-900">Guest Upload Moderation</h2>
-          <p className="max-w-3xl text-sm leading-6 text-charcoal-500">
-            Review guest photo submissions. Approve unique photos into the gallery, reject duplicates or
-            inappropriate content, and optionally let guests know why their upload was declined.
+    <ComponentErrorBoundary componentName='Photo Moderation'>
+      <div className='space-y-6'>
+        <div className='space-y-1'>
+          <h2 className='text-2xl font-display text-charcoal-900'>Guest Upload Moderation</h2>
+          <p className='max-w-3xl text-sm leading-6 text-charcoal-500'>
+            Review guest photo submissions. Approve unique photos into the gallery, reject
+            duplicates or inappropriate content, and optionally let guests know why their upload was
+            declined.
           </p>
         </div>
 
-        <div className="grid gap-4 md:grid-cols-3">
-          <StatCard title="Pending review" value={pending} icon={Eye} color="amber" alert={pending > 0} />
-          <StatCard title="Approved" value={approved} icon={CheckCircle} color="green" />
-          <StatCard title="Rejected" value={rejected} icon={XCircle} color="blue" />
+        <div className='grid gap-4 md:grid-cols-3'>
+          <StatCard
+            title='Pending review'
+            value={pending}
+            icon={Eye}
+            color='amber'
+            alert={pending > 0}
+          />
+          <StatCard title='Approved' value={approved} icon={CheckCircle} color='green' />
+          <StatCard title='Rejected' value={rejected} icon={XCircle} color='blue' />
         </div>
 
         <GuestUploadModerationList />

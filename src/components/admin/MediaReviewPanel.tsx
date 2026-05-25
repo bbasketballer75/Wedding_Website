@@ -1,11 +1,10 @@
 import { useEffect, useMemo } from 'react'
 import React from 'react'
 import { Inbox, Users } from 'lucide-react'
-import { Button } from '@/components/ui/Button'
 import { ListSkeleton } from '@/components/ui/Skeleton'
 import { ComponentErrorBoundary } from '@/components/error/ErrorBoundary'
 import { useToast } from '@/context/ToastContext'
-import { type MediaReviewBatch, type MediaReviewBatchStatus, type MediaReviewFace } from '@/lib/supabase'
+import { type MediaReviewBatch, type MediaReviewFace } from '@/lib/supabase'
 import { useMediaReviewStore, type FaceDraft } from '@/stores/mediaReviewStore'
 
 import { BatchList } from './BatchList'
@@ -69,16 +68,20 @@ function slugifyPerson(value: string) {
     .replace(/^-+|-+$/g, '')
 }
 
-function EmptyState({ icon: Icon, title, description }: {
+function EmptyState({
+  icon: Icon,
+  title,
+  description,
+}: {
   icon: React.ElementType
   title: string
   description: string
 }) {
   return (
-    <div className="flex flex-col items-center gap-3 py-16 text-center text-charcoal-500">
-      <Icon className="h-12 w-12 opacity-30" />
-      <p className="font-medium text-charcoal-700">{title}</p>
-      <p className="text-sm">{description}</p>
+    <div className='flex flex-col items-center gap-3 py-16 text-center text-charcoal-500'>
+      <Icon className='h-12 w-12 opacity-30' />
+      <p className='font-medium text-charcoal-700'>{title}</p>
+      <p className='text-sm'>{description}</p>
     </div>
   )
 }
@@ -88,7 +91,6 @@ export function MediaReviewPanel() {
   const {
     loading,
     faces,
-    selectedBatch,
     photoInspectorOpen,
     setPhotoInspectorOpen,
     loadBatches,
@@ -96,17 +98,24 @@ export function MediaReviewPanel() {
     saveFaces,
     handleBatchStatusChange,
     loadCropPreviews,
-    selectedPhoto,
-    selectedFace,
-    selectedGroup,
-    selectedGroupFace,
     faceDrafts,
     cropPreviewUrls,
     updateDraft,
     setSelectedFaceId,
     setSelectedPhotoKey,
     setSelectedGroupFaceId,
+    getSelectedBatch,
+    getSelectedPhoto,
+    getSelectedFace,
+    getSelectedGroup,
+    getSelectedGroupFace,
   } = useMediaReviewStore()
+
+  const selectedBatch = getSelectedBatch()
+  const selectedPhoto = getSelectedPhoto()
+  const selectedFace = getSelectedFace()
+  const selectedGroup = getSelectedGroup()
+  const selectedGroupFace = getSelectedGroupFace()
 
   // Load batches on mount
   useEffect(() => {
@@ -160,7 +169,9 @@ export function MediaReviewPanel() {
   }, [selectedPhoto, setSelectedPhotoKey, setSelectedFaceId])
 
   useEffect(() => {
-    const filteredGroups = useMediaReviewStore.getState().getFilteredGroups(useMediaReviewStore.getState().personSearch)
+    const filteredGroups = useMediaReviewStore
+      .getState()
+      .getFilteredGroups(useMediaReviewStore.getState().personSearch)
     const selectedGroup = useMediaReviewStore.getState().getSelectedGroup()
     const setSelectedGroupKey = useMediaReviewStore.getState().setSelectedGroupKey
     if (!selectedGroup && filteredGroups[0]) {
@@ -177,7 +188,7 @@ export function MediaReviewPanel() {
       return
     }
 
-    if (!selectedGroupFace || !selectedGroup.faces.some((face) => face.id === selectedGroupFaceId)) {
+    if (!selectedGroupFace || !selectedGroup.faces.some(face => face.id === selectedGroupFaceId)) {
       setSelectedGroupFaceId(selectedGroup.faces[0]?.id || null)
     }
   }, [selectedGroup, selectedGroupFace, setSelectedGroupFaceId])
@@ -192,8 +203,8 @@ export function MediaReviewPanel() {
     handleSyncManifestMetadata(
       batch,
       importRows,
-      (message) => addToast(message, 'success'),
-      (message) => addToast(message, 'error'),
+      message => addToast(message, 'success'),
+      message => addToast(message, 'error')
     )
   }
 
@@ -204,8 +215,8 @@ export function MediaReviewPanel() {
       batch,
       faces,
       importRows,
-      (message) => addToast(message, 'success'),
-      (message) => addToast(message, 'error'),
+      message => addToast(message, 'success'),
+      message => addToast(message, 'error')
     )
   }
 
@@ -231,12 +242,17 @@ export function MediaReviewPanel() {
 
     if (!currentSelectedPhoto) return
 
-    const currentIndex = currentSelectedPhoto.faces.findIndex((face) => face.id === currentSelectedFaceId)
+    const currentIndex = currentSelectedPhoto.faces.findIndex(
+      face => face.id === currentSelectedFaceId
+    )
     if (direction === 'prev') {
       const previousFace = currentSelectedPhoto.faces[Math.max(0, currentIndex - 1)]
       if (previousFace) setSelectedFaceId(previousFace.id)
     } else {
-      const nextFace = currentSelectedPhoto.faces[Math.min(currentSelectedPhoto.faces.length - 1, currentIndex + 1)]
+      const nextFace =
+        currentSelectedPhoto.faces[
+          Math.min(currentSelectedPhoto.faces.length - 1, currentIndex + 1)
+        ]
       if (nextFace) setSelectedFaceId(nextFace.id)
     }
   }
@@ -250,7 +266,7 @@ export function MediaReviewPanel() {
   // Loading state
   if (loading) {
     return (
-      <div className="rounded-xl border border-gold-100 bg-white p-8">
+      <div className='rounded-xl border border-gold-100 bg-white p-8'>
         <ListSkeleton count={5} />
       </div>
     )
@@ -260,8 +276,8 @@ export function MediaReviewPanel() {
   const hasFaces = faces.length > 0
 
   return (
-    <ComponentErrorBoundary componentName="Media Review Panel">
-      <div className="space-y-4">
+    <ComponentErrorBoundary componentName='Media Review Panel'>
+      <div className='space-y-4'>
         {/* Batch selector and status */}
         {hasSelectedBatch && (
           <BatchList
@@ -297,35 +313,35 @@ export function MediaReviewPanel() {
               />
             </>
           ) : (
-            <div className="rounded-xl border border-dashed border-gold-200 bg-white">
+            <div className='rounded-xl border border-dashed border-gold-200 bg-white'>
               <EmptyState
                 icon={Users}
-                title="No face review rows staged"
-                description="This batch does not have staged per-face review rows yet. Re-run the review push after exporting the manifest so the people queue has real faces to review."
+                title='No face review rows staged'
+                description='This batch does not have staged per-face review rows yet. Re-run the review push after exporting the manifest so the people queue has real faces to review.'
               />
             </div>
           )
         ) : (
-          <div className="rounded-xl border border-dashed border-gold-200 bg-white">
+          <div className='rounded-xl border border-dashed border-gold-200 bg-white'>
             <EmptyState
               icon={Inbox}
-              title="Guest-upload review queue is empty"
-              description="Export and tag approved guest uploads, then push a guest review batch to stage the next people-review pass."
+              title='Guest-upload review queue is empty'
+              description='Export and tag approved guest uploads, then push a guest review batch to stage the next people-review pass.'
             />
           </div>
         )}
 
         {/* Guest Upload Moderation section */}
-        <section className="rounded-[1.4rem] border border-gold-100 bg-white p-4 shadow-sm">
-          <div className="mb-4 flex items-center justify-between">
-            <h2 className="font-display text-lg text-charcoal-900">Guest Upload Moderation</h2>
+        <section className='rounded-[1.4rem] border border-gold-100 bg-white p-4 shadow-sm'>
+          <div className='mb-4 flex items-center justify-between'>
+            <h2 className='font-display text-lg text-charcoal-900'>Guest Upload Moderation</h2>
           </div>
           <GuestUploadModerationList />
         </section>
 
         {/* Known people datalist for autocomplete */}
-        <datalist id="known-people-options">
-          {useMediaReviewStore.getState().knownPeople.map((person) => (
+        <datalist id='known-people-options'>
+          {useMediaReviewStore.getState().knownPeople.map(person => (
             <option key={person} value={person} />
           ))}
         </datalist>

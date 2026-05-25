@@ -67,9 +67,7 @@ describe('useLongPress hook', () => {
 
     result.current.onMouseDown(mockStartEvent)
 
-    // Move slightly (under threshold)
-    result.current.onMouseMove?.({ clientX: 15, clientY: 15 } as any) // wait, useLongPress doesn't use onMouseMove, it uses onTouchMove but let's test touchmove or mousemove if mapped to onTouchMove/move. Let's look at hook mapping.
-    // In hook, touchmove handles both touch and mouse since we passed standard move function. Wait, let's call the returned move function onTouchMove.
+    // Move slightly (under threshold) — hook uses onTouchMove for move detection
     result.current.onTouchMove({ clientX: 15, clientY: 15 } as any)
 
     // Move significantly (above threshold)

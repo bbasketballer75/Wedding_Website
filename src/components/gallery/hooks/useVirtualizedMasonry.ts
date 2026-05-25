@@ -3,7 +3,10 @@ import { useVirtualizer } from '@tanstack/react-virtual'
 
 const MASONRY_COLUMNS = { base: 1, sm: 2, md: 3, lg: 4 } as const
 
-type Breakpoint = keyof typeof MASONRY_COLUMNS
+interface PhotoMinimal {
+  id: string
+  aspectRatio?: number
+}
 
 function getBreakpointColumnCount(columns: typeof MASONRY_COLUMNS): number {
   const w = window.innerWidth
@@ -13,28 +16,13 @@ function getBreakpointColumnCount(columns: typeof MASONRY_COLUMNS): number {
   return columns.base
 }
 
-interface Photo {
-  id: string
-  url: string
-  thumbnail?: string
-  alt?: string
-  aspectRatio?: number
-}
-
-interface RowMeasurement {
-  startIndex: number
-  endIndex: number
-  measuredHeight: number
-  estimated: boolean
-}
-
-export function useVirtualizedMasonry({
+export function useVirtualizedMasonry<T extends PhotoMinimal>({
   photos,
   rowHeight = 280,
   gap = 8,
   onVisibleRangeChange,
 }: {
-  photos: Photo[]
+  photos: T[]
   rowHeight?: number
   gap?: number
   onVisibleRangeChange?: (startIndex: number, endIndex: number) => void
@@ -48,9 +36,9 @@ export function useVirtualizedMasonry({
   // Calculate which photos go in each row based on aspect ratios and target row height
   const { rows, estimatedTotalRows } = useMemo(() => {
     const cols = getBreakpointColumnCount(MASONRY_COLUMNS)
-    const photoRows: { startIndex: number; endIndex: number; photos: Photo[] }[] = []
+    const photoRows: { startIndex: number; endIndex: number; photos: T[] }[] = []
 
-    let currentRow: { startIndex: number; endIndex: number; photos: Photo[] } = {
+    let currentRow: { startIndex: number; endIndex: number; photos: T[] } = {
       startIndex: 0,
       endIndex: 0,
       photos: [],
@@ -97,7 +85,6 @@ export function useVirtualizedMasonry({
     count: estimatedTotalRows,
     getScrollElement: () => scrollRef.current,
     estimateSize: () => estimateSize,
-    hasFixedSize: false,
     overscan: 5,
   })
 

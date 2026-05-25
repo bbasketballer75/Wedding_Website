@@ -9,7 +9,6 @@ import {
   CheckCircle,
   AlertTriangle,
   Code,
-  Image as ImageIcon,
   Check,
   ChevronRight,
   ArrowLeft,

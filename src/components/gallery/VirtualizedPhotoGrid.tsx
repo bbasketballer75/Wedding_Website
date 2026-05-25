@@ -16,17 +16,11 @@ interface PhotoGridProps {
   onToggleSelect?: (photoId: string) => void
 }
 
-function PhotoLikeButton({
-  photo,
-  onLike,
-}: {
-  photo: Photo
-  onLike?: (photoId: string) => void
-}) {
+function PhotoLikeButton({ photo, onLike }: { photo: Photo; onLike?: (photoId: string) => void }) {
   return (
     <button
-      type="button"
-      onClick={(event) => {
+      type='button'
+      onClick={event => {
         event.stopPropagation()
         onLike?.(photo.id)
       }}
@@ -46,13 +40,13 @@ function PhotoLikeButton({
 function SelectOverlay({ selected, onToggle }: { selected: boolean; onToggle: () => void }) {
   return (
     <button
-      type="button"
-      onClick={(e) => {
+      type='button'
+      onClick={e => {
         e.stopPropagation()
         onToggle()
       }}
       aria-label={selected ? 'Deselect photo' : 'Select photo'}
-      className="absolute inset-0 z-20 flex items-start justify-end p-3"
+      className='absolute inset-0 z-20 flex items-start justify-end p-3'
     >
       <span
         className={cn(
@@ -62,11 +56,11 @@ function SelectOverlay({ selected, onToggle }: { selected: boolean; onToggle: ()
             : 'border-white/80 bg-black/30 text-transparent hover:border-gold-300'
         )}
       >
-        <CheckCircle2 className="h-4 w-4" />
+        <CheckCircle2 className='h-4 w-4' />
       </span>
 
       {selected && (
-        <span className="absolute inset-0 rounded-[inherit] ring-2 ring-gold-400 ring-offset-1" />
+        <span className='absolute inset-0 rounded-[inherit] ring-2 ring-gold-400 ring-offset-1' />
       )}
     </button>
   )
@@ -136,7 +130,7 @@ function VirtualizedPhotoItem({
     }
   }
 
-  const longPressProps = useLongPress({
+  const { onMouseLeave: longPressMouseLeave, ...restLongPressProps } = useLongPress({
     onLongPress: handleLongPress,
     onClick: handleClick,
     delay: 500,
@@ -158,16 +152,17 @@ function VirtualizedPhotoItem({
         boxShadow: '0 26px 60px -42px rgba(46,33,13,0.24)',
         transition: 'box-shadow 0.3s ease',
       }}
-      onMouseEnter={(e) => {
+      onMouseEnter={e => {
         if (!selectMode) {
           e.currentTarget.style.boxShadow =
             '0 34px 80px -46px rgba(201,160,92,0.35), 0 8px 20px -10px rgba(201,160,92,0.2)'
         }
       }}
-      onMouseLeave={(e) => {
+      onMouseLeave={e => {
         e.currentTarget.style.boxShadow = '0 26px 60px -42px rgba(46,33,13,0.24)'
+        longPressMouseLeave(e)
       }}
-      onKeyDown={(event) => {
+      onKeyDown={event => {
         if (event.key === 'Enter' || event.key === ' ') {
           event.preventDefault()
           if (selectMode) {
@@ -177,7 +172,7 @@ function VirtualizedPhotoItem({
           }
         }
       }}
-      role="button"
+      role='button'
       tabIndex={0}
       aria-label={
         selectMode
@@ -189,24 +184,21 @@ function VirtualizedPhotoItem({
             : 'Open photo'
       }
       aria-pressed={selectMode ? isSelected : undefined}
-      {...longPressProps}
+      {...restLongPressProps}
     >
-      <div className="relative h-full overflow-hidden rounded-[1.45rem] bg-charcoal-200">
+      <div className='relative h-full overflow-hidden rounded-[1.45rem] bg-charcoal-200'>
         <motion.img
           src={photo.thumbnail || photo.url}
           alt={photo.caption || 'Wedding photo'}
-          className="h-full w-full object-cover"
-          loading="lazy"
+          className='h-full w-full object-cover'
+          loading='lazy'
           whileHover={{ scale: 1.08 }}
           transition={{ duration: 0.6, ease: 'easeOut' }}
         />
         {/* Gradient overlay on hover */}
-        <div className="absolute inset-0 bg-gradient-to-t from-black/30 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
+        <div className='absolute inset-0 bg-gradient-to-t from-black/30 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300' />
         {selectMode ? (
-          <SelectOverlay
-            selected={isSelected}
-            onToggle={() => onToggleSelect?.(photo.id)}
-          />
+          <SelectOverlay selected={isSelected} onToggle={() => onToggleSelect?.(photo.id)} />
         ) : (
           <PhotoLikeButton photo={photo} onLike={onLike} />
         )}

@@ -20,6 +20,7 @@ export function ShareModal({
   title = "Austin & Jordyn's Wedding",
   description = 'Watch our wedding film and browse photos from our special day!',
   url = typeof window !== 'undefined' ? window.location.href : '',
+  imageUrl,
 }: ShareModalProps) {
   const [copied, setCopied] = useState(false)
 
