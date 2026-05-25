@@ -17,6 +17,7 @@ import {
   Loader2,
   MessageSquare,
   PenSquare,
+  Search,
   Send,
   Smile,
   Sparkles,
@@ -272,6 +273,7 @@ export default function Guestbook() {
   const [loadError, setLoadError] = useState<string | null>(null)
   const [submitError, setSubmitError] = useState<string | null>(null)
   const [visibleCount, setVisibleCount] = useState(INITIAL_VISIBLE_MESSAGES)
+  const [searchQuery, setSearchQuery] = useState('')
   const [highlightedMessageId, setHighlightedMessageId] = useState<string | null>(null)
   const [reactionPickerForId, setReactionPickerForId] = useState<string | null>(null)
   const [localReactions, setLocalReactions] = useState<Record<string, Record<string, number>>>({})
@@ -507,9 +509,19 @@ export default function Guestbook() {
     }
   }
 
-  const filteredMessages = messages
+  const filteredMessages = searchQuery.trim()
+    ? messages.filter(m => {
+        const q = searchQuery.toLowerCase()
+        return m.name.toLowerCase().includes(q) || m.content.toLowerCase().includes(q)
+      })
+    : messages
   const visibleMessages = filteredMessages.slice(0, visibleCount)
   const hasMoreMessages = filteredMessages.length > visibleCount
+
+  // Reset visible count when search changes so pagination stays accurate
+  useEffect(() => {
+    setVisibleCount(INITIAL_VISIBLE_MESSAGES)
+  }, [searchQuery])
 
   useEffect(() => {
     if (!highlightedMessageId) return
@@ -812,6 +824,37 @@ export default function Guestbook() {
                   {filteredMessages.length} {filteredMessages.length === 1 ? 'note' : 'notes'}
                 </div>
               </div>
+
+              {/* Search bar */}
+              {messages.length > 0 && (
+                <div className='relative mt-4'>
+                  <Search className='pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-white/35' />
+                  <input
+                    type='search'
+                    value={searchQuery}
+                    onChange={e => setSearchQuery(e.target.value)}
+                    placeholder='Search by name or message…'
+                    aria-label='Search guestbook messages'
+                    className='w-full rounded-xl border border-white/12 bg-white/6 py-2.5 pl-9 pr-9 text-sm text-white placeholder:text-white/30 focus:border-gold-400/60 focus:outline-none focus:ring-1 focus:ring-gold-400/40'
+                  />
+                  {searchQuery && (
+                    <button
+                      onClick={() => setSearchQuery('')}
+                      aria-label='Clear search'
+                      className='absolute right-3 top-1/2 -translate-y-1/2 text-white/40 hover:text-white/70 transition-colors'
+                    >
+                      <X className='h-4 w-4' />
+                    </button>
+                  )}
+                </div>
+              )}
+
+              {/* No-results state */}
+              {searchQuery && filteredMessages.length === 0 && !isLoading && (
+                <p className='mt-4 text-sm text-white/40 text-center py-8'>
+                  No notes matching &ldquo;{searchQuery}&rdquo;
+                </p>
+              )}
             </motion.div>
 
             {isLoading ? (

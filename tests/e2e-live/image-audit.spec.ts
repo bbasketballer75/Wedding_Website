@@ -26,6 +26,7 @@ const PUBLIC_PAGES = [
   { route: '/guestbook', name: 'Guestbook', waitMs: 2000 },
   { route: '/upload', name: 'Upload', waitMs: 1000 },
   { route: '/people', name: 'People', waitMs: 2000 },
+  { route: '/print', name: 'Print', waitMs: 4000 }, // fetches Wedding Day album + guestbook from Supabase
 ] as const
 
 test.describe('Live image audit — all public pages', () => {

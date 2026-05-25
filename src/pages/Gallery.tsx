@@ -1,4 +1,4 @@
-import { useState, useMemo, useEffect, useDeferredValue, useRef } from 'react'
+import { useState, useMemo, useEffect, useDeferredValue, useRef, lazy, Suspense } from 'react'
 import { AnimatePresence, motion } from 'framer-motion'
 import { useSearchParams } from 'react-router-dom'
 import { GallerySEO } from '@/components/seo/SEOHead'
@@ -6,7 +6,9 @@ import { VirtualizedPhotoGrid } from '@/components/gallery/VirtualizedPhotoGrid'
 import { useDownloadStore } from '@/stores/downloadStore'
 import { DownloadQueuePanel } from '@/components/gallery/DownloadQueuePanel'
 import { ProgressModal } from '@/components/gallery/ProgressModal'
-import { PhotoLightbox } from '@/components/photo-viewer/PhotoLightbox'
+const PhotoLightbox = lazy(() =>
+  import('@/components/photo-viewer/PhotoLightbox').then(m => ({ default: m.PhotoLightbox }))
+)
 import { FaceRecognition } from '@/components/face-recognition/FaceRecognition'
 import { Button } from '@/components/ui/Button'
 import { Input } from '@/components/ui/Input'
@@ -64,17 +66,15 @@ function resolveAlias(name: string): string {
   return FACE_NAME_ALIASES[name] ?? name
 }
 
-// Extended photo type with faces and comments
-interface GalleryPhoto extends Photo {
+// Extended photo type for gallery display
+// Makes is_professional and created_at optional so static curated photos don't need them
+interface GalleryPhoto extends Omit<Photo, 'is_professional' | 'created_at'> {
+  is_professional?: boolean
+  created_at?: string
   downloadUrl?: string
   albumSortOrder?: number
   aspectRatio: number
-  time?: string
-  comments?: Array<{ id: string; author: string; content: string; timestamp: string }>
-  commentCount?: number
   createdAt?: string
-  liked?: boolean
-  likeCount?: number
   source: 'professional' | 'guest'
   collection: 'Proposal' | 'Bach+ette' | 'Wedding Photos' | 'Guest Photos'
 }
@@ -893,7 +893,7 @@ const formatPhotoCommentTimestamp = (value: string) =>
   })
 
 // Helper to convert Supabase photo to local Photo type
-const normalizeCollectionValue = (value?: string | null): Photo['collection'] | null => {
+const normalizeCollectionValue = (value?: string | null): GalleryPhoto['collection'] | null => {
   const normalized = (value || '').trim().toLowerCase()
 
   if (normalized === 'engagement' || normalized === 'proposal') {
@@ -998,6 +998,8 @@ const mapSupabasePhoto = (photo: Photo): GalleryPhoto =>
     photographer: photo.photographer,
     date: photo.date,
     createdAt: photo.created_at,
+    created_at: photo.created_at,
+    is_professional: photo.is_professional,
     faces: photo.faces || [],
     tags: photo.tags,
     source: photo.is_professional ? 'professional' : 'guest',
@@ -1053,7 +1055,7 @@ export default function Gallery() {
         setLoadError(null)
 
         const PAGE_SIZE = 1000
-        let allRows: typeof data = []
+        let allRows: Photo[] = []
         let from = 0
         let fetchError = null
 
@@ -2062,7 +2064,7 @@ export default function Gallery() {
                             Timeline view
                           </h2>
                           <VirtualizedPhotoGrid
-                            photos={displayedItems}
+                            photos={displayedItems as Photo[]}
                             onPhotoClick={
                               selectMode ? undefined : (_, index) => openLightbox(index)
                             }
@@ -2074,7 +2076,7 @@ export default function Gallery() {
                         </div>
                       ) : (
                         <VirtualizedPhotoGrid
-                          photos={displayedItems}
+                          photos={displayedItems as Photo[]}
                           onPhotoClick={selectMode ? undefined : (_, index) => openLightbox(index)}
                           onLike={selectMode ? undefined : handleLike}
                           selectMode={selectMode}
@@ -2117,16 +2119,18 @@ export default function Gallery() {
         </div>
       </section>
 
-      {/* Enhanced Lightbox */}
-      <PhotoLightbox
-        photos={filteredPhotos}
-        onLike={handleLike}
-        onDownload={handleDownload}
-        isDownloading={downloadingId !== null}
-        onAddComment={handleAddComment}
-        isSubmittingComment={submittingCommentPhotoId === filteredPhotos[lightboxIndex ?? 0]?.id}
-        highlightedFaceName={faceFilter}
-      />
+      {/* Enhanced Lightbox — lazy-loaded so it splits into its own chunk */}
+      <Suspense fallback={null}>
+        <PhotoLightbox
+          photos={filteredPhotos as Photo[]}
+          onLike={handleLike}
+          onDownload={handleDownload}
+          isDownloading={downloadingId !== null}
+          onAddComment={handleAddComment}
+          isSubmittingComment={submittingCommentPhotoId === filteredPhotos[lightboxIndex ?? 0]?.id}
+          highlightedFaceName={faceFilter}
+        />
+      </Suspense>
 
       {/* Download queue overlay and progress modal */}
       <DownloadQueuePanel />

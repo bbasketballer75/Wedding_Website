@@ -38,11 +38,19 @@
 
   /* Start each album on a new page (except the first) */
   .album-section {
-    page-break-before: always;
+    break-before: page;
+    page-break-before: always; /* legacy */
   }
 
   .album-section:first-of-type {
+    break-before: avoid;
     page-break-before: avoid;
+  }
+
+  /* Keep the album heading with at least the first row of photos */
+  .album-section h2 {
+    break-after: avoid;
+    page-break-after: avoid;
   }
 
   /* Guestbook */

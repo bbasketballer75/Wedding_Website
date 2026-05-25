@@ -76,15 +76,24 @@ function AlbumToggle({ albumState, onToggle }: { albumState: AlbumState; onToggl
   )
 }
 
-function PhotoGrid({ photos, album }: { photos: Photo[]; album: string }) {
-  if (photos.length === 0) return null
+function PhotoGrid({
+  photos,
+  album,
+  maxPhotos,
+}: {
+  photos: Photo[]
+  album: string
+  maxPhotos: number
+}) {
+  const displayed = photos.slice(0, maxPhotos)
+  if (displayed.length === 0) return null
   return (
     <div className='album-section mb-10'>
       <h2 className='mb-4 border-b border-charcoal-200 pb-2 font-display text-xl text-charcoal-700'>
         {album}
       </h2>
       <div className='photo-grid grid grid-cols-2 gap-4 sm:grid-cols-3'>
-        {photos.map(photo => (
+        {displayed.map(photo => (
           <div key={photo.id} className='photo-item'>
             <div className='aspect-[4/3] overflow-hidden rounded-lg bg-charcoal-100'>
               <img
@@ -146,6 +155,7 @@ export default function Print() {
   const [messages, setMessages] = useState<GuestbookMessage[]>([])
   const [includeGuestbook, setIncludeGuestbook] = useState(true)
   const [messagesLoading, setMessagesLoading] = useState(false)
+  const [maxPhotosPerAlbum, setMaxPhotosPerAlbum] = useState(40)
 
   const loadAlbum = useCallback(async (album: PhotoAlbum) => {
     setAlbumStates(prev => prev.map(s => (s.album === album ? { ...s, loading: true } : s)))
@@ -190,7 +200,10 @@ export default function Print() {
   )
 
   const includedAlbums = albumStates.filter(s => s.included)
-  const totalPhotoCount = includedAlbums.reduce((sum, s) => sum + s.photos.length, 0)
+  const totalPhotoCount = includedAlbums.reduce(
+    (sum, s) => sum + Math.min(s.photos.length, maxPhotosPerAlbum),
+    0
+  )
   const canPrint = totalPhotoCount > 0 || (includeGuestbook && messages.length > 0)
 
   return (
@@ -256,6 +269,35 @@ export default function Print() {
             </div>
 
             <div className='mt-4 border-t border-charcoal-100 pt-4'>
+              <label className='mb-3 flex items-center justify-between'>
+                <span className='text-xs font-medium uppercase tracking-wider text-charcoal-400'>
+                  Max photos per album
+                </span>
+                <div className='flex items-center gap-2'>
+                  <input
+                    type='range'
+                    min={6}
+                    max={200}
+                    step={2}
+                    value={maxPhotosPerAlbum}
+                    onChange={e => setMaxPhotosPerAlbum(Number(e.target.value))}
+                    className='w-28 accent-gold-500'
+                  />
+                  <input
+                    type='number'
+                    min={1}
+                    max={500}
+                    value={maxPhotosPerAlbum}
+                    onChange={e =>
+                      setMaxPhotosPerAlbum(Math.max(1, Math.min(500, Number(e.target.value))))
+                    }
+                    className='w-14 rounded-md border border-charcoal-200 px-2 py-1 text-center text-sm text-charcoal-700 focus:border-gold-400 focus:outline-none'
+                  />
+                </div>
+              </label>
+            </div>
+
+            <div className='mt-2 border-t border-charcoal-100 pt-4'>
               <button
                 onClick={() => setIncludeGuestbook(v => !v)}
                 className={cn(
@@ -305,7 +347,12 @@ export default function Print() {
                   Loading {s.album}…
                 </div>
               ) : (
-                <PhotoGrid key={s.album} photos={s.photos} album={s.album} />
+                <PhotoGrid
+                  key={s.album}
+                  photos={s.photos}
+                  album={s.album}
+                  maxPhotos={maxPhotosPerAlbum}
+                />
               )
             )}
 
