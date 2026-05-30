@@ -77,9 +77,7 @@ class RateLimiter {
     const recentTimestamps = timestamps.filter(ts => ts > windowStart)
 
     const remaining = Math.max(0, options.maxRequests - recentTimestamps.length)
-    const resetInMs = recentTimestamps.length > 0
-      ? recentTimestamps[0] + options.windowMs - now
-      : 0
+    const resetInMs = recentTimestamps.length > 0 ? recentTimestamps[0] + options.windowMs - now : 0
 
     return { remaining, resetInMs }
   }

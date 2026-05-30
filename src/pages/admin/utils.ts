@@ -49,7 +49,11 @@ export interface PromotionDraft {
   memoryTrail: MemoryTrailId | ''
 }
 
-export type ModerationQueueFilter = 'pending' | 'approved-unpublished' | 'approved-published' | 'rejected'
+export type ModerationQueueFilter =
+  | 'pending'
+  | 'approved-unpublished'
+  | 'approved-published'
+  | 'rejected'
 
 export type AuditActor = NonNullable<RecordModerationAuditInput['actor']>
 export type AuditEntriesByEntityId = Record<string, ModerationAuditLog[]>
@@ -74,27 +78,80 @@ export const adminNavSections: AdminNavSection[] = [
     title: 'Run the day-to-day',
     description: 'The pages you will open most often when new content arrives.',
     items: [
-      { path: '/admin', label: 'Dashboard', icon: LayoutDashboard, description: 'See what needs attention next.' },
-      { path: '/admin/photos', label: 'Photos', icon: Image, description: 'Moderate uploads, publish photos, and run guest tagging.' },
-      { path: '/admin/albums', label: 'Albums', icon: FolderOpen, description: 'Arrange the live order inside each public album.' },
-      { path: '/admin/review', label: 'People Review', icon: Users, description: 'Work through face review and named people.' },
-      { path: '/admin/claims', label: 'Photo Claims', icon: ShieldCheck, description: 'Review and approve photo ownership and face tag claims.' },
-      { path: '/admin/guestbook', label: 'Guestbook', icon: MessageSquare, description: 'Moderate text messages.' },
+      {
+        path: '/admin',
+        label: 'Dashboard',
+        icon: LayoutDashboard,
+        description: 'See what needs attention next.',
+      },
+      {
+        path: '/admin/photos',
+        label: 'Photos',
+        icon: Image,
+        description: 'Moderate uploads, publish photos, and run guest tagging.',
+      },
+      {
+        path: '/admin/albums',
+        label: 'Albums',
+        icon: FolderOpen,
+        description: 'Arrange the live order inside each public album.',
+      },
+      {
+        path: '/admin/review',
+        label: 'People Review',
+        icon: Users,
+        description: 'Work through face review and named people.',
+      },
+      {
+        path: '/admin/claims',
+        label: 'Photo Claims',
+        icon: ShieldCheck,
+        description: 'Review and approve photo ownership and face tag claims.',
+      },
+      {
+        path: '/admin/guestbook',
+        label: 'Guestbook',
+        icon: MessageSquare,
+        description: 'Moderate text messages.',
+      },
     ],
   },
   {
     title: 'Shape the public site',
     description: 'History, reporting, and operating notes.',
     items: [
-      { path: '/admin/featured', label: 'Featured', icon: Sparkles, description: 'Set what appears in the homepage and film page spotlight sections.' },
-      { path: '/admin/audit', label: 'Audit Trail', icon: History, description: 'See who changed moderation state and when.' },
-      { path: '/admin/analytics', label: 'Analytics', icon: BarChart3, description: 'Track verified database activity inside the app.' },
-      { path: '/admin/settings', label: 'Settings', icon: SettingsIcon, description: 'Reference the live setup and operating notes.' },
+      {
+        path: '/admin/featured',
+        label: 'Featured',
+        icon: Sparkles,
+        description: 'Set what appears in the homepage and film page spotlight sections.',
+      },
+      {
+        path: '/admin/audit',
+        label: 'Audit Trail',
+        icon: History,
+        description: 'See who changed moderation state and when.',
+      },
+      {
+        path: '/admin/analytics',
+        label: 'Analytics',
+        icon: BarChart3,
+        description: 'Track verified database activity inside the app.',
+      },
+      {
+        path: '/admin/settings',
+        label: 'Settings',
+        icon: SettingsIcon,
+        description: 'Reference the live setup and operating notes.',
+      },
     ],
   },
 ]
 
-export const adminRouteMeta: Record<string, { eyebrow: string; title: string; description: string }> = {
+export const adminRouteMeta: Record<
+  string,
+  { eyebrow: string; title: string; description: string }
+> = {
   '/admin': {
     eyebrow: 'Control room',
     title: 'Keep the whole wedding archive moving smoothly.',
@@ -227,11 +284,11 @@ export function normalizeTags(rawTags: string) {
 export function createPromotionDraft(upload: ModerationUpload): PromotionDraft {
   const lowerMessage = (upload.message || '').toLowerCase()
   const matchingCollection =
-    collectionOptions.find(option =>
-      option.defaultTags.some(tag => lowerMessage.includes(tag))
-    )?.value || 'Wedding Day'
+    collectionOptions.find(option => option.defaultTags.some(tag => lowerMessage.includes(tag)))
+      ?.value || 'Wedding Day'
 
-  const preset = collectionOptions.find(option => option.value === matchingCollection) || collectionOptions[0]
+  const preset =
+    collectionOptions.find(option => option.value === matchingCollection) || collectionOptions[0]
 
   return {
     collection: matchingCollection,
@@ -269,7 +326,7 @@ export function buildGuestVideoPromotionPatch(draft: PromotionDraft) {
 }
 
 export function getPublishedPhotoCount(upload: ModerationUpload, publishedPhotoUrls: Set<string>) {
-  return (upload.photo_urls || []).filter((url) => publishedPhotoUrls.has(url)).length
+  return (upload.photo_urls || []).filter(url => publishedPhotoUrls.has(url)).length
 }
 
 export function buildGuestUploadMediaEntries(upload: ModerationUpload) {
@@ -282,7 +339,10 @@ export function buildGuestUploadMediaEntries(upload: ModerationUpload) {
   }))
 }
 
-export function buildApprovedFingerprintSet(uploads: ModerationUpload[], excludedUploadId?: string) {
+export function buildApprovedFingerprintSet(
+  uploads: ModerationUpload[],
+  excludedUploadId?: string
+) {
   const fingerprints = new Set<string>()
 
   for (const upload of uploads) {
@@ -317,7 +377,7 @@ export function buildPendingFingerprintSet(uploads: ModerationUpload[], excluded
 export function getGuestUploadDuplicateInsight(
   upload: ModerationUpload,
   uploads: ModerationUpload[],
-  publishedPhotoUrls: Set<string>,
+  publishedPhotoUrls: Set<string>
 ): GuestUploadDuplicateInsight {
   const approvedFingerprints = buildApprovedFingerprintSet(uploads, upload.id)
   const pendingFingerprints = buildPendingFingerprintSet(uploads, upload.id)
@@ -363,13 +423,21 @@ export function getGuestUploadDuplicateInsight(
   }
 }
 
-export function getModerationState(upload: ModerationUpload, publishedPhotoUrls: Set<string>): ModerationQueueFilter {
+export function getModerationState(
+  upload: ModerationUpload,
+  publishedPhotoUrls: Set<string>
+): ModerationQueueFilter {
   if (upload.status === 'pending') return 'pending'
   if (upload.status === 'rejected') return 'rejected'
-  return getPublishedPhotoCount(upload, publishedPhotoUrls) > 0 ? 'approved-published' : 'approved-unpublished'
+  return getPublishedPhotoCount(upload, publishedPhotoUrls) > 0
+    ? 'approved-published'
+    : 'approved-unpublished'
 }
 
-export function formatMemoryTrailLabel(trail: MemoryTrailId | '' | null | undefined, fallback?: string | null) {
+export function formatMemoryTrailLabel(
+  trail: MemoryTrailId | '' | null | undefined,
+  fallback?: string | null
+) {
   if (trail) {
     return getMemoryTrailById(trail)?.label || fallback || trail
   }

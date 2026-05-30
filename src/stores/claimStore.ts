@@ -1,9 +1,5 @@
 import { create } from 'zustand'
-import {
-  submitClaims,
-  fetchPotentialPhotosToClaimByEmail,
-  Photo
-} from '@/lib/supabase'
+import { submitClaims, fetchPotentialPhotosToClaimByEmail, Photo } from '@/lib/supabase'
 
 export type ClaimWizardStep = 1 | 2 | 3 | 4
 
@@ -28,7 +24,11 @@ export interface ClaimStoreState {
   targetFaceName: string | null
 
   // Actions
-  openWizard: (target?: { photoId: string; faceId?: string | null; faceName?: string | null }) => void
+  openWizard: (target?: {
+    photoId: string
+    faceId?: string | null
+    faceName?: string | null
+  }) => void
   closeWizard: () => void
   setStep: (step: ClaimWizardStep) => void
   setInputs: (inputs: { displayName?: string; email?: string; otpCode?: string }) => void
@@ -58,7 +58,7 @@ export const useClaimStore = create<ClaimStoreState>((set, get) => ({
   targetFaceId: null,
   targetFaceName: null,
 
-  openWizard: (target) => {
+  openWizard: target => {
     set({
       isOpen: true,
       step: 1,
@@ -94,11 +94,11 @@ export const useClaimStore = create<ClaimStoreState>((set, get) => ({
     })
   },
 
-  setStep: (step) => set({ step }),
+  setStep: step => set({ step }),
 
-  setInputs: (inputs) => set((state) => ({ ...state, ...inputs })),
+  setInputs: inputs => set(state => ({ ...state, ...inputs })),
 
-  toggleSandboxMode: (sandboxMode) => set({ sandboxMode }),
+  toggleSandboxMode: sandboxMode => set({ sandboxMode }),
 
   sendOtp: async () => {
     const { email, displayName, sandboxMode } = get()
@@ -112,7 +112,7 @@ export const useClaimStore = create<ClaimStoreState>((set, get) => ({
     try {
       if (sandboxMode) {
         // Simulate network latency
-        await new Promise((resolve) => setTimeout(resolve, 500))
+        await new Promise(resolve => setTimeout(resolve, 500))
         // Generate a random 6-digit code
         const code = Math.floor(100000 + Math.random() * 900000).toString()
         set({ simulatedOtpCode: code, step: 2, isLoading: false })
@@ -147,7 +147,7 @@ export const useClaimStore = create<ClaimStoreState>((set, get) => ({
     try {
       // 1. Verify Code
       if (sandboxMode) {
-        await new Promise((resolve) => setTimeout(resolve, 300))
+        await new Promise(resolve => setTimeout(resolve, 300))
         // Accept '123456' as a developer bypass code too
         if (otpCode !== simulatedOtpCode && otpCode !== '123456') {
           set({ error: 'Invalid verification code.', isLoading: false })
@@ -170,7 +170,7 @@ export const useClaimStore = create<ClaimStoreState>((set, get) => ({
       }
 
       // 3. Pre-select photos. If targetPhotoId exists, include it.
-      const initialSelectedIds = matches.map((m) => m.id)
+      const initialSelectedIds = matches.map(m => m.id)
       if (targetPhotoId && !initialSelectedIds.includes(targetPhotoId)) {
         initialSelectedIds.push(targetPhotoId)
       }
@@ -188,9 +188,13 @@ export const useClaimStore = create<ClaimStoreState>((set, get) => ({
 
   submitClaims: async () => {
     const { email, displayName, selectedPhotoIds, targetPhotoId, targetFaceId } = get()
-    
+
     // Construct all claim payloads
-    const claimPayloads: Array<{ photoId: string; faceId?: string | null; claimType: 'upload' | 'face' }> = []
+    const claimPayloads: Array<{
+      photoId: string
+      faceId?: string | null
+      claimType: 'upload' | 'face'
+    }> = []
 
     // 1. Target claim (high priority face or photo claim)
     if (targetPhotoId) {
@@ -202,10 +206,10 @@ export const useClaimStore = create<ClaimStoreState>((set, get) => ({
     }
 
     // 2. Add other selected photos matching uploads
-    selectedPhotoIds.forEach((photoId) => {
+    selectedPhotoIds.forEach(photoId => {
       // Avoid double adding targetPhotoId
       if (photoId === targetPhotoId) return
-      
+
       claimPayloads.push({
         photoId,
         faceId: null,
@@ -222,29 +226,30 @@ export const useClaimStore = create<ClaimStoreState>((set, get) => ({
 
     try {
       // Mock session_id for simplicity or retrieve if active
-      const mockSessionId = typeof window !== 'undefined' ? window.sessionStorage?.getItem('session_id') : null
-      
+      const mockSessionId =
+        typeof window !== 'undefined' ? window.sessionStorage?.getItem('session_id') : null
+
       await submitClaims(email, displayName, claimPayloads, mockSessionId)
-      
+
       set({ step: 4, isLoading: false })
     } catch (err: any) {
       set({ error: err.message || 'Failed to submit claims.', isLoading: false })
     }
   },
 
-  togglePhotoSelection: (photoId) => {
+  togglePhotoSelection: photoId => {
     const { selectedPhotoIds } = get()
     if (selectedPhotoIds.includes(photoId)) {
-      set({ selectedPhotoIds: selectedPhotoIds.filter((id) => id !== photoId) })
+      set({ selectedPhotoIds: selectedPhotoIds.filter(id => id !== photoId) })
     } else {
       set({ selectedPhotoIds: [...selectedPhotoIds, photoId] })
     }
   },
 
-  selectAllPhotos: (selected) => {
+  selectAllPhotos: selected => {
     const { photosToClaim, targetPhotoId } = get()
     if (selected) {
-      const allIds = photosToClaim.map((p) => p.id)
+      const allIds = photosToClaim.map(p => p.id)
       if (targetPhotoId && !allIds.includes(targetPhotoId)) {
         allIds.push(targetPhotoId)
       }

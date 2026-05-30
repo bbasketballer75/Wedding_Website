@@ -67,7 +67,7 @@ export const useDownloadStore = create<DownloadState>()(
 
       addToQueue: (photo: QueuedPhoto) => {
         const { queue } = get()
-        
+
         // Prevent duplicate queue items
         if (queue.some(p => p.id === photo.id)) {
           return false

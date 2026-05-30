@@ -11,7 +11,7 @@ const RATE_LIMIT_CLEANUP_INTERVAL_MS = 60 * 1000 // 1 minute
 function cleanupRateLimitMap(windowMs: number) {
   const windowStart = Date.now() - windowMs
   for (const [key, timestamps] of rateLimitMap.entries()) {
-    const valid = (timestamps as number[]).filter((t) => t > windowStart)
+    const valid = (timestamps as number[]).filter(t => t > windowStart)
     if (valid.length === 0) {
       rateLimitMap.delete(key)
     } else {

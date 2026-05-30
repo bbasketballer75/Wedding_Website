@@ -79,9 +79,7 @@ export function FilmFeatureSection() {
 
             {/* Summary */}
             {feature.summary && (
-              <p className='text-white/70 leading-relaxed mb-8 max-w-prose'>
-                {feature.summary}
-              </p>
+              <p className='text-white/70 leading-relaxed mb-8 max-w-prose'>{feature.summary}</p>
             )}
 
             {/* CTA */}

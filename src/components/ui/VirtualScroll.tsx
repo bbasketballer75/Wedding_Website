@@ -2,12 +2,12 @@ import { motion } from 'framer-motion'
 import { useCallback, useMemo, useRef, useState, ReactNode, UIEvent, ChangeEvent } from 'react'
 
 export interface VirtualScrollProps<T> {
-  items: T[];
-  itemHeight: number;
-  containerHeight: number;
-  renderItem: (item: T, index: number) => ReactNode;
-  overscan?: number;
-  className?: string;
+  items: T[]
+  itemHeight: number
+  containerHeight: number
+  renderItem: (item: T, index: number) => ReactNode
+  overscan?: number
+  className?: string
 }
 
 // Virtual scroll component for large lists
@@ -78,15 +78,15 @@ const VirtualScroll = <T extends any>({
 }
 
 export interface VirtualGridProps<T> {
-  items: T[];
-  itemHeight: number;
-  itemWidth: number;
-  containerHeight: number;
-  containerWidth: number;
-  renderItem: (item: T, index: number) => ReactNode;
-  gap?: number;
-  overscan?: number;
-  className?: string;
+  items: T[]
+  itemHeight: number
+  itemWidth: number
+  containerHeight: number
+  containerWidth: number
+  renderItem: (item: T, index: number) => ReactNode
+  gap?: number
+  overscan?: number
+  className?: string
 }
 
 // Virtualized grid component
@@ -174,13 +174,13 @@ export const VirtualGrid = <T extends any>({
 }
 
 export interface OptimizedListProps<T> {
-  items: T[];
-  filterFn?: (item: T, filterTerm: string) => boolean;
-  searchFn?: (item: T, searchTerm: string) => boolean;
-  itemHeight?: number;
-  containerHeight?: number;
-  renderItem: (item: T, index: number) => ReactNode;
-  className?: string;
+  items: T[]
+  filterFn?: (item: T, filterTerm: string) => boolean
+  searchFn?: (item: T, searchTerm: string) => boolean
+  itemHeight?: number
+  containerHeight?: number
+  renderItem: (item: T, index: number) => ReactNode
+  className?: string
 }
 
 // Optimized list component with search and filter

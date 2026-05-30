@@ -4,10 +4,10 @@ import { cn } from '@/lib/utils'
 import { activityFeedStore } from '@/stores/activityFeedStore'
 
 export function NewActivityBanner() {
-  const newItemsCount = activityFeedStore((state) => state.newItemsCount)
-  const clearNewItems = activityFeedStore((state) => state.clearNewItems)
-  const prependItems = activityFeedStore((state) => state.prependItems)
-  const newItems = activityFeedStore((state) => state.newItems)
+  const newItemsCount = activityFeedStore(state => state.newItemsCount)
+  const clearNewItems = activityFeedStore(state => state.clearNewItems)
+  const prependItems = activityFeedStore(state => state.prependItems)
+  const newItems = activityFeedStore(state => state.newItems)
 
   const handleClick = () => {
     prependItems(newItems)
@@ -28,8 +28,8 @@ export function NewActivityBanner() {
             'bg-gold-500/10 text-gold-600 hover:bg-gold-500/20 transition-colors'
           )}
         >
-          <span className="flex items-center gap-2">
-            <ArrowUp className="h-4 w-4" />
+          <span className='flex items-center gap-2'>
+            <ArrowUp className='h-4 w-4' />
             {newItemsCount} new activity — click to load
           </span>
         </motion.button>

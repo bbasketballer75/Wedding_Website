@@ -4,7 +4,10 @@ import { useCallback, useEffect, useRef, useState } from 'react'
 const isRequestIdleCallbackAvailable =
   typeof window !== 'undefined' && 'requestIdleCallback' in window && 'cancelIdleCallback' in window
 
-export const useIdleCallback = (callback: (deadline: any) => void, options: { timeout?: number } = {}) => {
+export const useIdleCallback = (
+  callback: (deadline: any) => void,
+  options: { timeout?: number } = {}
+) => {
   const callbackRef = useRef(callback)
   const timeoutRef = useRef<number | NodeJS.Timeout | null>(null)
 
@@ -46,7 +49,7 @@ export const useIdleCallback = (callback: (deadline: any) => void, options: { ti
     return () => {
       if (timeoutRef.current) {
         if (isRequestIdleCallbackAvailable) {
-          (window as any).cancelIdleCallback(timeoutRef.current as number)
+          ;(window as any).cancelIdleCallback(timeoutRef.current as number)
         } else {
           clearTimeout(timeoutRef.current as any)
         }
@@ -96,7 +99,10 @@ export const useIdlePrefetch = (resources: string[] = []) => {
   }, [resources, schedulePrefetch])
 }
 
-export const useIdleLazyLoad = (importFn: () => Promise<any>, options: { timeout?: number } = {}) => {
+export const useIdleLazyLoad = (
+  importFn: () => Promise<any>,
+  options: { timeout?: number } = {}
+) => {
   const [Component, setComponent] = useState<any>(null)
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState<Error | null>(null)

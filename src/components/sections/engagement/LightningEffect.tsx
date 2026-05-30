@@ -40,7 +40,7 @@ const LightningEffect: React.FC<LightningEffectProps> = ({ isActive = true }) =>
     <AnimatePresence>
       {flash && (
         <motion.div
-          key="lightning-flash"
+          key='lightning-flash'
           initial={{ opacity: 0 }}
           animate={{ opacity: 0.15 }}
           exit={{ opacity: 0 }}

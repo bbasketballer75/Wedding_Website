@@ -4,12 +4,12 @@ import { useAuthStore } from '@/stores/authStore'
 
 /**
  * AuthProvider manages authentication state and subscriptions.
- * 
+ *
  * Responsibilities:
  * - Initialize auth state on mount
  * - Subscribe to auth state changes with proper cleanup
  * - Handle session refresh
- * 
+ *
  * This component prevents memory leaks by unsubscribing from
  * auth state changes when the app unmounts (e.g., during hot reloads).
  */
@@ -24,17 +24,17 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     initializeAuth()
 
     // Subscribe to auth state changes with cleanup
-    const { data: { subscription } } = supabase.auth.onAuthStateChange(
-      async (_event, session) => {
-        if (session?.user) {
-          setUser(session.user)
-          await checkAdminStatus()
-        } else {
-          setUser(null)
-        }
-        setLoading(false)
+    const {
+      data: { subscription },
+    } = supabase.auth.onAuthStateChange(async (_event, session) => {
+      if (session?.user) {
+        setUser(session.user)
+        await checkAdminStatus()
+      } else {
+        setUser(null)
       }
-    )
+      setLoading(false)
+    })
 
     // Cleanup subscription on unmount
     return () => {

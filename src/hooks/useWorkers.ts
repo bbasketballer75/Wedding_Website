@@ -30,19 +30,16 @@ export function useWorkers() {
     }
   }, [])
 
-   
   const processImage = async (type: string, data: any) => {
     if (!imagePoolRef.current) throw new Error('Image worker pool not initialized')
     return imagePoolRef.current.execute(type, data)
   }
 
-   
   const searchIndex = async (type: string, data: any) => {
     if (!searchPoolRef.current) throw new Error('Search worker pool not initialized')
     return searchPoolRef.current.execute(type, data)
   }
 
-   
   const queueSync = (data: any) => {
     if (!syncWorkerRef.current) throw new Error('Sync worker not initialized')
     syncWorkerRef.current.postMessage({ type: 'queue', item: data })

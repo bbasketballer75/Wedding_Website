@@ -198,7 +198,8 @@ export const useGalleryStore = create<GalleryState>()(
               const query = searchQuery.toLowerCase()
               filtered = filtered.filter(
                 img =>
-                  img.alt.toLowerCase().includes(query) || img.caption?.toLowerCase().includes(query)
+                  img.alt.toLowerCase().includes(query) ||
+                  img.caption?.toLowerCase().includes(query)
               )
             }
 

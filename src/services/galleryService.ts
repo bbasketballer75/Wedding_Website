@@ -142,7 +142,10 @@ class GalleryService {
   }
 
   // Upload image to storage
-  async uploadImage(file: File, category: string = 'wedding'): Promise<{ path: string; publicUrl: string }> {
+  async uploadImage(
+    file: File,
+    category: string = 'wedding'
+  ): Promise<{ path: string; publicUrl: string }> {
     try {
       const fileExt = file.name.split('.').pop()
       const fileName = `${category}/${Date.now()}.${fileExt}`

@@ -26,28 +26,26 @@ export function ActivityCard({ item }: ActivityCardProps) {
     : ''
 
   return (
-    <div className="flex gap-3 p-3 rounded-xl bg-gradient-to-br from-cream-50 to-gold-50/40">
+    <div className='flex gap-3 p-3 rounded-xl bg-gradient-to-br from-cream-50 to-gold-50/40'>
       {item.thumbnail_url ? (
         <img
           src={item.thumbnail_url}
-          alt=""
-          className="w-16 h-16 rounded-lg object-cover flex-shrink-0"
-          loading="lazy"
+          alt=''
+          className='w-16 h-16 rounded-lg object-cover flex-shrink-0'
+          loading='lazy'
         />
       ) : (
-        <div className="w-16 h-16 rounded-lg bg-gold-100 flex items-center justify-center flex-shrink-0">
-          <Icon className="h-6 w-6 text-gold-500" />
+        <div className='w-16 h-16 rounded-lg bg-gold-100 flex items-center justify-center flex-shrink-0'>
+          <Icon className='h-6 w-6 text-gold-500' />
         </div>
       )}
-      <div className="flex-1 min-w-0 flex flex-col justify-center">
-        <p className="font-medium text-charcoal-800 truncate">
-          {item.display_name || 'Anonymous'}
-        </p>
-        <div className="flex items-center gap-1.5 text-sm text-charcoal-500">
-          <Icon className="h-3.5 w-3.5 text-gold-500 flex-shrink-0" />
+      <div className='flex-1 min-w-0 flex flex-col justify-center'>
+        <p className='font-medium text-charcoal-800 truncate'>{item.display_name || 'Anonymous'}</p>
+        <div className='flex items-center gap-1.5 text-sm text-charcoal-500'>
+          <Icon className='h-3.5 w-3.5 text-gold-500 flex-shrink-0' />
           <span>{typeLabel}</span>
-          <span className="text-charcoal-400">·</span>
-          <span className="truncate">{timeAgo}</span>
+          <span className='text-charcoal-400'>·</span>
+          <span className='truncate'>{timeAgo}</span>
         </div>
       </div>
     </div>

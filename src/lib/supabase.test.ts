@@ -153,16 +153,12 @@ describe('Supabase Shared Links Helper Routines', () => {
       // 2. Parallel responses:
       // uploadsRes
       mockQueryBuilder.order.mockResolvedValueOnce({
-        data: [
-          { id: 'upload-1', guest_name: 'John Doe', photo_urls: ['url-1'] }
-        ],
+        data: [{ id: 'upload-1', guest_name: 'John Doe', photo_urls: ['url-1'] }],
         error: null,
       })
       // guestbookRes
       mockQueryBuilder.order.mockResolvedValueOnce({
-        data: [
-          { id: 'gb-1', name: 'John Doe', message: 'Congrats!' }
-        ],
+        data: [{ id: 'gb-1', name: 'John Doe', message: 'Congrats!' }],
         error: null,
       })
       // claimedRes
@@ -172,13 +168,13 @@ describe('Supabase Shared Links Helper Routines', () => {
           photo_claims: [
             {
               status: 'approved',
-              photos: { id: 'photo-10', url: 'claimed-10.jpg' }
+              photos: { id: 'photo-10', url: 'claimed-10.jpg' },
             },
             {
               status: 'pending',
-              photos: { id: 'photo-11', url: 'claimed-11.jpg' }
-            }
-          ]
+              photos: { id: 'photo-11', url: 'claimed-11.jpg' },
+            },
+          ],
         },
         error: null,
       })
@@ -214,7 +210,10 @@ describe('Supabase Shared Links Helper Routines', () => {
 
       // 2. Parallel responses (identity display_name missing, but guestbook name present):
       mockQueryBuilder.order.mockResolvedValueOnce({ data: [], error: null }) // guest_uploads
-      mockQueryBuilder.order.mockResolvedValueOnce({ data: [{ name: 'Guestbook Signer' }], error: null }) // guestbook
+      mockQueryBuilder.order.mockResolvedValueOnce({
+        data: [{ name: 'Guestbook Signer' }],
+        error: null,
+      }) // guestbook
       mockQueryBuilder.maybeSingle.mockResolvedValueOnce({ data: null, error: null }) // photo_claims
       mockQueryBuilder.maybeSingle.mockResolvedValueOnce({ data: null, error: null }) // identity (display_name missing)
 
@@ -230,7 +229,10 @@ describe('Supabase Shared Links Helper Routines', () => {
         error: null,
       })
       // Identity and guestbook empty, upload has name
-      mockQueryBuilder.order.mockResolvedValueOnce({ data: [{ guest_name: 'Uploader Name' }], error: null })
+      mockQueryBuilder.order.mockResolvedValueOnce({
+        data: [{ guest_name: 'Uploader Name' }],
+        error: null,
+      })
       mockQueryBuilder.order.mockResolvedValueOnce({ data: [], error: null })
       mockQueryBuilder.maybeSingle.mockResolvedValueOnce({ data: null, error: null })
       mockQueryBuilder.maybeSingle.mockResolvedValueOnce({ data: null, error: null })

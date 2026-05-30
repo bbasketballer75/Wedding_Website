@@ -1,6 +1,9 @@
 import React, { useRef, useState, useEffect } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
-import CustomVideoPlayer, { CustomVideoPlayerRef, VideoChapter } from '@/components/ui/CustomVideoPlayer'
+import CustomVideoPlayer, {
+  CustomVideoPlayerRef,
+  VideoChapter,
+} from '@/components/ui/CustomVideoPlayer'
 import storage from '@/utils/storage'
 import { getMediaPath } from '@/utils/media'
 import { TIMING, VIDEO_CONFIG } from '@/config/constants'
@@ -101,7 +104,11 @@ const VideoSection: React.FC = () => {
           viewport={{ once: true }}
           className='relative rounded-xl overflow-hidden shadow-2xl mb-12 border border-gold-500/10'
         >
-          <CustomVideoPlayer ref={videoRef} src={getMediaPath('/video/main.mp4')} chapters={chapters} />
+          <CustomVideoPlayer
+            ref={videoRef}
+            src={getMediaPath('/video/main.mp4')}
+            chapters={chapters}
+          />
         </motion.div>
 
         {/* Film-Strip Chapter Navigation */}

@@ -8,7 +8,7 @@ export async function downloadFile(url: string, filename: string): Promise<void>
   try {
     const response = await fetch(url)
     const blob = await response.blob()
-    
+
     const blobUrl = window.URL.createObjectURL(blob)
     const link = document.createElement('a')
     link.href = blobUrl
@@ -34,28 +34,28 @@ export async function downloadWithProgress(
   try {
     const response = await fetch(url)
     const contentLength = parseInt(response.headers.get('content-length') || '0')
-    
+
     if (!response.body) {
       throw new Error('No response body')
     }
-    
+
     const reader = response.body.getReader()
     const chunks: BlobPart[] = []
     let receivedLength = 0
-    
+
     while (true) {
       const { done, value } = await reader.read()
-      
+
       if (done) break
-      
+
       chunks.push(value.slice())
       receivedLength += value.length
-      
+
       if (contentLength && onProgress) {
         onProgress((receivedLength / contentLength) * 100)
       }
     }
-    
+
     // Combine chunks
     const blob = new Blob(chunks)
     const blobUrl = window.URL.createObjectURL(blob)
@@ -79,11 +79,11 @@ export async function copyImageToClipboard(url: string): Promise<void> {
   try {
     const response = await fetch(url)
     const blob = await response.blob()
-    
+
     await navigator.clipboard.write([
       new ClipboardItem({
-        [blob.type]: blob
-      })
+        [blob.type]: blob,
+      }),
     ])
   } catch (error) {
     console.error('Copy failed:', error)
@@ -106,18 +106,18 @@ export async function downloadBatch(
   if (photos.length <= 20) {
     try {
       onProgress?.(0, `Starting batch download of ${photos.length} photos...`)
-      
+
       let completedCount = 0
       const blobs = await Promise.all(
-        photos.map(async (photo) => {
+        photos.map(async photo => {
           try {
             const url = photo.downloadUrl || photo.url
             const response = await fetch(url)
             if (!response.ok) throw new Error('Fetch failed')
-            
+
             const blob = await response.blob()
             completedCount++
-            
+
             // Allocate 0% to 50% progress for downloading photo blobs
             const downloadProgress = (completedCount / photos.length) * 50
             onProgress?.(
@@ -155,17 +155,14 @@ export async function downloadBatch(
         const name = item.photo.caption
           ? `${String(index + 1).padStart(2, '0')}-${item.photo.caption.replace(/[^a-z0-9]/gi, '-').slice(0, 40)}.${ext}`
           : `photo-${String(index + 1).padStart(2, '0')}.${ext}`
-        
+
         folder.file(name, item.blob)
       })
 
       // Allocate 60% to 95% progress for zip compilation
-      const zipContent = await zip.generateAsync({ type: 'blob' }, (metadata) => {
+      const zipContent = await zip.generateAsync({ type: 'blob' }, metadata => {
         const zipProgress = 60 + (metadata.percent / 100) * 35
-        onProgress?.(
-          zipProgress,
-          `Compiling zip package (${Math.round(metadata.percent)}%)...`
-        )
+        onProgress?.(zipProgress, `Compiling zip package (${Math.round(metadata.percent)}%)...`)
       })
 
       onProgress?.(98, 'Triggering browser file download...')
@@ -182,16 +179,14 @@ export async function downloadBatch(
       onProgress?.(100, 'All downloads finished successfully!')
     } catch (error) {
       console.error('Client-side batch download failed:', error)
-      throw new Error(
-        error instanceof Error ? error.message : 'Client-side batch download failed'
-      )
+      throw new Error(error instanceof Error ? error.message : 'Client-side batch download failed')
     }
-  } 
+  }
   // 2. Large batches (21 to 50 photos): Zip on Netlify Server Function
   else {
     try {
       onProgress?.(5, 'Contacting zip compilation server...')
-      
+
       const response = await fetch('/.netlify/functions/download-pack', {
         method: 'POST',
         headers: {
@@ -229,10 +224,7 @@ export async function downloadBatch(
           const percent = (receivedLength / contentLength) * 100
           // Allocate 10% to 95% progress for stream reading
           const streamProgress = 10 + (percent / 100) * 85
-          onProgress?.(
-            streamProgress,
-            `Downloading zipped archive (${Math.round(percent)}%)...`
-          )
+          onProgress?.(streamProgress, `Downloading zipped archive (${Math.round(percent)}%)...`)
         } else {
           onProgress?.(50, 'Downloading zipped archive...')
         }
@@ -253,9 +245,7 @@ export async function downloadBatch(
       onProgress?.(100, 'Server-zipped downloads finished successfully!')
     } catch (error) {
       console.error('Server-side batch download failed:', error)
-      throw new Error(
-        error instanceof Error ? error.message : 'Server-side batch download failed'
-      )
+      throw new Error(error instanceof Error ? error.message : 'Server-side batch download failed')
     }
   }
 }

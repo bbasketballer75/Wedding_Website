@@ -22,8 +22,12 @@ export const generateImageSrcSet = (
 }
 
 // Generate WebP and fallback sources
-export const generatePictureSources = (baseUrl: string, sizes: number[] = [640, 768, 1024, 1280], quality: number = 75) => {
-  const sources: Array<{srcSet: string, type: string, media: string}> = []
+export const generatePictureSources = (
+  baseUrl: string,
+  sizes: number[] = [640, 768, 1024, 1280],
+  quality: number = 75
+) => {
+  const sources: Array<{ srcSet: string; type: string; media: string }> = []
 
   sizes.forEach(size => {
     // WebP source
@@ -46,7 +50,11 @@ export const generatePictureSources = (baseUrl: string, sizes: number[] = [640, 
 }
 
 // Calculate optimal image size based on container
-export const calculateOptimalSize = (containerWidth: number, containerHeight: number, aspectRatio?: number) => {
+export const calculateOptimalSize = (
+  containerWidth: number,
+  containerHeight: number,
+  aspectRatio?: number
+) => {
   const devicePixelRatio = window.devicePixelRatio || 1
   const maxWidth = containerWidth * devicePixelRatio
   const maxHeight = containerHeight * devicePixelRatio
@@ -99,7 +107,10 @@ export const preloadImage = (src: string, priority: string = 'high') => {
 }
 
 // Lazy load images with Intersection Observer
-export const lazyLoadImages = (selector = '[data-lazy]', options: IntersectionObserverInit = {}) => {
+export const lazyLoadImages = (
+  selector = '[data-lazy]',
+  options: IntersectionObserverInit = {}
+) => {
   const defaultOptions = {
     root: null,
     rootMargin: '50px',
@@ -181,7 +192,7 @@ export const formatBytes = (bytes: number, decimals = 2) => {
 
 // Get image dimensions from file
 export const getImageDimensions = (file: File) => {
-  return new Promise<{ width: number, height: number }>(resolve => {
+  return new Promise<{ width: number; height: number }>(resolve => {
     const img = new Image()
     img.onload = () => {
       resolve({ width: img.width, height: img.height })
@@ -191,12 +202,12 @@ export const getImageDimensions = (file: File) => {
 }
 
 export interface ImageOptions {
-  width?: number;
-  height?: number;
-  quality?: number;
-  format?: string;
-  crop?: string;
-  gravity?: string;
+  width?: number
+  height?: number
+  quality?: number
+  format?: string
+  crop?: string
+  gravity?: string
 }
 
 // Create image CDN URL with transformations

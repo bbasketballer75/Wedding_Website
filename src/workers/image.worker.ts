@@ -19,12 +19,15 @@ interface ImageProcessingMessage {
 interface ImageProcessingResult {
   type: string
   success: boolean
-  data?: ImageData | string | {
-    averageBrightness: number
-    dominantColors: string[]
-    width: number
-    height: number
-  }
+  data?:
+    | ImageData
+    | string
+    | {
+        averageBrightness: number
+        dominantColors: string[]
+        width: number
+        height: number
+      }
   error?: string
 }
 
@@ -87,7 +90,7 @@ async function resizeImage(
   // Create offscreen canvas
   const canvas = new OffscreenCanvas(width, height)
   const ctx = canvas.getContext('2d')
-  
+
   if (!ctx) {
     throw new Error('Failed to get 2d context')
   }
@@ -126,7 +129,7 @@ async function compressImage(
     typeof input === 'string' ? 600 : input.height
   )
   const ctx = canvas.getContext('2d')
-  
+
   if (!ctx) {
     throw new Error('Failed to get 2d context')
   }
@@ -173,7 +176,7 @@ async function convertImage(
     typeof input === 'string' ? 600 : input.height
   )
   const ctx = canvas.getContext('2d')
-  
+
   if (!ctx) {
     throw new Error('Failed to get 2d context')
   }
@@ -227,11 +230,11 @@ async function createThumbnail(
 
   const canvas = new OffscreenCanvas(thumbnailWidth, thumbnailHeight)
   const ctx = canvas.getContext('2d')
-  
+
   if (!ctx) {
     throw new Error('Failed to get 2d context')
   }
-  
+
   ctx.drawImage(bitmap, 0, 0, thumbnailWidth, thumbnailHeight)
 
   const thumbnailBlob = await canvas.convertToBlob({
@@ -261,7 +264,7 @@ async function analyzeImage(input: ImageData | string): Promise<ImageProcessingR
     typeof input === 'string' ? 600 : input.height
   )
   const ctx = canvas.getContext('2d')
-  
+
   if (!ctx) {
     throw new Error('Failed to get 2d context')
   }
@@ -315,10 +318,4 @@ async function analyzeImage(input: ImageData | string): Promise<ImageProcessingR
   }
 }
 
-export {
-  resizeImage,
-  compressImage,
-  convertImage,
-  createThumbnail,
-  analyzeImage
-}
+export { resizeImage, compressImage, convertImage, createThumbnail, analyzeImage }

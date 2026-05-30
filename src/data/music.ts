@@ -1,16 +1,18 @@
 import { getMediaPath } from '@/utils/media'
 
 export interface Track {
-  title: string;
-  artist: string;
-  src: string;
+  title: string
+  artist: string
+  src: string
 }
 
 export const mainPlaylist: Track[] = [
   {
     title: 'First Time (Acoustic)',
     artist: 'Seven Lions, Slander, Dabin (feat. Dylan Matthew)',
-    src: getMediaPath('/background_audio/01 - Seven Lions - First Time (feat. Dylan Matthew) (Acoustic).mp3'),
+    src: getMediaPath(
+      '/background_audio/01 - Seven Lions - First Time (feat. Dylan Matthew) (Acoustic).mp3'
+    ),
   },
   {
     title: 'The Kind of Love We Make',
@@ -55,14 +57,18 @@ export const mainPlaylist: Track[] = [
   {
     title: "You're Still The One",
     artist: 'Shania Twain',
-    src: getMediaPath("/background_audio/Shania Twain - You're Still The One (Remixed_Remastered 2004).mp3"),
+    src: getMediaPath(
+      "/background_audio/Shania Twain - You're Still The One (Remixed_Remastered 2004).mp3"
+    ),
   },
 ]
 
 export const halloweenTrack: Track = {
   title: 'Toccata and Fugue in D minor',
   artist: 'Johann Sebastian Bach',
-  src: getMediaPath('/background_audio/SPOOKY ENGAGEMENT SECTION/03 - Johann Sebastian Bach - Toccata and Fugue in D minor.mp3'),
+  src: getMediaPath(
+    '/background_audio/SPOOKY ENGAGEMENT SECTION/03 - Johann Sebastian Bach - Toccata and Fugue in D minor.mp3'
+  ),
 }
 
 export const sfx = {

@@ -4,15 +4,15 @@ import React, { useCallback, useEffect, useRef, useState } from 'react'
 import LazyImage from './LazyImage'
 
 interface GalleryImage {
-  id?: string | number;
-  src: string;
-  alt?: string;
-  caption?: string;
+  id?: string | number
+  src: string
+  alt?: string
+  caption?: string
 }
 
 interface AccessibleGalleryProps {
-  images: GalleryImage[];
-  className?: string;
+  images: GalleryImage[]
+  className?: string
 }
 
 const AccessibleGallery = React.memo<AccessibleGalleryProps>(({ images, className = '' }) => {

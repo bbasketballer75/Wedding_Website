@@ -2,11 +2,11 @@
 // Note: Registration is handled by vite-plugin-pwa in main.jsx
 
 export class ServiceWorkerManager {
-  public isOnline: boolean;
-  public listeners: Map<string, Function[]>;
-  public updateHandler: ((hasUpdate: boolean) => Promise<void>) | null;
-  private wb: any = null;
-  private pendingSW: ServiceWorker | null = null;
+  public isOnline: boolean
+  public listeners: Map<string, Function[]>
+  public updateHandler: ((hasUpdate: boolean) => Promise<void>) | null
+  private wb: any = null
+  private pendingSW: ServiceWorker | null = null
 
   constructor() {
     this.isOnline = typeof navigator !== 'undefined' ? navigator.onLine : true
@@ -66,7 +66,7 @@ export class ServiceWorkerManager {
         this.notifyListeners('sync-complete', data)
         break
       default:
-        // Unknown service worker message
+      // Unknown service worker message
     }
   }
 
@@ -140,7 +140,9 @@ export class ServiceWorkerManager {
       const registration = await navigator.serviceWorker.ready
       const subscription = await registration.pushManager.subscribe({
         userVisibleOnly: true,
-        applicationServerKey: this.urlBase64ToUint8Array(import.meta.env.VITE_VAPID_PUBLIC_KEY as string),
+        applicationServerKey: this.urlBase64ToUint8Array(
+          import.meta.env.VITE_VAPID_PUBLIC_KEY as string
+        ),
       })
 
       // Send subscription to server

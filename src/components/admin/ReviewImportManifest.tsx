@@ -82,15 +82,10 @@ async function fetchPhotosForReview(urls: string[]) {
   return { data: photos, error: null }
 }
 
-async function persistPhotoUpdates(
-  updates: Array<Record<string, unknown> & { id: string }>,
-) {
+async function persistPhotoUpdates(updates: Array<Record<string, unknown> & { id: string }>) {
   for (const update of updates) {
     const { id, ...fields } = update
-    const { error } = await supabase
-      .from('photos')
-      .update(fields)
-      .eq('id', id)
+    const { error } = await supabase.from('photos').update(fields).eq('id', id)
 
     if (error) {
       return { error }
@@ -108,11 +103,11 @@ export async function handleSyncManifestMetadata(
   batch: MediaReviewBatch,
   importRows: ReviewImportManifestRow[],
   onSuccess: (message: string) => void,
-  onError: (message: string) => void,
+  onError: (message: string) => void
 ) {
   const syncingBatchId = batch.id
 
-  const urls = importRows.map((row) => toSiteMediaPath(row.photoRowDraft.url))
+  const urls = importRows.map(row => toSiteMediaPath(row.photoRowDraft.url))
   const { data: photos, error: photoError } = await fetchPhotosForReview(urls)
 
   if (photoError) {
@@ -120,18 +115,20 @@ export async function handleSyncManifestMetadata(
     return
   }
 
-  const updates = (photos || []).flatMap((photo) => {
-    const row = importRows.find((item) => toSiteMediaPath(item.photoRowDraft.url) === photo.url)
+  const updates = (photos || []).flatMap(photo => {
+    const row = importRows.find(item => toSiteMediaPath(item.photoRowDraft.url) === photo.url)
     if (!row) return []
 
-    return [{
-      id: photo.id,
-      thumbnail: toSiteMediaPath(row.photoRowDraft.thumbnail),
-      category: row.photoRowDraft.category,
-      location: row.photoRowDraft.location,
-      date: row.photoRowDraft.date,
-      tags: row.photoRowDraft.tags,
-    }]
+    return [
+      {
+        id: photo.id,
+        thumbnail: toSiteMediaPath(row.photoRowDraft.thumbnail),
+        category: row.photoRowDraft.category,
+        location: row.photoRowDraft.location,
+        date: row.photoRowDraft.date,
+        tags: row.photoRowDraft.tags,
+      },
+    ]
   })
 
   if (updates.length > 0) {
@@ -156,12 +153,12 @@ export async function handleApplyConfirmedFaces(
   faces: MediaReviewFace[],
   importRows: ReviewImportManifestRow[],
   onSuccess: (message: string) => void,
-  onError: (message: string) => void,
+  onError: (message: string) => void
 ) {
   const syncingBatchId = batch.id
 
   const confirmedFaces = faces.filter(
-    (face) => face.review_status === 'confirmed' && face.confirmed_name && face.source_record_id,
+    face => face.review_status === 'confirmed' && face.confirmed_name && face.source_record_id
   )
 
   if (confirmedFaces.length === 0) {
@@ -170,12 +167,10 @@ export async function handleApplyConfirmedFaces(
   }
 
   const manifestBySourceRecordId = new Map(
-    importRows
-      .filter((row) => row.sourceRecordId)
-      .map((row) => [row.sourceRecordId as string, row]),
+    importRows.filter(row => row.sourceRecordId).map(row => [row.sourceRecordId as string, row])
   )
 
-  const urls = importRows.map((row) => toSiteMediaPath(row.photoRowDraft.url))
+  const urls = importRows.map(row => toSiteMediaPath(row.photoRowDraft.url))
   const { data: photos, error: photoError } = await fetchPhotosForReview(urls)
 
   if (photoError) {
@@ -183,7 +178,7 @@ export async function handleApplyConfirmedFaces(
     return
   }
 
-  const photoByUrl = new Map((photos || []).map((photo) => [photo.url, photo]))
+  const photoByUrl = new Map((photos || []).map(photo => [photo.url, photo]))
   const batchFaceIdsByRecordId = new Map<string, Set<string>>()
 
   for (const face of faces) {
@@ -200,7 +195,10 @@ export async function handleApplyConfirmedFaces(
     confirmedFacesByRecordId.set(face.source_record_id as string, current)
   }
 
-  const pendingUpdates = new Map<string, PhotoRowForReview & { tags: string[]; faces: PhotoFace[] }>()
+  const pendingUpdates = new Map<
+    string,
+    PhotoRowForReview & { tags: string[]; faces: PhotoFace[] }
+  >()
 
   for (const [sourceRecordId, recordFaces] of confirmedFacesByRecordId.entries()) {
     const manifestRow = manifestBySourceRecordId.get(sourceRecordId)
@@ -212,8 +210,8 @@ export async function handleApplyConfirmedFaces(
 
     const existingFaces = Array.isArray(currentPhoto.faces) ? currentPhoto.faces : []
     const batchFaceIds = batchFaceIdsByRecordId.get(sourceRecordId) || new Set<string>()
-    const baseFaces = existingFaces.filter((face) => !batchFaceIds.has(String(face.id)))
-    const nextFaces = recordFaces.map((face) => ({
+    const baseFaces = existingFaces.filter(face => !batchFaceIds.has(String(face.id)))
+    const nextFaces = recordFaces.map(face => ({
       id: face.face_id,
       name: face.confirmed_name || 'Unknown',
       x: face.x,
@@ -231,8 +229,8 @@ export async function handleApplyConfirmedFaces(
       new Set([
         ...(Array.isArray(currentPhoto.tags) ? currentPhoto.tags : []),
         ...manifestRow.photoRowDraft.tags,
-        ...recordFaces.map((face) => (face.confirmed_name || '').toLowerCase()).filter(Boolean),
-      ]),
+        ...recordFaces.map(face => (face.confirmed_name || '').toLowerCase()).filter(Boolean),
+      ])
     )
 
     pendingUpdates.set(url, {
@@ -242,7 +240,7 @@ export async function handleApplyConfirmedFaces(
     })
   }
 
-  const updates = [...pendingUpdates.values()].map((photo) => ({
+  const updates = [...pendingUpdates.values()].map(photo => ({
     id: photo.id,
     tags: photo.tags,
     faces: photo.faces,
@@ -258,5 +256,7 @@ export async function handleApplyConfirmedFaces(
   }
 
   await updateMediaReviewBatchStatus(syncingBatchId, 'approved')
-  onSuccess(`Applied confirmed face tags from ${confirmedFaces.length} face${confirmedFaces.length === 1 ? '' : 's'}.`)
+  onSuccess(
+    `Applied confirmed face tags from ${confirmedFaces.length} face${confirmedFaces.length === 1 ? '' : 's'}.`
+  )
 }

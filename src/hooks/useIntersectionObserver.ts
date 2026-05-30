@@ -72,7 +72,10 @@ export const useLazyImage = (src: string, options: IntersectionObserverInit = {}
   return [ref, isLoaded, imageSrc, error] as const
 }
 
-export const useInfiniteScroll = (onLoadMore: () => Promise<any>, options: IntersectionObserverInit = {}) => {
+export const useInfiniteScroll = (
+  onLoadMore: () => Promise<any>,
+  options: IntersectionObserverInit = {}
+) => {
   const [ref, isIntersecting] = useIntersectionObserver({
     rootMargin: '200px',
     threshold: 0.1,

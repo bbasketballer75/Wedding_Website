@@ -60,7 +60,8 @@ export const familyFilms: FamilyFilm[] = [
   {
     id: 'mom',
     label: 'Austin & Heather',
-    description: 'The mother-son dance from Austin and Heather, full of the warmth and nerves that made the room go quiet for a second.',
+    description:
+      'The mother-son dance from Austin and Heather, full of the warmth and nerves that made the room go quiet for a second.',
     duration: '5:09',
     thumbnail: '/images/parent-film-cards/heather.webp',
     videoSrc: '/video/mom.mp4',
@@ -70,7 +71,8 @@ export const familyFilms: FamilyFilm[] = [
   {
     id: 'melony',
     label: 'Austin & Melony',
-    description: 'Austin and Melony sharing one of the most personal pauses of the reception before the dance floor opened all the way up again.',
+    description:
+      'Austin and Melony sharing one of the most personal pauses of the reception before the dance floor opened all the way up again.',
     duration: '4:00',
     thumbnail: '/images/parent-film-cards/melony.webp',
     videoSrc: '/video/melony.mp4',
@@ -80,7 +82,8 @@ export const familyFilms: FamilyFilm[] = [
   {
     id: 'christine',
     label: 'Jordyn & Christine',
-    description: 'Jordyn and Christine getting their turn in the spotlight, with the kind of smiles that tell the whole story without a speech.',
+    description:
+      'Jordyn and Christine getting their turn in the spotlight, with the kind of smiles that tell the whole story without a speech.',
     duration: '4:36',
     thumbnail: '/images/parent-film-cards/christine.webp',
     videoSrc: '/video/christine.mp4',
@@ -90,7 +93,8 @@ export const familyFilms: FamilyFilm[] = [
   {
     id: 'jerame',
     label: 'Jordyn & Jerame',
-    description: 'A father-daughter dance that feels exactly like the heart of the day: proud, emotional, and impossible not to watch all the way through.',
+    description:
+      'A father-daughter dance that feels exactly like the heart of the day: proud, emotional, and impossible not to watch all the way through.',
     duration: '4:11',
     thumbnail: '/images/parent-film-cards/jerame.webp',
     videoSrc: '/video/jerame.mp4',
@@ -195,17 +199,54 @@ const filmMomentGalleryTargets = new Map<string, FilmGalleryTarget>([
   ['start', { album: 'Wedding Day', ctaLabel: 'Browse the wedding day gallery' }],
   ['bachelor-ette', { album: 'Bach+ette', ctaLabel: 'Browse bach+ette photos' }],
   ['who-is-it', { album: 'Bach+ette', ctaLabel: 'Browse pre-wedding photos' }],
-  ['wedding-party', { album: 'Wedding Day', searchQuery: 'wedding party portraits', ctaLabel: 'Browse wedding party photos' }],
-  ['our-vows', { album: 'Wedding Day', searchQuery: 'vows ceremony', ctaLabel: 'Browse vows and ceremony photos' }],
-  ['the-ceremony', { album: 'Wedding Day', searchQuery: 'ceremony', ctaLabel: 'Browse ceremony photos' }],
-  ['the-reception', { album: 'Wedding Day', searchQuery: 'reception speeches toast', ctaLabel: 'Browse reception photos' }],
-  ['first-dance', { album: 'Wedding Day', searchQuery: 'first dance', ctaLabel: 'Browse first dance photos' }],
+  [
+    'wedding-party',
+    {
+      album: 'Wedding Day',
+      searchQuery: 'wedding party portraits',
+      ctaLabel: 'Browse wedding party photos',
+    },
+  ],
+  [
+    'our-vows',
+    {
+      album: 'Wedding Day',
+      searchQuery: 'vows ceremony',
+      ctaLabel: 'Browse vows and ceremony photos',
+    },
+  ],
+  [
+    'the-ceremony',
+    { album: 'Wedding Day', searchQuery: 'ceremony', ctaLabel: 'Browse ceremony photos' },
+  ],
+  [
+    'the-reception',
+    {
+      album: 'Wedding Day',
+      searchQuery: 'reception speeches toast',
+      ctaLabel: 'Browse reception photos',
+    },
+  ],
+  [
+    'first-dance',
+    { album: 'Wedding Day', searchQuery: 'first dance', ctaLabel: 'Browse first dance photos' },
+  ],
   ['bloopers', { album: 'Guest Uploads', ctaLabel: 'Browse guest uploads' }],
-  ['the-party', { album: 'Guest Uploads', searchQuery: 'dance floor party', ctaLabel: 'Browse guest party photos' }],
+  [
+    'the-party',
+    {
+      album: 'Guest Uploads',
+      searchQuery: 'dance floor party',
+      ctaLabel: 'Browse guest party photos',
+    },
+  ],
 ])
 
 function parseTimecode(value: string) {
-  const segments = value.trim().split(':').map((segment) => Number.parseFloat(segment))
+  const segments = value
+    .trim()
+    .split(':')
+    .map(segment => Number.parseFloat(segment))
 
   return segments.reduce((total, segment) => total * 60 + segment, 0)
 }
@@ -213,12 +254,17 @@ function parseTimecode(value: string) {
 export function parseMainFilmChapters(vttText: string): FilmChapter[] {
   return vttText
     .split(/\r?\n\r?\n/)
-    .map((block) => block.trim())
+    .map(block => block.trim())
     .filter(Boolean)
-    .map((block) => block.split(/\r?\n/).map((line) => line.trim()).filter(Boolean))
-    .flatMap((lines) => {
-      const timeLine = lines.find((line) => line.includes('-->'))
-      const labelLine = lines.find((line) => !line.includes('-->') && line !== 'WEBVTT')
+    .map(block =>
+      block
+        .split(/\r?\n/)
+        .map(line => line.trim())
+        .filter(Boolean)
+    )
+    .flatMap(lines => {
+      const timeLine = lines.find(line => line.includes('-->'))
+      const labelLine = lines.find(line => !line.includes('-->') && line !== 'WEBVTT')
 
       if (!timeLine || !labelLine) {
         return []

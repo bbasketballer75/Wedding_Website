@@ -1,6 +1,16 @@
 // Export all UI components
 export { Button, buttonVariants } from './Button'
-export { Card, GlassCard, PolaroidCard, MemoryCard, CardHeader, CardTitle, CardDescription, CardContent, CardFooter } from './Card'
+export {
+  Card,
+  GlassCard,
+  PolaroidCard,
+  MemoryCard,
+  CardHeader,
+  CardTitle,
+  CardDescription,
+  CardContent,
+  CardFooter,
+} from './Card'
 export { Input } from './Input'
 export { Textarea } from './Textarea'
 export { Label } from './Label'

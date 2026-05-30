@@ -1,7 +1,7 @@
 import React from 'react'
 
 export interface CornerOrnamentProps {
-  position: string;
+  position: string
 }
 
 const CornerOrnament: React.FC<CornerOrnamentProps> = ({ position }) => {

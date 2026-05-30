@@ -4,7 +4,7 @@ import { ANIMATION_DURATIONS } from '@/config/constants'
 
 // Loading spinner component
 interface LoadingSpinnerProps {
-  size?: 'small' | 'medium' | 'large';
+  size?: 'small' | 'medium' | 'large'
 }
 const LoadingSpinner: React.FC<LoadingSpinnerProps> = ({ size = 'medium' }) => {
   const sizeClasses = {
@@ -24,13 +24,18 @@ const LoadingSpinner: React.FC<LoadingSpinnerProps> = ({ size = 'medium' }) => {
 
 // Lazy load wrapper for components
 interface LazyLoadProps {
-  children: React.ReactNode;
-  fallback?: React.ReactNode;
-  delay?: number;
-  className?: string;
+  children: React.ReactNode
+  fallback?: React.ReactNode
+  delay?: number
+  className?: string
 }
 
-const LazyLoad: React.FC<LazyLoadProps> = ({ children, fallback = <LoadingSpinner />, delay = 0, className = '' }) => {
+const LazyLoad: React.FC<LazyLoadProps> = ({
+  children,
+  fallback = <LoadingSpinner />,
+  delay = 0,
+  className = '',
+}) => {
   const [showContent, setShowContent] = React.useState(delay === 0)
 
   React.useEffect(() => {

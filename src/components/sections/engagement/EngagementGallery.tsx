@@ -188,29 +188,31 @@ const EngagementGallery: React.FC<EngagementGalleryProps> = ({ onPhotoSelect }) 
 }
 
 // Memoized Item Component
-const GalleryItem = React.memo(({ photo, onSelect }: { photo: any; onSelect: (photo: Photo) => void }) => {
-  return (
-    <motion.div
-      whileHover={{ scale: 1.05, y: -8, zIndex: 10 }}
-      onClick={() => onSelect(photo)}
-      className='min-w-[220px] h-[280px] rounded-xl border border-(--color-gold)/20 flex items-center justify-center cursor-pointer shadow-md shrink-0 relative bg-white will-change-transform translate-z-0'
-    >
-      <OptimizedImage
-        src={photo.src}
-        alt={photo.caption || 'Engagement Photo'}
-        className='w-full h-full object-cover select-none rounded-xl'
-        width={220}
-        height={280}
-        placeholder='blur'
-      />
-      {photo.caption && (
-        <div className='absolute bottom-0 left-0 right-0 p-[0.8rem] bg-linear-to-t from-black/60 to-transparent text-white/95 text-[0.9rem] text-center font-display'>
-          {photo.caption}
-        </div>
-      )}
-    </motion.div>
-  )
-})
+const GalleryItem = React.memo(
+  ({ photo, onSelect }: { photo: any; onSelect: (photo: Photo) => void }) => {
+    return (
+      <motion.div
+        whileHover={{ scale: 1.05, y: -8, zIndex: 10 }}
+        onClick={() => onSelect(photo)}
+        className='min-w-[220px] h-[280px] rounded-xl border border-(--color-gold)/20 flex items-center justify-center cursor-pointer shadow-md shrink-0 relative bg-white will-change-transform translate-z-0'
+      >
+        <OptimizedImage
+          src={photo.src}
+          alt={photo.caption || 'Engagement Photo'}
+          className='w-full h-full object-cover select-none rounded-xl'
+          width={220}
+          height={280}
+          placeholder='blur'
+        />
+        {photo.caption && (
+          <div className='absolute bottom-0 left-0 right-0 p-[0.8rem] bg-linear-to-t from-black/60 to-transparent text-white/95 text-[0.9rem] text-center font-display'>
+            {photo.caption}
+          </div>
+        )}
+      </motion.div>
+    )
+  }
+)
 
 GalleryItem.displayName = 'GalleryItem'
 

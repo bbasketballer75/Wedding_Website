@@ -54,10 +54,10 @@ const logger: Logger = {
       const redact = (obj: unknown): unknown => {
         if (!obj || typeof obj !== 'object') return obj
         if (Array.isArray(obj)) return obj.map(redact)
-        
+
         const redacted = { ...(obj as Record<string, unknown>) }
         const sensitiveKeys = ['email', 'password', 'token', 'phone', 'address', 'key']
-        
+
         for (const key in redacted) {
           if (Object.prototype.hasOwnProperty.call(redacted, key)) {
             if (sensitiveKeys.some(sk => key.toLowerCase().includes(sk))) {

@@ -7,7 +7,7 @@ import { devtools } from 'zustand/middleware'
 const authOperationQueue: Promise<void> = Promise.resolve()
 
 const queueAuthOperation = async <T>(fn: () => Promise<T>): Promise<T> => {
-  return authOperationQueue.then(fn).catch((error) => {
+  return authOperationQueue.then(fn).catch(error => {
     // Log but don't propagate - auth state stays consistent
     console.error('Auth operation failed:', error)
     return undefined as T
@@ -143,15 +143,15 @@ export const useAuthStore = create<AuthState>()(
         })
       },
 
-      setUser: (user) => {
-        set((state) => ({
+      setUser: user => {
+        set(state => ({
           user,
           isAuthenticated: !!user,
           isAdmin: user ? state.isAdmin : false,
         }))
       },
 
-      setLoading: (loading) => {
+      setLoading: loading => {
         set({ isLoading: loading })
       },
 

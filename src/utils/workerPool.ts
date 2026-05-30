@@ -55,7 +55,7 @@ export class WorkerPool {
         id: `task-${Date.now()}-${Math.random()}`,
         type,
         data: data as unknown,
-        resolve: (result) => resolve(result as R),
+        resolve: result => resolve(result as R),
         reject,
       }
 

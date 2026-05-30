@@ -20,7 +20,7 @@ function ImageModal({
   currentIndex,
   onPrev,
   onNext,
-  onGoTo
+  onGoTo,
 }: {
   isOpen: boolean
   onClose: () => void
@@ -34,16 +34,16 @@ function ImageModal({
   // Handle keyboard navigation
   useEffect(() => {
     if (!isOpen) return
-    
+
     const handleKeyDown = (e: KeyboardEvent) => {
       if (e.key === 'Escape') onClose()
       if (e.key === 'ArrowLeft') onPrev()
       if (e.key === 'ArrowRight') onNext()
     }
-    
+
     window.addEventListener('keydown', handleKeyDown)
     document.body.style.overflow = 'hidden' // Prevent background scroll
-    
+
     return () => {
       window.removeEventListener('keydown', handleKeyDown)
       document.body.style.overflow = ''
@@ -58,59 +58,59 @@ function ImageModal({
       animate={{ opacity: 1 }}
       exit={{ opacity: 0 }}
       transition={{ duration: 0.2 }}
-      className="fixed inset-0 z-[9999] bg-black flex flex-col"
+      className='fixed inset-0 z-[9999] bg-black flex flex-col'
       onClick={onClose}
-      onKeyDown={(event) => {
+      onKeyDown={event => {
         if (event.key === 'Enter' || event.key === ' ') {
           event.preventDefault()
           onClose()
         }
       }}
-      role="button"
+      role='button'
       tabIndex={0}
-      aria-label="Close image viewer"
+      aria-label='Close image viewer'
     >
       {/* Header */}
-      <div className="flex items-center justify-between px-4 py-3 bg-black/50">
-        <div className="text-white text-sm font-medium">
+      <div className='flex items-center justify-between px-4 py-3 bg-black/50'>
+        <div className='text-white text-sm font-medium'>
           {currentIndex + 1} / {images.length}
         </div>
         <button
-          className="w-10 h-10 flex items-center justify-center rounded-full hover:bg-white/10 transition-colors"
+          className='w-10 h-10 flex items-center justify-center rounded-full hover:bg-white/10 transition-colors'
           onClick={onClose}
-          aria-label="Close image gallery"
+          aria-label='Close image gallery'
         >
-          <X className="w-6 h-6 text-white" />
+          <X className='w-6 h-6 text-white' />
         </button>
       </div>
 
       {/* Main Image Area */}
-      <div 
-        className="flex-1 flex items-center justify-center relative overflow-hidden"
-        onClickCapture={(e) => e.stopPropagation()}
+      <div
+        className='flex-1 flex items-center justify-center relative overflow-hidden'
+        onClickCapture={e => e.stopPropagation()}
       >
         {/* Navigation Buttons */}
         {images.length > 1 && (
           <>
             <button
-              className="absolute left-4 top-1/2 -translate-y-1/2 w-12 h-12 bg-white/10 hover:bg-white/20 rounded-full flex items-center justify-center transition-colors z-10"
+              className='absolute left-4 top-1/2 -translate-y-1/2 w-12 h-12 bg-white/10 hover:bg-white/20 rounded-full flex items-center justify-center transition-colors z-10'
               onClick={onPrev}
-              aria-label="Previous image"
+              aria-label='Previous image'
             >
-              <ChevronLeft className="w-6 h-6 text-white" />
+              <ChevronLeft className='w-6 h-6 text-white' />
             </button>
             <button
-              className="absolute right-4 top-1/2 -translate-y-1/2 w-12 h-12 bg-white/10 hover:bg-white/20 rounded-full flex items-center justify-center transition-colors z-10"
+              className='absolute right-4 top-1/2 -translate-y-1/2 w-12 h-12 bg-white/10 hover:bg-white/20 rounded-full flex items-center justify-center transition-colors z-10'
               onClick={onNext}
-              aria-label="Next image"
+              aria-label='Next image'
             >
-              <ChevronRight className="w-6 h-6 text-white" />
+              <ChevronRight className='w-6 h-6 text-white' />
             </button>
           </>
         )}
 
         {/* Current Image */}
-        <AnimatePresence mode="wait">
+        <AnimatePresence mode='wait'>
           <motion.img
             key={currentIndex}
             src={images[currentIndex]}
@@ -119,34 +119,34 @@ function ImageModal({
             animate={{ opacity: 1, scale: 1 }}
             exit={{ opacity: 0, scale: 1.05 }}
             transition={{ duration: 0.2 }}
-            className="max-w-[90%] max-h-[85%] object-contain"
+            className='max-w-[90%] max-h-[85%] object-contain'
           />
         </AnimatePresence>
       </div>
 
       {/* Thumbnails */}
       {images.length > 1 && (
-        <div className="px-4 py-4 bg-black/50">
-          <div className="flex gap-2 justify-center overflow-x-auto pb-2">
+        <div className='px-4 py-4 bg-black/50'>
+          <div className='flex gap-2 justify-center overflow-x-auto pb-2'>
             {images.map((src, index) => (
               <button
                 key={index}
-                onClick={(e) => { 
+                onClick={e => {
                   e.stopPropagation()
                   onGoTo(index)
                 }}
                 aria-label={`View image ${index + 1}`}
                 className={cn(
-                  "relative flex-shrink-0 w-16 h-16 rounded-lg overflow-hidden transition-all",
-                  index === currentIndex 
-                    ? "ring-2 ring-white ring-offset-2 ring-offset-black" 
-                    : "opacity-50 hover:opacity-80"
+                  'relative flex-shrink-0 w-16 h-16 rounded-lg overflow-hidden transition-all',
+                  index === currentIndex
+                    ? 'ring-2 ring-white ring-offset-2 ring-offset-black'
+                    : 'opacity-50 hover:opacity-80'
                 )}
               >
                 <img
                   src={src}
                   alt={`Thumbnail ${index + 1}`}
-                  className="w-full h-full object-cover"
+                  className='w-full h-full object-cover'
                 />
               </button>
             ))}
@@ -158,11 +158,11 @@ function ImageModal({
   )
 }
 
-export function ImageCarousel({ 
-  images, 
-  alt, 
+export function ImageCarousel({
+  images,
+  alt,
   className,
-  autoPlayInterval = 3000 
+  autoPlayInterval = 3000,
 }: ImageCarouselProps) {
   const [currentIndex, setCurrentIndex] = useState(0)
   const [isHovered, setIsHovered] = useState(false)
@@ -181,12 +181,15 @@ export function ImageCarousel({
     })
   }, [images])
 
-  const goToSlide = useCallback((index: number) => {
-    let newIndex = index
-    if (newIndex < 0) newIndex = images.length - 1
-    if (newIndex >= images.length) newIndex = 0
-    setCurrentIndex(newIndex)
-  }, [images.length])
+  const goToSlide = useCallback(
+    (index: number) => {
+      let newIndex = index
+      if (newIndex < 0) newIndex = images.length - 1
+      if (newIndex >= images.length) newIndex = 0
+      setCurrentIndex(newIndex)
+    },
+    [images.length]
+  )
 
   const nextSlide = useCallback(() => {
     setCurrentIndex(prev => (prev + 1) % images.length)
@@ -221,62 +224,62 @@ export function ImageCarousel({
   return (
     <>
       {/* Main Carousel - Fixed height */}
-      <div 
+      <div
         className={cn(
-          "relative w-full h-[220px] rounded-xl overflow-hidden bg-charcoal-100",
+          'relative w-full h-[220px] rounded-xl overflow-hidden bg-charcoal-100',
           className
         )}
         onMouseEnter={() => setIsHovered(true)}
         onMouseLeave={() => setIsHovered(false)}
       >
         {/* Images Container */}
-        <div 
-          className="absolute inset-0 cursor-pointer group"
+        <div
+          className='absolute inset-0 cursor-pointer group'
           onClick={() => setIsModalOpen(true)}
-          onKeyDown={(event) => {
+          onKeyDown={event => {
             if (event.key === 'Enter' || event.key === ' ') {
               event.preventDefault()
               setIsModalOpen(true)
             }
           }}
-          role="button"
+          role='button'
           tabIndex={0}
           aria-label={`Open ${alt} image gallery`}
         >
           {images.map((src, index) => (
             <motion.div
               key={index}
-              className="absolute inset-0 flex items-center justify-center bg-gradient-to-br from-charcoal-50 to-charcoal-100"
+              className='absolute inset-0 flex items-center justify-center bg-gradient-to-br from-charcoal-50 to-charcoal-100'
               initial={false}
               animate={{
                 opacity: index === currentIndex ? 1 : 0,
                 scale: index === currentIndex ? 1 : 1.05,
               }}
-              transition={{ 
-                opacity: { duration: 0.4, ease: "easeInOut" },
-                scale: { duration: 0.4, ease: "easeInOut" }
+              transition={{
+                opacity: { duration: 0.4, ease: 'easeInOut' },
+                scale: { duration: 0.4, ease: 'easeInOut' },
               }}
-              style={{ 
+              style={{
                 zIndex: index === currentIndex ? 1 : 0,
-                pointerEvents: index === currentIndex ? 'auto' : 'none'
+                pointerEvents: index === currentIndex ? 'auto' : 'none',
               }}
             >
               <img
                 src={src}
                 alt={`${alt} - ${index + 1}`}
-                className="max-w-full max-h-full object-contain"
-                loading={index <= 2 ? "eager" : "lazy"}
+                className='max-w-full max-h-full object-contain'
+                loading={index <= 2 ? 'eager' : 'lazy'}
               />
             </motion.div>
           ))}
-          
+
           {/* Loading overlay */}
           {!isLoaded && (
-            <div className="absolute inset-0 flex items-center justify-center bg-charcoal-100 z-10">
+            <div className='absolute inset-0 flex items-center justify-center bg-charcoal-100 z-10'>
               <motion.div
                 animate={{ rotate: 360 }}
-                transition={{ duration: 1, repeat: Infinity, ease: "linear" }}
-                className="w-8 h-8 border-2 border-gold-300 border-t-gold-600 rounded-full"
+                transition={{ duration: 1, repeat: Infinity, ease: 'linear' }}
+                className='w-8 h-8 border-2 border-gold-300 border-t-gold-600 rounded-full'
               />
             </div>
           )}
@@ -286,38 +289,44 @@ export function ImageCarousel({
         {images.length > 1 && (
           <>
             <button
-              className="absolute left-2 top-1/2 -translate-y-1/2 w-8 h-8 bg-white/90 backdrop-blur-sm rounded-full flex items-center justify-center shadow-lg z-20 opacity-0 group-hover:opacity-100 transition-opacity duration-200 hover:bg-white"
-              onClick={(e) => { e.stopPropagation(); prevSlide() }}
-              aria-label="Previous carousel image"
+              className='absolute left-2 top-1/2 -translate-y-1/2 w-8 h-8 bg-white/90 backdrop-blur-sm rounded-full flex items-center justify-center shadow-lg z-20 opacity-0 group-hover:opacity-100 transition-opacity duration-200 hover:bg-white'
+              onClick={e => {
+                e.stopPropagation()
+                prevSlide()
+              }}
+              aria-label='Previous carousel image'
             >
-              <ChevronLeft className="w-5 h-5 text-charcoal-700" />
+              <ChevronLeft className='w-5 h-5 text-charcoal-700' />
             </button>
             <button
-              className="absolute right-2 top-1/2 -translate-y-1/2 w-8 h-8 bg-white/90 backdrop-blur-sm rounded-full flex items-center justify-center shadow-lg z-20 opacity-0 group-hover:opacity-100 transition-opacity duration-200 hover:bg-white"
-              onClick={(e) => { e.stopPropagation(); nextSlide() }}
-              aria-label="Next carousel image"
+              className='absolute right-2 top-1/2 -translate-y-1/2 w-8 h-8 bg-white/90 backdrop-blur-sm rounded-full flex items-center justify-center shadow-lg z-20 opacity-0 group-hover:opacity-100 transition-opacity duration-200 hover:bg-white'
+              onClick={e => {
+                e.stopPropagation()
+                nextSlide()
+              }}
+              aria-label='Next carousel image'
             >
-              <ChevronRight className="w-5 h-5 text-charcoal-700" />
+              <ChevronRight className='w-5 h-5 text-charcoal-700' />
             </button>
           </>
         )}
 
         {/* Dot Indicators */}
         {images.length > 1 && (
-          <div className="absolute bottom-3 left-1/2 -translate-x-1/2 flex gap-1.5 z-20">
+          <div className='absolute bottom-3 left-1/2 -translate-x-1/2 flex gap-1.5 z-20'>
             {images.map((_, index) => (
               <button
                 key={index}
-                onClick={(e) => { 
+                onClick={e => {
                   e.stopPropagation()
                   goToSlide(index)
                 }}
                 aria-label={`Go to image ${index + 1}`}
                 className={cn(
-                  "h-2 rounded-full transition-all duration-300",
-                  index === currentIndex 
-                    ? "bg-white w-5 shadow-md" 
-                    : "bg-white/60 w-2 hover:bg-white/80"
+                  'h-2 rounded-full transition-all duration-300',
+                  index === currentIndex
+                    ? 'bg-white w-5 shadow-md'
+                    : 'bg-white/60 w-2 hover:bg-white/80'
                 )}
               />
             ))}
@@ -325,7 +334,7 @@ export function ImageCarousel({
         )}
 
         {/* Image Counter */}
-        <div className="absolute top-3 left-3 px-2.5 py-1 bg-black/50 backdrop-blur-sm rounded-full text-xs text-white font-medium z-20">
+        <div className='absolute top-3 left-3 px-2.5 py-1 bg-black/50 backdrop-blur-sm rounded-full text-xs text-white font-medium z-20'>
           {currentIndex + 1} / {images.length}
         </div>
       </div>

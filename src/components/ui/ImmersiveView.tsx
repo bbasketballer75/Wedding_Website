@@ -4,18 +4,18 @@ import { motion, AnimatePresence } from 'framer-motion'
 import CustomVideoPlayer from './CustomVideoPlayer'
 
 export interface ImmersiveItem {
-  id?: string | number;
-  type?: string;
-  src?: string;
-  photo_url?: string;
-  message?: string;
-  name?: string;
+  id?: string | number
+  type?: string
+  src?: string
+  photo_url?: string
+  message?: string
+  name?: string
 }
 
 export interface ImmersiveViewProps {
-  items: ImmersiveItem[];
-  initialIndex?: number;
-  onClose: () => void;
+  items: ImmersiveItem[]
+  initialIndex?: number
+  onClose: () => void
 }
 
 const ImmersiveView: React.FC<ImmersiveViewProps> = ({ items, initialIndex = 0, onClose }) => {
@@ -25,7 +25,7 @@ const ImmersiveView: React.FC<ImmersiveViewProps> = ({ items, initialIndex = 0, 
 
   // Auto-hide UI after inactivity
   useEffect(() => {
-    let timeout: NodeJS.Timeout;
+    let timeout: NodeJS.Timeout
     const resetTimer = () => {
       setShowUI(true)
       clearTimeout(timeout)

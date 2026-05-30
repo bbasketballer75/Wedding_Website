@@ -9,7 +9,7 @@ export const ANIMATION_DURATIONS = {
   slow: 500,
   pageTransition: 1000,
   scrollDuration: 1400,
-} as const;
+} as const
 
 // Timing thresholds
 export const TIMING = {
@@ -17,7 +17,7 @@ export const TIMING = {
   debounceDelay: 300,
   throttleDelay: 100,
   mapRecenterDelay: 1000,
-} as const;
+} as const
 
 // Breakpoints for responsive design
 export const BREAKPOINTS = {
@@ -25,7 +25,7 @@ export const BREAKPOINTS = {
   tablet: 1024,
   desktop: 1280,
   wide: 1536,
-} as const;
+} as const
 
 // Map configuration
 export const MAP_CONFIG = {
@@ -33,7 +33,7 @@ export const MAP_CONFIG = {
   defaultZoom: 4,
   padding: [50, 50] as [number, number],
   rootMargin: '50px',
-} as const;
+} as const
 
 // Gallery configuration
 export const GALLERY_CONFIG = {
@@ -44,13 +44,13 @@ export const GALLERY_CONFIG = {
   },
   lazyLoadThreshold: 0.1,
   lightboxMaxWidth: '80vh',
-} as const;
+} as const
 
 // Video configuration
 export const VIDEO_CONFIG = {
   castTipStorageKey: 'hasSeenCastTip',
   guestPinStorageKey: 'my_guest_pin_id',
-} as const;
+} as const
 
 // Validation rules
 export const VALIDATION = {
@@ -63,7 +63,7 @@ export const VALIDATION = {
   email: {
     pattern: /^[^\s@]+@[^\s@]+\.[^\s@]+$/,
   },
-} as const;
+} as const
 
 // API endpoints
 export const API = {
@@ -74,7 +74,7 @@ export const API = {
       memories: 'memories',
     },
   },
-} as const;
+} as const
 
 // Error messages
 export const ERROR_MESSAGES = {
@@ -83,14 +83,14 @@ export const ERROR_MESSAGES = {
   storage: 'Unable to save data. Please check your browser settings.',
   map: 'Failed to load map. Please refresh the page.',
   video: 'Video failed to load. Please try again.',
-} as const;
+} as const
 
 // Success messages
 export const SUCCESS_MESSAGES = {
   guestBook: 'Thank you for your message!',
   pinAdded: 'Your pin has been added to the map!',
   pinRemoved: 'Your pin has been removed.',
-} as const;
+} as const
 
 // Theme colors (for dynamic theming if needed)
 export const THEME = {
@@ -113,11 +113,11 @@ export const THEME = {
     700: '#374151',
     900: '#111827',
   },
-} as const;
+} as const
 
 // Feature flags
 export const FEATURES = {
   debugMode: import.meta.env.DEV,
   analytics: import.meta.env.PROD,
   errorTracking: import.meta.env.PROD,
-} as const;
+} as const

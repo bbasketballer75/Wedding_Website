@@ -2,7 +2,7 @@ import React from 'react'
 import { motion } from 'framer-motion'
 
 export interface ScrollIndicatorProps {
-  onClick?: React.MouseEventHandler<HTMLDivElement>;
+  onClick?: React.MouseEventHandler<HTMLDivElement>
 }
 
 const ScrollIndicator: React.FC<ScrollIndicatorProps> = ({ onClick }) => {

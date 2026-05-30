@@ -99,7 +99,10 @@ export function calculateVisibleRange(
 /**
  * Debounce renders
  */
-export function debounceRender<T extends (...args: unknown[]) => void>(fn: T, delay: number = 16): T {
+export function debounceRender<T extends (...args: unknown[]) => void>(
+  fn: T,
+  delay: number = 16
+): T {
   let timeoutId: number | undefined
 
   return ((...args: unknown[]) => {
@@ -116,7 +119,10 @@ export function debounceRender<T extends (...args: unknown[]) => void>(fn: T, de
 /**
  * Throttle renders
  */
-export function throttleRender<T extends (...args: unknown[]) => void>(fn: T, delay: number = 16): T {
+export function throttleRender<T extends (...args: unknown[]) => void>(
+  fn: T,
+  delay: number = 16
+): T {
   let lastRun = 0
   let timeoutId: number | undefined
 

@@ -4,9 +4,9 @@ import { fetchActivityFeed } from '@/lib/supabase'
 import { activityFeedStore } from '@/stores/activityFeedStore'
 
 export default function ActivityPage() {
-  const setItems = activityFeedStore((state) => state.setItems)
-  const setIsLoading = activityFeedStore((state) => state.setIsLoading)
-  const items = activityFeedStore((state) => state.items)
+  const setItems = activityFeedStore(state => state.setItems)
+  const setIsLoading = activityFeedStore(state => state.setIsLoading)
+  const items = activityFeedStore(state => state.items)
 
   useEffect(() => {
     async function loadActivity() {
@@ -26,9 +26,9 @@ export default function ActivityPage() {
   }, [items.length, setItems, setIsLoading])
 
   return (
-    <div className="min-h-screen bg-cream-50 pb-16">
-      <div className="px-4 pt-8">
-        <h1 className="font-display text-2xl text-charcoal-800 mb-6">Activity</h1>
+    <div className='min-h-screen bg-cream-50 pb-16'>
+      <div className='px-4 pt-8'>
+        <h1 className='font-display text-2xl text-charcoal-800 mb-6'>Activity</h1>
         <ActivityFeed />
       </div>
     </div>

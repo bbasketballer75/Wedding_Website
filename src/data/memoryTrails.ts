@@ -25,7 +25,8 @@ export const memoryTrails: MemoryTrail[] = [
   {
     id: 'ceremony',
     label: 'Ceremony',
-    description: 'The vows, the walk in, the look across the aisle, and the quiet beats that made the day official.',
+    description:
+      'The vows, the walk in, the look across the aisle, and the quiet beats that made the day official.',
     href: '/film?moment=the-ceremony',
     cue: 'Best when you want the emotional center of the day first.',
   },
@@ -39,21 +40,24 @@ export const memoryTrails: MemoryTrail[] = [
   {
     id: 'dance-floor',
     label: 'Dance Floor',
-    description: 'The late-night blur, the loud table laughs, and the phone clips that feel exactly like being there.',
+    description:
+      'The late-night blur, the loud table laughs, and the phone clips that feel exactly like being there.',
     href: '/gallery?collection=Guest%20Uploads',
     cue: 'Best for the messy, joyful, after-dark energy.',
   },
   {
     id: 'engagement-season',
     label: 'Engagement Season',
-    description: 'The proposal, the portraits, and the whole stretch where the wedding still felt brand new and unreal.',
+    description:
+      'The proposal, the portraits, and the whole stretch where the wedding still felt brand new and unreal.',
     href: '/gallery?collection=Engagement',
     cue: 'A quieter chapter that starts before the wedding day itself.',
   },
   {
     id: 'bach-ette',
     label: 'Bach+ette',
-    description: 'Pre-wedding weekends, the build-up, and the memories that sit just before the main event.',
+    description:
+      'Pre-wedding weekends, the build-up, and the memories that sit just before the main event.',
     href: '/gallery?collection=Bach%2Bette',
     cue: 'For the lead-up and the weekend energy before May 10.',
   },
@@ -64,5 +68,5 @@ export function isMemoryTrailId(value: string | null | undefined): value is Memo
 }
 
 export function getMemoryTrailById(id: string | null | undefined) {
-  return memoryTrails.find((trail) => trail.id === id) || null
+  return memoryTrails.find(trail => trail.id === id) || null
 }

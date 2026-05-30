@@ -2,21 +2,24 @@ import { colors } from '@/tokens/designTokens'
 import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 
 // Optimized image component with WebP support and lazy loading
-export interface OptimizedImageProps extends Omit<React.ImgHTMLAttributes<HTMLImageElement>, 'onError' | 'placeholder' | 'onLoad'> {
-  src: string;
-  alt?: string;
-  width?: number | string;
-  height?: number | string;
-  className?: string;
-  priority?: boolean;
-  quality?: number;
-  format?: 'auto' | 'webp' | 'jpg' | 'png';
-  sizes?: string;
-  onLoad?: () => void;
-  onError?: () => void | boolean;
-  placeholder?: 'blur' | 'empty' | 'color';
-  blurDataURL?: string;
-  aspectRatio?: string | number;
+export interface OptimizedImageProps extends Omit<
+  React.ImgHTMLAttributes<HTMLImageElement>,
+  'onError' | 'placeholder' | 'onLoad'
+> {
+  src: string
+  alt?: string
+  width?: number | string
+  height?: number | string
+  className?: string
+  priority?: boolean
+  quality?: number
+  format?: 'auto' | 'webp' | 'jpg' | 'png'
+  sizes?: string
+  onLoad?: () => void
+  onError?: () => void | boolean
+  placeholder?: 'blur' | 'empty' | 'color'
+  blurDataURL?: string
+  aspectRatio?: string | number
 }
 
 const OptimizedImage = React.memo<OptimizedImageProps>(
@@ -46,7 +49,7 @@ const OptimizedImage = React.memo<OptimizedImageProps>(
     // Generate WebP and fallback sources
     const generateSources = useCallback(
       (originalSrc: string) => {
-        const sources: Array<{srcSet: string, type: string}> = []
+        const sources: Array<{ srcSet: string; type: string }> = []
 
         if (format === 'auto' || format === 'webp') {
           // Add WebP source
@@ -189,12 +192,12 @@ const OptimizedImage = React.memo<OptimizedImageProps>(
 
 // Responsive image component for art direction
 export interface ResponsiveImageProps extends React.ImgHTMLAttributes<HTMLImageElement> {
-  src: string;
-  alt?: string;
-  className?: string;
-  breakpoints?: Record<string, { w: number; h: number }>;
-  priority?: boolean;
-  quality?: number;
+  src: string
+  alt?: string
+  className?: string
+  breakpoints?: Record<string, { w: number; h: number }>
+  priority?: boolean
+  quality?: number
 }
 
 export const ResponsiveImage: React.FC<ResponsiveImageProps> = ({
@@ -217,7 +220,7 @@ export const ResponsiveImage: React.FC<ResponsiveImageProps> = ({
 
   // Generate responsive sources
   const generateResponsiveSources = useCallback(() => {
-    const sources: Array<{media: string, srcSet: string, type: string}> = []
+    const sources: Array<{ media: string; srcSet: string; type: string }> = []
 
     Object.entries(breakpoints).forEach(([key, { w, h }]) => {
       // WebP version

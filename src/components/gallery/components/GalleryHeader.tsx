@@ -52,8 +52,12 @@ const GalleryHeader: React.FC<GalleryHeaderProps> = ({
               aria-label='Filter photos by tag'
               className='px-5 py-3 bg-white/5 border border-white/10 rounded-full text-cream-100 text-sm focus:outline-none focus:ring-2 focus:ring-(--color-gold) cursor-pointer hover:bg-white/10 transition-colors appearance-none min-w-[140px]'
             >
-              <option value='all' className='bg-dark-900'>All Photos</option>
-              <option value='liked' className='bg-dark-900'>Liked</option>
+              <option value='all' className='bg-dark-900'>
+                All Photos
+              </option>
+              <option value='liked' className='bg-dark-900'>
+                Liked
+              </option>
               {allTags.map(tag => (
                 <option key={tag} value={tag} className='bg-dark-900'>
                   {tag}
@@ -67,9 +71,17 @@ const GalleryHeader: React.FC<GalleryHeaderProps> = ({
               aria-label='Sort photos by'
               className='px-5 py-3 bg-white/5 border border-white/10 rounded-full text-cream-100 text-sm focus:outline-none focus:ring-2 focus:ring-(--color-gold) cursor-pointer hover:bg-white/10 transition-colors appearance-none min-w-[140px]'
             >
-              <option value='date' className='bg-dark-900'>Sort by Date</option>
-              <option value='likes' className='bg-dark-900'>Sort by Likes</option>
-              {enableAI && <option value='ai' className='bg-dark-900'>Sort by AI Match</option>}
+              <option value='date' className='bg-dark-900'>
+                Sort by Date
+              </option>
+              <option value='likes' className='bg-dark-900'>
+                Sort by Likes
+              </option>
+              {enableAI && (
+                <option value='ai' className='bg-dark-900'>
+                  Sort by AI Match
+                </option>
+              )}
             </select>
 
             <div className='flex bg-white/5 border border-white/10 rounded-full p-1 shrink-0'>

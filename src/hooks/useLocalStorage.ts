@@ -3,7 +3,10 @@ import { useState } from 'react'
 /**
  * Hook for managing localStorage with React state
  */
-export const useLocalStorage = <T>(key: string, initialValue: T): [T, (val: T | ((prev: T) => T)) => void] => {
+export const useLocalStorage = <T>(
+  key: string,
+  initialValue: T
+): [T, (val: T | ((prev: T) => T)) => void] => {
   const [storedValue, setStoredValue] = useState<T>(() => {
     try {
       const item = window.localStorage.getItem(key)

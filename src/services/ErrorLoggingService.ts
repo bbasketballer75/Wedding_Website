@@ -1,6 +1,6 @@
 /**
  * Error Logging Service
- * 
+ *
  * Provides structured error logging for production and development environments.
  * Sends errors to Sentry in production, console in development.
  */
@@ -36,7 +36,7 @@ export interface ErrorLogEntry {
  */
 export function initErrorTracking(): void {
   const dsn = import.meta.env.VITE_SENTRY_DSN
-  
+
   if (!dsn) {
     // Sentry not configured - log once in development
     if (import.meta.env.DEV) {
@@ -51,14 +51,14 @@ export function initErrorTracking(): void {
     release: import.meta.env.VITE_APP_VERSION || __APP_VERSION__ || 'development',
     enabled: import.meta.env.PROD,
     sendDefaultPii: false,
-    
+
     // Performance monitoring (optional)
     tracesSampleRate: import.meta.env.PROD ? 0.1 : 1.0,
-    
+
     // Replay sampling (optional, for session replay)
     replaysSessionSampleRate: 0.1,
     replaysOnErrorSampleRate: 1.0,
-    
+
     // Before sending, filter out sensitive data
     beforeSend(event) {
       // Filter out PII from URLs
@@ -75,7 +75,7 @@ export function initErrorTracking(): void {
 
 /**
  * Log an error with structured format
- * 
+ *
  * @param error - The Error object
  * @param componentName - Name of the component where error occurred
  * @param errorInfo - React ErrorInfo object (optional)
@@ -114,23 +114,23 @@ export function logError(
  * Send error to Sentry
  */
 function sendToSentry(error: Error, entry: ErrorLogEntry): void {
-  Sentry.withScope((scope) => {
+  Sentry.withScope(scope => {
     // Set tags
     scope.setTag('component', entry.componentName || 'unknown')
     scope.setTag('environment', entry.environment)
-    
+
     // Set extra context
     if (entry.context) {
       Object.entries(entry.context).forEach(([key, value]) => {
         scope.setExtra(key, value)
       })
     }
-    
+
     // Set user context if available
     if (entry.userId) {
       scope.setUser({ id: entry.userId })
     }
-    
+
     // Capture the exception
     Sentry.captureException(error)
   })
@@ -150,26 +150,26 @@ function getEnvironment(): 'production' | 'development' | 'test' {
  */
 function logToConsole(entry: ErrorLogEntry): void {
   const logPrefix = `[ERROR_LOG] ${entry.timestamp}`
-  
+
   console.group(logPrefix)
   console.log('Message:', entry.message)
-  
+
   if (entry.componentName) {
     console.log('Component:', entry.componentName)
   }
-  
+
   if (entry.stack) {
     console.log('Stack Trace:', entry.stack)
   }
-  
+
   if (entry.errorInfo) {
     console.log('Component Stack:', entry.errorInfo)
   }
-  
+
   if (entry.context) {
     console.log('Context:', entry.context)
   }
-  
+
   console.log('Environment:', entry.environment)
   console.log('URL:', entry.url)
   console.groupEnd()
@@ -177,20 +177,20 @@ function logToConsole(entry: ErrorLogEntry): void {
 
 /**
  * Log a warning (for non-critical issues)
- * 
+ *
  * @param message - Warning message
  * @param context - Additional context
  */
 export function logWarning(message: string, context?: Record<string, unknown>): void {
   const timestamp = new Date().toISOString()
-  
+
   if (import.meta.env.DEV) {
     console.warn(`[WARNING] ${timestamp}:`, message, context || '')
   }
-  
+
   // Send to Sentry in production as a message
   if (import.meta.env.PROD) {
-    Sentry.withScope((scope) => {
+    Sentry.withScope(scope => {
       scope.setLevel('warning')
       if (context) {
         Object.entries(context).forEach(([key, value]) => {
@@ -204,7 +204,7 @@ export function logWarning(message: string, context?: Record<string, unknown>): 
 
 /**
  * Log an informational message
- * 
+ *
  * @param message - Info message
  * @param context - Additional context
  */
@@ -235,7 +235,12 @@ export class ErrorLoggingService {
   /**
    * Log an error
    */
-  log(error: Error, componentName?: string, errorInfo?: { componentStack?: string }, context?: Record<string, unknown>): void {
+  log(
+    error: Error,
+    componentName?: string,
+    errorInfo?: { componentStack?: string },
+    context?: Record<string, unknown>
+  ): void {
     logError(error, componentName, errorInfo, context)
   }
 

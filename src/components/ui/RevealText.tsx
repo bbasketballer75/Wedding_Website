@@ -2,9 +2,9 @@ import React, { ReactNode } from 'react'
 import { motion, Variants } from 'framer-motion'
 
 export interface RevealTextProps {
-  children?: ReactNode;
-  className?: string;
-  delay?: number;
+  children?: ReactNode
+  className?: string
+  delay?: number
 }
 
 const RevealText: React.FC<RevealTextProps> = ({ children, className, delay = 0 }) => {

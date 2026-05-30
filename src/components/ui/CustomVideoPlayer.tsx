@@ -1,31 +1,41 @@
 import { AnimatePresence, motion } from 'framer-motion'
-import React, { forwardRef, useEffect, useImperativeHandle, useRef, useState, VideoHTMLAttributes, ReactNode, MouseEvent as ReactMouseEvent, KeyboardEvent as ReactKeyboardEvent } from 'react'
+import React, {
+  forwardRef,
+  useEffect,
+  useImperativeHandle,
+  useRef,
+  useState,
+  VideoHTMLAttributes,
+  ReactNode,
+  MouseEvent as ReactMouseEvent,
+  KeyboardEvent as ReactKeyboardEvent,
+} from 'react'
 import CornerOrnament from './decorations/CornerOrnament'
 import { FullscreenIcon, PauseIcon, PlayIcon, VolumeIcon } from './icons/VideoIcons'
 
 export interface VideoChapter {
-  time: number;
-  label: string;
+  time: number
+  label: string
 }
 
 export interface CustomVideoPlayerProps extends VideoHTMLAttributes<HTMLVideoElement> {
-  autoPlay?: boolean;
-  children?: ReactNode;
-  className?: string;
-  style?: React.CSSProperties;
-  onClick?: (e?: ReactMouseEvent<HTMLDivElement | HTMLVideoElement>) => void;
-  onPlay?: (e?: any) => void;
-  chapters?: VideoChapter[];
-  poster?: string;
-  src?: string;
+  autoPlay?: boolean
+  children?: ReactNode
+  className?: string
+  style?: React.CSSProperties
+  onClick?: (e?: ReactMouseEvent<HTMLDivElement | HTMLVideoElement>) => void
+  onPlay?: (e?: any) => void
+  chapters?: VideoChapter[]
+  poster?: string
+  src?: string
 }
 
 export interface CustomVideoPlayerRef {
-  currentTime: number;
-  play: () => Promise<void> | void;
-  pause: () => void;
-  readonly duration: number;
-  readonly videoElement: HTMLVideoElement | null;
+  currentTime: number
+  play: () => Promise<void> | void
+  pause: () => void
+  readonly duration: number
+  readonly videoElement: HTMLVideoElement | null
 }
 
 const CustomVideoPlayer = forwardRef<CustomVideoPlayerRef, CustomVideoPlayerProps>(
@@ -141,7 +151,9 @@ const CustomVideoPlayer = forwardRef<CustomVideoPlayerRef, CustomVideoPlayerProp
       e.stopPropagation()
       if (containerRef.current) {
         if (!document.fullscreenElement) {
-          containerRef.current.requestFullscreen().catch(() => { /* Fullscreen not supported */ })
+          containerRef.current.requestFullscreen().catch(() => {
+            /* Fullscreen not supported */
+          })
         } else {
           document.exitFullscreen()
         }

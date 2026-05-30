@@ -4,23 +4,23 @@ import { downloadBatch } from './download'
 describe('downloadBatch batch engine', () => {
   beforeEach(() => {
     vi.restoreAllMocks()
-    
+
     // Mock URL object
     global.window.URL.createObjectURL = vi.fn().mockReturnValue('blob:mock-url')
     global.window.URL.revokeObjectURL = vi.fn()
-    
+
     // Mock anchor clicks
     const mockAnchor = {
       href: '',
       download: '',
       click: vi.fn(),
     }
-    vi.spyOn(document, 'createElement').mockImplementation((tagName) => {
+    vi.spyOn(document, 'createElement').mockImplementation(tagName => {
       if (tagName === 'a') return mockAnchor as any
       return {} as any
     })
-    vi.spyOn(document.body, 'appendChild').mockImplementation(() => ({} as any))
-    vi.spyOn(document.body, 'removeChild').mockImplementation(() => ({} as any))
+    vi.spyOn(document.body, 'appendChild').mockImplementation(() => ({}) as any)
+    vi.spyOn(document.body, 'removeChild').mockImplementation(() => ({}) as any)
   })
 
   it('fails when no photos are provided', async () => {
@@ -55,7 +55,7 @@ describe('downloadBatch batch engine', () => {
     // Verify URL creation was triggered for zip blob download
     expect(global.window.URL.createObjectURL).toHaveBeenCalled()
     expect(onProgress).toHaveBeenCalled()
-    
+
     // Confirm final progress is 100%
     const lastCall = progressCalls[progressCalls.length - 1]
     expect(lastCall[0]).toBe(100)
@@ -112,7 +112,7 @@ describe('downloadBatch batch engine', () => {
     )
 
     expect(global.window.URL.createObjectURL).toHaveBeenCalled()
-    
+
     // Check final progress calls
     const lastCall = progressCalls[progressCalls.length - 1]
     expect(lastCall[0]).toBe(100)

@@ -3,7 +3,7 @@ import { motion, AnimatePresence } from 'framer-motion'
 import { Button } from './Button'
 
 interface HTMLElementWithWebkitFullscreen extends HTMLElement {
-  webkitRequestFullscreen?: () => Promise<void>;
+  webkitRequestFullscreen?: () => Promise<void>
 }
 
 const RotateDevicePrompt: React.FC = () => {
@@ -43,8 +43,11 @@ const RotateDevicePrompt: React.FC = () => {
     try {
       if (document.documentElement.requestFullscreen) {
         await document.documentElement.requestFullscreen()
-      } else if ((document.documentElement as HTMLElementWithWebkitFullscreen).webkitRequestFullscreen) {
-        await (document.documentElement as HTMLElementWithWebkitFullscreen).webkitRequestFullscreen!()
+      } else if (
+        (document.documentElement as HTMLElementWithWebkitFullscreen).webkitRequestFullscreen
+      ) {
+        await (document.documentElement as HTMLElementWithWebkitFullscreen)
+          .webkitRequestFullscreen!()
       }
 
       // Small delay to allow fullscreen to engage before locking

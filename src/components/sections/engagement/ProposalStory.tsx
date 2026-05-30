@@ -29,7 +29,9 @@ const ProposalStory: React.FC<ProposalStoryProps> = ({ content, children }) => {
               {paragraph}
             </p>
           ))}
-          <p className='text-gold-400 font-display text-3xl italic tracking-wide mt-8'>{content.finale}</p>
+          <p className='text-gold-400 font-display text-3xl italic tracking-wide mt-8'>
+            {content.finale}
+          </p>
         </div>
 
         {/* Second Column: The Photo */}

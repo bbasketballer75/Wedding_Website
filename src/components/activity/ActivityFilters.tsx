@@ -9,12 +9,12 @@ const filterOptions: { value: ActivityFilterType; label: string }[] = [
 ]
 
 export function ActivityFilters() {
-  const activeFilter = activityFeedStore((state) => state.activeFilter)
-  const setActiveFilter = activityFeedStore((state) => state.setActiveFilter)
+  const activeFilter = activityFeedStore(state => state.activeFilter)
+  const setActiveFilter = activityFeedStore(state => state.setActiveFilter)
 
   return (
-    <div className="flex gap-2 mb-6">
-      {filterOptions.map((option) => (
+    <div className='flex gap-2 mb-6'>
+      {filterOptions.map(option => (
         <button
           key={option.value}
           onClick={() => setActiveFilter(option.value)}

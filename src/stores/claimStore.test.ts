@@ -42,7 +42,7 @@ describe('useClaimStore Zustand store', () => {
     store.openWizard({
       photoId: 'photo-123',
       faceId: 'face-456',
-      faceName: 'Jordyn Bask'
+      faceName: 'Jordyn Bask',
     })
 
     let state = useClaimStore.getState()
@@ -82,7 +82,7 @@ describe('useClaimStore Zustand store', () => {
 
     const promise = store.sendOtp()
     expect(useClaimStore.getState().isLoading).toBe(true)
-    
+
     await promise
 
     const state = useClaimStore.getState()

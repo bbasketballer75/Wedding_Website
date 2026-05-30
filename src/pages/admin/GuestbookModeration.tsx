@@ -55,13 +55,10 @@ export function GuestbookModeration() {
   }, [fetchMessages])
 
   async function handleDelete(id: string) {
-    const message = messages.find((entry) => entry.id === id)
+    const message = messages.find(entry => entry.id === id)
     if (!message) return
 
-    const { error } = await supabase
-      .from('guestbook_messages')
-      .delete()
-      .eq('id', id)
+    const { error } = await supabase.from('guestbook_messages').delete().eq('id', id)
 
     if (error) {
       addToast('Failed to delete message', 'error')
@@ -83,7 +80,10 @@ export function GuestbookModeration() {
       })
 
       if (auditError) {
-        addToast('Deleted the message, but the moderation history could not be recorded.', 'warning')
+        addToast(
+          'Deleted the message, but the moderation history could not be recorded.',
+          'warning'
+        )
       } else if (auditEntry) {
         setAuditByMessageId(prev => appendAuditEntry(prev, auditEntry))
       }
@@ -92,12 +92,9 @@ export function GuestbookModeration() {
 
   async function handleBulkDelete() {
     if (selectedIds.length === 0) return
-    const selectedMessages = messages.filter((message) => selectedIds.includes(message.id))
+    const selectedMessages = messages.filter(message => selectedIds.includes(message.id))
 
-    const { error } = await supabase
-      .from('guestbook_messages')
-      .delete()
-      .in('id', selectedIds)
+    const { error } = await supabase.from('guestbook_messages').delete().in('id', selectedIds)
 
     if (error) {
       addToast('Failed to delete the selected messages', 'error')
@@ -105,10 +102,13 @@ export function GuestbookModeration() {
     }
 
     setMessages(prev => prev.filter(message => !selectedIds.includes(message.id)))
-    addToast(`Deleted ${selectedIds.length} guestbook message${selectedIds.length === 1 ? '' : 's'}.`, 'success')
+    addToast(
+      `Deleted ${selectedIds.length} guestbook message${selectedIds.length === 1 ? '' : 's'}.`,
+      'success'
+    )
 
     const auditResults = await Promise.allSettled(
-      selectedMessages.map((message) =>
+      selectedMessages.map(message =>
         recordModerationAudit({
           entityType: 'guestbook_message',
           entityId: message.id,
@@ -125,7 +125,7 @@ export function GuestbookModeration() {
       )
     )
 
-    const successfulAuditEntries = auditResults.flatMap((result) => {
+    const successfulAuditEntries = auditResults.flatMap(result => {
       if (result.status !== 'fulfilled' || result.value.error || !result.value.data) {
         return []
       }
@@ -134,107 +134,116 @@ export function GuestbookModeration() {
     })
 
     if (successfulAuditEntries.length > 0) {
-      setAuditByMessageId((prev) =>
+      setAuditByMessageId(prev =>
         successfulAuditEntries.reduce((acc, entry) => appendAuditEntry(acc, entry), prev)
       )
     }
 
     if (successfulAuditEntries.length !== selectedMessages.length) {
-      addToast('Deleted the selected messages, but part of the moderation history could not be recorded.', 'warning')
+      addToast(
+        'Deleted the selected messages, but part of the moderation history could not be recorded.',
+        'warning'
+      )
     }
 
     setSelectedIds([])
   }
 
-  const filteredMessages = messages.filter((message) => {
+  const filteredMessages = messages.filter(message => {
     const haystack = `${message.name} ${message.email} ${message.content}`.toLowerCase()
     return !searchQuery.trim() || haystack.includes(searchQuery.trim().toLowerCase())
   })
 
   return (
-    <ComponentErrorBoundary componentName="Guestbook Moderation">
-    <div className="space-y-6">
-      <div className="space-y-2">
-        <h2 className="text-2xl font-display text-charcoal-900">Guestbook Moderation</h2>
-        <p className="max-w-3xl text-sm leading-6 text-charcoal-500">
-          Keep the guestbook warm and readable. Search by guest and bulk-clear anything that clearly does not belong.
-        </p>
-      </div>
+    <ComponentErrorBoundary componentName='Guestbook Moderation'>
+      <div className='space-y-6'>
+        <div className='space-y-2'>
+          <h2 className='text-2xl font-display text-charcoal-900'>Guestbook Moderation</h2>
+          <p className='max-w-3xl text-sm leading-6 text-charcoal-500'>
+            Keep the guestbook warm and readable. Search by guest and bulk-clear anything that
+            clearly does not belong.
+          </p>
+        </div>
 
-      <div className="rounded-xl border border-gold-100 bg-white p-5 shadow-sm">
-        <div className="flex flex-col gap-4 lg:flex-row lg:items-end lg:justify-between">
-          <div className="flex flex-col gap-3 sm:flex-row sm:items-center">
-            <Input
-              value={searchQuery}
-              onChange={(event) => setSearchQuery(event.target.value)}
-              placeholder="Search by guest name, email, or note"
-              className="min-w-[18rem]"
-            />
-            {selectedIds.length > 0 && (
-              <Button variant="danger" onClick={handleBulkDelete}>
-                <Trash2 className="mr-2 h-4 w-4" />
-                Delete selected ({selectedIds.length})
-              </Button>
-            )}
+        <div className='rounded-xl border border-gold-100 bg-white p-5 shadow-sm'>
+          <div className='flex flex-col gap-4 lg:flex-row lg:items-end lg:justify-between'>
+            <div className='flex flex-col gap-3 sm:flex-row sm:items-center'>
+              <Input
+                value={searchQuery}
+                onChange={event => setSearchQuery(event.target.value)}
+                placeholder='Search by guest name, email, or note'
+                className='min-w-[18rem]'
+              />
+              {selectedIds.length > 0 && (
+                <Button variant='danger' onClick={handleBulkDelete}>
+                  <Trash2 className='mr-2 h-4 w-4' />
+                  Delete selected ({selectedIds.length})
+                </Button>
+              )}
+            </div>
           </div>
         </div>
-      </div>
 
-      <div data-testid="guestbook-moderation-list" className="space-y-4">
-        {filteredMessages.map((message) => (
-          <div key={message.id} className="bg-white rounded-xl p-6 border border-gold-100 shadow-sm">
-            <div className="flex items-start justify-between">
-              <div className="flex items-start gap-3">
-                <label className="mt-1 flex items-center">
-                  <input
-                    type="checkbox"
-                    checked={selectedIds.includes(message.id)}
-                    onChange={() =>
-                      setSelectedIds((prev) =>
-                        prev.includes(message.id)
-                          ? prev.filter((id) => id !== message.id)
-                          : [...prev, message.id]
-                      )
-                    }
-                    className="h-4 w-4 rounded border-gold-300 text-gold-600 focus:ring-gold-500"
-                  />
-                  <span className="sr-only">Select message from {message.name}</span>
-                </label>
-                <div>
-                <p className="font-medium text-charcoal-900">{message.name}</p>
-                <p className="text-sm text-charcoal-500">{message.email}</p>
-                <p className="text-sm text-charcoal-500">
-                  {new Date(message.created_at).toLocaleString()}
-                </p>
+        <div data-testid='guestbook-moderation-list' className='space-y-4'>
+          {filteredMessages.map(message => (
+            <div
+              key={message.id}
+              className='bg-white rounded-xl p-6 border border-gold-100 shadow-sm'
+            >
+              <div className='flex items-start justify-between'>
+                <div className='flex items-start gap-3'>
+                  <label className='mt-1 flex items-center'>
+                    <input
+                      type='checkbox'
+                      checked={selectedIds.includes(message.id)}
+                      onChange={() =>
+                        setSelectedIds(prev =>
+                          prev.includes(message.id)
+                            ? prev.filter(id => id !== message.id)
+                            : [...prev, message.id]
+                        )
+                      }
+                      className='h-4 w-4 rounded border-gold-300 text-gold-600 focus:ring-gold-500'
+                    />
+                    <span className='sr-only'>Select message from {message.name}</span>
+                  </label>
+                  <div>
+                    <p className='font-medium text-charcoal-900'>{message.name}</p>
+                    <p className='text-sm text-charcoal-500'>{message.email}</p>
+                    <p className='text-sm text-charcoal-500'>
+                      {new Date(message.created_at).toLocaleString()}
+                    </p>
+                  </div>
                 </div>
+                <Button
+                  size='sm'
+                  variant='danger'
+                  aria-label='Delete message'
+                  onClick={() => handleDelete(message.id)}
+                >
+                  <Trash2 className='w-4 h-4' />
+                </Button>
               </div>
-              <Button
-                size="sm"
-                variant="danger"
-                aria-label="Delete message"
-                onClick={() => handleDelete(message.id)}
-              >
-                <Trash2 className="w-4 h-4" />
-              </Button>
+              <p className='mt-4 text-charcoal-700'>{message.content}</p>
+              <div className='mt-4'>
+                <CompactAuditHistory
+                  entries={auditByMessageId[message.id] || []}
+                  title='Moderation history'
+                  emptyLabel='No moderation history yet.'
+                />
+              </div>
             </div>
-            <p className="mt-4 text-charcoal-700">{message.content}</p>
-            <div className="mt-4">
-              <CompactAuditHistory
-                entries={auditByMessageId[message.id] || []}
-                title="Moderation history"
-                emptyLabel="No moderation history yet."
-              />
+          ))}
+          {filteredMessages.length === 0 && (
+            <div className='rounded-xl border border-gold-100 bg-white px-6 py-12 text-center'>
+              <MessageSquare className='mx-auto h-10 w-10 text-gold-500' />
+              <p className='mt-4 text-charcoal-700'>
+                No guestbook messages match this view right now.
+              </p>
             </div>
-          </div>
-        ))}
-        {filteredMessages.length === 0 && (
-          <div className="rounded-xl border border-gold-100 bg-white px-6 py-12 text-center">
-            <MessageSquare className="mx-auto h-10 w-10 text-gold-500" />
-            <p className="mt-4 text-charcoal-700">No guestbook messages match this view right now.</p>
-          </div>
-        )}
+          )}
+        </div>
       </div>
-    </div>
     </ComponentErrorBoundary>
   )
 }

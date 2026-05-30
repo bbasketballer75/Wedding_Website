@@ -60,7 +60,12 @@ const CornerSpiderWeb: React.FC<CornerSpiderWebProps> = ({ corner, isVisible }) 
     return isNaN(res) ? 0 : res
   }
 
-  const getPoint = (radius = 0, angleDeg = 0, customOx: number | null = null, customOy: number | null = null): Point => {
+  const getPoint = (
+    radius = 0,
+    angleDeg = 0,
+    customOx: number | null = null,
+    customOy: number | null = null
+  ): Point => {
     const r = Number(radius) || 0
     const a = Number(angleDeg) || 0
     const ox = typeof customOx === 'number' ? customOx : typeof originX === 'number' ? originX : 0
@@ -290,7 +295,12 @@ interface SpiderProps {
   startRadius: number
   angle: number
   delay: number
-  getPoint: (radius?: number, angleDeg?: number, customOx?: number | null, customOy?: number | null) => Point
+  getPoint: (
+    radius?: number,
+    angleDeg?: number,
+    customOx?: number | null,
+    customOy?: number | null
+  ) => Point
   safeFmt: (val: number | string) => number
   originX: number
   originY: number

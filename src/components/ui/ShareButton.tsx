@@ -3,11 +3,11 @@ import { Mail, Link, Image, Share2 } from 'lucide-react'
 import { motion } from 'framer-motion'
 
 interface ShareButtonProps {
-  title?: string;
-  text?: string;
-  url?: string;
-  className?: string;
-  variant?: 'primary' | 'secondary' | 'ghost';
+  title?: string
+  text?: string
+  url?: string
+  className?: string
+  variant?: 'primary' | 'secondary' | 'ghost'
 }
 
 const ShareButton: React.FC<ShareButtonProps> = ({
@@ -63,7 +63,11 @@ const ShareButton: React.FC<ShareButtonProps> = ({
 
   const handleTwitterShare = () => {
     const tweetText = encodeURIComponent(`${text} ${url}`)
-    window.open(`https://twitter.com/intent/tweet?text=${tweetText}`, '_blank', 'width=600,height=400')
+    window.open(
+      `https://twitter.com/intent/tweet?text=${tweetText}`,
+      '_blank',
+      'width=600,height=400'
+    )
   }
 
   const handlePinterestShare = () => {

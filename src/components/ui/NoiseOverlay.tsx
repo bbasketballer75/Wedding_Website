@@ -1,4 +1,3 @@
-
 const NoiseOverlay = () => {
   return (
     <div

@@ -3,13 +3,18 @@ import { motion } from 'framer-motion'
 import RevealText from './RevealText'
 
 interface ChapterTitleProps {
-  chapter: string;
-  title: React.ReactNode;
-  subtitle?: React.ReactNode;
-  theme?: 'dark' | 'light';
+  chapter: string
+  title: React.ReactNode
+  subtitle?: React.ReactNode
+  theme?: 'dark' | 'light'
 }
 
-const ChapterTitle: React.FC<ChapterTitleProps> = ({ chapter, title, subtitle, theme = 'dark' }) => {
+const ChapterTitle: React.FC<ChapterTitleProps> = ({
+  chapter,
+  title,
+  subtitle,
+  theme = 'dark',
+}) => {
   const isDark = theme === 'dark'
 
   return (

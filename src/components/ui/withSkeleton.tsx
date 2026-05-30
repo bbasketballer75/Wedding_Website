@@ -2,7 +2,7 @@ import { Skeleton } from './Skeleton'
 import React, { ComponentType } from 'react'
 
 interface WithSkeletonProps {
-  isLoading?: boolean;
+  isLoading?: boolean
 }
 
 /**

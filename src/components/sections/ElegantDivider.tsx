@@ -6,7 +6,11 @@ interface ElegantDividerProps {
   opacity?: number
 }
 
-const ElegantDivider = ({ color = 'currentColor', width = '100%', opacity = 0.3 }: ElegantDividerProps) => {
+const ElegantDivider = ({
+  color = 'currentColor',
+  width = '100%',
+  opacity = 0.3,
+}: ElegantDividerProps) => {
   return (
     <div className='flex justify-center my-8 text-gold-500' style={{ width, opacity }}>
       <motion.svg

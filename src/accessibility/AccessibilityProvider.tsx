@@ -7,10 +7,10 @@ interface AccessibilityContextValue {
   unregisterFocusable: (element: HTMLElement) => void
   trapFocus: (container: HTMLElement) => void
   releaseFocus: () => void
-  
+
   // Announcements for screen readers
   announce: (message: string, priority?: 'polite' | 'assertive') => void
-  
+
   // Skip link
   skipLinkTarget: string | null
   setSkipLinkTarget: (target: string | null) => void
@@ -33,7 +33,7 @@ export function AccessibilityProvider({ children }: { children: React.ReactNode 
 
   const trapFocus = useCallback((container: HTMLElement) => {
     setLastFocusedElement(document.activeElement as HTMLElement)
-    
+
     // Focus first focusable element
     const focusables = container.querySelectorAll<HTMLElement>(
       'button, [href], input, select, textarea, [tabindex]:not([tabindex="-1"])'
@@ -57,9 +57,9 @@ export function AccessibilityProvider({ children }: { children: React.ReactNode 
     announcement.setAttribute('aria-atomic', 'true')
     announcement.className = 'sr-only'
     announcement.textContent = message
-    
+
     document.body.appendChild(announcement)
-    
+
     // Remove after announcement
     setTimeout(() => {
       document.body.removeChild(announcement)
@@ -67,16 +67,18 @@ export function AccessibilityProvider({ children }: { children: React.ReactNode 
   }, [])
 
   return (
-    <AccessibilityContext.Provider value={{
-      focusableElements,
-      registerFocusable,
-      unregisterFocusable,
-      trapFocus,
-      releaseFocus,
-      announce,
-      skipLinkTarget,
-      setSkipLinkTarget,
-    }}>
+    <AccessibilityContext.Provider
+      value={{
+        focusableElements,
+        registerFocusable,
+        unregisterFocusable,
+        trapFocus,
+        releaseFocus,
+        announce,
+        skipLinkTarget,
+        setSkipLinkTarget,
+      }}
+    >
       {children}
     </AccessibilityContext.Provider>
   )

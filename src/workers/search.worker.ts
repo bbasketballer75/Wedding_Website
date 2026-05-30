@@ -145,7 +145,7 @@ function search(
 
   // Convert to results and sort by score
   const results: SearchResult[] = []
-  
+
   for (const [id, score] of documentScores.entries()) {
     const document = searchIndex.documents.get(id)
     if (document) {
@@ -158,9 +158,7 @@ function search(
     }
   }
 
-  return results
-    .sort((a, b) => b.score - a.score)
-    .slice(0, limit)
+  return results.sort((a, b) => b.score - a.score).slice(0, limit)
 }
 
 /**
@@ -262,5 +260,5 @@ export {
   clearIndex,
   tokenize,
   levenshteinDistance,
-  extractHighlights
+  extractHighlights,
 }

@@ -80,7 +80,11 @@ const LoadingSpinner: React.FC<LoadingSpinnerProps> = ({
           d='M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z'
         />
       </motion.svg>
-      {label && <span className='ml-3 text-sm font-medium tracking-wide text-dark-600 dark:text-cream-200'>{label}</span>}
+      {label && (
+        <span className='ml-3 text-sm font-medium tracking-wide text-dark-600 dark:text-cream-200'>
+          {label}
+        </span>
+      )}
     </div>
   )
 }
@@ -110,7 +114,11 @@ export const LoadingOverlay: React.FC<LoadingOverlayProps> = ({
           className='absolute inset-0 flex flex-col items-center justify-center bg-cream-50/80 dark:bg-dark-950/80 backdrop-blur-sm z-50'
         >
           <LoadingSpinner size='xl' />
-          {message && <p className='mt-4 text-sm font-display tracking-wider text-dark-600 dark:text-cream-200'>{message}</p>}
+          {message && (
+            <p className='mt-4 text-sm font-display tracking-wider text-dark-600 dark:text-cream-200'>
+              {message}
+            </p>
+          )}
         </motion.div>
       )}
     </div>
@@ -122,7 +130,9 @@ export const PageLoading: React.FC<{ message?: string }> = ({ message = 'Loading
   return (
     <div className='flex flex-col items-center justify-center min-h-screen bg-cream-50 dark:bg-dark-950'>
       <LoadingSpinner size='xl' />
-      <p className='mt-6 text-lg font-display tracking-widest text-dark-700 dark:text-cream-100'>{message}</p>
+      <p className='mt-6 text-lg font-display tracking-widest text-dark-700 dark:text-cream-100'>
+        {message}
+      </p>
     </div>
   )
 }

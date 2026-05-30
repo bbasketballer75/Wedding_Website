@@ -3,10 +3,10 @@ import React from 'react'
 import OptimizedImage from './OptimizedImage'
 
 export interface LazyImageProps extends HTMLMotionProps<'div'> {
-  src: string;
-  alt?: string;
-  priority?: boolean;
-  quality?: number;
+  src: string
+  alt?: string
+  priority?: boolean
+  quality?: number
 }
 
 const LazyImage = React.memo<LazyImageProps>(

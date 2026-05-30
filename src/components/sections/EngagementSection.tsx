@@ -160,7 +160,9 @@ const EngagementSection = () => {
             </h3>
           </div>
 
-          <EngagementGallery onPhotoSelect={(photo: any) => setSelectedPhoto(photo as EngagementPhoto)} />
+          <EngagementGallery
+            onPhotoSelect={(photo: any) => setSelectedPhoto(photo as EngagementPhoto)}
+          />
         </div>
       </div>
 

@@ -1,32 +1,35 @@
 import { useEffect, useRef, useState, RefObject } from 'react'
 
 export interface TouchGesturesOptions {
-  onSwipeLeft?: (e: TouchEvent) => void;
-  onSwipeRight?: (e: TouchEvent) => void;
-  onSwipeUp?: (e: TouchEvent) => void;
-  onSwipeDown?: (e: TouchEvent) => void;
-  onPinch?: (scale: number, e: TouchEvent) => void;
-  onLongPress?: (e: TouchEvent) => void;
-  threshold?: number;
-  longPressDelay?: number;
+  onSwipeLeft?: (e: TouchEvent) => void
+  onSwipeRight?: (e: TouchEvent) => void
+  onSwipeUp?: (e: TouchEvent) => void
+  onSwipeDown?: (e: TouchEvent) => void
+  onPinch?: (scale: number, e: TouchEvent) => void
+  onLongPress?: (e: TouchEvent) => void
+  threshold?: number
+  longPressDelay?: number
 }
 
 export interface GesturesState {
-  swipe: string | null;
-  pinch: number | null;
-  longPress: boolean;
+  swipe: string | null
+  pinch: number | null
+  longPress: boolean
 }
 
 // Touch gesture hook
-export const useTouchGestures = (elementRef: RefObject<HTMLElement | null>, options: TouchGesturesOptions = {}) => {
+export const useTouchGestures = (
+  elementRef: RefObject<HTMLElement | null>,
+  options: TouchGesturesOptions = {}
+) => {
   const [gestures, setGestures] = useState<GesturesState>({
     swipe: null,
     pinch: null,
     longPress: false,
   })
 
-  const startTouch = useRef<{ x: number, y: number, time: number } | null>(null)
-  const lastTouch = useRef<{ x: number, y: number, time: number } | null>(null)
+  const startTouch = useRef<{ x: number; y: number; time: number } | null>(null)
+  const lastTouch = useRef<{ x: number; y: number; time: number } | null>(null)
   const longPressTimer = useRef<number | NodeJS.Timeout | null>(null)
   const pinchDistance = useRef(0)
 

@@ -30,10 +30,10 @@ export function useInfiniteScroll<T>({
   const [page, setPage] = useState(1)
   const [isLoading, setIsLoading] = useState(false)
   const observerRef = useRef<HTMLDivElement>(null)
-  
+
   // Use ref for abort controller to avoid stale closures and enable proper cleanup
   const abortControllerRef = useRef<AbortController | null>(null)
-  
+
   // Use ref to track pending load operations
   const pendingLoadRef = useRef<Promise<void> | null>(null)
 
@@ -155,7 +155,7 @@ export function useInfiniteScroll<T>({
   // Intersection Observer for auto-load
   useEffect(() => {
     const observer = new IntersectionObserver(
-      (entries) => {
+      entries => {
         if (entries[0].isIntersecting && hasMore && !isLoading) {
           loadMore()
         }

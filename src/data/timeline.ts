@@ -1,7 +1,7 @@
 export interface Milestone {
-  year: string;
-  title: string;
-  description: string;
+  year: string
+  title: string
+  description: string
 }
 
 export const earlyMilestones: Milestone[] = [
