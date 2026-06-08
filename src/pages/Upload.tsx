@@ -30,6 +30,7 @@ import {
 import { cn } from '@/lib/utils'
 import { supabase, getOrCreateShareToken } from '@/lib/supabase'
 import storage from '@/utils/storage'
+import { compressImage } from '@/utils/imageCompressor'
 import { useClaimStore } from '@/stores/claimStore'
 import { ClaimModal } from '@/components/gallery/ClaimModal'
 
@@ -200,7 +201,29 @@ export default function UploadPage() {
 
   const uploadFileToR2 = useCallback(async (fileObj: UploadingFile) => {
     try {
-      const file = fileObj.file
+      let file = fileObj.file
+
+      // Client-side image compression & WebP conversion
+      if (file.type.startsWith('image/')) {
+        try {
+          const compressed = await compressImage(file)
+          file = compressed
+          // Update file and preview in our state list
+          setFiles(prev =>
+            prev.map(f =>
+              f.id === fileObj.id
+                ? {
+                    ...f,
+                    file: compressed,
+                    preview: URL.createObjectURL(compressed),
+                  }
+                : f
+            )
+          )
+        } catch (compError) {
+          console.error('Image compression failed, falling back to original file:', compError)
+        }
+      }
 
       // Step 1: request a pre-signed PUT URL from our Netlify function
       const slotRes = await fetch('/.netlify/functions/guest-upload-url', {
@@ -510,6 +533,17 @@ export default function UploadPage() {
   ).length
   const selectedPhotoCount = files.filter(f => !f.file.type.startsWith('video/')).length
   const selectedVideoCount = files.filter(f => f.file.type.startsWith('video/')).length
+
+  const totalFiles = files.length
+  const activeUploadingFiles = files.filter(
+    f => f.status === 'uploading' || f.status === 'complete'
+  )
+  const totalProgressSum = activeUploadingFiles.reduce((acc, f) => {
+    if (f.status === 'complete') return acc + 100
+    return acc + (f.progress ?? 0)
+  }, 0)
+  const aggregateProgress = totalFiles > 0 ? Math.round(totalProgressSum / totalFiles) : 0
+  const isUploadingAny = files.some(f => f.status === 'uploading')
 
   if (isSubmitted) {
     const uploadSummary = describeUploadSummary(completedPhotoCount, completedVideoCount)
@@ -862,6 +896,26 @@ export default function UploadPage() {
                       Take a look before sending. Remove anything you don't want, retry anything
                       that didn't upload, and send when you're happy with what's ready.
                     </p>
+
+                    {isUploadingAny && (
+                      <div
+                        className='mt-6 space-y-2 text-left'
+                        data-testid='multi-file-progress-bar'
+                      >
+                        <div className='flex items-center justify-between text-xs text-white/50'>
+                          <span className='text-gold-300 font-semibold'>
+                            Overall Upload Progress
+                          </span>
+                          <span className='text-gold-300 font-semibold'>{aggregateProgress}%</span>
+                        </div>
+                        <div className='h-2.5 overflow-hidden rounded-full bg-white/10 border border-white/5'>
+                          <div
+                            className='h-full rounded-full bg-gradient-to-r from-gold-400 via-gold-500 to-gold-300 transition-all duration-300'
+                            style={{ width: `${aggregateProgress}%` }}
+                          />
+                        </div>
+                      </div>
+                    )}
                   </div>
 
                   <div className='flex flex-wrap items-center gap-3 text-sm text-white/50'>

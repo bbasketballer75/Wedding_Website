@@ -1,73 +1,81 @@
 const MAX_IMAGE_SIZE_MB = 2 // Maximum desired file size in MB
 const MAX_IMAGE_WIDTH = 1920 // Maximum desired width in pixels
-const JPEG_QUALITY = 0.7 // JPEG compression quality
+const WEBP_QUALITY = 0.8 // WebP compression quality
 
 /**
- * Compresses and resizes an image file.
+ * Compresses and resizes an image file, converting it to WebP.
+ * Falls back to the original file if compression fails or format is unsupported.
  * @param {File} imageFile - The image file to compress.
- * @returns {Promise<File>} A promise that resolves with the compressed image file.
+ * @returns {Promise<File>} A promise that resolves with the compressed image file or original file.
  */
 export const compressImage = async (imageFile: File): Promise<File> => {
-  return new Promise((resolve, reject) => {
+  // If the file is not an image, return it immediately
+  if (!imageFile.type.startsWith('image/')) {
+    return imageFile
+  }
+
+  return new Promise(resolve => {
     const reader = new FileReader()
     reader.readAsDataURL(imageFile)
     reader.onload = event => {
       const img = new Image()
       img.src = event.target?.result as string
       img.onload = () => {
-        const canvas = document.createElement('canvas')
-        let width = img.width
-        let height = img.height
+        try {
+          const canvas = document.createElement('canvas')
+          let width = img.width
+          let height = img.height
 
-        // Calculate new dimensions to fit within MAX_IMAGE_WIDTH
-        if (width > MAX_IMAGE_WIDTH) {
-          height = Math.round((height * MAX_IMAGE_WIDTH) / width)
-          width = MAX_IMAGE_WIDTH
+          // Calculate new dimensions to fit within MAX_IMAGE_WIDTH
+          if (width > MAX_IMAGE_WIDTH) {
+            height = Math.round((height * MAX_IMAGE_WIDTH) / width)
+            width = MAX_IMAGE_WIDTH
+          }
+
+          canvas.width = width
+          canvas.height = height
+
+          const ctx = canvas.getContext('2d')
+          if (!ctx) {
+            console.warn('Could not get canvas context, falling back to original file.')
+            return resolve(imageFile)
+          }
+          ctx.drawImage(img, 0, 0, width, height)
+
+          // Try to get Blob with desired quality and WebP type
+          canvas.toBlob(
+            blob => {
+              if (!blob) {
+                console.warn('Canvas toBlob failed, falling back to original file.')
+                return resolve(imageFile)
+              }
+
+              // Create new webp filename
+              const originalName = imageFile.name
+              const webpName = `${originalName.replace(/\.[^/.]+$/, '')}.webp`
+
+              const newFile = new File([blob], webpName, {
+                type: 'image/webp',
+                lastModified: Date.now(),
+              })
+              resolve(newFile)
+            },
+            'image/webp',
+            WEBP_QUALITY
+          )
+        } catch (e) {
+          console.warn('Error during image compression, falling back to original file:', e)
+          resolve(imageFile)
         }
-
-        canvas.width = width
-        canvas.height = height
-
-        const ctx = canvas.getContext('2d')
-        if (!ctx) {
-          return reject(new Error('Could not get canvas context'))
-        }
-        ctx.drawImage(img, 0, 0, width, height)
-
-        // Try to get Blob with desired quality and type
-        canvas.toBlob(
-          blob => {
-            if (!blob) {
-              return reject(new Error('Canvas toBlob failed'))
-            }
-            // Check if compressed size is still too large
-            if (blob.size > MAX_IMAGE_SIZE_MB * 1024 * 1024) {
-              // If still too large, further reduce quality (or scale down more if needed)
-              // For simplicity, we'll return the current blob, but a more advanced
-              // implementation would iteratively reduce quality/size.
-              console.warn('Image still too large after initial compression. Returning as is.')
-            }
-
-            const newFile = new File([blob], imageFile.name, {
-              type: blob.type,
-              lastModified: Date.now(),
-            })
-            resolve(newFile)
-          },
-          'image/jpeg',
-          JPEG_QUALITY
-        )
       }
-      img.onerror = error => reject(error)
+      img.onerror = () => {
+        console.warn('Image load error, falling back to original file.')
+        resolve(imageFile)
+      }
     }
-    reader.onerror = error => reject(error)
+    reader.onerror = () => {
+      console.warn('FileReader error, falling back to original file.')
+      resolve(imageFile)
+    }
   })
 }
-
-// Optional: Add a helper to convert Blob back to File if needed, though toBlob directly creates it
-// export const blobToFile = (theBlob: Blob, fileName: string): File => {
-//   const b: any = theBlob;
-//   b.lastModifiedDate = new Date();
-//   b.name = fileName;
-//   return theBlob as File;
-// };
