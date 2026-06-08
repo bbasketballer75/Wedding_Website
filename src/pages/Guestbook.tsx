@@ -267,6 +267,7 @@ export default function Guestbook() {
   const [name, setName] = useState('')
   const [email, setEmail] = useState('')
   const [content, setContent] = useState('')
+  const [website, setWebsite] = useState('')
   const [isSubmitted, setIsSubmitted] = useState(false)
   const [isLoading, setIsLoading] = useState(true)
   const [isSubmitting, setIsSubmitting] = useState(false)
@@ -428,6 +429,24 @@ export default function Guestbook() {
 
   const handleSubmit = async (event: React.FormEvent) => {
     event.preventDefault()
+
+    if (website) {
+      setIsSubmitting(true)
+      window.setTimeout(() => {
+        setIsSubmitting(false)
+        setIsSubmitted(true)
+        addToast('Your note is part of the book now. Thank you.', 'success')
+        window.setTimeout(() => {
+          setShowForm(false)
+          setIsSubmitted(false)
+          setName('')
+          setEmail('')
+          setContent('')
+          setWebsite('')
+        }, 2200)
+      }, 500)
+      return
+    }
 
     const clientRateCheck = rateLimiter.check('guestbook-submit', {
       maxRequests: 3,
@@ -745,6 +764,17 @@ export default function Guestbook() {
                           <p className='mt-2 text-xs text-white/30'>
                             Just in case we want to follow up with you.
                           </p>
+                        </div>
+                        <div className='hidden' aria-hidden='true'>
+                          <Label htmlFor='website'>Leave this blank</Label>
+                          <Input
+                            id='website'
+                            type='text'
+                            value={website}
+                            onChange={event => setWebsite(event.target.value)}
+                            tabIndex={-1}
+                            autoComplete='off'
+                          />
                         </div>
                       </div>
 

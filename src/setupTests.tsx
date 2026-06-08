@@ -85,6 +85,12 @@ vi.mock('framer-motion', () => {
   const MotionCircle = ({ children, ...props }: any) =>
     React.createElement('circle', props, children)
   const MotionLine = ({ children, ...props }: any) => React.createElement('line', props, children)
+  const MotionArticle = ({ children, ...props }: any) =>
+    React.createElement('article', props, children)
+  const MotionSection = ({ children, ...props }: any) =>
+    React.createElement('section', props, children)
+  const MotionHeader = ({ children, ...props }: any) =>
+    React.createElement('header', props, children)
   const MotionG = ({ children, ...props }: any) => React.createElement('g', props, children)
 
   return {
@@ -93,6 +99,9 @@ vi.mock('framer-motion', () => {
       nav: MotionNav,
       span: MotionSpan,
       button: MotionButton,
+      article: MotionArticle,
+      section: MotionSection,
+      header: MotionHeader,
       svg: MotionSVG,
       path: MotionPath,
       circle: MotionCircle,
