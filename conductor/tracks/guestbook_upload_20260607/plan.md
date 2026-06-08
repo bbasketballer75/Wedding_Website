@@ -22,8 +22,8 @@ This plan outlines the phase-by-phase tasks required to implement the guestbook 
   - [x] Write component tests for Guestbook text input and submission states
   - [x] Implement spam-prevention checks (honeypot fields) and validation in the guestbook submission form
 
-- [ ] Task: Implement Drag-and-Drop Photo Uploader Component
-  - [ ] Write component tests for file drop, image resizing, and preview renders
+- [~] Task: Implement Drag-and-Drop Photo Uploader Component
+  - [~] Write component tests for file drop, image resizing, and preview renders
   - [ ] Build React uploader component with client-side image compression (WebP conversion) and multi-file upload progress bar
 
 - [ ] Task: Conductor - User Manual Verification 'Phase 2: Guestbook & Photo Upload UI Enhancements' (Protocol in workflow.md)
