@@ -32,9 +32,9 @@ This plan outlines the phase-by-phase tasks required to implement the guestbook 
 
 ## Phase 3: Administrative Moderation Dashboard
 
-- [~] Task: Build Admin Moderation Portal
-  - [~] Write tests for the moderation list component and approval API requests
-  - [ ] Create dashboard UI showing grid of pending photos with Approve/Reject actions (accessible only to authenticated administrators)
+- [x] Task: Build Admin Moderation Portal [37c4637]
+  - [x] Write tests for the moderation list component and approval API requests
+  - [x] Create dashboard UI showing grid of pending photos with Approve/Reject actions (accessible only to authenticated administrators)
 
 - [ ] Task: Integrate Guest Photo Metadata Sync Script
   - [ ] Write tests for the syncing script `sync-guest-photo-face-metadata.mjs`
