@@ -46,8 +46,8 @@ This plan outlines the phase-by-phase tasks required to implement the guestbook 
 
 ## Phase 4: End-to-End Testing & Verification
 
-- [~] Task: Write E2E Integration Tests
-  - [~] Create Playwright E2E tests covering the complete guest flow: signing guestbook -> uploading photos -> admin moderation dashboard -> approving photos -> appearing in public gallery
-  - [ ] Execute tests locally and verify all checks pass successfully
+- [x] Task: Write E2E Integration Tests [6fa83ce]
+  - [x] Create Playwright E2E tests covering the complete guest flow: signing guestbook -> uploading photos -> admin moderation dashboard -> approving photos -> appearing in public gallery
+  - [x] Execute tests locally and verify all checks pass successfully
 
 - [ ] Task: Conductor - User Manual Verification 'Phase 4: End-to-End Testing & Verification' (Protocol in workflow.md)
