@@ -30,7 +30,7 @@ This plan outlines the phase-by-phase tasks required to implement the guestbook 
 
 ---
 
-## Phase 3: Administrative Moderation Dashboard
+## Phase 3: Administrative Moderation Dashboard [checkpoint: e44e047]
 
 - [x] Task: Build Admin Moderation Portal [37c4637]
   - [x] Write tests for the moderation list component and approval API requests
