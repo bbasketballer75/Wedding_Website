@@ -26,7 +26,7 @@ This plan outlines the phase-by-phase tasks required to implement the guestbook 
   - [x] Write component tests for file drop, image resizing, and preview renders
   - [x] Build React uploader component with client-side image compression (WebP conversion) and multi-file upload progress bar
 
-- [ ] Task: Conductor - User Manual Verification 'Phase 2: Guestbook & Photo Upload UI Enhancements' (Protocol in workflow.md)
+- [x] Task: Conductor - User Manual Verification 'Phase 2: Guestbook & Photo Upload UI Enhancements' (Protocol in workflow.md)
 
 ---
 
@@ -40,14 +40,14 @@ This plan outlines the phase-by-phase tasks required to implement the guestbook 
   - [x] Write tests for the syncing script `sync-guest-photo-face-metadata.mjs`
   - [x] Refine/integrate the script to export approved guest photos and index face tag details
 
-- [ ] Task: Conductor - User Manual Verification 'Phase 3: Administrative Moderation Dashboard' (Protocol in workflow.md)
+- [x] Task: Conductor - User Manual Verification 'Phase 3: Administrative Moderation Dashboard' (Protocol in workflow.md)
 
 ---
 
-## Phase 4: End-to-End Testing & Verification
+## Phase 4: End-to-End Testing & Verification [checkpoint: 8ed4c23]
 
 - [x] Task: Write E2E Integration Tests [6fa83ce]
   - [x] Create Playwright E2E tests covering the complete guest flow: signing guestbook -> uploading photos -> admin moderation dashboard -> approving photos -> appearing in public gallery
   - [x] Execute tests locally and verify all checks pass successfully
 
-- [ ] Task: Conductor - User Manual Verification 'Phase 4: End-to-End Testing & Verification' (Protocol in workflow.md)
+- [x] Task: Conductor - User Manual Verification 'Phase 4: End-to-End Testing & Verification' (Protocol in workflow.md)
