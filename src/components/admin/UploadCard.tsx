@@ -58,20 +58,18 @@ export function UploadCard({
         <div className='flex-1 min-w-0'>
           {/* Photos preview */}
           {upload.photo_urls.length > 0 && (
-            <div className='flex gap-2 mb-3 overflow-x-auto'>
-              {upload.photo_urls.slice(0, 4).map((url, idx) => (
+            <div
+              className='grid grid-cols-2 sm:grid-cols-4 gap-2 mb-3'
+              data-testid='photo-preview-grid'
+            >
+              {upload.photo_urls.map((url, idx) => (
                 <img
                   key={idx}
                   src={url}
                   alt={`Upload ${idx + 1}`}
-                  className='h-16 w-16 rounded-lg object-cover flex-shrink-0'
+                  className='aspect-square rounded-lg object-cover w-full border border-gold-100 bg-gold-50/10'
                 />
               ))}
-              {upload.photo_urls.length > 4 && (
-                <div className='h-16 w-16 rounded-lg bg-gold-100 flex items-center justify-center text-sm text-gold-700'>
-                  +{upload.photo_urls.length - 4}
-                </div>
-              )}
             </div>
           )}
 
