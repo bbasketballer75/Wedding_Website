@@ -36,9 +36,9 @@ This plan outlines the phase-by-phase tasks required to implement the guestbook 
   - [x] Write tests for the moderation list component and approval API requests
   - [x] Create dashboard UI showing grid of pending photos with Approve/Reject actions (accessible only to authenticated administrators)
 
-- [~] Task: Integrate Guest Photo Metadata Sync Script
-  - [~] Write tests for the syncing script `sync-guest-photo-face-metadata.mjs`
-  - [ ] Refine/integrate the script to export approved guest photos and index face tag details
+- [x] Task: Integrate Guest Photo Metadata Sync Script [cfe353d]
+  - [x] Write tests for the syncing script `sync-guest-photo-face-metadata.mjs`
+  - [x] Refine/integrate the script to export approved guest photos and index face tag details
 
 - [ ] Task: Conductor - User Manual Verification 'Phase 3: Administrative Moderation Dashboard' (Protocol in workflow.md)
 
