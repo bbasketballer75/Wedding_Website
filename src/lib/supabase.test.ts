@@ -1,12 +1,23 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest'
-import { supabase, getOrCreateShareToken, fetchGuestContributionsByToken } from './supabase'
+import {
+  supabase,
+  getOrCreateShareToken,
+  fetchGuestContributionsByToken,
+  fetchApprovedGuestUploads,
+  fetchPendingGuestUploads,
+  fetchGuestUploadsByStatus,
+  approveGuestUpload,
+  rejectGuestUpload,
+} from './supabase'
 
 // Mock the supabase-js client
 vi.mock('@supabase/supabase-js', () => {
   const queryBuilder = {
     select: vi.fn(),
     insert: vi.fn(),
+    update: vi.fn(),
     eq: vi.fn(),
+    in: vi.fn(),
     order: vi.fn(),
     maybeSingle: vi.fn(),
     single: vi.fn(),
@@ -15,7 +26,9 @@ vi.mock('@supabase/supabase-js', () => {
   // Allow method chaining by returning queryBuilder from all query methods
   queryBuilder.select.mockReturnValue(queryBuilder)
   queryBuilder.insert.mockReturnValue(queryBuilder)
+  queryBuilder.update.mockReturnValue(queryBuilder)
   queryBuilder.eq.mockReturnValue(queryBuilder)
+  queryBuilder.in.mockReturnValue(queryBuilder)
   queryBuilder.order.mockReturnValue(queryBuilder)
   queryBuilder.maybeSingle.mockReturnValue(queryBuilder)
   queryBuilder.single.mockReturnValue(queryBuilder)
@@ -255,6 +268,89 @@ describe('Supabase Shared Links Helper Routines', () => {
 
       const result3 = await fetchGuestContributionsByToken('valid-token-123')
       expect(result3?.guestName).toBe('Special Guest')
+    })
+  })
+
+  describe('Guest Upload Moderation Helper Routines', () => {
+    it('fetches approved uploads ordered by created_at desc', async () => {
+      const mockData = [{ id: '1', status: 'approved' }]
+      mockQueryBuilder.order.mockResolvedValueOnce({ data: mockData, error: null })
+
+      const result = await fetchApprovedGuestUploads()
+
+      expect(result).toEqual(mockData)
+      expect(supabase.from).toHaveBeenCalledWith('guest_uploads')
+      expect(mockQueryBuilder.select).toHaveBeenCalledWith('*')
+      expect(mockQueryBuilder.eq).toHaveBeenCalledWith('status', 'approved')
+      expect(mockQueryBuilder.order).toHaveBeenCalledWith('created_at', { ascending: false })
+    })
+
+    it('fetches pending uploads ordered by created_at desc', async () => {
+      const mockData = [{ id: '2', status: 'pending' }]
+      mockQueryBuilder.order.mockResolvedValueOnce({ data: mockData, error: null })
+
+      const result = await fetchPendingGuestUploads()
+
+      expect(result).toEqual(mockData)
+      expect(supabase.from).toHaveBeenCalledWith('guest_uploads')
+      expect(mockQueryBuilder.select).toHaveBeenCalledWith('*')
+      expect(mockQueryBuilder.eq).toHaveBeenCalledWith('status', 'pending')
+      expect(mockQueryBuilder.order).toHaveBeenCalledWith('created_at', { ascending: false })
+    })
+
+    it('fetches uploads by specified status', async () => {
+      const mockData = [{ id: '3', status: 'rejected' }]
+      mockQueryBuilder.order.mockResolvedValueOnce({ data: mockData, error: null })
+
+      const result = await fetchGuestUploadsByStatus('rejected')
+
+      expect(result).toEqual(mockData)
+      expect(supabase.from).toHaveBeenCalledWith('guest_uploads')
+      expect(mockQueryBuilder.select).toHaveBeenCalledWith('*')
+      expect(mockQueryBuilder.eq).toHaveBeenCalledWith('status', 'rejected')
+    })
+
+    it('updates status to approved and records audit log', async () => {
+      mockQueryBuilder.single
+        .mockResolvedValueOnce({ data: { status: 'pending' }, error: null }) // first call (status check)
+        .mockResolvedValueOnce({ data: null, error: null }) // second call (audit log insert)
+      mockQueryBuilder.eq
+        .mockReturnValueOnce(mockQueryBuilder) // first call in select chain
+        .mockResolvedValueOnce({ data: null, error: null }) // second call in update chain
+
+      await approveGuestUpload('upload-id-123', {
+        id: 'admin-1',
+        name: 'Admin User',
+        role: 'admin',
+      })
+
+      expect(supabase.from).toHaveBeenCalledWith('guest_uploads')
+      expect(mockQueryBuilder.update).toHaveBeenCalledWith({ status: 'approved' })
+      expect(mockQueryBuilder.eq).toHaveBeenCalledWith('id', 'upload-id-123')
+      expect(supabase.from).toHaveBeenCalledWith('moderation_audit_log')
+    })
+
+    it('updates status to rejected with reason and records audit log', async () => {
+      mockQueryBuilder.single
+        .mockResolvedValueOnce({ data: { status: 'pending' }, error: null }) // first call (status check)
+        .mockResolvedValueOnce({ data: null, error: null }) // second call (audit log insert)
+      mockQueryBuilder.eq
+        .mockReturnValueOnce(mockQueryBuilder) // first call in select chain
+        .mockResolvedValueOnce({ data: null, error: null }) // second call in update chain
+
+      await rejectGuestUpload('upload-id-123', 'Spam image', {
+        id: 'admin-1',
+        name: 'Admin User',
+        role: 'admin',
+      })
+
+      expect(supabase.from).toHaveBeenCalledWith('guest_uploads')
+      expect(mockQueryBuilder.update).toHaveBeenCalledWith({
+        status: 'rejected',
+        rejection_reason: 'Spam image',
+      })
+      expect(mockQueryBuilder.eq).toHaveBeenCalledWith('id', 'upload-id-123')
+      expect(supabase.from).toHaveBeenCalledWith('moderation_audit_log')
     })
   })
 })
