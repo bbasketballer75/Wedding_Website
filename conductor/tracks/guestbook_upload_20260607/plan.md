@@ -16,7 +16,7 @@ This plan outlines the phase-by-phase tasks required to implement the guestbook 
 
 ---
 
-## Phase 2: Guestbook & Photo Upload UI Enhancements
+## Phase 2: Guestbook & Photo Upload UI Enhancements [checkpoint: f42f61e]
 
 - [x] Task: Refine Guestbook Form [1c3c472]
   - [x] Write component tests for Guestbook text input and submission states
