@@ -4,7 +4,7 @@ This plan outlines the phase-by-phase tasks required to implement the guestbook 
 
 ---
 
-## Phase 1: Database Schema & Storage Setup
+## Phase 1: Database Schema & Storage Setup [checkpoint: b9eb063]
 
 - [x] Task: Configure Supabase Database and Storage Policies [1a49e30]
   - [x] Write schema migration file and local tests to validate tables
@@ -12,7 +12,7 @@ This plan outlines the phase-by-phase tasks required to implement the guestbook 
   - [x] Set up Row Level Security (RLS) policies for insert access (public guest upload) and read/write access (admin only)
   - [x] Configure `guest-uploads` storage bucket RLS policies
 
-- [ ] Task: Conductor - User Manual Verification 'Phase 1: Database Schema & Storage Setup' (Protocol in workflow.md)
+- [x] Task: Conductor - User Manual Verification 'Phase 1: Database Schema & Storage Setup' (Protocol in workflow.md)
 
 ---
 
