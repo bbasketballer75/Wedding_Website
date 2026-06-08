@@ -18,9 +18,9 @@ This plan outlines the phase-by-phase tasks required to implement the guestbook 
 
 ## Phase 2: Guestbook & Photo Upload UI Enhancements
 
-- [ ] Task: Refine Guestbook Form
-  - [ ] Write component tests for Guestbook text input and submission states
-  - [ ] Implement spam-prevention checks (honeypot fields) and validation in the guestbook submission form
+- [x] Task: Refine Guestbook Form [1c3c472]
+  - [x] Write component tests for Guestbook text input and submission states
+  - [x] Implement spam-prevention checks (honeypot fields) and validation in the guestbook submission form
 
 - [ ] Task: Implement Drag-and-Drop Photo Uploader Component
   - [ ] Write component tests for file drop, image resizing, and preview renders
