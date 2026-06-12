@@ -319,9 +319,8 @@ describe('Supabase Shared Links Helper Routines', () => {
         .mockResolvedValueOnce({ data: null, error: null }) // second call in update chain
 
       await approveGuestUpload('upload-id-123', {
-        id: 'admin-1',
+        userId: 'admin-1',
         name: 'Admin User',
-        role: 'admin',
       })
 
       expect(supabase.from).toHaveBeenCalledWith('guest_uploads')
@@ -339,9 +338,8 @@ describe('Supabase Shared Links Helper Routines', () => {
         .mockResolvedValueOnce({ data: null, error: null }) // second call in update chain
 
       await rejectGuestUpload('upload-id-123', 'Spam image', {
-        id: 'admin-1',
+        userId: 'admin-1',
         name: 'Admin User',
-        role: 'admin',
       })
 
       expect(supabase.from).toHaveBeenCalledWith('guest_uploads')

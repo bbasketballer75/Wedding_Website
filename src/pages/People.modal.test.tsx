@@ -65,12 +65,19 @@ const makePhoto = (id: string, faceName: string): Photo => ({
   thumbnail: `/photos/${id}-thumb.jpg`,
   caption: `Caption for ${id}`,
   album: 'Wedding Day',
-  faces: [{ name: faceName, x: 50, y: 40, box: { left: 10, top: 10, width: 20, height: 20 } }],
+  faces: [
+    {
+      id: `face-${id}`,
+      name: faceName,
+      x: 50,
+      y: 40,
+      box: { left: 10, top: 10, width: 20, height: 20 },
+    },
+  ],
   is_professional: true,
   created_at: '2025-05-10T12:00:00Z',
   tags: [],
-  collection: 'Wedding Photos',
-  source: 'professional',
+  likes: 0,
 })
 
 const PHOTOS: Photo[] = [

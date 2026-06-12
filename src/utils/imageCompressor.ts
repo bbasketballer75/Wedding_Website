@@ -1,4 +1,3 @@
-const MAX_IMAGE_SIZE_MB = 2 // Maximum desired file size in MB
 const MAX_IMAGE_WIDTH = 1920 // Maximum desired width in pixels
 const WEBP_QUALITY = 0.8 // WebP compression quality
 
