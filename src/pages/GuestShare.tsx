@@ -48,7 +48,7 @@ export default function GuestShare() {
   const { addToast } = useToast()
 
   const [loading, setLoading] = useState(true)
-  const [error, setError] = useState(false)
+  const [error, setError] = useState<null | 'invalid' | 'network'>(null)
   const [guestName, setGuestName] = useState('')
   const [photos, setPhotos] = useState<Photo[]>([])
   const [guestbook, setGuestbook] = useState<any[]>([])
@@ -57,61 +57,92 @@ export default function GuestShare() {
   const [submittingCommentId, setSubmittingCommentId] = useState<string | null>(null)
   const [engagementSessionId] = useState(getPhotoSessionId)
 
-  useEffect(() => {
-    async function loadContributions() {
-      if (!token) return
-      setLoading(true)
-      setError(false)
-      try {
-        const res = await fetchGuestContributionsByToken(token)
-        if (!res) {
-          setError(true)
-          return
-        }
-
-        setGuestName(res.guestName)
-        setGuestbook(res.guestbook || [])
-
-        // Compile and fetch full Photo objects for the lightbox
-        const uploadUrls = (res.uploads || []).flatMap(u => u.photo_urls || [])
-        let uploadPhotos: Photo[] = []
-        if (uploadUrls.length > 0) {
-          uploadPhotos = await fetchPhotosByUrls(uploadUrls)
-        }
-
-        // Deduplicate between uploaded photos and claimed photos
-        const seenIds = new Set<string>()
-        const combinedPhotos: Photo[] = []
-
-        for (const p of [...uploadPhotos, ...(res.claimedPhotos || [])]) {
-          if (p && p.id && !seenIds.has(p.id)) {
-            seenIds.add(p.id)
-            combinedPhotos.push(p)
-          }
-        }
-
-        setPhotos(combinedPhotos)
-
-        // Auto-switch to guestbook if guest only wrote notes but has no photos
-        if (combinedPhotos.length === 0 && (res.guestbook || []).length > 0) {
-          setActiveTab('guestbook')
-        }
-      } catch (err) {
-        console.error('Failed to load guest album:', err)
-        setError(true)
-      } finally {
-        setLoading(false)
-      }
+  const loadContributions = async () => {
+    if (!token) {
+      setError('invalid')
+      setLoading(false)
+      return
     }
+    setLoading(true)
+    setError(null)
+    try {
+      const res = await fetchGuestContributionsByToken(token)
+      if (!res) {
+        setError('invalid')
+        return
+      }
+
+      setGuestName(res.guestName)
+      setGuestbook(res.guestbook || [])
+
+      // Compile and fetch full Photo objects for the lightbox
+      const uploadUrls = (res.uploads || []).flatMap(u => u.photo_urls || [])
+      let uploadPhotos: Photo[] = []
+      if (uploadUrls.length > 0) {
+        uploadPhotos = await fetchPhotosByUrls(uploadUrls)
+      }
+
+      // Deduplicate between uploaded photos and claimed photos
+      const seenIds = new Set<string>()
+      const combinedPhotos: Photo[] = []
+
+      for (const p of [...uploadPhotos, ...(res.claimedPhotos || [])]) {
+        if (p && p.id && !seenIds.has(p.id)) {
+          seenIds.add(p.id)
+          combinedPhotos.push(p)
+        }
+      }
+
+      setPhotos(combinedPhotos)
+
+      // Auto-switch to guestbook if guest only wrote notes but has no photos
+      if (combinedPhotos.length === 0 && (res.guestbook || []).length > 0) {
+        setActiveTab('guestbook')
+      }
+    } catch (err) {
+      console.error('Failed to load guest album:', err)
+      setError('network')
+    } finally {
+      setLoading(false)
+    }
+  }
+
+  useEffect(() => {
     void loadContributions()
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [token])
 
-  const handleCopyLink = () => {
+  const handleCopyLink = async () => {
     const url = window.location.href
-    void navigator.clipboard?.writeText(url)
-    setCopied(true)
-    addToast('Album link copied to clipboard!', 'success')
-    window.setTimeout(() => setCopied(false), 2000)
+    try {
+      if (typeof navigator !== 'undefined' && navigator.clipboard?.writeText) {
+        await navigator.clipboard.writeText(url)
+        setCopied(true)
+        addToast('Album link copied to clipboard!', 'success')
+        window.setTimeout(() => setCopied(false), 2000)
+        return
+      }
+      // Fallback for browsers without Clipboard API (older Safari, insecure contexts)
+      const textarea = document.createElement('textarea')
+      textarea.value = url
+      textarea.setAttribute('readonly', '')
+      textarea.style.position = 'absolute'
+      textarea.style.left = '-9999px'
+      document.body.appendChild(textarea)
+      textarea.select()
+      const ok = document.execCommand('copy')
+      document.body.removeChild(textarea)
+      if (ok) {
+        setCopied(true)
+        addToast('Album link copied to clipboard!', 'success')
+        window.setTimeout(() => setCopied(false), 2000)
+      } else {
+        addToast("Couldn't copy — please copy the URL from your address bar.", 'warning')
+      }
+    } catch (err) {
+      console.error('Clipboard write failed:', err)
+      addToast("Couldn't copy — please copy the URL from your address bar.", 'warning')
+    }
   }
 
   const handleLike = (photoId: string) => {
@@ -195,6 +226,7 @@ export default function GuestShare() {
   }
 
   if (error || !token) {
+    const isNetwork = error === 'network'
     return (
       <div className='flex min-h-screen flex-col items-center justify-center bg-cream-50 px-4 pb-20 pt-28'>
         <motion.div
@@ -206,19 +238,31 @@ export default function GuestShare() {
             <AlertCircle className='h-6 w-6' />
           </div>
           <h2 className='font-serif text-2xl font-semibold text-charcoal-900 mb-3'>
-            Album Link Unresolved
+            {isNetwork ? 'Connection Trouble' : 'Album Link Unresolved'}
           </h2>
           <p className='text-sm text-charcoal-500 font-sans mb-8 leading-relaxed'>
-            This showcase album token is invalid, expired, or the guest contributions are not
-            public. Please double-check the URL or return to the main gallery.
+            {isNetwork
+              ? "We couldn't reach the archive just now. Check your connection and try again — your album will be right here."
+              : 'This showcase album token is invalid, expired, or the guest contributions are not public. Please double-check the URL or return to the main gallery.'}
           </p>
-          <Link
-            to='/gallery'
-            className='inline-flex w-full items-center justify-center gap-2 rounded-full bg-gold-600 hover:bg-gold-700 text-white font-medium text-sm py-3 transition duration-200 shadow-sm'
-          >
-            <ArrowLeft className='h-4 w-4' />
-            Back to Gallery
-          </Link>
+          <div className='flex flex-col gap-3'>
+            {isNetwork && (
+              <button
+                type='button'
+                onClick={() => void loadContributions()}
+                className='inline-flex w-full items-center justify-center gap-2 rounded-full bg-gold-600 hover:bg-gold-700 text-white font-medium text-sm py-3 transition duration-200 shadow-sm'
+              >
+                Try Again
+              </button>
+            )}
+            <Link
+              to='/gallery'
+              className='inline-flex w-full items-center justify-center gap-2 rounded-full border border-gold-200 bg-white hover:bg-gold-50 text-charcoal-800 font-medium text-sm py-3 transition duration-200'
+            >
+              <ArrowLeft className='h-4 w-4' />
+              Back to Gallery
+            </Link>
+          </div>
         </motion.div>
       </div>
     )

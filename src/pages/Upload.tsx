@@ -31,6 +31,7 @@ import { cn } from '@/lib/utils'
 import { supabase, getOrCreateShareToken } from '@/lib/supabase'
 import storage from '@/utils/storage'
 import { compressImage } from '@/utils/imageCompressor'
+import { withRetry, isTransientError } from '@/utils/retry'
 import { useClaimStore } from '@/stores/claimStore'
 import { ClaimModal } from '@/components/gallery/ClaimModal'
 
@@ -466,18 +467,34 @@ export default function UploadPage() {
 
       const videoUrls = completedVideoFiles.map(f => f.publicUrl).filter(Boolean) as string[]
 
-      const { error } = await supabase.from('guest_uploads').insert([
+      // Insert with retry — the R2 files are already uploaded, so a transient
+      // network failure here would otherwise orphan the upload. Retry covers
+      // 3 attempts with exponential backoff for transient errors only; permanent
+      // failures (validation, RLS, etc.) surface immediately.
+      const { error } = await withRetry(
+        () =>
+          supabase.from('guest_uploads').insert([
+            {
+              guest_name: name,
+              guest_email: email,
+              message: message || null,
+              photo_urls: photoUrls,
+              photo_fingerprints: photoFingerprints,
+              video_urls: videoUrls,
+              video_fingerprints: videoFingerprints,
+              status: 'pending',
+            },
+          ]),
         {
-          guest_name: name,
-          guest_email: email,
-          message: message || null,
-          photo_urls: photoUrls,
-          photo_fingerprints: photoFingerprints,
-          video_urls: videoUrls,
-          video_fingerprints: videoFingerprints,
-          status: 'pending',
-        },
-      ])
+          attempts: 3,
+          baseDelayMs: 500,
+          onRetry: (attempt, _err, delayMs) => {
+            setSubmitError(
+              `Connection blip — retrying (attempt ${attempt + 1} in ${Math.round(delayMs / 100) / 10}s)…`
+            )
+          },
+        }
+      )
 
       if (error) {
         throw error
@@ -493,8 +510,14 @@ export default function UploadPage() {
 
       setIsSubmitted(true)
       setQueueNotice(null)
-    } catch {
-      setSubmitError("Something didn't quite work — give it another go")
+    } catch (err) {
+      console.error('Guest upload submit failed:', err)
+      const transient = isTransientError(err)
+      setSubmitError(
+        transient
+          ? "We couldn't reach the archive just now — your files uploaded fine, just hit submit again."
+          : "Something didn't quite work — give it another go, or reach out if it keeps happening."
+      )
     } finally {
       setIsSubmitting(false)
     }
@@ -779,7 +802,8 @@ export default function UploadPage() {
               <ShieldCheck className='h-6 w-6' />
             </div>
             <div>
-              <h3 className='text-xl font-serif text-white'>Already uploaded memories?</h3>
+              {/* h2 (was h3) — this is a major section banner, not nested under another heading. */}
+              <h2 className='text-xl font-serif text-white'>Already uploaded memories?</h2>
               <p className='mt-1 text-sm text-white/70 max-w-xl'>
                 Claim ownership of your uploaded photos or face clusters you appear in. Get your
                 name verified and beautifully displayed in gold italics across the gallery.
@@ -789,7 +813,7 @@ export default function UploadPage() {
           <button
             type='button'
             onClick={() => useClaimStore.getState().openWizard()}
-            className='relative shrink-0 overflow-hidden rounded-lg bg-gold-500 hover:bg-gold-600 px-5 py-2.5 text-sm font-semibold text-cream-50 shadow-md hover:shadow-lg transition-all cursor-pointer flex items-center justify-center gap-1.5'
+            className='relative shrink-0 overflow-hidden rounded-lg bg-gold-500 hover:bg-gold-600 px-5 py-2.5 text-sm font-semibold text-charcoal-900 shadow-md hover:shadow-lg transition-all cursor-pointer flex items-center justify-center gap-1.5'
           >
             Claim My Photos
             <ArrowRight className='h-4 w-4' />

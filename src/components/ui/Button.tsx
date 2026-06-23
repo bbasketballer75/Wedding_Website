@@ -10,9 +10,12 @@ const buttonVariants = cva(
   {
     variants: {
       variant: {
-        // Primary gold button
+        // Primary gold button — text uses charcoal-900 (not white) so contrast
+        // passes WCAG AA at all sizes. White on gold-500 (#d4af37) was 2.1:1,
+        // which fails the 4.5:1 minimum for normal text. Charcoal-900 on
+        // gold-500 is ~9:1 (AAA).
         primary: cn(
-          'bg-gold-500 text-white',
+          'bg-gold-500 text-charcoal-900',
           'shadow-[0_4px_14px_rgba(201,160,92,0.4)]',
           'hover:bg-gold-600 hover:shadow-[0_8px_25px_rgba(201,160,92,0.5)]',
           'border border-gold-600/30 rounded-full'

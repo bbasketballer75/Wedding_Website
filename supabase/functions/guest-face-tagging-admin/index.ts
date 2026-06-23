@@ -139,7 +139,7 @@ async function requireAdmin(request: Request) {
     throw new Error('Could not verify admin user')
   }
 
-  const role = data.user.user_metadata?.role
+  const role = data.user.app_metadata?.role
   if (role !== 'admin') {
     throw new Error('Admin access required')
   }

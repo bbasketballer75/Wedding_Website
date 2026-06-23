@@ -157,11 +157,15 @@ export const useAuthStore = create<AuthState>()(
 
       // Admin check
       //
-      // SECURITY NOTE: This isAdmin state is for UI purposes ONLY (showing/hiding admin menu items).
-      // It is NOT security. Actual admin authorization must be enforced server-side via:
-      //   1. Supabase RLS policies on tables (only admin role can access certain rows)
-      //   2. Server-side Edge Functions that validate admin status before privileged operations
-      // Client-side role checks can be bypassed by modifying user metadata.
+      // SECURITY MODEL: Admin role lives in `app_metadata`, which is server-only
+      // (not user-spoofable via supabase.auth.updateUser). The authoritative check
+      // is `public.is_admin()` inside Postgres RLS policies and the
+      // `guest-face-tagging-admin` Edge Function. This client check is purely for
+      // UI affordances (showing/hiding admin nav items).
+      //
+      // Migration: supabase/migrations/20260623000100_admin_role_app_metadata.sql
+      // migrated the role from user_metadata (spoofable) to app_metadata (safe),
+      // and replaced every RLS policy + admin RPC with `public.is_admin()`.
       checkAdminStatus: async () => {
         const { user } = get()
         if (!user) {
@@ -170,10 +174,7 @@ export const useAuthStore = create<AuthState>()(
         }
 
         try {
-          // This isAdmin state is used ONLY for UI convenience (hiding/showing admin nav items).
-          // Security-critical authorization MUST be enforced server-side via RLS policies
-          // and Edge Function authorization checks, never by relying on this client state.
-          const isAdmin = user.user_metadata?.role === 'admin'
+          const isAdmin = user.app_metadata?.role === 'admin'
           set({ isAdmin })
         } catch (error) {
           console.error('Admin check error:', error)

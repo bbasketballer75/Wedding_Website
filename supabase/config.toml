@@ -26,7 +26,9 @@ enabled = false
 
 [db]
 # Port to use for the local database URL.
-port = 54322
+# Changed from 54322 → 54333 → 54334 because both 54322 (main-street-mail) and
+# 54333 (honcho) are taken on this host. 54334 is free as of 2026-06-23.
+port = 54334
 # Port used by db diff command to initialize the shadow database.
 shadow_port = 54320
 # Maximum amount of time to wait for health check when starting the local database.

@@ -141,6 +141,17 @@ test.describe('Desktop visual — public pages', () => {
       clip: { x: 0, y: 0, width: 1440, height: 900 },
     })
   })
+
+  test('Guest share — valid token page', async ({ page }) => {
+    // Uses a known mock token; the publicSite handler will return a deterministic
+    // showcase page. Baselines are most useful for the family-share flow because
+    // it's what real relatives hit.
+    await gotoPage(page, '/guest/valid-showcase-token', 'desktop')
+    await stabilise(page, 1500)
+    await expect(page).toHaveScreenshot('guest-share-valid-desktop.png', {
+      clip: { x: 0, y: 0, width: 1440, height: 900 },
+    })
+  })
 })
 
 // ---------------------------------------------------------------------------

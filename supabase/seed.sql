@@ -44,27 +44,25 @@ values
 on conflict do nothing;
 
 -- Insert sample guestbook messages
-insert into guestbook_messages (name, email, content, type, reactions)
+-- `type` column was dropped in 20260410001200_drop_guestbook_type_and_anniversary.sql
+insert into guestbook_messages (name, email, content, reactions)
 values 
   (
     'Sarah & Mike', 
     'sarah@example.com', 
     'Congratulations you two! Wishing you a lifetime of love and happiness. The wedding was absolutely beautiful!', 
-    'text',
     '{"heart": 5, "clap": 2}'
   ),
   (
     'The Johnson Family', 
     'johnson@example.com', 
     'Thank you for letting us be part of your special day. May your love continue to grow stronger with each passing year.',
-    'text',
     '{"heart": 3}'
   ),
   (
     'Aunt Patricia',
     'patricia@example.com',
     'I have known Jordyn since she was a baby. Seeing her so happy brought tears to my eyes. Austin, welcome to the family!',
-    'text',
     '{"heart": 8, "cry": 3}'
   )
 on conflict do nothing;

@@ -28,7 +28,9 @@ export function PageLoader() {
             }}
           />
         </div>
-        <p className='text-charcoal-500 text-sm'>Loading...</p>
+        {/* text-charcoal-700 (was charcoal-500) — the old color had 1.2:1 contrast on
+            cream-50, which fails WCAG AA. Charcoal-700 is dark enough to pass. */}
+        <p className='text-charcoal-700 text-sm'>Loading...</p>
       </motion.div>
     </div>
   )

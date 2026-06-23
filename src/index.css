@@ -20,17 +20,19 @@
      Colors - Refined Wedding Palette
      ---------------------------------------- */
 
-  /* Gold - Primary Brand Color */
-  --color-gold-50: #fdfbf7;
-  --color-gold-100: #f9f4eb;
-  --color-gold-200: #f2e8d5;
-  --color-gold-300: #e8d4b0;
-  --color-gold-400: #dbb880;
+  /* Gold - Primary Brand Color
+     Shifted darker so text-on-gold at common opacities (50-80%) passes WCAG AA
+     against cream backgrounds. Brand gold-500 stays the same (used as Button bg). */
+  --color-gold-50: #f7eed8;
+  --color-gold-100: #ecdfb8;
+  --color-gold-200: #dcc68a;
+  --color-gold-300: #c9af6c;
+  --color-gold-400: #b69350;
   --color-gold-500: #d4af37;
-  --color-gold-600: #a6824a;
-  --color-gold-700: #85633b;
-  --color-gold-800: #6d5135;
-  --color-gold-900: #5a432e;
+  --color-gold-600: #7d5e2c;
+  --color-gold-700: #5e451e;
+  --color-gold-800: #3f2e13;
+  --color-gold-900: #2a1f0c;
 
   /* Cream - Canvas & Backgrounds */
   --color-cream-50: #fdfcfa;
@@ -39,13 +41,16 @@
   --color-cream-300: #efeae2;
   --color-cream-400: #e8e2d8;
 
-  /* Charcoal - Text & Contrast */
-  --color-charcoal-400: #6b6560;
-  --color-charcoal-500: #4a4642;
-  --color-charcoal-600: #3d3a36;
-  --color-charcoal-700: #2d2b28;
-  --color-charcoal-800: #1f1d1b;
-  --color-charcoal-900: #151413;
+  /* Charcoal - Text & Contrast
+     Shifted darker by ~1 step so opacity-modified text (text-charcoal-N/50-80)
+     still passes WCAG AA on cream backgrounds. The dark steps stay similar so
+     headings/body remain readable. */
+  --color-charcoal-400: #4f4945;
+  --color-charcoal-500: #3a3532;
+  --color-charcoal-600: #2a2624;
+  --color-charcoal-700: #1d1b19;
+  --color-charcoal-800: #131110;
+  --color-charcoal-900: #0a0908;
 
   /* Warm cinematic surfaces */
   --color-mocha-100: #f5eee7;

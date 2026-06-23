@@ -7,8 +7,10 @@
  *     whether real photos, guestbook messages, and CDN media are loading.
  *   - This config targets the running dev server (port 5173) with NO mocks so you see
  *     exactly what a real guest sees.
- *   - It uses headed Chrome (not headless Chromium) so the GPU-composited video background
- *     on the home page renders correctly in screenshots instead of going black.
+ *   - It uses headless Chromium so the visual suite can run from CI/agents without
+ *     a display. The video background composites black in headless Chromium but we
+ *     pause all videos + hide them via CSS in `stabilise()` before snapshotting,
+ *     so visual diffs are stable.
  *
  * Usage:
  *   npm run dev               # start the dev server first (required)
@@ -50,9 +52,11 @@ export default defineConfig({
     actionTimeout: 20000,
     navigationTimeout: 30000,
     viewport: { width: 1440, height: 900 },
-    // Headed Chrome renders the GPU-composited video background correctly.
-    // Headless Chromium composites it as a black rectangle.
-    headless: false,
+    // Headless so we can run from CI/agents without a display. The video
+    // background composites as a black rectangle in headless Chromium but we
+    // pause all videos + hide them via CSS in `stabilise()` before snapshotting,
+    // so the visual diffs are stable across headed/headless runs.
+    headless: true,
   },
 
   projects: [
@@ -60,8 +64,7 @@ export default defineConfig({
       name: 'visual-desktop',
       use: {
         ...devices['Desktop Chrome'],
-        channel: 'chrome',
-        headless: false,
+        headless: true,
         viewport: { width: 1440, height: 900 },
       },
     },
@@ -69,8 +72,7 @@ export default defineConfig({
       name: 'visual-mobile',
       use: {
         ...devices['Pixel 5'],
-        channel: 'chrome',
-        headless: false,
+        headless: true,
       },
     },
   ],

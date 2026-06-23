@@ -1,0 +1,57 @@
+name: PR CI
+
+on:
+  pull_request:
+    branches: [main]
+  push:
+    branches: [main]
+
+# Cancel any in-flight run for the same ref when a new commit lands.
+concurrency:
+  group: pr-ci-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  validate:
+    name: Validate (lint, format, typecheck, test, build)
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    permissions:
+      contents: read
+    env:
+      # Placeholder values so `vite build` resolves without leaking real keys.
+      # Real keys live in Netlify env; CI only needs the build to succeed.
+      VITE_SUPABASE_URL: https://placeholder.supabase.co
+      VITE_SUPABASE_ANON_KEY: ci-placeholder-anon-key
+      VITE_SITE_URL: https://www.theporadas.com
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Node 20
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: 'npm'
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Lint
+        run: npm run lint
+
+      - name: Format check
+        run: npm run format:check
+
+      - name: Type check
+        run: npx tsc --noEmit
+
+      - name: Unit tests
+        run: npm run test:run
+
+      - name: Build
+        run: npm run build
+
+      # E2E intentionally NOT in the PR gate — runs in `verify:release` instead.
+      # PR gate stays under ~3 min; full e2e suite takes 10+ min and is flaky on
+      # cross-browser matrix at PR-time.

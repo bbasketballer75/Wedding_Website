@@ -39,7 +39,9 @@
       content="A permanent digital archive of our wedding day. Relive our story, browse the films, and view the galleries."
     />
     <meta property="twitter:image" content="__SITE_URL__/images/og-image.webp" />
-    <link rel="canonical" href="__SITE_URL__/" />
+    <!-- Canonical URL is set per-page at runtime by src/components/seo/SEOHead.tsx.
+         A static canonical here would force every page to point at the homepage,
+         which fails Lighthouse SEO and confuses search engines. -->
 
     <!-- Additional Meta Tags -->
     <meta name="robots" content="index, follow" />
