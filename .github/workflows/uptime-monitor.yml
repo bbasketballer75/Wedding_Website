@@ -53,10 +53,13 @@ jobs:
               `Time (UTC): ${new Date().toISOString()}`
             ].join('\n')
 
+            // Search across open and closed issues so a closed alert can be
+            // reopened instead of spawning a duplicate issue.
             const { data: issues } = await github.rest.issues.listForRepo({
               owner: context.repo.owner,
               repo: context.repo.repo,
-              state: 'open'
+              state: 'all',
+              per_page: 100
             })
 
             const existing = issues.find((issue) => issue.title === title)
@@ -69,6 +72,16 @@ jobs:
                 body
               })
               return
+            }
+
+            // Reopen a closed alert so the single issue stays the canonical tracker.
+            if (existing.state === 'closed') {
+              await github.rest.issues.update({
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                issue_number: existing.number,
+                state: 'open'
+              })
             }
 
             // Throttle comments to one per hour to avoid spamming the issue
