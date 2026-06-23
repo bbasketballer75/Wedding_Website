@@ -122,7 +122,8 @@ const pwaIcons = [
 const pwaManifest = {
   name: 'Austin & Jordyn | Wedding Archive',
   short_name: 'A&J Archive',
-  description: 'A permanent digital archive of our wedding day. Relive our story, browse the films, and view the galleries.',
+  description:
+    'A permanent digital archive of our wedding day. Relive our story, browse the films, and view the galleries.',
   start_url: '/',
   scope: '/',
   display: 'standalone',
@@ -264,12 +265,16 @@ export default defineConfig(({ mode }) => {
       chunkSizeWarningLimit: 500,
       assetsInlineLimit: 4096,
       reportCompressedSize: true,
-      minify: 'esbuild',
-    },
-    esbuild: {
-      // Strip console.* and debugger statements from production bundles.
-      // Sentry captures errors in production; browser console output is not needed.
-      drop: mode === 'production' ? ['console', 'debugger'] : [],
+      // Use Terser for minification so we can reliably drop console/debugger
+      // statements in production bundles. Sentry captures errors in production;
+      // browser console output is not needed.
+      minify: 'terser',
+      terserOptions: {
+        compress: {
+          drop_console: mode === 'production',
+          drop_debugger: mode === 'production',
+        },
+      },
     },
     server: {
       port: 5173,
@@ -279,7 +284,7 @@ export default defineConfig(({ mode }) => {
             '/__media_proxy': {
               target: mediaBaseUrl,
               changeOrigin: true,
-              rewrite: (requestPath) => requestPath.replace(/^\/__media_proxy/, ''),
+              rewrite: requestPath => requestPath.replace(/^\/__media_proxy/, ''),
             },
           }
         : undefined,
@@ -292,12 +297,12 @@ export default defineConfig(({ mode }) => {
             '/__media_proxy': {
               target: mediaBaseUrl,
               changeOrigin: true,
-              rewrite: (requestPath) => requestPath.replace(/^\/__media_proxy/, ''),
+              rewrite: requestPath => requestPath.replace(/^\/__media_proxy/, ''),
             },
             '/media': {
               target: mediaBaseUrl,
               changeOrigin: true,
-              rewrite: (requestPath) => requestPath.replace(/^\/media/, ''),
+              rewrite: requestPath => requestPath.replace(/^\/media/, ''),
             },
           }
         : undefined,
