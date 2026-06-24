@@ -8,7 +8,10 @@ export default defineConfig({
   fullyParallel: false,
   forbidOnly: !!process.env.CI,
   retries: 0,
-  workers: 3,
+  // Single-worker in CI to avoid vite-preview port/HMR contention with
+  // N parallel browsers (sequential run is ~3x slower wall time but reliable).
+  // Local dev keeps the 3-worker default for fast feedback.
+  workers: process.env.CI ? 1 : 3,
   reporter: [['list'], ['html', { open: 'never' }]],
   timeout: 60000,
   expect: {
