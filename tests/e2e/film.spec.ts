@@ -35,6 +35,34 @@ test.describe('Film Page', () => {
     await page.getByRole('link', { name: 'Share Your Angle' }).click()
     await expect(page).toHaveURL(/\/upload$/)
   })
+
+  test('main film keeps poster/preload settings and loads captions from media host', async ({
+    page,
+  }) => {
+    await gotoPublicPage(page, '/film')
+
+    const video = page.locator('#wedding-film-player video:not([aria-hidden])')
+    await expect(video).toHaveAttribute('poster', /\/images\/film\/main-film-poster\.png$/)
+    await expect(video).toHaveAttribute('preload', 'metadata')
+
+    const trackSrc = await video.locator('track[kind="captions"]').getAttribute('src')
+    if (!trackSrc) {
+      throw new Error('Main film captions track is missing a src attribute.')
+    }
+
+    expect(trackSrc).toContain('media.wedding.theporadas.com/video/main.vtt')
+
+    const response = await page.request.get(trackSrc, {
+      headers: {
+        Origin: 'http://127.0.0.1:4174',
+        Range: 'bytes=0-0',
+      },
+    })
+
+    expect(response.status()).toBe(206)
+    expect(response.headers()['access-control-allow-origin']).toBe('http://127.0.0.1:4174')
+    expect(response.headers()['content-type']).toContain('text/vtt')
+  })
 })
 
 for (const viewport of Object.keys(viewports) as Array<keyof typeof viewports>) {

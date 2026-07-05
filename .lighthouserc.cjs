@@ -8,7 +8,7 @@ module.exports = {
         'http://localhost:4173/film',
         'http://localhost:4173/guest-photos',
       ],
-      startServerCommand: 'npm run preview',
+      startServerCommand: 'npm run preview -- --host 127.0.0.1 --port 4173 --strictPort',
       startServerReadyPattern: 'Local',
       numberOfRuns: 1,
     },
