@@ -31,6 +31,38 @@ async function fetchText(pathname) {
   return response.text()
 }
 
+async function fetchResponse(pathname) {
+  const response = await fetch(`${normalizedSiteUrl}${pathname}`, { method: 'HEAD' })
+
+  if (!response.ok) {
+    throw new Error(`${pathname} returned HTTP ${response.status}`)
+  }
+
+  return response
+}
+
+function expectHeaderIncludes(headers, headerName, expectedFragment, label) {
+  const value = headers.get(headerName)
+  if (value?.includes(expectedFragment)) {
+    addPass(`${label} ${headerName} includes ${expectedFragment}.`)
+  } else {
+    addFailure(
+      `${label} ${headerName} should include ${expectedFragment}; got ${value || '<missing>'}.`
+    )
+  }
+}
+
+function expectHeaderMissingFragment(headers, headerName, forbiddenFragment, label) {
+  const value = headers.get(headerName)
+  if (value && !value.includes(forbiddenFragment)) {
+    addPass(`${label} ${headerName} does not include ${forbiddenFragment}.`)
+  } else {
+    addFailure(
+      `${label} ${headerName} should not include ${forbiddenFragment}; got ${value || '<missing>'}.`
+    )
+  }
+}
+
 async function main() {
   console.log(`Verifying deployed site at ${normalizedSiteUrl}`)
 
@@ -84,6 +116,59 @@ async function main() {
     } else {
       addFailure(`sitemap.xml is missing ${route}.`)
     }
+  }
+
+  const assetPath = indexHtml.match(/href="(\/assets\/[^"]+\.css)"/)?.[1]
+  if (assetPath) {
+    const assetResponse = await fetchResponse(assetPath)
+    expectHeaderIncludes(
+      assetResponse.headers,
+      'cache-control',
+      'public,max-age=31536000,immutable',
+      assetPath
+    )
+  } else {
+    addFailure('Root HTML did not include a hashed CSS asset to verify cache headers.')
+  }
+
+  const indexResponse = await fetchResponse('/')
+  expectHeaderIncludes(indexResponse.headers, 'cache-control', 'max-age=0', '/')
+  expectHeaderIncludes(indexResponse.headers, 'content-security-policy', "default-src 'self'", '/')
+  expectHeaderIncludes(
+    indexResponse.headers,
+    'content-security-policy-report-only',
+    "default-src 'self'",
+    '/'
+  )
+  expectHeaderMissingFragment(
+    indexResponse.headers,
+    'content-security-policy-report-only',
+    "'unsafe-eval'",
+    '/'
+  )
+
+  const manifestResponse = await fetchResponse('/manifest.webmanifest')
+  expectHeaderIncludes(
+    manifestResponse.headers,
+    'content-type',
+    'application/manifest+json',
+    '/manifest.webmanifest'
+  )
+  expectHeaderIncludes(
+    manifestResponse.headers,
+    'cache-control',
+    'no-cache,no-store,must-revalidate',
+    '/manifest.webmanifest'
+  )
+
+  for (const path of ['/sw.js', '/robots.txt', '/sitemap.xml']) {
+    const response = await fetchResponse(path)
+    expectHeaderIncludes(
+      response.headers,
+      'cache-control',
+      'no-cache,no-store,must-revalidate',
+      path
+    )
   }
 
   if (failures.length > 0) {
