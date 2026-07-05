@@ -13,6 +13,7 @@
 ## Task 1: DB Migrations
 
 **Files:**
+
 - Run via Supabase MCP or `supabase migration new` locally
 
 ### Step 1: Drop `type` column from guestbook_messages
@@ -54,6 +55,7 @@ git commit -m "chore(db): drop guestbook type column and anniversary_entries tab
 ## Task 2: Guestbook — Text Only
 
 **Files:**
+
 - Modify: `src/lib/supabase.ts` (GuestbookMessage interface)
 - Modify: `src/pages/Guestbook.tsx`
 - Modify: `src/pages/admin/GuestbookModeration.tsx`
@@ -91,8 +93,9 @@ Also remove the `p_type` parameter from the `submitGuestbookMessage` RPC call if
 ### Step 2: Clean up Guestbook.tsx
 
 In `src/pages/Guestbook.tsx`:
+
 - Remove the `MessageType = 'text' | 'voice' | 'video'` type definition
-- Remove the `ActiveFilter = 'all' | MessageType` type definition  
+- Remove the `ActiveFilter = 'all' | MessageType` type definition
 - Remove any filter state (`const [filter, setFilter]`) related to message type
 - Remove any voice/video recording UI or stub code
 - Keep the text submission form as-is (it already hardcodes `p_type: 'text'`)
@@ -103,15 +106,17 @@ In `src/pages/Guestbook.tsx`:
 In `src/pages/admin/GuestbookModeration.tsx`:
 
 Remove the filter state (line ~23):
+
 ```ts
 // Remove this line:
 const [filter, setFilter] = useState<'all' | 'text' | 'voice' | 'video'>('all')
 ```
 
 Remove the filtered messages logic (line ~151):
+
 ```ts
 // Remove or simplify:
-const filteredMessages = messages.filter((message) => {
+const filteredMessages = messages.filter(message => {
   if (filter !== 'all' && message.type !== filter) return false
   // ...
 })
@@ -122,6 +127,7 @@ const filteredMessages = messages
 Remove the filter button UI block (lines ~163-189, the four filter buttons with `guestbook-filter-*` testids).
 
 Remove the `message_type` field from audit log metadata if present (~line 80):
+
 ```ts
 // Remove: message_type: message.type,
 ```
@@ -153,6 +159,7 @@ Remove the entire `'filter by "text" shows only text-type messages'` test — th
 ```bash
 npx tsc --noEmit
 ```
+
 Expected: no errors.
 
 ### Step 7: Run affected tests
@@ -160,6 +167,7 @@ Expected: no errors.
 ```bash
 npx playwright test admin-workflows.spec.ts admin-a11y.spec.ts --workers=1
 ```
+
 Expected: all pass.
 
 ### Step 8: Regenerate guestbook visual snapshot
@@ -182,12 +190,14 @@ git commit -m "feat(guestbook): remove voice/video — text-only messages"
 ## Task 3: Remove Anniversary Entirely
 
 **Files to delete:**
+
 - `src/pages/Anniversary.tsx`
 - `src/pages/admin/AnniversaryManager.tsx`
 - `tests/e2e/anniversary.spec.ts`
 - `tests/e2e/admin-visuals.spec.ts-snapshots/admin-anniversary-desktop-chromium-win32.png`
 
 **Files to modify:**
+
 - `src/components/seo/SEOHead.tsx` — remove `AnniversarySEO` export
 - `src/App.tsx` — remove lazy import + public route + admin route
 - `src/pages/admin/AdminLayout.tsx` — remove `AnniversaryManager` lazy import + route
@@ -221,18 +231,20 @@ In `src/components/seo/SEOHead.tsx`, find and delete the `AnniversarySEO` named 
 ### Step 3: App.tsx — remove anniversary route
 
 Remove:
+
 ```ts
 const Anniversary = lazy(() => import('@/pages/Anniversary'))
 ```
 
 Remove the entire `<Route path="/anniversary">` block:
+
 ```tsx
 // Remove:
 <Route
-  path="/anniversary"
+  path='/anniversary'
   element={
     <RouteErrorBoundary>
-      <LazyPage title="Our Anniversary">
+      <LazyPage title='Our Anniversary'>
         <Anniversary />
       </LazyPage>
     </RouteErrorBoundary>
@@ -245,6 +257,7 @@ Also remove `'/anniversary': 'Our Anniversary'` from the titles map (~line 75).
 ### Step 4: AdminLayout.tsx — remove AnniversaryManager route
 
 Remove:
+
 ```ts
 const AnniversaryManager = lazy(() => import('./AnniversaryManager'))
 ```
@@ -256,6 +269,7 @@ Also remove the "Anniversary" nav item from the sidebar nav array if present.
 ### Step 5: supabase.ts — remove anniversary service code
 
 Remove these items (around lines 849-897):
+
 - `AnniversaryEntry` interface
 - `fetchPublishedAnniversaryEntries()` function
 - `fetchAllAnniversaryEntries()` function
@@ -291,6 +305,7 @@ Remove these items (around lines 849-897):
 ```bash
 npx tsc --noEmit
 ```
+
 Expected: no errors.
 
 ### Step 9: Full test run
@@ -298,6 +313,7 @@ Expected: no errors.
 ```bash
 npx playwright test --workers=1
 ```
+
 Expected: all remaining tests pass (count will be lower — anniversary tests removed).
 
 ### Step 10: Commit
@@ -312,6 +328,7 @@ git commit -m "feat: remove anniversary section entirely"
 ## Task 4: Guest Memories — Gallery-Style Masonry
 
 **Files:**
+
 - Rewrite: `src/pages/GuestMemories.tsx`
 - Modify: `tests/e2e/guest-memories.spec.ts`
 - Regenerate: `tests/e2e/guest-memories.spec.ts-snapshots/`
@@ -321,6 +338,7 @@ git commit -m "feat: remove anniversary section entirely"
 ### Step 1: Understand the data shape
 
 `GuestUpload` has:
+
 ```ts
 {
   id: string
@@ -334,6 +352,7 @@ git commit -m "feat: remove anniversary section entirely"
 ```
 
 `PhotoGrid` expects each photo to have:
+
 ```ts
 {
   id: string
@@ -349,6 +368,7 @@ git commit -m "feat: remove anniversary section entirely"
 ```
 
 Transform: for each `upload`, for each `url` in `upload.photo_urls`:
+
 ```ts
 {
   id: `${upload.id}-${photoIndex}`,
@@ -386,7 +406,7 @@ interface FlatPhoto {
 }
 
 function flattenUploads(uploads: GuestUpload[]): FlatPhoto[] {
-  return uploads.flatMap((upload) =>
+  return uploads.flatMap(upload =>
     upload.photo_urls.map((url, i) => ({
       id: `${upload.id}-${i}`,
       url,
@@ -415,7 +435,9 @@ export default function GuestMemories() {
       }
     }
     void load()
-    return () => { mounted = false }
+    return () => {
+      mounted = false
+    }
   }, [])
 
   const photos = flattenUploads(uploads)
@@ -426,36 +448,36 @@ export default function GuestMemories() {
   }
 
   return (
-    <div data-testid="guest-memories-page" className="min-h-screen bg-cream-50">
+    <div data-testid='guest-memories-page' className='min-h-screen bg-cream-50'>
       <GuestMemoriesSEO />
 
-      <div className="mx-auto max-w-7xl px-4 pb-20 pt-10 sm:pt-14">
+      <div className='mx-auto max-w-7xl px-4 pb-20 pt-10 sm:pt-14'>
         {/* Header */}
         <motion.div
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.6 }}
-          className="mb-10 sm:mb-14"
+          className='mb-10 sm:mb-14'
         >
-          <div className="flex items-center gap-2 mb-4">
-            <Camera className="h-4 w-4 text-gold-500" />
-            <span className="text-xs font-medium uppercase tracking-[0.22em] text-gold-600">
+          <div className='flex items-center gap-2 mb-4'>
+            <Camera className='h-4 w-4 text-gold-500' />
+            <span className='text-xs font-medium uppercase tracking-[0.22em] text-gold-600'>
               Guest Memories
             </span>
           </div>
-          <h1 className="font-display text-4xl text-charcoal-900 sm:text-5xl mb-4">
+          <h1 className='font-display text-4xl text-charcoal-900 sm:text-5xl mb-4'>
             Your side of the day.
           </h1>
-          <p className="max-w-2xl text-charcoal-500 text-lg leading-relaxed">
+          <p className='max-w-2xl text-charcoal-500 text-lg leading-relaxed'>
             Phone shots, candid moments, and quiet details from the people who were there.
           </p>
-          <div className="mt-6 flex items-center gap-3">
-            <span className="text-sm text-charcoal-400">
+          <div className='mt-6 flex items-center gap-3'>
+            <span className='text-sm text-charcoal-400'>
               {loading ? '…' : `${photos.length} photo${photos.length === 1 ? '' : 's'}`}
             </span>
-            <Link to="/upload">
-              <Button variant="secondary" size="sm" className="gap-2">
-                <Upload className="h-4 w-4" />
+            <Link to='/upload'>
+              <Button variant='secondary' size='sm' className='gap-2'>
+                <Upload className='h-4 w-4' />
                 Share your photos
               </Button>
             </Link>
@@ -464,32 +486,29 @@ export default function GuestMemories() {
 
         {/* Gallery */}
         {loading ? (
-          <div className="grid grid-cols-2 gap-4 sm:grid-cols-3 lg:grid-cols-4 animate-pulse">
+          <div className='grid grid-cols-2 gap-4 sm:grid-cols-3 lg:grid-cols-4 animate-pulse'>
             {Array.from({ length: 8 }).map((_, i) => (
-              <div key={i} className="aspect-[3/4] rounded-[1.8rem] bg-charcoal-100/60" />
+              <div key={i} className='aspect-[3/4] rounded-[1.8rem] bg-charcoal-100/60' />
             ))}
           </div>
         ) : photos.length === 0 ? (
           <motion.div
             initial={{ opacity: 0, y: 16 }}
             animate={{ opacity: 1, y: 0 }}
-            className="py-24 text-center"
+            className='py-24 text-center'
           >
-            <p className="text-charcoal-500 mb-8 max-w-sm mx-auto">
+            <p className='text-charcoal-500 mb-8 max-w-sm mx-auto'>
               No guest photos yet. Be the first to share a moment from the day.
             </p>
-            <Link to="/upload">
-              <Button size="lg" className="gap-2">
-                <Upload className="h-4 w-4" />
+            <Link to='/upload'>
+              <Button size='lg' className='gap-2'>
+                <Upload className='h-4 w-4' />
                 Share your photos
               </Button>
             </Link>
           </motion.div>
         ) : (
-          <PhotoGrid
-            photos={photos}
-            onPhotoClick={handlePhotoClick}
-          />
+          <PhotoGrid photos={photos} onPhotoClick={handlePhotoClick} />
         )}
       </div>
 
@@ -508,6 +527,7 @@ export default function GuestMemories() {
 ### Step 3: Update guest-memories e2e test
 
 In `tests/e2e/guest-memories.spec.ts`, the old test likely checked for per-upload card elements. Update to:
+
 - Check that `[data-testid="guest-memories-page"]` renders
 - Check that the masonry grid renders (look for the MasonryGrid container or `role="button"` photo cards)
 - Regenerate visual snapshots
@@ -529,6 +549,7 @@ npx playwright test guest-memories.spec.ts --update-snapshots --workers=1
 ```bash
 npx playwright test --workers=1
 ```
+
 Expected: all pass.
 
 ### Step 7: Commit
@@ -544,6 +565,7 @@ git commit -m "feat(guest-memories): upgrade to masonry gallery matching main ga
 ## Task 5: Sitemap — Add Missing Routes
 
 **Files:**
+
 - Modify: `scripts/generate-sitemap.js`
 
 ### Step 1: Update routes array
@@ -595,6 +617,7 @@ node scripts/generate-sitemap.js
 ```
 
 Expected output:
+
 ```
 ✅ Sitemap generated successfully!
 ✅ Robots.txt generated successfully!
@@ -614,6 +637,7 @@ git commit -m "chore(seo): add guest-photos and people to sitemap, remove annive
 ## Task 6: Performance Baseline
 
 **Files:**
+
 - Create: `.lighthouserc.cjs`
 - Modify: `package.json` (add `perf` script and `@lhci/cli` devDep)
 
@@ -673,6 +697,7 @@ npm run perf
 ```
 
 Look at the output scores for each page. Document any score below:
+
 - Performance < 0.7 on any page → note which metric is dragging it (LCP, CLS, TBT)
 - Accessibility < 0.95 → investigate (our a11y tests should have caught most issues)
 

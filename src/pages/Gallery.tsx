@@ -10,7 +10,7 @@ import { FaceRecognition } from '@/components/face-recognition/FaceRecognition'
 import { Button } from '@/components/ui/Button'
 import { Input } from '@/components/ui/Input'
 import { GallerySkeleton } from '@/components/ui/Skeleton'
-import { downloadFile } from '@/utils/download'
+import { downloadBatch, downloadFile } from '@/utils/download'
 import { getMediaPath } from '@/utils/media'
 import { useInfiniteScroll } from '@/hooks/useInfiniteScroll'
 import {
@@ -1471,7 +1471,6 @@ export default function Gallery() {
       setProgress(0)
       setProgressStatus('Initializing downloads...')
 
-      const { downloadBatch } = await import('@/utils/download')
       await downloadBatch(queue, (prog, stat) => {
         setProgress(prog)
         setProgressStatus(stat)

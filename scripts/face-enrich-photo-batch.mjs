@@ -10,7 +10,9 @@ import {
   writeMarkdown,
 } from './photo-batch-utils.mjs'
 
-const Human = await import(pathToFileURL(path.resolve('node_modules/@vladmandic/human/dist/human.node-wasm.js')).href)
+const Human = await import(
+  pathToFileURL(path.resolve('node_modules/@vladmandic/human/dist/human.node-wasm.js')).href
+)
 
 const sourceRoot = process.argv[2]
 const workingRoot = process.argv[3]
@@ -19,7 +21,9 @@ const analysisPathArg = process.argv[5]
 const reviewPathArg = process.argv[6]
 
 if (!sourceRoot || !workingRoot) {
-  console.error('Usage: node scripts/face-enrich-photo-batch.mjs <source-root> <working-root> [inventory-json] [analysis-json] [review-json]')
+  console.error(
+    'Usage: node scripts/face-enrich-photo-batch.mjs <source-root> <working-root> [inventory-json] [analysis-json] [review-json]'
+  )
   process.exit(1)
 }
 
@@ -45,7 +49,12 @@ function enableFileFetch() {
 
   const nativeFetch = globalThis.fetch.bind(globalThis)
   globalThis.fetch = async (resource, init) => {
-    const url = typeof resource === 'string' ? resource : resource instanceof URL ? resource.href : resource.url
+    const url =
+      typeof resource === 'string'
+        ? resource
+        : resource instanceof URL
+          ? resource.href
+          : resource.url
     if (url.startsWith('file://')) {
       const filePath = fileUrlToPath(url)
       const buffer = await fs.readFile(filePath)
@@ -88,7 +97,7 @@ function averageDescriptor(vectors) {
     }
   }
 
-  return merged.map((value) => value / Math.max(vectors.length, 1))
+  return merged.map(value => value / Math.max(vectors.length, 1))
 }
 
 function buildFaceConfig() {
@@ -142,7 +151,11 @@ async function detectFacesForImage(human, imagePath, record) {
   const { data, info } = await resized.removeAlpha().raw().toBuffer({ resolveWithObject: true })
 
   const tensor = human.tf.tidy(() => {
-    const decoded = human.tf.tensor3d(new Uint8Array(data), [info.height, info.width, info.channels], 'int32')
+    const decoded = human.tf.tensor3d(
+      new Uint8Array(data),
+      [info.height, info.width, info.channels],
+      'int32'
+    )
     const expanded = human.tf.expandDims(decoded, 0)
     return human.tf.cast(expanded, 'float32')
   })
@@ -155,10 +168,10 @@ async function detectFacesForImage(human, imagePath, record) {
     if (!face.embedding || !face.box || face.box.length < 4) continue
 
     const [left, top, width, height] = face.box
-    const centerX = Number((((left + (width / 2)) / info.width) * 100).toFixed(2))
-    const centerY = Number((((top + (height / 2)) / info.height) * 100).toFixed(2))
-    const cropLeft = Math.max(0, Math.floor(left - (width * 0.2)))
-    const cropTop = Math.max(0, Math.floor(top - (height * 0.2)))
+    const centerX = Number((((left + width / 2) / info.width) * 100).toFixed(2))
+    const centerY = Number((((top + height / 2) / info.height) * 100).toFixed(2))
+    const cropLeft = Math.max(0, Math.floor(left - width * 0.2))
+    const cropTop = Math.max(0, Math.floor(top - height * 0.2))
     const cropWidth = Math.min(info.width - cropLeft, Math.ceil(width * 1.4))
     const cropHeight = Math.min(info.height - cropTop, Math.ceil(height * 1.4))
     const faceId = createStableId('face', record.id, String(index), `${centerX}:${centerY}`)
@@ -202,8 +215,10 @@ async function detectFacesForImage(human, imagePath, record) {
 
 function clusterFaces(detections) {
   const sorted = [...detections].sort((left, right) => {
-    return (right.qualityScore || 0) - (left.qualityScore || 0) ||
+    return (
+      (right.qualityScore || 0) - (left.qualityScore || 0) ||
       (right.faceScore || 0) - (left.faceScore || 0)
+    )
   })
 
   const clusters = []
@@ -229,34 +244,40 @@ function clusterFaces(detections) {
     }
 
     bestCluster.members.push(detection)
-    bestCluster.centroid = averageDescriptor(bestCluster.members.map((member) => member.embedding))
+    bestCluster.centroid = averageDescriptor(bestCluster.members.map(member => member.embedding))
     bestCluster.bestSimilarity = Math.max(bestCluster.bestSimilarity, bestSimilarity)
   }
 
-  return clusters.map((cluster) => {
-    const memberIds = cluster.members.map((member) => member.faceId).sort()
-    const clusterId = createStableId('cluster', ...memberIds)
-    return {
-      clusterId,
-      memberCount: cluster.members.length,
-      centroid: cluster.centroid,
-      members: cluster.members
-        .sort((left, right) => {
-          return (right.qualityScore || 0) - (left.qualityScore || 0) ||
+  return clusters
+    .map(cluster => {
+      const memberIds = cluster.members.map(member => member.faceId).sort()
+      const clusterId = createStableId('cluster', ...memberIds)
+      return {
+        clusterId,
+        memberCount: cluster.members.length,
+        centroid: cluster.centroid,
+        members: cluster.members.sort((left, right) => {
+          return (
+            (right.qualityScore || 0) - (left.qualityScore || 0) ||
             left.sourceRelativePath.localeCompare(right.sourceRelativePath)
+          )
         }),
-      averageQualityScore: Number(
-        (
-          cluster.members.reduce((sum, member) => sum + (member.qualityScore || 0), 0) /
-          Math.max(cluster.members.length, 1)
-        ).toFixed(2),
-      ),
-    }
-  }).sort((left, right) => right.memberCount - left.memberCount || right.averageQualityScore - left.averageQualityScore)
+        averageQualityScore: Number(
+          (
+            cluster.members.reduce((sum, member) => sum + (member.qualityScore || 0), 0) /
+            Math.max(cluster.members.length, 1)
+          ).toFixed(2)
+        ),
+      }
+    })
+    .sort(
+      (left, right) =>
+        right.memberCount - left.memberCount || right.averageQualityScore - left.averageQualityScore
+    )
 }
 
 function mergeReviewState(existingReview, clusters) {
-  const existingByClusterId = new Map((existingReview ?? []).map((entry) => [entry.clusterId, entry]))
+  const existingByClusterId = new Map((existingReview ?? []).map(entry => [entry.clusterId, entry]))
 
   return clusters.map((cluster, index) => {
     const existing = existingByClusterId.get(cluster.clusterId)
@@ -267,8 +288,8 @@ function mergeReviewState(existingReview, clusters) {
       reviewStatus: existing?.reviewStatus ?? 'pending',
       mergeIntoClusterId: existing?.mergeIntoClusterId ?? null,
       notes: existing?.notes ?? '',
-      memberFaceIds: cluster.members.map((member) => member.faceId),
-      sampleFiles: cluster.members.slice(0, 8).map((member) => member.sourceRelativePath),
+      memberFaceIds: cluster.members.map(member => member.faceId),
+      sampleFiles: cluster.members.slice(0, 8).map(member => member.sourceRelativePath),
     }
   })
 }
@@ -281,20 +302,21 @@ async function writeFaceCrops(sourceRootPath, clusterSummaries, cropsRoot) {
     for (const member of cluster.members) {
       const sourcePath = path.join(sourceRootPath, ...member.sourceRelativePath.split('/'))
       const cropPath = path.join(clusterDir, `${member.faceId}.webp`)
-      const resized = sharp(sourcePath, { failOn: 'none' })
-        .rotate()
-        .resize({
-          width: DETECTION_LONG_EDGE,
-          height: DETECTION_LONG_EDGE,
-          fit: 'inside',
-          withoutEnlargement: true,
-        })
+      const resized = sharp(sourcePath, { failOn: 'none' }).rotate().resize({
+        width: DETECTION_LONG_EDGE,
+        height: DETECTION_LONG_EDGE,
+        fit: 'inside',
+        withoutEnlargement: true,
+      })
       const metadata = await resized.metadata()
       const maxWidth = metadata.width ?? 0
       const maxHeight = metadata.height ?? 0
       if (maxWidth < 1 || maxHeight < 1) continue
 
-      const cropLeft = Math.max(0, Math.min(Math.round(member.crop.left), Math.max(maxWidth - 1, 0)))
+      const cropLeft = Math.max(
+        0,
+        Math.min(Math.round(member.crop.left), Math.max(maxWidth - 1, 0))
+      )
       const cropTop = Math.max(0, Math.min(Math.round(member.crop.top), Math.max(maxHeight - 1, 0)))
       const cropWidth = Math.max(1, Math.min(Math.round(member.crop.width), maxWidth - cropLeft))
       const cropHeight = Math.max(1, Math.min(Math.round(member.crop.height), maxHeight - cropTop))
@@ -324,11 +346,11 @@ async function writeFaceCrops(sourceRootPath, clusterSummaries, cropsRoot) {
 }
 
 function buildClusterSummary(clusters) {
-  return clusters.map((cluster) => ({
+  return clusters.map(cluster => ({
     clusterId: cluster.clusterId,
     memberCount: cluster.memberCount,
     averageQualityScore: cluster.averageQualityScore,
-    members: cluster.members.map((member) => ({
+    members: cluster.members.map(member => ({
       faceId: member.faceId,
       sourceRecordId: member.sourceRecordId,
       sourceRelativePath: member.sourceRelativePath,
@@ -357,7 +379,7 @@ async function main() {
 
   const inventory = await readJson(inventoryPath)
   await readJson(analysisPath)
-  const imageRecords = inventory.filter((record) => record.kind === 'image')
+  const imageRecords = inventory.filter(record => record.kind === 'image')
 
   let existingReview = []
   try {
@@ -372,14 +394,16 @@ async function main() {
   for (const record of imageRecords) {
     const sourcePath = path.join(absoluteSourceRoot, ...record.relativePath.split('/'))
     try {
-      detections.push(...await detectFacesForImage(human, sourcePath, record))
+      detections.push(...(await detectFacesForImage(human, sourcePath, record)))
     } catch (error) {
       skippedImages.push({
         recordId: record.id,
         relativePath: record.relativePath,
         reason: error instanceof Error ? error.message : String(error),
       })
-      console.warn(`Skipping face detection for ${record.relativePath}: ${error instanceof Error ? error.message : String(error)}`)
+      console.warn(
+        `Skipping face detection for ${record.relativePath}: ${error instanceof Error ? error.message : String(error)}`
+      )
     }
   }
 
@@ -389,14 +413,17 @@ async function main() {
 
   const clusterSummary = buildClusterSummary(clusters)
   const reviewTemplate = mergeReviewState(existingReview, clusterSummary)
-  const annotationsByPhoto = imageRecords.map((record) => ({
+  const annotationsByPhoto = imageRecords.map(record => ({
     recordId: record.id,
     relativePath: record.relativePath,
     faces: detections
-      .filter((detection) => detection.sourceRecordId === record.id)
-      .map((detection) => ({
+      .filter(detection => detection.sourceRecordId === record.id)
+      .map(detection => ({
         faceId: detection.faceId,
-        clusterId: clusterSummary.find((cluster) => cluster.members.some((member) => member.faceId === detection.faceId))?.clusterId ?? null,
+        clusterId:
+          clusterSummary.find(cluster =>
+            cluster.members.some(member => member.faceId === detection.faceId)
+          )?.clusterId ?? null,
         x: detection.x,
         y: detection.y,
         box: detection.box,
@@ -408,10 +435,13 @@ async function main() {
   const annotationsPath = path.join(absoluteWorkingRoot, 'faces', 'face-annotations-by-photo.json')
   const markdownPath = path.join(absoluteWorkingRoot, 'faces', 'face-clusters.md')
 
-  await writeJson(detectionsPath, detections.map((detection) => ({
-    ...detection,
-    embedding: undefined,
-  })))
+  await writeJson(
+    detectionsPath,
+    detections.map(detection => ({
+      ...detection,
+      embedding: undefined,
+    }))
+  )
   await writeJson(clustersPath, clusterSummary)
   await writeJson(annotationsPath, annotationsByPhoto)
   await writeJson(reviewPath, reviewTemplate)
@@ -439,7 +469,7 @@ async function main() {
     lines.push(`- Members: ${cluster.memberCount}`)
     lines.push(`- Average quality score: ${cluster.averageQualityScore}`)
     lines.push('')
-    cluster.members.slice(0, 8).forEach((member) => {
+    cluster.members.slice(0, 8).forEach(member => {
       lines.push(`- \`${member.sourceRelativePath}\` at (${member.x}%, ${member.y}%)`)
     })
     lines.push('')
@@ -452,7 +482,9 @@ async function main() {
   console.log(`Wrote review template to ${reviewPath}`)
   console.log(`Wrote annotations to ${annotationsPath}`)
   if (skippedImages.length > 0) {
-    console.warn(`Skipped face detection for ${skippedImages.length} image${skippedImages.length === 1 ? '' : 's'} due to unsupported or unreadable input.`)
+    console.warn(
+      `Skipped face detection for ${skippedImages.length} image${skippedImages.length === 1 ? '' : 's'} due to unsupported or unreadable input.`
+    )
   }
 }
 

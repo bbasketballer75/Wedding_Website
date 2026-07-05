@@ -8,6 +8,15 @@ public/sitemap.xml
 public/robots.txt
 dist/stats.html
 
+# Local agent/tool context
+.codex
+.harness
+.hermes
+.wrangler
+
+# Archived generated planning exports
+docs/archive/planning-systems-2025
+
 # Logs
 *.log
 npm-debug.log*

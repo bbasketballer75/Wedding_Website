@@ -19,18 +19,18 @@ There is no RSVP feature in the current shipping app. Older launch docs that ref
 
 ## Current Confirmed State
 
-| Area | Status | Notes |
-|------|--------|-------|
-| Runtime baseline | ✅ | Node 20+, current Vite/React stack |
-| TypeScript | ✅ | `npx tsc --noEmit` passes |
-| Unit tests | ✅ | `npm run test:run` passes |
-| Public E2E | ✅ | `npm run test:e2e:public` passes |
-| Production build | ✅ | `npm run build` passes |
-| Admin login | ✅ | `/admin/login` exists and uses Supabase auth |
-| Supabase integration | ✅ | guestbook, uploads, moderation, and guestbook RPC verified |
-| Staging metadata | ✅ | fallback metadata, `robots.txt`, and `sitemap.xml` use the Netlify staging URL |
-| Security headers | ✅ | CSP, HSTS, frame/content/referrer policies are active |
-| Release verification | ✅ | release checks exist and pass in current staging config |
+| Area                 | Status | Notes                                                                          |
+| -------------------- | ------ | ------------------------------------------------------------------------------ |
+| Runtime baseline     | ✅     | Node 20+, current Vite/React stack                                             |
+| TypeScript           | ✅     | `npx tsc --noEmit` passes                                                      |
+| Unit tests           | ✅     | `npm run test:run` passes                                                      |
+| Public E2E           | ✅     | `npm run test:e2e:public` passes                                               |
+| Production build     | ✅     | `npm run build` passes                                                         |
+| Admin login          | ✅     | `/admin/login` exists and uses Supabase auth                                   |
+| Supabase integration | ✅     | guestbook, uploads, moderation, and guestbook RPC verified                     |
+| Staging metadata     | ✅     | fallback metadata, `robots.txt`, and `sitemap.xml` use the Netlify staging URL |
+| Security headers     | ✅     | CSP, HSTS, frame/content/referrer policies are active                          |
+| Release verification | ✅     | release checks exist and pass in current staging config                        |
 
 ## Launch Model
 

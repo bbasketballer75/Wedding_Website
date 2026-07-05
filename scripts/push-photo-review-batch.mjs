@@ -42,7 +42,8 @@ const supabase = createClient(PROJECT_URL, SERVICE_ROLE_KEY, {
 })
 
 async function ensureBucket() {
-  const { data: existingBucket, error: getBucketError } = await supabase.storage.getBucket(BUCKET_NAME)
+  const { data: existingBucket, error: getBucketError } =
+    await supabase.storage.getBucket(BUCKET_NAME)
 
   if (!getBucketError && existingBucket) {
     return
@@ -98,7 +99,7 @@ async function walk(dir) {
   for (const entry of entries) {
     const fullPath = path.join(dir, entry.name)
     if (entry.isDirectory()) {
-      files.push(...await walk(fullPath))
+      files.push(...(await walk(fullPath)))
     } else if (entry.isFile()) {
       files.push(fullPath)
     }
@@ -120,7 +121,7 @@ function buildArtifactPaths(prefix) {
 }
 
 function resolveConfirmedNames(reviewItems) {
-  const byClusterId = new Map(reviewItems.map((item) => [item.clusterId, item]))
+  const byClusterId = new Map(reviewItems.map(item => [item.clusterId, item]))
 
   function getResolvedName(clusterId, seen = new Set()) {
     if (!clusterId || seen.has(clusterId)) return null
@@ -133,7 +134,7 @@ function resolveConfirmedNames(reviewItems) {
     return null
   }
 
-  return new Map(reviewItems.map((item) => [item.clusterId, getResolvedName(item.clusterId)]))
+  return new Map(reviewItems.map(item => [item.clusterId, getResolvedName(item.clusterId)]))
 }
 
 function resolveClusterStatus(review) {
@@ -177,7 +178,7 @@ async function main() {
     'review-batch',
     absoluteWorkingRoot,
     String(clusters.length),
-    clusters.map((cluster) => cluster.clusterId).join('::'),
+    clusters.map(cluster => cluster.clusterId).join('::')
   )
   const artifactPrefix = batchKey
   const artifactPaths = buildArtifactPaths(artifactPrefix)
@@ -197,7 +198,7 @@ async function main() {
   const cropFiles = await walk(cropsRoot)
   const uploadTargets = [
     ...staticArtifacts,
-    ...cropFiles.map((filePath) => [
+    ...cropFiles.map(filePath => [
       filePath,
       `${artifactPrefix}/faces/${toPosix(path.relative(facesRoot, filePath))}`,
     ]),
@@ -243,14 +244,12 @@ async function main() {
     throw batchUpsertError
   }
 
-  const reviewByClusterId = new Map(reviewItems.map((item) => [item.clusterId, item]))
+  const reviewByClusterId = new Map(reviewItems.map(item => [item.clusterId, item]))
   const resolvedNames = resolveConfirmedNames(reviewItems)
   const clusterByFaceId = new Map()
-  const clusterById = new Map(clusters.map((cluster) => [cluster.clusterId, cluster]))
+  const clusterById = new Map(clusters.map(cluster => [cluster.clusterId, cluster]))
   const importManifestByRecordId = new Map(
-    importManifest
-      .filter((row) => row.sourceRecordId)
-      .map((row) => [row.sourceRecordId, row]),
+    importManifest.filter(row => row.sourceRecordId).map(row => [row.sourceRecordId, row])
   )
 
   for (const cluster of clusters) {
@@ -279,9 +278,9 @@ async function main() {
     throw deleteFacesError
   }
 
-  const clusterRows = clusters.map((cluster) => {
+  const clusterRows = clusters.map(cluster => {
     const review = reviewByClusterId.get(cluster.clusterId)
-    const members = cluster.members.map((member) => ({
+    const members = cluster.members.map(member => ({
       ...member,
       thumbnailObjectPath: member.thumbnailPath
         ? `${artifactPrefix}/faces/${member.thumbnailPath}`
@@ -307,13 +306,14 @@ async function main() {
       merge_into_cluster_id: review?.mergeIntoClusterId ?? null,
       split_requested: review?.reviewStatus === 'split_requested',
       split_notes: review?.notes ?? null,
-      sample_thumbnail_path: members.find((member) => member.thumbnailObjectPath)?.thumbnailObjectPath ?? null,
+      sample_thumbnail_path:
+        members.find(member => member.thumbnailObjectPath)?.thumbnailObjectPath ?? null,
       member_count: cluster.memberCount,
       average_quality_score: cluster.averageQualityScore ?? null,
-      source_record_ids: [...new Set(members.map((member) => member.sourceRecordId).filter(Boolean))],
+      source_record_ids: [...new Set(members.map(member => member.sourceRecordId).filter(Boolean))],
       members,
       metadata: {
-        localThumbnailPaths: members.map((member) => member.thumbnailPath).filter(Boolean),
+        localThumbnailPaths: members.map(member => member.thumbnailPath).filter(Boolean),
       },
       updated_at: new Date().toISOString(),
     }
@@ -330,7 +330,7 @@ async function main() {
   }
 
   const faceRows = detections
-    .map((detection) => {
+    .map(detection => {
       const manifestRow = importManifestByRecordId.get(detection.sourceRecordId)
       if (!manifestRow) {
         return null
@@ -347,7 +347,8 @@ async function main() {
         face_id: detection.faceId,
         cluster_id: clusterId,
         source_record_id: detection.sourceRecordId ?? null,
-        source_relative_path: detection.sourceRelativePath ?? manifestRow.sourceRelativePath ?? null,
+        source_relative_path:
+          detection.sourceRelativePath ?? manifestRow.sourceRelativePath ?? null,
         photo_url: toSiteMediaPath(manifestRow.photoRowDraft.url),
         thumbnail_url: toSiteMediaPath(manifestRow.photoRowDraft.thumbnail),
         thumbnail_object_path: detection.thumbnailPath
@@ -363,7 +364,8 @@ async function main() {
         notes: review?.notes?.trim() || null,
         metadata: {
           collection: detection.collection ?? manifestRow.collection ?? null,
-          storyLaneSuggestion: detection.storyLaneSuggestion ?? manifestRow.storyLaneSuggestion ?? null,
+          storyLaneSuggestion:
+            detection.storyLaneSuggestion ?? manifestRow.storyLaneSuggestion ?? null,
           suggestedLabel: review?.suggestedLabel ?? null,
           crop: detection.crop ?? null,
           boxScore: detection.boxScore ?? null,
@@ -380,9 +382,7 @@ async function main() {
     .filter(Boolean)
 
   if (faceRows.length > 0) {
-    const { error: insertFacesError } = await supabase
-      .from('media_review_faces')
-      .insert(faceRows)
+    const { error: insertFacesError } = await supabase.from('media_review_faces').insert(faceRows)
 
     if (insertFacesError) {
       throw insertFacesError

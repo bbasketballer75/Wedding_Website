@@ -1,4 +1,11 @@
-import { expect, gotoAdminPage, injectAdminSession, installAdminMocks, test, waitForPageReady } from './support/adminSite'
+import {
+  expect,
+  gotoAdminPage,
+  injectAdminSession,
+  installAdminMocks,
+  test,
+  waitForPageReady,
+} from './support/adminSite'
 
 test.describe('Admin Auth', () => {
   test('login page renders form fields and submit button', async ({ page }) => {

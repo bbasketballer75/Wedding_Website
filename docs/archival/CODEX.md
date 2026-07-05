@@ -3,6 +3,7 @@
 ## Project Overview
 
 This is a **React + Vite + TypeScript** wedding website with:
+
 - **Frontend**: React 19, Tailwind CSS 4, Framer Motion
 - **Backend**: Supabase (PostgreSQL + Storage)
 - **Testing**: Vitest + Playwright
@@ -31,6 +32,7 @@ npm run build
 ## Architecture
 
 ### Frontend Stack
+
 - **React 19** - UI library
 - **React Router 7** - Client-side routing
 - **Tailwind CSS 4** - Utility-first styling
@@ -39,6 +41,7 @@ npm run build
 - **Zod** - Schema validation
 
 ### Backend Stack
+
 - **Supabase** - Backend-as-a-Service
   - PostgreSQL database
   - Storage for photos/videos
@@ -46,6 +49,7 @@ npm run build
 - **Cloudflare R2** - Large media storage
 
 ### Advanced Features
+
 - **PWA** - Progressive Web App with offline support
 - **Face Detection** - AI-powered face recognition for photos
 - **Admin Panel** - Photo moderation, face tagging, gallery curation
@@ -54,6 +58,7 @@ npm run build
 - **Accessibility** - WCAG 2.1 AA compliant
 
 ### Project Structure
+
 ```
 src/
 ├── components/        # React components
@@ -80,12 +85,14 @@ src/
 ## Key Files
 
 ### Configuration
+
 - `vite.config.js` - Vite configuration with PWA support
 - `tsconfig.json` - TypeScript configuration
 - `eslint.config.js` - ESLint configuration
 - `.env` - Environment variables (see `.env.example`)
 
 ### Documentation
+
 - `README-DEPLOY.md` - Deployment overview
 - `SUPABASE_CLI_GUIDE.md` - Supabase CLI operations
 - `GALLERY_OPERATIONS.md` - Photo curation workflow
@@ -94,12 +101,14 @@ src/
 ## Development Guidelines
 
 ### Code Style
+
 - **ESLint** + **Prettier** for linting and formatting
 - **TypeScript** strict mode enabled
 - Use **functional components** with hooks
 - Prefer **named exports** over default exports
 
 ### Component Patterns
+
 ```tsx
 // Use type instead of interface for props
 type ButtonProps = {
@@ -111,10 +120,7 @@ type ButtonProps = {
 // Export function component with named export
 export function Button({ children, variant = 'primary', onClick }: ButtonProps) {
   return (
-    <button 
-      className={cn('btn', variant === 'primary' && 'btn-primary')} 
-      onClick={onClick}
-    >
+    <button className={cn('btn', variant === 'primary' && 'btn-primary')} onClick={onClick}>
       {children}
     </button>
   )
@@ -122,12 +128,14 @@ export function Button({ children, variant = 'primary', onClick }: ButtonProps) 
 ```
 
 ### Styling Guidelines
+
 - Use **Tailwind CSS** for all styling
 - Use `cn()` utility from `lib/utils.ts` for conditional classes
 - Use **CSS variables** for theme colors
 - Follow mobile-first responsive design
 
 ### State Management
+
 - Use **Zustand** for global state
 - Use **React Query** (if needed) for server state
 - Prefer local state for component-specific data
@@ -135,6 +143,7 @@ export function Button({ children, variant = 'primary', onClick }: ButtonProps) 
 ## Supabase Guidelines
 
 ### Database Access
+
 ```typescript
 // Always use the typed supabase client
 import { supabase } from '@/lib/supabase'
@@ -148,12 +157,14 @@ const { data, error } = await supabase
 ```
 
 ### RLS Policies
+
 - All tables have Row Level Security enabled
 - Public read access for photos and approved content
 - Public insert for guestbook and uploads
 - No anonymous updates/deletes
 
 ### Storage Buckets
+
 - `guest-photos` - Guest uploaded photos
 - `guest-videos` - Guest uploaded videos
 - `guest-voice-messages` - Voice messages
@@ -161,6 +172,7 @@ const { data, error } = await supabase
 ## Testing Guidelines
 
 ### Unit Tests (Vitest)
+
 ```bash
 npm run test        # Run tests in watch mode
 npm run test:run    # Run tests once
@@ -168,6 +180,7 @@ npm run test:coverage  # Run with coverage
 ```
 
 ### E2E Tests (Playwright)
+
 ```bash
 npm run test:e2e         # Run all E2E tests
 npm run test:e2e:public  # Run public-only tests
@@ -175,12 +188,14 @@ npm run test:e2e:ui      # Run with UI mode
 ```
 
 ### Test Files
+
 - Unit tests: `tests/*.test.ts` or `src/**/*.test.ts`
 - E2E tests: `e2e/*.spec.ts`
 
 ## Common Commands
 
 ### Development
+
 ```bash
 npm run dev          # Start dev server (port 5173)
 npm run build        # Production build
@@ -188,6 +203,7 @@ npm run preview      # Preview production build
 ```
 
 ### Code Quality
+
 ```bash
 npm run lint         # Run ESLint
 npm run lint:fix     # Fix ESLint issues
@@ -196,6 +212,7 @@ npm run fix          # Run lint:fix + format
 ```
 
 ### Supabase
+
 ```bash
 npm run supabase:start   # Start local Supabase
 npm run supabase:stop    # Stop local Supabase
@@ -204,6 +221,7 @@ npm run supabase:types   # Generate TypeScript types
 ```
 
 ### Media Operations
+
 ```bash
 npm run media:batch:catalog    # Catalog photo batch
 npm run media:batch:organize   # Organize photos
@@ -214,6 +232,7 @@ npm run media:batch:publish    # Publish to CDN
 ## Environment Variables
 
 Required in `.env`:
+
 ```bash
 # Supabase
 VITE_SUPABASE_URL=https://your-project.supabase.co
@@ -229,11 +248,13 @@ VITE_SENTRY_DSN=your-sentry-dsn
 ## Deployment
 
 ### Production Deployment
+
 1. Run verification: `npm run verify:release`
 2. Build: `npm run build`
 3. Deploy to Netlify
 
 ### Verification Commands
+
 ```bash
 npm run verify:env       # Verify environment
 npm run verify:supabase  # Verify Supabase connection
@@ -244,6 +265,7 @@ npm run verify:launch    # Full launch verification
 ## Troubleshooting
 
 ### Common Issues
+
 1. **Type errors**: Run `npx tsc --noEmit` to check
 2. **Build errors**: Check `vite.config.js` for plugin issues
 3. **Supabase errors**: Verify env vars and RLS policies
@@ -252,6 +274,7 @@ npm run verify:launch    # Full launch verification
 6. **Face detection issues**: Ensure model files exist in `node_modules/@vladmandic/human/models/`
 
 ### Getting Help
+
 - Check `README-DEPLOY.md` for deployment issues
 - Check `SUPABASE_CLI_GUIDE.md` for Supabase issues
 - Check `GALLERY_OPERATIONS.md` for photo workflow issues

@@ -14,7 +14,9 @@ The shipping app already uses a linked Supabase project, Cloudflare R2 for large
 # Historical bootstrap notes
 
 ## What is Supabase?
+
 Supabase is an open-source Firebase alternative that provides:
+
 - **PostgreSQL Database** - For storing photos, messages, guest data
 - **Storage** - For guest-uploaded photos/videos
 - **Authentication** - Optional: for private gallery access
@@ -25,11 +27,13 @@ Supabase is an open-source Firebase alternative that provides:
 ## Step 1: Create Supabase Project
 
 ### 1.1 Sign Up
+
 1. Go to [supabase.com](https://supabase.com)
 2. Sign up with GitHub or email
 3. Click "New Project"
 
 ### 1.2 Project Settings
+
 ```
 Organization: Your name
 Project Name: austin-jordyn-wedding
@@ -38,6 +42,7 @@ Region: Choose closest to your users (e.g., us-east-1)
 ```
 
 ### 1.3 Wait for Database Setup
+
 - Takes 2-3 minutes
 - You will get:
   - Project URL: `https://xxxxx.supabase.co`
@@ -49,6 +54,7 @@ Region: Choose closest to your users (e.g., us-east-1)
 ## Step 2: Create Database Tables
 
 ### Table 1: photos
+
 ```sql
 create table photos (
   id uuid default gen_random_uuid() primary key,
@@ -75,6 +81,7 @@ create policy "Allow public read access" on photos
 ```
 
 ### Table 2: guest_uploads
+
 ```sql
 create table guest_uploads (
   id uuid default gen_random_uuid() primary key,
@@ -97,6 +104,7 @@ create policy "Allow public read approved" on guest_uploads
 ```
 
 ### Table 3: guestbook_messages
+
 ```sql
 create table guestbook_messages (
   id uuid default gen_random_uuid() primary key,
@@ -123,12 +131,14 @@ create policy "Allow public insert" on guestbook_messages
 ## Step 3: Set Up Storage
 
 ### 3.1 Create Buckets
+
 1. Go to Storage in Supabase Dashboard
 2. Create bucket: `guest-photos`
 3. Create bucket: `guest-videos`
 4. Create bucket: `guest-voice-messages`
 
 ### 3.2 Set Storage Policies
+
 For each bucket, add these policies:
 
 ```sql
@@ -163,11 +173,13 @@ If you use a service role key for Edge Functions or other server-only automation
 ## Step 5: Update Code
 
 ### 5.1 Install Supabase Client
+
 ```bash
 npm install @supabase/supabase-js
 ```
 
 ### 5.2 Create Supabase Client
+
 Create `src/lib/supabase.ts`:
 
 ```typescript
@@ -180,6 +192,7 @@ export const supabase = createClient(supabaseUrl, supabaseKey)
 ```
 
 ### 5.3 Update Upload Component
+
 Replace mock upload with Supabase storage upload:
 
 ```typescript
@@ -189,18 +202,16 @@ import { supabase } from '@/lib/supabase'
 const uploadFile = async (file: File) => {
   const fileExt = file.name.split('.').pop()
   const fileName = `${Date.now()}-${Math.random()}.${fileExt}`
-  
-  const { data, error } = await supabase.storage
-    .from('guest-photos')
-    .upload(fileName, file)
-    
+
+  const { data, error } = await supabase.storage.from('guest-photos').upload(fileName, file)
+
   if (error) throw error
-  
+
   // Get public URL
-  const { data: { publicUrl } } = supabase.storage
-    .from('guest-photos')
-    .getPublicUrl(fileName)
-    
+  const {
+    data: { publicUrl },
+  } = supabase.storage.from('guest-photos').getPublicUrl(fileName)
+
   return publicUrl
 }
 ```
@@ -220,18 +231,21 @@ const uploadFile = async (file: File) => {
 ## Step 7: Production Considerations
 
 ### 7.1 Storage Limits (Free Tier)
+
 - 1GB database
 - 1GB storage
 - 2GB bandwidth/month
 - 500MB egress/day
 
 ### 7.2 If You Need More
+
 - Pro plan: $25/month
 - 8GB database
 - 100GB storage
 - 250GB bandwidth
 
 ### 7.3 Security
+
 - Keep Service Role Key secret (server-side only)
 - Use Row Level Security (RLS) policies
 - Enable email confirmations for uploads (optional)
@@ -241,16 +255,19 @@ const uploadFile = async (file: File) => {
 ## Quick Reference
 
 ### Database Connection String
+
 ```
 postgresql://postgres:[password]@db.xxxxx.supabase.co:5432/postgres
 ```
 
 ### API Endpoint
+
 ```
 https://xxxxx.supabase.co/rest/v1/photos
 ```
 
 ### Useful SQL Commands
+
 ```sql
 -- View all photos
 select * from photos order by created_at desc;

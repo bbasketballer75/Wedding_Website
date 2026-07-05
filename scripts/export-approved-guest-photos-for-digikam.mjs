@@ -76,7 +76,14 @@ function buildGuestRelativePath(item) {
   })()
 
   const safeBase = sanitizePathSegment(baseName || item.id).replace(/\.[^.]+$/, '')
-  return toPosix(path.join('Guest Uploads', categorySlug, guestSlug, `${datePart}-${item.id}-${safeBase}${extension}`))
+  return toPosix(
+    path.join(
+      'Guest Uploads',
+      categorySlug,
+      guestSlug,
+      `${datePart}-${item.id}-${safeBase}${extension}`
+    )
+  )
 }
 
 async function fetchApprovedGuestUploads() {
@@ -116,7 +123,9 @@ async function fetchPhotoRowsByUrls(urls) {
     const urlChunk = urls.slice(index, index + PAGE_SIZE)
     const { data, error } = await supabase
       .from('photos')
-      .select('id, url, thumbnail, caption, category, location, date, photographer, tags, faces, created_at')
+      .select(
+        'id, url, thumbnail, caption, category, location, date, photographer, tags, faces, created_at'
+      )
       .in('url', urlChunk)
 
     if (error) {
@@ -126,7 +135,7 @@ async function fetchPhotoRowsByUrls(urls) {
     rows.push(...(data || []))
   }
 
-  return new Map(rows.map((row) => [row.url, row]))
+  return new Map(rows.map(row => [row.url, row]))
 }
 
 async function downloadToFile(url, destinationPath) {
@@ -146,7 +155,7 @@ async function main() {
   const organizedRoot = path.join(absoluteWorkingRoot, 'organized')
   const publishRoot = path.join(absoluteWorkingRoot, 'publish')
   const uploads = await fetchApprovedGuestUploads()
-  const uploadItems = uploads.flatMap((upload) =>
+  const uploadItems = uploads.flatMap(upload =>
     (upload.photo_urls || []).map((url, index) => ({
       uploadId: upload.id,
       url,
@@ -154,9 +163,9 @@ async function main() {
       guestName: upload.guest_name,
       guestEmail: upload.guest_email,
       created_at: upload.created_at,
-    })),
+    }))
   )
-  const liveRowsByUrl = await fetchPhotoRowsByUrls(uploadItems.map((item) => item.url))
+  const liveRowsByUrl = await fetchPhotoRowsByUrls(uploadItems.map(item => item.url))
 
   const downloadedItems = []
 
@@ -209,9 +218,9 @@ async function main() {
     workingRoot: absoluteWorkingRoot,
     approvedGuestUploadCount: uploads.length,
     exportedPhotoCount: downloadedItems.length,
-    matchedLivePhotoRowCount: downloadedItems.filter((item) => item.photoRowId).length,
+    matchedLivePhotoRowCount: downloadedItems.filter(item => item.photoRowId).length,
     generatedAt: new Date().toISOString(),
-    items: downloadedItems.map((item) => ({
+    items: downloadedItems.map(item => ({
       id: item.id,
       photoRowId: item.photoRowId,
       guestUploadId: item.guestUploadId,
@@ -227,7 +236,7 @@ async function main() {
     '',
     `Approved guest uploads scanned: **${uploads.length}**`,
     `Guest photos exported: **${downloadedItems.length}**`,
-    `Matched live photo rows: **${downloadedItems.filter((item) => item.photoRowId).length}**`,
+    `Matched live photo rows: **${downloadedItems.filter(item => item.photoRowId).length}**`,
     '',
     '## Next Step',
     `1. Open \`${organizedRoot}\` in digiKam.`,

@@ -4,8 +4,15 @@ import { getSignedUrl } from '@aws-sdk/s3-request-presigner'
 import crypto from 'node:crypto'
 
 const ALLOWED_TYPES = new Set([
-  'image/jpeg', 'image/png', 'image/webp', 'image/heic', 'image/heif', 'image/gif',
-  'video/mp4', 'video/quicktime', 'video/webm',
+  'image/jpeg',
+  'image/png',
+  'image/webp',
+  'image/heic',
+  'image/heif',
+  'image/gif',
+  'video/mp4',
+  'video/quicktime',
+  'video/webm',
 ])
 
 // Client-side validates 500 MB max; server enforces the same.
@@ -21,7 +28,7 @@ const s3 = new S3Client({
   },
 })
 
-export const handler: Handler = async (event) => {
+export const handler: Handler = async event => {
   if (event.httpMethod !== 'POST') {
     return { statusCode: 405, body: 'Method Not Allowed' }
   }

@@ -81,6 +81,7 @@ export function useVirtualizedMasonry<T extends PhotoMinimal>({
     }
   }, [photos, rowHeight])
 
+  // eslint-disable-next-line react-hooks/incompatible-library -- TanStack Virtual returns imperative helpers that this hook owns directly.
   const virtualizer = useVirtualizer({
     count: estimatedTotalRows,
     getScrollElement: () => scrollRef.current,

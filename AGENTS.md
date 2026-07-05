@@ -5,12 +5,12 @@ Post-wedding digital archive for Austin & Jordyn (theporadas.com). React 19 + Ty
 ## Setup commands
 
 - Install deps: `npm install` (Node `>=20.19.0`, packageManager pinned to `npm@11.11.0`)
-- Start dev:    `npm run dev` (custom `node scripts/dev.js` wrapper, default port 5173)
-- Build:        `npm run build` (runs `postbuild` to prune local media, copy public images, generate sitemap)
-- Test:         `npm run test:run` (Vitest) / `npm run test:e2e:public` (Playwright public-flow suite)
-- Lint:         `npm run lint` (ESLint 9 flat config)
-- Format:       `npm run format` (Prettier) / `npm run format:check`
-- Typecheck:    `npx tsc --noEmit`
+- Start dev: `npm run dev` (custom `node scripts/dev.js` wrapper, default port 5173)
+- Build: `npm run build` (runs `postbuild` to prune local media, copy public images, generate sitemap)
+- Test: `npm run test:run` (Vitest) / `npm run test:e2e:public` (Playwright public-flow suite)
+- Lint: `npm run lint` (ESLint 9 flat config)
+- Format: `npm run format` (Prettier) / `npm run format:check`
+- Typecheck: `npx tsc --noEmit`
 - Release gate: `npm run verify:release` (env + secrets + supabase + lint + tsc + test:run + build + test:e2e:public)
 
 ## Project layout

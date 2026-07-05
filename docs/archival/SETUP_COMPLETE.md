@@ -14,18 +14,19 @@ Server-only secrets such as `SUPABASE_SERVICE_ROLE_KEY` belong in deployment or 
 ## Supabase CLI Installed
 
 Run the setup script:
+
 ```powershell
 .\supabase-setup.ps1
 ```
 
 ## Quick Commands
 
-| Command | Description |
-|---------|-------------|
-| `npx supabase link --project-ref rxzbbtghnrvzubqrbhhx` | Link to remote project |
-| `npx supabase db push` | Push schema to production |
-| `npx supabase start` | Start local development |
-| `npx supabase status` | Check status |
+| Command                                                | Description               |
+| ------------------------------------------------------ | ------------------------- |
+| `npx supabase link --project-ref rxzbbtghnrvzubqrbhhx` | Link to remote project    |
+| `npx supabase db push`                                 | Push schema to production |
+| `npx supabase start`                                   | Start local development   |
+| `npx supabase status`                                  | Check status              |
 
 ## Project Structure
 
@@ -42,18 +43,21 @@ supabase/
 ## Database Schema
 
 ### Tables Created:
+
 - `photos` - Gallery photos with metadata
 - `guest_uploads` - Pending guest uploads
 - `guestbook_messages` - Guestbook entries
 
 ### Storage Buckets (create in Dashboard):
+
 - `guest-photos` - Guest photo uploads
-- `guest-videos` - Guest video uploads  
+- `guest-videos` - Guest video uploads
 - `guest-voice` - Voice messages
 
 ## Next Steps
 
 ### 1. Link & Push (One-time)
+
 ```powershell
 # Link to your project
 npx supabase link --project-ref rxzbbtghnrvzubqrbhhx
@@ -63,17 +67,21 @@ npx supabase db push
 ```
 
 ### 2. Create Storage Buckets
+
 Go to https://rxzbbtghnrvzubqrbhhx.supabase.co:
+
 - Storage → New Bucket → `guest-photos` (Public)
 - Storage → New Bucket → `guest-videos` (Public)
 - Storage → New Bucket → `guest-voice` (Public)
 
 ### 3. Test Locally
+
 ```bash
 npm run dev
 ```
 
 ### 4. Deploy
+
 ```bash
 npm run build
 vercel --prod

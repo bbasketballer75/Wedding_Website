@@ -76,9 +76,7 @@ export function sanitizePathSegment(segment) {
 export function toRemoteMediaObjectPath(relativePath, prefix = 'media') {
   const cleanPath = relativePath.startsWith('/') ? relativePath.slice(1) : relativePath
 
-  return [prefix, ...cleanPath.split('/').filter(Boolean)]
-    .map(sanitizePathSegment)
-    .join('/')
+  return [prefix, ...cleanPath.split('/').filter(Boolean)].map(sanitizePathSegment).join('/')
 }
 
 export function toSiteMediaPath(relativePath, prefix = '/media') {
@@ -129,7 +127,7 @@ export async function writeMarkdown(filePath, lines) {
 export async function writeCsv(filePath, rows, headers) {
   const lines = [
     headers.join(','),
-    ...rows.map((row) => headers.map((header) => csvEscape(row[header])).join(',')),
+    ...rows.map(row => headers.map(header => csvEscape(row[header])).join(',')),
   ]
   await ensureDir(path.dirname(filePath))
   await fs.writeFile(filePath, `${lines.join('\n')}\n`)
@@ -157,7 +155,7 @@ export async function walk(dir) {
   for (const entry of entries) {
     const fullPath = path.join(dir, entry.name)
     if (entry.isDirectory()) {
-      results.push(...await walk(fullPath))
+      results.push(...(await walk(fullPath)))
     } else if (entry.isFile()) {
       results.push(fullPath)
     }
@@ -168,7 +166,7 @@ export async function walk(dir) {
 
 export function inferSourceInfo(topLevelFolder) {
   const lower = topLevelFolder.toLowerCase()
-  const matched = TOP_LEVEL_RULES.find((rule) => lower.includes(rule.match))
+  const matched = TOP_LEVEL_RULES.find(rule => lower.includes(rule.match))
 
   if (matched) {
     return {
@@ -188,7 +186,9 @@ export function inferSourceInfo(topLevelFolder) {
 }
 
 export function normalizeAlbum(value) {
-  const normalized = String(value ?? '').trim().toLowerCase()
+  const normalized = String(value ?? '')
+    .trim()
+    .toLowerCase()
 
   if (normalized === 'engagement') return 'Engagement'
 
@@ -201,10 +201,7 @@ export function normalizeAlbum(value) {
     return 'Bach+ette'
   }
 
-  if (
-    normalized === 'wedding day' ||
-    normalized === 'wedding-day'
-  ) {
+  if (normalized === 'wedding day' || normalized === 'wedding-day') {
     return 'Wedding Day'
   }
 
@@ -306,19 +303,14 @@ function clamp(value, min, max) {
 function variance(values) {
   if (values.length === 0) return 0
   const mean = values.reduce((sum, value) => sum + value, 0) / values.length
-  return values.reduce((sum, value) => sum + ((value - mean) ** 2), 0) / values.length
+  return values.reduce((sum, value) => sum + (value - mean) ** 2, 0) / values.length
 }
 
 async function buildAverageHash(image) {
-  const resized = await image
-    .clone()
-    .resize(16, 16, { fit: 'fill' })
-    .grayscale()
-    .raw()
-    .toBuffer()
+  const resized = await image.clone().resize(16, 16, { fit: 'fill' }).grayscale().raw().toBuffer()
 
   const avg = resized.reduce((sum, value) => sum + value, 0) / resized.length
-  return Array.from(resized, (value) => (value >= avg ? '1' : '0')).join('')
+  return Array.from(resized, value => (value >= avg ? '1' : '0')).join('')
 }
 
 async function estimateSharpness(image) {
@@ -335,7 +327,7 @@ async function estimateSharpness(image) {
       const index = y * info.width + x
       const center = data[index]
       const laplacian =
-        (4 * center) -
+        4 * center -
         data[index - 1] -
         data[index + 1] -
         data[index - info.width] -
@@ -357,16 +349,18 @@ function buildQualityScore({
   hasLocation,
 }) {
   const resolutionScore = clamp(((width || 0) * (height || 0)) / 4_000_000, 0, 1.6)
-  const brightnessTarget = brightness == null ? 0.45 : 1 - Math.min(Math.abs(brightness - 0.55), 0.55)
+  const brightnessTarget =
+    brightness == null ? 0.45 : 1 - Math.min(Math.abs(brightness - 0.55), 0.55)
   const sharpnessScore = clamp((sharpness || 0) / 5000, 0, 1.5)
-  const formatScore = format === 'heif' || format === 'heic' || format === 'jpeg' || format === 'webp' ? 0.1 : 0
+  const formatScore =
+    format === 'heif' || format === 'heic' || format === 'jpeg' || format === 'webp' ? 0.1 : 0
   const captureScore = hasCaptureDate ? 0.15 : 0
   const locationScore = hasLocation ? 0.05 : 0
 
   const total =
-    (resolutionScore * 0.45) +
-    (brightnessTarget * 0.2) +
-    (sharpnessScore * 0.2) +
+    resolutionScore * 0.45 +
+    brightnessTarget * 0.2 +
+    sharpnessScore * 0.2 +
     formatScore +
     captureScore +
     locationScore
@@ -398,10 +392,9 @@ export async function getVideoMetadata(filePath) {
     parsed = null
   }
 
-  const videoStream = parsed?.streams?.find((stream) => stream.codec_type === 'video') ?? null
+  const videoStream = parsed?.streams?.find(stream => stream.codec_type === 'video') ?? null
   const captureDate =
-    normalizeCaptureDate(parsed?.format?.tags?.creation_time) ??
-    normalizeCaptureDate(stat.mtime)
+    normalizeCaptureDate(parsed?.format?.tags?.creation_time) ?? normalizeCaptureDate(stat.mtime)
 
   return {
     width: videoStream?.width ?? null,
@@ -410,7 +403,9 @@ export async function getVideoMetadata(filePath) {
     format: parsed?.format?.format_name ?? path.extname(filePath).slice(1),
     durationSeconds: parsed?.format?.duration ? Number(parsed.format.duration) : null,
     captureDate,
-    captureDateSource: parsed?.format?.tags?.creation_time ? 'ffprobe.creation_time' : 'filesystem.mtime',
+    captureDateSource: parsed?.format?.tags?.creation_time
+      ? 'ffprobe.creation_time'
+      : 'filesystem.mtime',
     latitude: null,
     longitude: null,
     qualityScore: null,
@@ -425,23 +420,28 @@ export async function getImageMetadata(filePath, fallbackText = '') {
   const image = sharp(filePath, { failOn: 'none' }).rotate()
   const [metadata, stats, exifData, averageHash, sharpness] = await Promise.all([
     image.metadata(),
-    image.clone().stats().catch(() => null),
-    exifr.parse(filePath, {
-      pick: [
-        'DateTimeOriginal',
-        'CreateDate',
-        'ModifyDate',
-        'GPSLatitude',
-        'GPSLongitude',
-        'Make',
-        'Model',
-        'LensModel',
-      ],
-      tiff: true,
-      ifd0: true,
-      exif: true,
-      gps: true,
-    }).catch(() => null),
+    image
+      .clone()
+      .stats()
+      .catch(() => null),
+    exifr
+      .parse(filePath, {
+        pick: [
+          'DateTimeOriginal',
+          'CreateDate',
+          'ModifyDate',
+          'GPSLatitude',
+          'GPSLongitude',
+          'Make',
+          'Model',
+          'LensModel',
+        ],
+        tiff: true,
+        ifd0: true,
+        exif: true,
+        gps: true,
+      })
+      .catch(() => null),
     buildAverageHash(image).catch(() => null),
     estimateSharpness(image).catch(() => null),
   ])
@@ -451,19 +451,17 @@ export async function getImageMetadata(filePath, fallbackText = '') {
   const orientation = inferOrientation(width, height)
   const brightness = stats?.channels
     ? Number(
-      (
-        stats.channels
-          .slice(0, 3)
-          .reduce((sum, channel) => sum + channel.mean, 0) /
-        (Math.min(stats.channels.length, 3) * 255)
-      ).toFixed(4)
-    )
+        (
+          stats.channels.slice(0, 3).reduce((sum, channel) => sum + channel.mean, 0) /
+          (Math.min(stats.channels.length, 3) * 255)
+        ).toFixed(4)
+      )
     : null
 
   const fallbackInfo = inferSourceInfo(fallbackText)
   const inferredStory = inferStoryFromText(
     `${fallbackText} ${path.basename(filePath)}`,
-    fallbackInfo,
+    fallbackInfo
   )
 
   const captureDate =
@@ -472,15 +470,16 @@ export async function getImageMetadata(filePath, fallbackText = '') {
     normalizeCaptureDate(exifData?.ModifyDate) ??
     normalizeCaptureDate(stat.mtime)
 
-  const captureDateSource =
-    exifData?.DateTimeOriginal ? 'exif.DateTimeOriginal'
-      : exifData?.CreateDate ? 'exif.CreateDate'
-        : exifData?.ModifyDate ? 'exif.ModifyDate'
-          : 'filesystem.mtime'
+  const captureDateSource = exifData?.DateTimeOriginal
+    ? 'exif.DateTimeOriginal'
+    : exifData?.CreateDate
+      ? 'exif.CreateDate'
+      : exifData?.ModifyDate
+        ? 'exif.ModifyDate'
+        : 'filesystem.mtime'
 
   const hasLocation =
-    typeof exifData?.GPSLatitude === 'number' &&
-    typeof exifData?.GPSLongitude === 'number'
+    typeof exifData?.GPSLatitude === 'number' && typeof exifData?.GPSLongitude === 'number'
 
   return {
     width,
@@ -530,7 +529,9 @@ export function hammingDistance(a, b) {
 export function buildMarkdownTable(rows, headers) {
   const headerRow = `| ${headers.join(' | ')} |`
   const divider = `| ${headers.map(() => '---').join(' | ')} |`
-  const body = rows.map((row) => `| ${headers.map((header) => String(row[header] ?? '')).join(' | ')} |`)
+  const body = rows.map(
+    row => `| ${headers.map(header => String(row[header] ?? '')).join(' | ')} |`
+  )
   return [headerRow, divider, ...body].join('\n')
 }
 

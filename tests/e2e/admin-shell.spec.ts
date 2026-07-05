@@ -40,7 +40,8 @@ test.describe('Admin Shell', () => {
     await page.setViewportSize({ width: 390, height: 844 })
     await page.emulateMedia({ reducedMotion: 'reduce', colorScheme: 'light' })
     // Need to inject session + mocks at mobile viewport
-    const { injectAdminSession, installAdminMocks, waitForPageReady } = await import('./support/adminSite')
+    const { injectAdminSession, installAdminMocks, waitForPageReady } =
+      await import('./support/adminSite')
     await injectAdminSession(page)
     await installAdminMocks(page)
     await page.goto('/admin')

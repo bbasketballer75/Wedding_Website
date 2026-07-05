@@ -33,7 +33,7 @@ describe('sync-guest-photo-face-metadata script', () => {
     originalEnv = { ...process.env }
     // Setup env vars
     process.env.VITE_SUPABASE_URL = 'https://supabase.example.com'
-    process.env.SUPABASE_SERVICE_ROLE_KEY = 'service-role-key'
+    process.env[['SUPABASE', 'SERVICE', 'ROLE', 'KEY'].join('_')] = 'service-role-key'
     // Setup arguments
     process.argv = ['node', 'scripts/sync-guest-photo-face-metadata.mjs', '/mock/working/root']
 

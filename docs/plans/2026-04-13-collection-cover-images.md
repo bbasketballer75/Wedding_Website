@@ -13,6 +13,7 @@
 ### Task 1: Add the `COLLECTION_COVERS` constant
 
 **Files:**
+
 - Modify: `src/pages/Gallery.tsx`
 
 The constant goes directly above the `curatedPhotos` array (currently around line 137). It maps each `CollectionTab` to a hardcoded thumbnail URL. The Proposal cover is a static engagement asset; the other three are cover-candidate-1 thumbnails from Supabase storage, resolved through `getMediaPath`.
@@ -26,7 +27,9 @@ const COLLECTION_COVERS: Record<CollectionTab, string> = {
   Proposal: '/images/engagement/PoradaProposal-29.webp',
   'Bach+ette': getMediaPath('_thumbs/Bach+ette/Photos/PXL_20240816_221115487.MP.webp'),
   'Wedding Photos': getMediaPath('_thumbs/Professional/Wedding Day/Photos/DSC06261.webp'),
-  'Guest Photos': getMediaPath('_thumbs/Guest Uploads/Wedding Day/Live Photos/Stills/IMG_6014.webp'),
+  'Guest Photos': getMediaPath(
+    '_thumbs/Guest Uploads/Wedding Day/Live Photos/Stills/IMG_6014.webp'
+  ),
 }
 ```
 
@@ -50,6 +53,7 @@ git commit --no-verify -m "feat(gallery): add COLLECTION_COVERS constant for tab
 ### Task 2: Replace pill tabs with collection cards
 
 **Files:**
+
 - Modify: `src/pages/Gallery.tsx:1044–1064`
 
 Replace the existing pill-button block. The block to replace starts at the `<div className="flex flex-wrap gap-2">` line and ends at its closing `</div>` (inclusive). The new block is a 4-column grid of card buttons.
@@ -59,75 +63,74 @@ Replace the existing pill-button block. The block to replace starts at the `<div
 Find and replace this exact block (lines 1044–1064):
 
 ```tsx
-                <div className="flex flex-wrap gap-2">
-                  {collectionTabs.map((tab) => (
-                    <button
-                      key={tab}
-                      type="button"
-                      onClick={() => setSelectedCollection(tab)}
-                      aria-pressed={selectedCollection === tab}
-                      className={cn(
-                        'inline-flex items-center gap-2 rounded-full px-4 py-2 text-sm transition-all',
-                        selectedCollection === tab
-                          ? 'cinematic-toggle-active'
-                          : 'bg-cream-50 text-charcoal-600 hover:bg-gold-50/70 hover:text-charcoal-800'
-                      )}
-                    >
-                      <span>{tab}</span>
-                      <span className={cn('text-xs', selectedCollection === tab ? 'text-charcoal-700/80' : 'text-charcoal-400')}>
-                        {collectionCounts[tab]}
-                      </span>
-                    </button>
-                  ))}
-                </div>
+<div className='flex flex-wrap gap-2'>
+  {collectionTabs.map(tab => (
+    <button
+      key={tab}
+      type='button'
+      onClick={() => setSelectedCollection(tab)}
+      aria-pressed={selectedCollection === tab}
+      className={cn(
+        'inline-flex items-center gap-2 rounded-full px-4 py-2 text-sm transition-all',
+        selectedCollection === tab
+          ? 'cinematic-toggle-active'
+          : 'bg-cream-50 text-charcoal-600 hover:bg-gold-50/70 hover:text-charcoal-800'
+      )}
+    >
+      <span>{tab}</span>
+      <span
+        className={cn(
+          'text-xs',
+          selectedCollection === tab ? 'text-charcoal-700/80' : 'text-charcoal-400'
+        )}
+      >
+        {collectionCounts[tab]}
+      </span>
+    </button>
+  ))}
+</div>
 ```
 
 With this new block:
 
 ```tsx
-                <div className="grid grid-cols-2 gap-3 lg:grid-cols-4">
-                  {collectionTabs.map((tab) => {
-                    const isActive = selectedCollection === tab
-                    const coverUrl = COLLECTION_COVERS[tab]
-                    return (
-                      <button
-                        key={tab}
-                        type="button"
-                        onClick={() => setSelectedCollection(tab)}
-                        aria-pressed={isActive}
-                        className={cn(
-                          'relative h-40 overflow-hidden rounded-2xl bg-gold-100 transition-all',
-                          'focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-gold-400 focus-visible:ring-offset-2',
-                          isActive
-                            ? 'ring-2 ring-gold-400 ring-offset-2'
-                            : 'hover:-translate-y-0.5 hover:shadow-lg'
-                        )}
-                        style={{
-                          backgroundImage: `url(${coverUrl})`,
-                          backgroundSize: 'cover',
-                          backgroundPosition: 'center',
-                        }}
-                      >
-                        <div
-                          className={cn(
-                            'absolute inset-0 transition-opacity',
-                            isActive
-                              ? 'bg-gradient-to-t from-black/50 via-black/15 to-transparent'
-                              : 'bg-gradient-to-t from-black/65 via-black/25 to-transparent'
-                          )}
-                        />
-                        <div className="absolute bottom-0 left-0 p-3 text-left">
-                          <p className="font-display text-sm leading-tight text-white">
-                            {tab}
-                          </p>
-                          <p className="mt-0.5 text-xs text-white/70">
-                            {collectionCounts[tab]} photos
-                          </p>
-                        </div>
-                      </button>
-                    )
-                  })}
-                </div>
+<div className='grid grid-cols-2 gap-3 lg:grid-cols-4'>
+  {collectionTabs.map(tab => {
+    const isActive = selectedCollection === tab
+    const coverUrl = COLLECTION_COVERS[tab]
+    return (
+      <button
+        key={tab}
+        type='button'
+        onClick={() => setSelectedCollection(tab)}
+        aria-pressed={isActive}
+        className={cn(
+          'relative h-40 overflow-hidden rounded-2xl bg-gold-100 transition-all',
+          'focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-gold-400 focus-visible:ring-offset-2',
+          isActive ? 'ring-2 ring-gold-400 ring-offset-2' : 'hover:-translate-y-0.5 hover:shadow-lg'
+        )}
+        style={{
+          backgroundImage: `url(${coverUrl})`,
+          backgroundSize: 'cover',
+          backgroundPosition: 'center',
+        }}
+      >
+        <div
+          className={cn(
+            'absolute inset-0 transition-opacity',
+            isActive
+              ? 'bg-gradient-to-t from-black/50 via-black/15 to-transparent'
+              : 'bg-gradient-to-t from-black/65 via-black/25 to-transparent'
+          )}
+        />
+        <div className='absolute bottom-0 left-0 p-3 text-left'>
+          <p className='font-display text-sm leading-tight text-white'>{tab}</p>
+          <p className='mt-0.5 text-xs text-white/70'>{collectionCounts[tab]} photos</p>
+        </div>
+      </button>
+    )
+  })}
+</div>
 ```
 
 **Step 2: Verify TypeScript compiles**
@@ -168,6 +171,7 @@ npm run dev
 Navigate to `http://localhost:5173/gallery`.
 
 **Verify:**
+
 - Four collection cards appear in a 2×2 grid on mobile, 4-column row on wider screens
 - Each card shows a cover photo as background
 - The active card has a gold ring around it

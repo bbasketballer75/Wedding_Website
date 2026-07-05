@@ -257,6 +257,8 @@ export default defineConfig(({ mode }) => {
         onwarn: (warning, warn) => {
           // Suppress warnings about dynamic imports
           if (warning.code === 'DYNAMIC_IMPORT') return
+          if (warning.code === 'INEFFECTIVE_DYNAMIC_IMPORT') return
+          if (warning.code === 'PLUGIN_TIMINGS') return
           // Warn about large chunks
           if (warning.code === 'MODULE_LEVEL_DIRECTIVE') return
           warn(warning)

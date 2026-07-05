@@ -41,7 +41,8 @@ const supabase = createClient(PROJECT_URL, SERVICE_ROLE_KEY, {
 })
 
 async function ensureBucket() {
-  const { data: existingBucket, error: getBucketError } = await supabase.storage.getBucket(BUCKET_NAME)
+  const { data: existingBucket, error: getBucketError } =
+    await supabase.storage.getBucket(BUCKET_NAME)
 
   if (!getBucketError && existingBucket) {
     return
@@ -97,7 +98,7 @@ async function walk(dir) {
   for (const entry of entries) {
     const fullPath = path.join(dir, entry.name)
     if (entry.isDirectory()) {
-      files.push(...await walk(fullPath))
+      files.push(...(await walk(fullPath)))
     } else if (entry.isFile()) {
       files.push(fullPath)
     }
@@ -107,7 +108,7 @@ async function walk(dir) {
 }
 
 function resolveConfirmedNames(reviewItems) {
-  const byClusterId = new Map(reviewItems.map((item) => [item.clusterId, item]))
+  const byClusterId = new Map(reviewItems.map(item => [item.clusterId, item]))
 
   function getResolvedName(clusterId, seen = new Set()) {
     if (!clusterId || seen.has(clusterId)) return null
@@ -120,7 +121,7 @@ function resolveConfirmedNames(reviewItems) {
     return null
   }
 
-  return new Map(reviewItems.map((item) => [item.clusterId, getResolvedName(item.clusterId)]))
+  return new Map(reviewItems.map(item => [item.clusterId, getResolvedName(item.clusterId)]))
 }
 
 function resolveClusterStatus(review) {
@@ -144,7 +145,7 @@ function buildArtifactPaths(prefix) {
 
 function formatGuestBatchLabel(items) {
   const dates = items
-    .map((item) => String(item.created_at || '').slice(0, 10))
+    .map(item => String(item.created_at || '').slice(0, 10))
     .filter(Boolean)
     .sort()
 
@@ -180,7 +181,7 @@ async function fetchExistingPhotosByIds(ids) {
     rows.push(...(data || []))
   }
 
-  return new Map(rows.map((row) => [row.id, row]))
+  return new Map(rows.map(row => [row.id, row]))
 }
 
 async function main() {
@@ -208,21 +209,20 @@ async function main() {
     assertExists(markdownPath, 'face cluster summary'),
   ])
 
-  const [organizationManifest, detections, clusters, reviewItems, annotationsByPhoto] = await Promise.all([
-    readJson(organizationManifestPath),
-    readJson(detectionsPath),
-    readJson(clustersPath),
-    readJson(reviewPath),
-    readJson(annotationsPath),
-  ])
+  const [organizationManifest, detections, clusters, reviewItems, annotationsByPhoto] =
+    await Promise.all([
+      readJson(organizationManifestPath),
+      readJson(detectionsPath),
+      readJson(clustersPath),
+      readJson(reviewPath),
+      readJson(annotationsPath),
+    ])
 
-  const guestImages = organizationManifest.filter((item) => item.kind === 'image')
-  const livePhotoIds = guestImages
-    .map((item) => item.photoRowId || item.id)
-    .filter(Boolean)
+  const guestImages = organizationManifest.filter(item => item.kind === 'image')
+  const livePhotoIds = guestImages.map(item => item.photoRowId || item.id).filter(Boolean)
   const existingPhotosById = await fetchExistingPhotosByIds(livePhotoIds)
 
-  const importManifest = guestImages.map((item) => {
+  const importManifest = guestImages.map(item => {
     const livePhotoId = item.photoRowId || item.id
     const livePhoto = existingPhotosById.get(livePhotoId)
     const category = livePhoto?.category || item.collection || 'Guest Uploads'
@@ -234,17 +234,31 @@ async function main() {
       category,
       storyLaneSuggestion: item.storyLaneSuggestion || 'guest-uploads',
       duplicateGroupId: null,
-      tags: Array.isArray(livePhoto?.tags) ? livePhoto.tags : Array.isArray(item.existingTags) ? item.existingTags : [],
+      tags: Array.isArray(livePhoto?.tags)
+        ? livePhoto.tags
+        : Array.isArray(item.existingTags)
+          ? item.existingTags
+          : [],
       photoRowDraft: {
         url: livePhoto?.url || item.remoteUrl || '',
-        thumbnail: livePhoto?.thumbnail || item.remoteThumbnailUrl || livePhoto?.url || item.remoteUrl || '',
+        thumbnail:
+          livePhoto?.thumbnail || item.remoteThumbnailUrl || livePhoto?.url || item.remoteUrl || '',
         category,
         location: livePhoto?.location || item.location || null,
         date: livePhoto?.date || item.captureDate || item.created_at || null,
-        photographer: livePhoto?.photographer || item.photographer || `${item.guestName || 'Guest'} (Guest)`,
+        photographer:
+          livePhoto?.photographer || item.photographer || `${item.guestName || 'Guest'} (Guest)`,
         is_professional: false,
-        tags: Array.isArray(livePhoto?.tags) ? livePhoto.tags : Array.isArray(item.existingTags) ? item.existingTags : [],
-        faces: Array.isArray(livePhoto?.faces) ? livePhoto.faces : Array.isArray(item.existingFaces) ? item.existingFaces : [],
+        tags: Array.isArray(livePhoto?.tags)
+          ? livePhoto.tags
+          : Array.isArray(item.existingTags)
+            ? item.existingTags
+            : [],
+        faces: Array.isArray(livePhoto?.faces)
+          ? livePhoto.faces
+          : Array.isArray(item.existingFaces)
+            ? item.existingFaces
+            : [],
       },
     }
   })
@@ -256,7 +270,7 @@ async function main() {
     `Working root: \`${absoluteWorkingRoot}\``,
     '',
     `Rows: **${importManifest.length}**`,
-    `Rows with live photo ids: **${importManifest.filter((row) => row.sourceRecordId).length}**`,
+    `Rows with live photo ids: **${importManifest.filter(row => row.sourceRecordId).length}**`,
     '',
     '## Notes',
     '- This manifest is built from the guest-upload export organization manifest plus the current live `photos` rows.',
@@ -267,7 +281,7 @@ async function main() {
     'guest-review-batch',
     absoluteWorkingRoot,
     String(importManifest.length),
-    importManifest.map((row) => row.sourceRecordId || row.sourceRelativePath).join('::'),
+    importManifest.map(row => row.sourceRecordId || row.sourceRelativePath).join('::')
   )
   const artifactPrefix = batchKey
   const artifactPaths = buildArtifactPaths(artifactPrefix)
@@ -287,7 +301,7 @@ async function main() {
   const cropFiles = await walk(cropsRoot)
   const uploadTargets = [
     ...staticArtifacts,
-    ...cropFiles.map((filePath) => [
+    ...cropFiles.map(filePath => [
       filePath,
       `${artifactPrefix}/faces/${toPosix(path.relative(facesRoot, filePath))}`,
     ]),
@@ -334,17 +348,17 @@ async function main() {
     throw batchUpsertError
   }
 
-  const reviewByClusterId = new Map(reviewItems.map((item) => [item.clusterId, item]))
+  const reviewByClusterId = new Map(reviewItems.map(item => [item.clusterId, item]))
   const resolvedNames = resolveConfirmedNames(reviewItems)
   const clusterByFaceId = new Map()
-  const clusterById = new Map(clusters.map((cluster) => [cluster.clusterId, cluster]))
+  const clusterById = new Map(clusters.map(cluster => [cluster.clusterId, cluster]))
   const importManifestByRecordId = new Map(
-    importManifest
-      .filter((row) => row.sourceRecordId)
-      .map((row) => [row.sourceRecordId, row]),
+    importManifest.filter(row => row.sourceRecordId).map(row => [row.sourceRecordId, row])
   )
-  const organizationItemById = new Map(guestImages.map((item) => [item.id, item]))
-  const annotationsByRecordId = new Map(annotationsByPhoto.map((annotation) => [annotation.recordId, annotation.faces]))
+  const organizationItemById = new Map(guestImages.map(item => [item.id, item]))
+  const annotationsByRecordId = new Map(
+    annotationsByPhoto.map(annotation => [annotation.recordId, annotation.faces])
+  )
 
   for (const cluster of clusters) {
     for (const member of cluster.members) {
@@ -372,9 +386,9 @@ async function main() {
     throw deleteClustersError
   }
 
-  const clusterRows = clusters.map((cluster) => {
+  const clusterRows = clusters.map(cluster => {
     const review = reviewByClusterId.get(cluster.clusterId)
-    const members = cluster.members.map((member) => ({
+    const members = cluster.members.map(member => ({
       ...member,
       thumbnailObjectPath: member.thumbnailPath
         ? `${artifactPrefix}/faces/${member.thumbnailPath}`
@@ -400,18 +414,25 @@ async function main() {
       merge_into_cluster_id: review?.mergeIntoClusterId ?? null,
       split_requested: review?.reviewStatus === 'split_requested',
       split_notes: review?.notes ?? null,
-      sample_thumbnail_path: members.find((member) => member.thumbnailObjectPath)?.thumbnailObjectPath ?? null,
+      sample_thumbnail_path:
+        members.find(member => member.thumbnailObjectPath)?.thumbnailObjectPath ?? null,
       member_count: cluster.memberCount,
       average_quality_score: cluster.averageQualityScore ?? null,
-      source_record_ids: [...new Set(
-        members
-          .map((member) => organizationItemById.get(member.sourceRecordId || '')?.photoRowId || member.sourceRecordId)
-          .filter(Boolean),
-      )],
+      source_record_ids: [
+        ...new Set(
+          members
+            .map(
+              member =>
+                organizationItemById.get(member.sourceRecordId || '')?.photoRowId ||
+                member.sourceRecordId
+            )
+            .filter(Boolean)
+        ),
+      ],
       members,
       metadata: {
         reviewSource: 'guest_uploads',
-        localThumbnailPaths: members.map((member) => member.thumbnailPath).filter(Boolean),
+        localThumbnailPaths: members.map(member => member.thumbnailPath).filter(Boolean),
       },
       updated_at: new Date().toISOString(),
     }
@@ -428,9 +449,10 @@ async function main() {
   }
 
   const faceRows = detections
-    .map((detection) => {
+    .map(detection => {
       const manifestItem = organizationItemById.get(detection.sourceRecordId)
-      const sourceRecordId = manifestItem?.photoRowId || manifestItem?.id || detection.sourceRecordId || null
+      const sourceRecordId =
+        manifestItem?.photoRowId || manifestItem?.id || detection.sourceRecordId || null
       const manifestRow = sourceRecordId ? importManifestByRecordId.get(sourceRecordId) : null
       if (!manifestRow) {
         return null
@@ -449,7 +471,8 @@ async function main() {
         face_id: detection.faceId,
         cluster_id: clusterId,
         source_record_id: sourceRecordId,
-        source_relative_path: detection.sourceRelativePath ?? manifestRow.sourceRelativePath ?? null,
+        source_relative_path:
+          detection.sourceRelativePath ?? manifestRow.sourceRelativePath ?? null,
         photo_url: manifestRow.photoRowDraft.url,
         thumbnail_url: manifestRow.photoRowDraft.thumbnail || manifestRow.photoRowDraft.url,
         thumbnail_object_path: detection.thumbnailPath
@@ -465,7 +488,8 @@ async function main() {
         notes: review?.notes?.trim() || null,
         metadata: {
           collection,
-          storyLaneSuggestion: detection.storyLaneSuggestion ?? manifestRow.storyLaneSuggestion ?? 'guest-uploads',
+          storyLaneSuggestion:
+            detection.storyLaneSuggestion ?? manifestRow.storyLaneSuggestion ?? 'guest-uploads',
           suggestedLabel: review?.suggestedLabel ?? confirmedName ?? null,
           crop: detection.crop ?? null,
           boxScore: detection.boxScore ?? null,
@@ -483,9 +507,7 @@ async function main() {
     .filter(Boolean)
 
   if (faceRows.length > 0) {
-    const { error: insertFacesError } = await supabase
-      .from('media_review_faces')
-      .insert(faceRows)
+    const { error: insertFacesError } = await supabase.from('media_review_faces').insert(faceRows)
 
     if (insertFacesError) {
       throw insertFacesError

@@ -13,6 +13,7 @@
 ### Task 1: Write `scripts/reset-photos-from-manifest.mjs`
 
 **Files:**
+
 - Create: `scripts/reset-photos-from-manifest.mjs`
 
 **Step 1: Create the script**
@@ -21,11 +22,7 @@
 import 'dotenv/config'
 import path from 'node:path'
 import { createClient } from '@supabase/supabase-js'
-import {
-  inferCanonicalAlbum,
-  readJson,
-  toSiteMediaPath,
-} from './photo-batch-utils.mjs'
+import { inferCanonicalAlbum, readJson, toSiteMediaPath } from './photo-batch-utils.mjs'
 
 const PROJECT_URL = process.env.VITE_SUPABASE_URL
 const SERVICE_ROLE_KEY = process.env.SUPABASE_SERVICE_ROLE_KEY
@@ -62,7 +59,7 @@ async function main() {
   const manifestPath = path.join(
     path.resolve(workingRoot),
     'publish',
-    'wedding-photo-import-manifest.json',
+    'wedding-photo-import-manifest.json'
   )
   const manifest = await readJson(manifestPath)
 
@@ -117,10 +114,7 @@ async function main() {
 
   // Delete all existing rows
   console.log('\nDeleting all existing photo rows...')
-  const { error: deleteError } = await supabase
-    .from('photos')
-    .delete()
-    .not('id', 'is', null)
+  const { error: deleteError } = await supabase.from('photos').delete().not('id', 'is', null)
 
   if (deleteError) throw deleteError
   console.log('All existing rows deleted.')
@@ -154,6 +148,7 @@ git commit -m "feat(scripts): add reset-photos-from-manifest script"
 ### Task 2: Dry run — verify mapping before touching the DB
 
 **Files:**
+
 - Run: `scripts/reset-photos-from-manifest.mjs`
 
 **Step 1: Run the dry run**
@@ -167,6 +162,7 @@ node scripts/reset-photos-from-manifest.mjs \
 **Step 2: Verify the output matches expected counts**
 
 Expected output:
+
 ```
 Manifest rows: 1414
 Publishable rows (Engagement excluded): 1414
@@ -203,6 +199,7 @@ node scripts/reset-photos-from-manifest.mjs \
 ```
 
 Expected output:
+
 ```
 Manifest rows: 1414
 Publishable rows (Engagement excluded): 1414
@@ -233,6 +230,7 @@ ORDER BY album;
 ```
 
 Expected result:
+
 ```
 album          | count | has_tags | has_faces | min_sort | max_sort
 Bach+ette      |   508 |      508 |         ? |        1 |      508

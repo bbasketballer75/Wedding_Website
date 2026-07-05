@@ -1,7 +1,7 @@
 import { S3Client, ListObjectsV2Command } from '@aws-sdk/client-s3'
 import dotenv from 'dotenv'
 
-dotenv.config()
+dotenv.config({ quiet: true })
 
 const R2_ACCOUNT_ID = process.env.R2_ACCOUNT_ID
 const R2_ACCESS_KEY_ID = process.env.R2_ACCESS_KEY_ID
@@ -29,7 +29,7 @@ async function main() {
       Bucket: BUCKET_NAME,
     })
   )
-  
+
   if (response.Contents && response.Contents.length > 0) {
     console.log(`Found ${response.Contents.length} objects:`)
     for (const item of response.Contents) {

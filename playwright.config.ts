@@ -1,14 +1,17 @@
 import { defineConfig, devices } from '@playwright/test'
 import { config as loadEnv } from 'dotenv'
 
-loadEnv()
+loadEnv({ quiet: true })
 
 export default defineConfig({
   testDir: './tests/e2e',
   fullyParallel: false,
   forbidOnly: !!process.env.CI,
   retries: 0,
-  workers: 3,
+  // Single-worker in CI to avoid vite-preview port/HMR contention with
+  // N parallel browsers (sequential run is ~3x slower wall time but reliable).
+  // Local dev keeps the 3-worker default for fast feedback.
+  workers: process.env.CI ? 1 : 3,
   reporter: [['list'], ['html', { open: 'never' }]],
   timeout: 60000,
   expect: {
@@ -32,7 +35,7 @@ export default defineConfig({
   ],
 
   webServer: {
-    command: 'npm run build && npx vite preview --host 127.0.0.1 --port 4174 --strictPort',
+    command: 'npm run build && npm run preview -- --host 127.0.0.1 --port 4174 --strictPort',
     url: 'http://127.0.0.1:4174',
     reuseExistingServer: !process.env.CI,
     timeout: 180000,

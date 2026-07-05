@@ -20,6 +20,9 @@ dev-dist
 # Local tool caches
 .minimax/
 .playwright-mcp/
+.hermes/
+.harness/reins/*/memory/
+.harness/reins/*/opencode/
 
 # Git worktrees
 .worktrees/

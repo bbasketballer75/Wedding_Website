@@ -41,9 +41,9 @@ function toGroupPairSet(groups) {
 }
 
 function scoreSets(expectedSet, actualSet) {
-  const truePositives = [...expectedSet].filter((item) => actualSet.has(item))
-  const falseNegatives = [...expectedSet].filter((item) => !actualSet.has(item))
-  const falsePositives = [...actualSet].filter((item) => !expectedSet.has(item))
+  const truePositives = [...expectedSet].filter(item => actualSet.has(item))
+  const falseNegatives = [...expectedSet].filter(item => !actualSet.has(item))
+  const falsePositives = [...actualSet].filter(item => !expectedSet.has(item))
   const precision = actualSet.size === 0 ? 1 : truePositives.length / actualSet.size
   const recall = expectedSet.size === 0 ? 1 : truePositives.length / expectedSet.size
   const f1 = precision + recall === 0 ? 0 : (2 * precision * recall) / (precision + recall)
@@ -62,33 +62,35 @@ function scoreSets(expectedSet, actualSet) {
 
 function normalizeLivePhotoPairs(entries) {
   return new Set(
-    entries.flatMap((entry) =>
-      (entry.stills || []).map((still) => `${entry.clip} => ${still}`),
-    ),
+    entries.flatMap(entry => (entry.stills || []).map(still => `${entry.clip} => ${still}`))
   )
 }
 
 function scoreCoverCandidates(expected, actual) {
   const buckets = new Set([...Object.keys(expected || {}), ...Object.keys(actual || {})])
-  const rows = [...buckets].sort().map((bucketKey) => {
+  const rows = [...buckets].sort().map(bucketKey => {
     const expectedList = expected?.[bucketKey] ?? []
     const actualList = actual?.[bucketKey] ?? []
-    const matches = expectedList.filter((item) => actualList.includes(item))
+    const matches = expectedList.filter(item => actualList.includes(item))
 
     return {
       bucketKey,
       expectedCount: expectedList.length,
       actualCount: actualList.length,
       matchedCount: matches.length,
-      missing: expectedList.filter((item) => !actualList.includes(item)),
-      unexpected: actualList.filter((item) => !expectedList.includes(item)),
-      precision: actualList.length === 0 ? 1 : Number((matches.length / actualList.length).toFixed(3)),
-      recall: expectedList.length === 0 ? 1 : Number((matches.length / expectedList.length).toFixed(3)),
+      missing: expectedList.filter(item => !actualList.includes(item)),
+      unexpected: actualList.filter(item => !expectedList.includes(item)),
+      precision:
+        actualList.length === 0 ? 1 : Number((matches.length / actualList.length).toFixed(3)),
+      recall:
+        expectedList.length === 0 ? 1 : Number((matches.length / expectedList.length).toFixed(3)),
     }
   })
 
-  const precision = rows.length === 0 ? 1 : rows.reduce((sum, row) => sum + row.precision, 0) / rows.length
-  const recall = rows.length === 0 ? 1 : rows.reduce((sum, row) => sum + row.recall, 0) / rows.length
+  const precision =
+    rows.length === 0 ? 1 : rows.reduce((sum, row) => sum + row.precision, 0) / rows.length
+  const recall =
+    rows.length === 0 ? 1 : rows.reduce((sum, row) => sum + row.recall, 0) / rows.length
 
   return {
     buckets: rows,
@@ -118,11 +120,15 @@ async function main() {
     readJson(fixturePath),
   ])
 
-  const actualDuplicatePairs = toGroupPairSet((analysis.exactDuplicateGroups || []).map((group) => group.files || []))
+  const actualDuplicatePairs = toGroupPairSet(
+    (analysis.exactDuplicateGroups || []).map(group => group.files || [])
+  )
   const expectedDuplicatePairs = toGroupPairSet(fixture.exactDuplicateGroups || [])
 
   const actualSimilarPairs = toGroupPairSet(
-    (analysis.similarShotGroups || []).map((group) => (group.files || []).map((file) => file.relativePath)),
+    (analysis.similarShotGroups || []).map(group =>
+      (group.files || []).map(file => file.relativePath)
+    )
   )
   const expectedSimilarPairs = toGroupPairSet(fixture.similarShotGroups || [])
 
@@ -130,16 +136,20 @@ async function main() {
   const expectedLivePairs = normalizeLivePhotoPairs(fixture.livePhotoPairs || [])
 
   const actualCoverBuckets = Object.fromEntries(
-    (analysis.coverCandidates || []).map((bucket) => [
+    (analysis.coverCandidates || []).map(bucket => [
       bucket.bucketKey,
-      (bucket.images || []).map((image) => image.relativePath),
-    ]),
+      (bucket.images || []).map(image => image.relativePath),
+    ])
   )
 
   const actualFacePairs = toGroupPairSet(
-    (faceClusters || []).map((cluster) => (cluster.members || []).map((member) => member.sourceRelativePath)),
+    (faceClusters || []).map(cluster =>
+      (cluster.members || []).map(member => member.sourceRelativePath)
+    )
   )
-  const expectedFacePairs = toGroupPairSet((fixture.faceClusters || []).map((cluster) => cluster.members || []))
+  const expectedFacePairs = toGroupPairSet(
+    (fixture.faceClusters || []).map(cluster => cluster.members || [])
+  )
 
   const report = {
     workingRoot: absoluteWorkingRoot,
@@ -189,7 +199,7 @@ async function main() {
           F1: report.faceClusters.f1,
         },
       ],
-      ['Metric', 'Precision', 'Recall', 'F1'],
+      ['Metric', 'Precision', 'Recall', 'F1']
     ),
     '',
     `Average cover precision: **${report.coverCandidates.precision}**`,

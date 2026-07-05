@@ -34,12 +34,10 @@ async function listStorageObjects(bucket, folder) {
   let offset = 0
 
   while (true) {
-    const { data, error } = await supabase.storage
-      .from(bucket)
-      .list(folder, {
-        limit: 100,
-        offset,
-      })
+    const { data, error } = await supabase.storage.from(bucket).list(folder, {
+      limit: 100,
+      offset,
+    })
 
     if (error) {
       throw error
@@ -49,7 +47,7 @@ async function listStorageObjects(bucket, folder) {
     for (const entry of entries) {
       const nextPath = folder ? `${folder}/${entry.name}` : entry.name
       if (entry.id === null) {
-        files.push(...await listStorageObjects(bucket, nextPath))
+        files.push(...(await listStorageObjects(bucket, nextPath)))
       } else {
         files.push(nextPath)
       }
@@ -71,9 +69,7 @@ async function deleteStoragePrefix(bucket, prefix) {
   const files = await listStorageObjects(bucket, prefix)
 
   for (const fileChunk of chunk(files, 100)) {
-    const { error } = await supabase.storage
-      .from(bucket)
-      .remove(fileChunk)
+    const { error } = await supabase.storage.from(bucket).remove(fileChunk)
 
     if (error) {
       throw error
@@ -94,7 +90,7 @@ async function main() {
   }
 
   const legacyBatches = (batches || []).filter(
-    (batch) => !String(batch.batch_key || '').startsWith('guest-review-batch-'),
+    batch => !String(batch.batch_key || '').startsWith('guest-review-batch-')
   )
 
   if (legacyBatches.length === 0) {
@@ -102,7 +98,7 @@ async function main() {
     return
   }
 
-  const batchIds = legacyBatches.map((batch) => batch.id)
+  const batchIds = legacyBatches.map(batch => batch.id)
   const removedArtifacts = []
 
   for (const batch of legacyBatches) {
@@ -148,7 +144,7 @@ async function main() {
     deletedBatchCount: legacyBatches.length,
     deletedBatchIds: batchIds,
     deletedAt: new Date().toISOString(),
-    batches: legacyBatches.map((batch) => ({
+    batches: legacyBatches.map(batch => ({
       id: batch.id,
       batchKey: batch.batch_key,
       label: batch.label,
@@ -168,12 +164,12 @@ async function main() {
     `Deleted legacy review batches: **${legacyBatches.length}**`,
     `Generated at: \`${report.deletedAt}\``,
     '',
-    ...legacyBatches.flatMap((batch) => ([
-      `- \`${batch.label}\` (\`${batch.batch_key}\`)`,
-    ])),
+    ...legacyBatches.flatMap(batch => [`- \`${batch.label}\` (\`${batch.batch_key}\`)`]),
   ])
 
-  console.log(`Deleted ${legacyBatches.length} legacy media review batch${legacyBatches.length === 1 ? '' : 'es'}.`)
+  console.log(
+    `Deleted ${legacyBatches.length} legacy media review batch${legacyBatches.length === 1 ? '' : 'es'}.`
+  )
   console.log(`Wrote reset report to ${reportPath}`)
 }
 

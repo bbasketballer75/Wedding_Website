@@ -53,7 +53,9 @@ if (signInErr) {
 }
 
 console.log(`\nAdmin user JWT payload:`)
-const payload = JSON.parse(Buffer.from(signInData.session.access_token.split('.')[1], 'base64url').toString('utf8'))
+const payload = JSON.parse(
+  Buffer.from(signInData.session.access_token.split('.')[1], 'base64url').toString('utf8')
+)
 console.log(`  app_metadata: ${JSON.stringify(payload.app_metadata)}`)
 console.log(`  role claim: ${payload.role}`)
 

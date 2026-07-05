@@ -43,11 +43,14 @@ const RotateDevicePrompt: React.FC = () => {
     try {
       if (document.documentElement.requestFullscreen) {
         await document.documentElement.requestFullscreen()
-      } else if (
-        (document.documentElement as HTMLElementWithWebkitFullscreen).webkitRequestFullscreen
-      ) {
-        await (document.documentElement as HTMLElementWithWebkitFullscreen)
-          .webkitRequestFullscreen!()
+      } else {
+        const webkitRequestFullscreen = (
+          document.documentElement as HTMLElementWithWebkitFullscreen
+        ).webkitRequestFullscreen
+
+        if (webkitRequestFullscreen) {
+          await webkitRequestFullscreen.call(document.documentElement)
+        }
       }
 
       // Small delay to allow fullscreen to engage before locking

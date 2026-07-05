@@ -6,17 +6,12 @@
     ]
   ],
   "similarShotGroups": [
-    [
-      "Wedding Day/ceremony/processional-014.jpg",
-      "Wedding Day/ceremony/processional-015.jpg"
-    ]
+    ["Wedding Day/ceremony/processional-014.jpg", "Wedding Day/ceremony/processional-015.jpg"]
   ],
   "livePhotoPairs": [
     {
       "clip": "Guest Uploads/table-12/live-photo-001.mov",
-      "stills": [
-        "Guest Uploads/table-12/live-photo-001.heic"
-      ]
+      "stills": ["Guest Uploads/table-12/live-photo-001.heic"]
     }
   ],
   "coverCandidates": {

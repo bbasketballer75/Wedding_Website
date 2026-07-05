@@ -165,7 +165,9 @@ async function fetchExportableGuestRows(adminClient: ReturnType<typeof createCli
   if (uploadError) throw uploadError
 
   const approvedUploads = (uploads || []) as GuestUploadRow[]
-  const candidateUrls = [...new Set(approvedUploads.flatMap((upload) => upload.photo_urls || []).filter(Boolean))]
+  const candidateUrls = [
+    ...new Set(approvedUploads.flatMap(upload => upload.photo_urls || []).filter(Boolean)),
+  ]
   const photoRows: PhotoRow[] = []
 
   for (const urlChunk of chunk(candidateUrls, 40)) {
@@ -179,7 +181,7 @@ async function fetchExportableGuestRows(adminClient: ReturnType<typeof createCli
     photoRows.push(...((data || []) as PhotoRow[]))
   }
 
-  const photoByUrl = new Map(photoRows.map((row) => [row.url, row]))
+  const photoByUrl = new Map(photoRows.map(row => [row.url, row]))
   const manifestItems: ExportManifestItem[] = []
   const exportableUploadIds = new Set<string>()
 
@@ -212,8 +214,12 @@ async function fetchExportableGuestRows(adminClient: ReturnType<typeof createCli
   }
 }
 
-async function prepareExport(adminClient: ReturnType<typeof createClient>, user: { id: string; email?: string | null }) {
-  const { manifestItems, exportableUploadCount, exportablePhotoCount } = await fetchExportableGuestRows(adminClient)
+async function prepareExport(
+  adminClient: ReturnType<typeof createClient>,
+  user: { id: string; email?: string | null }
+) {
+  const { manifestItems, exportableUploadCount, exportablePhotoCount } =
+    await fetchExportableGuestRows(adminClient)
 
   const createdAt = new Date().toISOString()
   const batchKey = `guest-face-tagging-${createdAt.replace(/[:.]/g, '-')}`
@@ -226,20 +232,18 @@ async function prepareExport(adminClient: ReturnType<typeof createClient>, user:
     items: manifestItems,
   }
 
-  const { error } = await adminClient
-    .from('guest_face_tagging_batches')
-    .insert({
-      batch_key: batchKey,
-      label: manifest.label,
-      status: 'prepared',
-      exportable_upload_count: exportableUploadCount,
-      exportable_photo_count: exportablePhotoCount,
-      created_by_user_id: user.id,
-      created_by_email: user.email ?? null,
-      metadata: {
-        first_relative_paths: manifestItems.slice(0, 10).map((item) => item.relativePath),
-      },
-    })
+  const { error } = await adminClient.from('guest_face_tagging_batches').insert({
+    batch_key: batchKey,
+    label: manifest.label,
+    status: 'prepared',
+    exportable_upload_count: exportableUploadCount,
+    exportable_photo_count: exportablePhotoCount,
+    created_by_user_id: user.id,
+    created_by_email: user.email ?? null,
+    metadata: {
+      first_relative_paths: manifestItems.slice(0, 10).map(item => item.relativePath),
+    },
+  })
 
   if (error) throw error
 
@@ -249,7 +253,7 @@ async function prepareExport(adminClient: ReturnType<typeof createClient>, user:
 async function syncTaggedBatch(
   adminClient: ReturnType<typeof createClient>,
   user: { id: string; email?: string | null },
-  payload: { batchKey: string; label: string; createdAt: string; updates: SyncUpdate[] },
+  payload: { batchKey: string; label: string; createdAt: string; updates: SyncUpdate[] }
 ) {
   const updates = payload.updates || []
   let syncedPhotoCount = 0
@@ -271,7 +275,7 @@ async function syncTaggedBatch(
       continue
     }
 
-    const normalizedFaces = (update.faces || []).map((face) => ({
+    const normalizedFaces = (update.faces || []).map(face => ({
       id: face.id,
       name: face.name,
       x: face.x,
@@ -291,9 +295,8 @@ async function syncTaggedBatch(
   }
 
   const status = missingPhotoIds.length > 0 && syncedPhotoCount === 0 ? 'failed' : 'synced'
-  const { error } = await adminClient
-    .from('guest_face_tagging_batches')
-    .upsert({
+  const { error } = await adminClient.from('guest_face_tagging_batches').upsert(
+    {
       batch_key: payload.batchKey,
       label: payload.label,
       status,
@@ -302,13 +305,16 @@ async function syncTaggedBatch(
       synced_by_user_id: user.id,
       synced_by_email: user.email ?? null,
       last_synced_at: new Date().toISOString(),
-      last_error: missingPhotoIds.length > 0 ? `Missing photo rows: ${missingPhotoIds.join(', ')}` : null,
+      last_error:
+        missingPhotoIds.length > 0 ? `Missing photo rows: ${missingPhotoIds.join(', ')}` : null,
       updated_at: new Date().toISOString(),
       metadata: {
         source: 'edge-sync',
         upload_count: updates.length,
       },
-    }, { onConflict: 'batch_key' })
+    },
+    { onConflict: 'batch_key' }
+  )
 
   if (error) throw error
 
@@ -320,7 +326,7 @@ async function syncTaggedBatch(
   }
 }
 
-Deno.serve(async (request) => {
+Deno.serve(async request => {
   if (request.method === 'OPTIONS') {
     return new Response('ok', { headers: corsHeaders })
   }
@@ -346,7 +352,7 @@ Deno.serve(async (request) => {
       {
         error: error instanceof Error ? error.message : String(error),
       },
-      500,
+      500
     )
   }
 })

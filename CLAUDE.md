@@ -26,6 +26,7 @@ npm run preview      # Preview production build
 ## Architecture
 
 ### Frontend Stack
+
 - **React 19** with TypeScript, **Vite 7** bundler
 - **Tailwind CSS v4** via Vite plugin (not configured in tailwind.config)
 - **Zustand** for state management (3 stores: auth, gallery, ui)
@@ -33,6 +34,7 @@ npm run preview      # Preview production build
 - **React Router v7** with lazy-loaded routes
 
 ### Backend (Supabase)
+
 - **Auth**: Email/password via Supabase Auth
 - **Database**: PostgreSQL with comprehensive schema for photos, guest uploads, guestbook, editorial features, face recognition, moderation
 - **Storage**: S3-backed storage for media assets
@@ -42,6 +44,7 @@ npm run preview      # Preview production build
 Key Supabase tables: `photos`, `guest_uploads`, `guestbook_messages`, `site_editorial_features`, `media_review_batches/clusters/faces`, `moderation_audit_log`
 
 ### Routing Structure
+
 ```
 / → Home
 /film → Wedding Film (chaptered video player)
@@ -54,6 +57,7 @@ Key Supabase tables: `photos`, `guest_uploads`, `guestbook_messages`, `site_edit
 ```
 
 ### State Management
+
 - `src/stores/authStore.ts` - Authentication state
 - `src/stores/galleryStore.ts` - Gallery images, filters, pagination, selection, modal state
 - `src/stores/uiStore.ts` - UI preferences (theme, modals)
@@ -65,6 +69,7 @@ Key Supabase tables: `photos`, `guest_uploads`, `guestbook_messages`, `site_edit
 **Design Tokens**: Single source of truth in `src/tokens/designTokens.ts` - used by CSS via `@layer` directives.
 
 **Component Organization**:
+
 - `components/ui/` - Reusable primitives (Button, Card, Input, etc.)
 - `components/layout/` - Header, Footer, BackgroundMusic, CustomCursor
 - `components/gallery/` - Gallery grid, masonry, lightbox, map view
@@ -76,7 +81,7 @@ Key Supabase tables: `photos`, `guest_uploads`, `guestbook_messages`, `site_edit
 
 **Supabase Client**: Single instance exported from `src/lib/supabase.ts` with typed database functions. Custom RPC functions handle complex operations (likes, comments, album organization, face tagging).
 
-**Vendors Chunked Separately**: react, react-dom → vendor-react; react-router-dom → vendor-router; @supabase/supabase-js → vendor-supabase; framer-motion → vendor-motion; lucide-react → vendor-icons; @radix-ui/* → vendor-radix
+**Vendors Chunked Separately**: react, react-dom → vendor-react; react-router-dom → vendor-router; @supabase/supabase-js → vendor-supabase; framer-motion → vendor-motion; lucide-react → vendor-icons; @radix-ui/\* → vendor-radix
 
 ### Environment Variables
 
@@ -88,6 +93,7 @@ VITE_MEDIA_BASE_URL      # Optional media proxy target
 ```
 
 ### Supabase Management
+
 ```bash
 npm run supabase:start     # Start local Supabase
 npm run supabase:stop      # Stop local Supabase
@@ -97,6 +103,7 @@ npm run supabase:types     # Generate TypeScript types from schema
 ```
 
 ### Media Batch Operations
+
 ```bash
 npm run media:batch:optimize   # Optimize photos
 npm run media:batch:organize   # Organize photos
@@ -107,4 +114,5 @@ npm run media:guest:tag:sync    # Sync guest face metadata
 ```
 
 ### Database Migrations
+
 Located in `supabase/migrations/`. Migrations are timestamped and include: schema init, storage buckets, guestbook, rate limiting, moderation system, editorial features, face review system, photo albums, and delete tools.

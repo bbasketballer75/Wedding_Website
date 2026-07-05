@@ -15,6 +15,7 @@
 ### Task 1: Add Figma MCP to Claude Code settings
 
 **Files:**
+
 - Modify: `C:\Users\bbask\.claude\settings.json`
 
 **Step 1: Read the current settings.json** (already done — file is at `C:\Users\bbask\.claude\settings.json`)
@@ -41,9 +42,11 @@ Add this block alongside the existing `permissions` and `enabledPlugins` keys:
 **Step 3: Verify connection**
 
 Restart Claude Code, then in a new session run:
+
 ```
 Can you read the Figma file at <your-figma-file-url>?
 ```
+
 Expected: The Figma MCP tool responds with file metadata, no errors.
 
 ---
@@ -51,11 +54,13 @@ Expected: The Figma MCP tool responds with file metadata, no errors.
 ### Task 2: Document Figma integration in CODEX.md
 
 **Files:**
+
 - Modify: `CODEX.md`
 
 **Step 1: Add Figma Integration section**
 
 Append under a `## Figma Integration` heading:
+
 ```markdown
 ## Figma Integration
 
@@ -81,6 +86,7 @@ git commit -m "chore: configure Figma Dev Mode MCP integration"
 ### Task 3: Expand design tokens
 
 **Files:**
+
 - Modify: `src/tokens/designTokens.ts`
 
 **Step 1: Add shadow, radius, and focus ring tokens**
@@ -105,7 +111,8 @@ export const radii = {
 
 export const focus = {
   ring: 'focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-gold-500 focus-visible:ring-offset-2',
-  ringInset: 'focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-gold-500',
+  ringInset:
+    'focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-gold-500',
 } as const
 ```
 
@@ -116,6 +123,7 @@ Update the default export to include these new tokens.
 ```bash
 npx tsc --noEmit
 ```
+
 Expected: 0 errors.
 
 **Step 3: Commit**
@@ -130,6 +138,7 @@ git commit -m "feat(tokens): add shadow, radius, and focus ring tokens"
 ### Task 4: Fix MobileMenu — use publicNavLinks + deduplicate nav
 
 **Files:**
+
 - Modify: `src/components/layout/MobileMenu.jsx`
 
 **Problem:** `MobileMenu.jsx` hardcodes `navLinks` internally instead of importing from `publicNavLinks`. When a nav item is added to `publicNav.ts`, the mobile menu won't update. Also missing focus trap, aria-expanded, and Escape key.
@@ -147,6 +156,7 @@ Replace `navLinks.map(...)` with `publicNavLinks.map(...)` and use `link.label` 
 **Step 2: Add focus trap with useEffect**
 
 When `isOpen` is true, trap focus inside the menu panel. Add an effect that:
+
 1. Collects all focusable elements inside the panel ref
 2. Listens for Tab/Shift+Tab to cycle within them
 3. On Escape, calls `onClose`
@@ -165,13 +175,22 @@ useEffect(() => {
   const last = focusable[focusable.length - 1]
   first?.focus()
 
-  const handleKey = (e) => {
-    if (e.key === 'Escape') { onClose(); return }
+  const handleKey = e => {
+    if (e.key === 'Escape') {
+      onClose()
+      return
+    }
     if (e.key !== 'Tab') return
     if (e.shiftKey) {
-      if (document.activeElement === first) { e.preventDefault(); last.focus() }
+      if (document.activeElement === first) {
+        e.preventDefault()
+        last.focus()
+      }
     } else {
-      if (document.activeElement === last) { e.preventDefault(); first.focus() }
+      if (document.activeElement === last) {
+        e.preventDefault()
+        first.focus()
+      }
     }
   }
   document.addEventListener('keydown', handleKey)
@@ -182,6 +201,7 @@ useEffect(() => {
 **Step 3: Add ARIA attributes**
 
 On the menu panel div, add:
+
 ```jsx
 ref={panelRef}
 role="dialog"
@@ -210,6 +230,7 @@ git commit -m "fix(nav): use publicNavLinks in MobileMenu, add focus trap and ar
 ### Task 5: Input — add error state, helper text, label association
 
 **Files:**
+
 - Modify: `src/components/ui/Input.tsx`
 
 **Checklist gaps:** No error state, no helper text, Input doesn't know about its label (no `aria-describedby` for error/hint).
@@ -283,6 +304,7 @@ git commit -m "feat(input): add error state, hint text, and aria-describedby"
 ### Task 6: Textarea — same error/hint treatment as Input
 
 **Files:**
+
 - Modify: `src/components/ui/Textarea.tsx`
 
 **Step 1: Read current Textarea.tsx**
@@ -305,6 +327,7 @@ git commit -m "feat(textarea): add error state and hint text matching Input patt
 ### Task 7: Button — add explicit focus-visible ring
 
 **Files:**
+
 - Modify: `src/components/ui/Button.tsx`
 
 **Checklist gap:** The CVA base classes don't include `focus-visible:ring-*`. Keyboard users won't see a focus indicator.
@@ -312,6 +335,7 @@ git commit -m "feat(textarea): add error state and hint text matching Input patt
 **Step 1: Add focus ring to the CVA base string**
 
 In `buttonVariants`, the base string currently ends at `whitespace-normal break-words`. Append:
+
 ```
 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-gold-500 focus-visible:ring-offset-2
 ```
@@ -332,6 +356,7 @@ git commit -m "fix(button): add focus-visible ring for keyboard accessibility"
 ### Task 8: Card — add interactive focus variant
 
 **Files:**
+
 - Modify: `src/components/ui/Card.tsx`
 
 **Checklist gap:** Interactive cards (clickable) need hover + focus-visible states. `GlassCard` has hover but no focus ring.
@@ -376,6 +401,7 @@ git commit -m "feat(card): add interactive focus-visible state for clickable car
 ### Task 9: Header — add aria-current to nav links
 
 **Files:**
+
 - Modify: `src/components/layout/Header.tsx`
 
 **Checklist gap:** Active nav links should have `aria-current="page"` for screen readers.
@@ -383,6 +409,7 @@ git commit -m "feat(card): add interactive focus-visible state for clickable car
 **Step 1: Update HeaderLink**
 
 The `HeaderLink` component already receives `isActive`. Add `aria-current`:
+
 ```tsx
 <Link
   to={path}
@@ -403,6 +430,7 @@ git commit -m "fix(header): add aria-current=page for active nav links"
 ### Task 10: Toast — align container to ARIA live region
 
 **Files:**
+
 - Modify: `src/components/notifications/Toast.tsx`
 
 **Checklist gap:** The `ToastContainer` div doesn't have `aria-live` on it. Individual toasts have `role="alert"` but the container itself has no live region announcement for the list.
@@ -433,10 +461,12 @@ git commit -m "fix(toast): add aria-live region to notification container"
 ### Task 11: Admin panels — add empty states and error boundaries
 
 **Files:**
+
 - Modify: `src/components/admin/MediaReviewPanel.tsx`
 - Modify: `src/components/admin/AlbumOrganizer.tsx`
 
 **Checklist gaps:**
+
 1. No visible "no results" empty state UI
 2. No error boundary wrapping the panels
 3. Loading states should use `Skeleton` components from `src/components/ui/Skeleton.tsx`
@@ -448,16 +478,20 @@ Before modifying (77KB and 36KB respectively — read the relevant sections for 
 **Step 2: Add EmptyState component inline**
 
 ```tsx
-function EmptyState({ icon: Icon, title, description }: {
+function EmptyState({
+  icon: Icon,
+  title,
+  description,
+}: {
   icon: React.ElementType
   title: string
   description: string
 }) {
   return (
-    <div className="flex flex-col items-center gap-3 py-16 text-center text-charcoal-500">
-      <Icon className="h-12 w-12 opacity-30" />
-      <p className="font-medium text-charcoal-700">{title}</p>
-      <p className="text-sm">{description}</p>
+    <div className='flex flex-col items-center gap-3 py-16 text-center text-charcoal-500'>
+      <Icon className='h-12 w-12 opacity-30' />
+      <p className='font-medium text-charcoal-700'>{title}</p>
+      <p className='text-sm'>{description}</p>
     </div>
   )
 }
@@ -481,21 +515,27 @@ git commit -m "feat(admin): add empty states, skeleton loading, and error bounda
 ### Task 12: Run full verification after Phase 3
 
 **Step 1: TypeScript**
+
 ```bash
 npx tsc --noEmit
 ```
+
 Expected: 0 errors.
 
 **Step 2: Lint**
+
 ```bash
 npm run lint
 ```
+
 Expected: 0 errors.
 
 **Step 3: E2E tests**
+
 ```bash
 npx playwright test
 ```
+
 Expected: All 9 specs pass.
 
 **Step 4: Visual spot-check**
@@ -508,6 +548,7 @@ Start dev server (`npm run dev`), use `preview_screenshot` on Home, Gallery, Gue
 ### Task 13: Create wedding config file
 
 **Files:**
+
 - Create: `src/config/weddingConfig.ts`
 
 **Step 1: Create the config**
@@ -536,6 +577,7 @@ git commit -m "chore: add weddingConfig with wedding date and couple names"
 ### Task 14: Anniversary Countdown section
 
 **Files:**
+
 - Create: `src/components/sections/AnniversaryCountdown.tsx`
 - Modify: `src/pages/Home.tsx`
 
@@ -664,7 +706,7 @@ In `src/pages/Home.tsx`, after the `<LoveTimeline />` line:
 import { AnniversaryCountdown } from '@/components/sections/AnniversaryCountdown'
 
 // In JSX, after <LoveTimeline />:
-<AnniversaryCountdown />
+;<AnniversaryCountdown />
 ```
 
 **Step 3: TypeScript + lint**
@@ -689,6 +731,7 @@ git commit -m "feat: add anniversary countdown section to home page"
 ### Task 15: Guest Highlight Reel section
 
 **Files:**
+
 - Create: `src/components/sections/GuestHighlightReel.tsx`
 - Modify: `src/pages/Home.tsx`
 
@@ -853,7 +896,7 @@ After `<AnniversaryCountdown />`:
 import { GuestHighlightReel } from '@/components/sections/GuestHighlightReel'
 
 // In JSX:
-<GuestHighlightReel />
+;<GuestHighlightReel />
 ```
 
 **Step 4: TypeScript + lint**
@@ -874,6 +917,7 @@ git commit -m "feat: add guest highlight reel section to home page"
 ### Task 16: Install JSZip for download packs
 
 **Files:**
+
 - Modify: `package.json` (via npm install)
 
 **Step 1: Install**
@@ -888,6 +932,7 @@ npm install --save-dev @types/jszip
 ```bash
 grep jszip package.json
 ```
+
 Expected: `"jszip": "^X.X.X"` appears under `dependencies`.
 
 **Step 3: Commit**
@@ -902,6 +947,7 @@ git commit -m "chore: add jszip for download pack feature"
 ### Task 17: Netlify Function — download-pack
 
 **Files:**
+
 - Create: `netlify/functions/download-pack.ts`
 
 **Step 1: Create netlify/functions directory if needed**
@@ -917,10 +963,7 @@ import type { Handler, HandlerEvent } from '@netlify/functions'
 import JSZip from 'jszip'
 import { createClient } from '@supabase/supabase-js'
 
-const supabase = createClient(
-  process.env.SUPABASE_URL!,
-  process.env.SUPABASE_SERVICE_ROLE_KEY!
-)
+const supabase = createClient(process.env.SUPABASE_URL!, process.env.SUPABASE_SERVICE_ROLE_KEY!)
 
 export const handler: Handler = async (event: HandlerEvent) => {
   if (event.httpMethod !== 'POST') {
@@ -952,7 +995,7 @@ export const handler: Handler = async (event: HandlerEvent) => {
   const zip = new JSZip()
 
   await Promise.all(
-    photos.map(async (photo) => {
+    photos.map(async photo => {
       const { data: signedUrl } = await supabase.storage
         .from('photos')
         .createSignedUrl(photo.storage_path, 60)
@@ -986,6 +1029,7 @@ export const handler: Handler = async (event: HandlerEvent) => {
 ```bash
 cat netlify.toml | grep functions
 ```
+
 Ensure `functions = "netlify/functions"` is set. If not, add it.
 
 **Step 4: Commit**
@@ -1000,6 +1044,7 @@ git commit -m "feat: add download-pack Netlify function for photo zip downloads"
 ### Task 18: Gallery — multi-select UI for download/share
 
 **Files:**
+
 - Modify: `src/pages/Gallery.tsx`
 
 **Step 1: Add select mode state**
@@ -1012,11 +1057,15 @@ const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set())
 **Step 2: Add select mode toggle button**
 
 In the Gallery toolbar (near the search/filter controls), add:
+
 ```tsx
 <Button
   variant={selectMode ? 'primary' : 'secondary'}
-  size="sm"
-  onClick={() => { setSelectMode(v => !v); setSelectedIds(new Set()) }}
+  size='sm'
+  onClick={() => {
+    setSelectMode(v => !v)
+    setSelectedIds(new Set())
+  }}
   ariaLabel={selectMode ? 'Exit select mode' : 'Select photos to download'}
 >
   {selectMode ? 'Cancel' : 'Select'}
@@ -1026,17 +1075,19 @@ In the Gallery toolbar (near the search/filter controls), add:
 **Step 3: Show download button when photos selected**
 
 ```tsx
-{selectMode && selectedIds.size > 0 && (
-  <Button
-    variant="primary"
-    size="sm"
-    isLoading={downloading}
-    onClick={handleDownload}
-    ariaLabel={`Download ${selectedIds.size} selected photo${selectedIds.size > 1 ? 's' : ''}`}
-  >
-    Download ({selectedIds.size})
-  </Button>
-)}
+{
+  selectMode && selectedIds.size > 0 && (
+    <Button
+      variant='primary'
+      size='sm'
+      isLoading={downloading}
+      onClick={handleDownload}
+      ariaLabel={`Download ${selectedIds.size} selected photo${selectedIds.size > 1 ? 's' : ''}`}
+    >
+      Download ({selectedIds.size})
+    </Button>
+  )
+}
 ```
 
 **Step 4: Implement handleDownload**
@@ -1077,6 +1128,7 @@ The `PhotoGrid` component will need `selectMode`, `selectedIds`, and `onToggleSe
 **Step 6: Add share URL support**
 
 Gallery already uses `useSearchParams`. Add:
+
 ```typescript
 const [searchParams] = useSearchParams()
 const sharePhotoId = searchParams.get('share')
@@ -1110,25 +1162,32 @@ git commit -m "feat(gallery): add multi-select download packs and share URL supp
 ## Final Verification
 
 **Step 1: TypeScript**
+
 ```bash
 npx tsc --noEmit
 ```
+
 Expected: 0 errors.
 
 **Step 2: Lint**
+
 ```bash
 npm run lint
 ```
+
 Expected: 0 errors.
 
 **Step 3: E2E tests**
+
 ```bash
 npx playwright test
 ```
+
 Expected: All 9 specs pass.
 
 **Step 4: Visual review**
 Start the dev server and take screenshots:
+
 - Home page — verify anniversary countdown and highlight reel render
 - Gallery — verify select mode UI, download button
 - Admin — verify empty states and skeleton loading

@@ -15,6 +15,7 @@
 **Context:** The guestbook UI was simplified to text-only (no reactions/comments). The fetch still tries `get_guestbook_messages_with_comments` RPC first (a heavier join query returning reactions + comments), then falls back to a direct table query. The insert still sends `reactions: {}`. The `GuestbookMessage` type in `supabase.ts` still declares `reactions`. None of these serve the current UI.
 
 **Files:**
+
 - Modify: `src/pages/Guestbook.tsx` (fetch useEffect ~line 114, insert ~line 217)
 - Modify: `src/lib/supabase.ts` (GuestbookMessage interface ~line 87)
 
@@ -25,6 +26,7 @@
 In `src/lib/supabase.ts`, find the `GuestbookMessage` interface (around line 87) and remove the `reactions` field:
 
 **Before:**
+
 ```ts
 export interface GuestbookMessage {
   id: string
@@ -39,6 +41,7 @@ export interface GuestbookMessage {
 ```
 
 **After:**
+
 ```ts
 export interface GuestbookMessage {
   id: string
@@ -56,6 +59,7 @@ export interface GuestbookMessage {
 Replace the entire fetch `useEffect` (lines ~114–147) with a direct query:
 
 **Before:**
+
 ```ts
 useEffect(() => {
   const fetchMessages = async () => {
@@ -63,7 +67,9 @@ useEffect(() => {
       setIsLoading(true)
       setLoadError(null)
 
-      const { data: rpcData, error: rpcError } = await supabase.rpc('get_guestbook_messages_with_comments')
+      const { data: rpcData, error: rpcError } = await supabase.rpc(
+        'get_guestbook_messages_with_comments'
+      )
       if (!rpcError && Array.isArray(rpcData)) {
         setMessages(rpcData.map(mapSupabaseMessage))
         return
@@ -80,7 +86,7 @@ useEffect(() => {
         return
       }
 
-      setMessages((data || []).map((message) => mapSupabaseMessage({ ...message, comments: [] })))
+      setMessages((data || []).map(message => mapSupabaseMessage({ ...message, comments: [] })))
     } catch {
       setLoadError('Having trouble reaching the guestbook — your note will still go through below.')
       setMessages([])
@@ -94,6 +100,7 @@ useEffect(() => {
 ```
 
 **After:**
+
 ```ts
 useEffect(() => {
   const fetchMessages = async () => {
@@ -112,7 +119,7 @@ useEffect(() => {
         return
       }
 
-      setMessages((data || []).map((row) => mapSupabaseMessage(row as GuestbookMessage)))
+      setMessages((data || []).map(row => mapSupabaseMessage(row as GuestbookMessage)))
     } catch {
       setLoadError('Having trouble reaching the guestbook — your note will still go through below.')
       setMessages([])
@@ -128,11 +135,13 @@ useEffect(() => {
 ### Step 3: Remove `reactions: {}` from the insert (Guestbook.tsx ~line 217)
 
 **Before:**
+
 ```ts
 .insert([{ name, email, content: normalizedContent, type: 'text', media_url: null, reactions: {} }])
 ```
 
 **After:**
+
 ```ts
 .insert([{ name, email, content: normalizedContent, type: 'text', media_url: null }])
 ```
@@ -142,6 +151,7 @@ useEffect(() => {
 ```bash
 npx tsc --noEmit
 ```
+
 Expected: no output (0 errors)
 
 ### Step 5: Verify lint is clean
@@ -149,6 +159,7 @@ Expected: no output (0 errors)
 ```bash
 npm run lint
 ```
+
 Expected: no errors
 
 ### Step 6: Commit
@@ -165,6 +176,7 @@ git commit -m "refactor(guestbook): remove legacy RPC fetch and reactions insert
 **Context:** `src/components/error/ErrorBoundary.tsx` exports `RouteErrorBoundary` — a thin wrapper around the full `ErrorBoundary` class. It's not used anywhere. If a lazy-loaded page throws during render, React unmounts the whole app. Wrapping the routes catches this at the page level.
 
 **Files:**
+
 - Modify: `src/App.tsx`
 
 ---
@@ -182,8 +194,9 @@ import { RouteErrorBoundary } from '@/components/error/ErrorBoundary'
 Find the `<AnimatePresence mode="wait">` in `AppContent` (around line 108) and wrap it:
 
 **Before:**
+
 ```tsx
-<AnimatePresence mode="wait">
+<AnimatePresence mode='wait'>
   <Routes location={location} key={location.pathname}>
     {/* ...routes... */}
   </Routes>
@@ -191,9 +204,10 @@ Find the `<AnimatePresence mode="wait">` in `AppContent` (around line 108) and w
 ```
 
 **After:**
+
 ```tsx
 <RouteErrorBoundary>
-  <AnimatePresence mode="wait">
+  <AnimatePresence mode='wait'>
     <Routes location={location} key={location.pathname}>
       {/* ...routes... */}
     </Routes>
@@ -206,6 +220,7 @@ Find the `<AnimatePresence mode="wait">` in `AppContent` (around line 108) and w
 ```bash
 npx tsc --noEmit
 ```
+
 Expected: no output
 
 ### Step 4: Verify lint is clean
@@ -213,6 +228,7 @@ Expected: no output
 ```bash
 npm run lint
 ```
+
 Expected: no errors
 
 ### Step 5: Commit
@@ -229,6 +245,7 @@ git commit -m "feat: wire RouteErrorBoundary around routes in App.tsx"
 **Context:** `src/stores/memoriesStore.ts` and `src/hooks/useMemories.js` are not imported by any page component. The store writes to the `shared_memories` / `all_memories` tables via a submission form — functionality that was superseded by the current Upload page's `guest_uploads` approval workflow. Deleting removes ~450 lines and a test file that tested now-dead code.
 
 **Files:**
+
 - Delete: `src/stores/memoriesStore.ts`
 - Delete: `src/stores/memoriesStore.test.ts`
 - Delete: `src/hooks/useMemories.js`
@@ -241,18 +258,22 @@ git commit -m "feat: wire RouteErrorBoundary around routes in App.tsx"
 ```bash
 grep -r "memoriesStore\|useMemories" src/ --include="*.ts" --include="*.tsx" --include="*.js" -l
 ```
+
 Expected output (only the files themselves + index):
+
 ```
 src/stores/index.ts
 src/stores/memoriesStore.ts
 src/stores/memoriesStore.test.ts
 src/hooks/useMemories.js
 ```
+
 If any other file appears, stop and investigate before continuing.
 
 ### Step 2: Remove exports from `src/stores/index.ts`
 
 **Before:**
+
 ```ts
 // Central store exports
 export { useAuthStore } from './authStore'
@@ -268,6 +289,7 @@ export type { UIState } from './uiStore'
 ```
 
 **After:**
+
 ```ts
 // Central store exports
 export { useAuthStore } from './authStore'
@@ -293,6 +315,7 @@ rm src/hooks/useMemories.js
 ```bash
 npx tsc --noEmit
 ```
+
 Expected: no output
 
 ### Step 5: Verify lint is clean
@@ -300,6 +323,7 @@ Expected: no output
 ```bash
 npm run lint
 ```
+
 Expected: no errors
 
 ### Step 6: Run unit tests to confirm nothing broke
@@ -307,6 +331,7 @@ Expected: no errors
 ```bash
 npm run test:run
 ```
+
 Expected: all tests pass (the memoriesStore tests are now gone, remaining tests should pass)
 
 ### Step 7: Commit
@@ -323,6 +348,7 @@ git commit -m "chore: remove vestigial memoriesStore and useMemories hook"
 **Context:** `src/types/index.ts` defines a `GuestBookEntry` interface that is never explicitly imported from this file. A duplicate `GuestBookEntry` in `src/types/global.d.ts` is the globally-ambient version; `src/validators/guestBookSchema.ts` derives its own type via Zod. The one in `index.ts` is redundant noise.
 
 **Files:**
+
 - Modify: `src/types/index.ts`
 
 ---
@@ -332,11 +358,13 @@ git commit -m "chore: remove vestigial memoriesStore and useMemories hook"
 ```bash
 grep -r "from '@/types'" src/ --include="*.ts" --include="*.tsx" -l | xargs grep -l "GuestBookEntry" 2>/dev/null
 ```
+
 Expected: no output (nothing imports `GuestBookEntry` from `@/types`)
 
 ### Step 2: Delete the interface from `src/types/index.ts`
 
 Remove lines 38–44:
+
 ```ts
 export interface GuestBookEntry {
   id: string
@@ -352,6 +380,7 @@ export interface GuestBookEntry {
 ```bash
 npx tsc --noEmit
 ```
+
 Expected: no output
 
 ### Step 4: Commit
@@ -368,6 +397,7 @@ git commit -m "chore: remove duplicate GuestBookEntry from types/index.ts"
 **Context:** Lines 358–359 in `supabase.ts` define `comments_count` and `hidden_comments_count` on a photo engagement summary type — a leftover from when photo comments were surfaced in the gallery lightbox. Verify nothing reads them, then remove.
 
 **Files:**
+
 - Modify: `src/lib/supabase.ts`
 
 ---
@@ -377,6 +407,7 @@ git commit -m "chore: remove duplicate GuestBookEntry from types/index.ts"
 ```bash
 grep -r "comments_count\|hidden_comments_count" src/ --include="*.ts" --include="*.tsx"
 ```
+
 Review the output. If the fields are only in `supabase.ts` and `components/admin/AlbumOrganizer.tsx`, proceed — the `AlbumOrganizer` uses them to display a count badge on photo cards in the admin UI. If so, **stop** — they're still in use and this task should be skipped.
 
 **If the output shows they're ONLY in `src/lib/supabase.ts`:**
@@ -386,6 +417,7 @@ Remove the two fields from the relevant interface in `supabase.ts` (around lines
 ```bash
 npx tsc --noEmit && npm run lint
 ```
+
 Expected: clean
 
 ```bash

@@ -5,6 +5,7 @@ Welcome to the digital archive of Austin and Jordyn's wedding. This project is a
 ## 🌟 Project Purpose
 
 Originally built as a wedding invitation and information hub, this site has been transitioned into a **Post-Wedding Archive**. It serves as a permanent home for:
+
 - Our engagement story and photos.
 - A comprehensive wedding photo and video gallery.
 - A digital guestbook for friends and family.
@@ -45,4 +46,5 @@ See the following documents for specific maintenance and operation tasks:
 - **Security & Compliance**: See [SECURITY.md](./docs/archival/SECURITY.md).
 
 ---
-*Created with love by Austin & Jordyn.*
+
+_Created with love by Austin & Jordyn._

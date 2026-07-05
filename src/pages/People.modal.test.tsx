@@ -130,7 +130,7 @@ describe('PersonPhotoModal — ARIA semantics', () => {
     const dialog = screen.getByRole('dialog')
     const labelId = dialog.getAttribute('aria-labelledby')
     expect(labelId).toBeTruthy()
-    const label = document.getElementById(labelId!)
+    const label = labelId ? document.getElementById(labelId) : null
     expect(label?.textContent).toContain('Austin Porada')
   })
 

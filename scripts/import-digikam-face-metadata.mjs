@@ -16,7 +16,9 @@ const organizationManifestArg = process.argv[3]
 const reviewPathArg = process.argv[4]
 
 if (!workingRoot) {
-  console.error('Usage: node scripts/import-digikam-face-metadata.mjs <working-root> [organization-manifest] [review-json]')
+  console.error(
+    'Usage: node scripts/import-digikam-face-metadata.mjs <working-root> [organization-manifest] [review-json]'
+  )
   process.exit(1)
 }
 
@@ -44,10 +46,7 @@ async function pathExists(targetPath) {
 
 function candidateSidecarPaths(imagePath) {
   const parsed = path.parse(imagePath)
-  return [
-    `${imagePath}.xmp`,
-    path.join(parsed.dir, `${parsed.name}.xmp`),
-  ]
+  return [`${imagePath}.xmp`, path.join(parsed.dir, `${parsed.name}.xmp`)]
 }
 
 async function loadImageXmp(imagePath) {
@@ -89,19 +88,16 @@ async function loadImageXmp(imagePath) {
 }
 
 function resolveRegionContainer(metadata) {
-  return (
-    metadata?.['mwg-rs']?.Regions ??
-    metadata?.Regions ??
-    metadata?.regions ??
-    null
-  )
+  return metadata?.['mwg-rs']?.Regions ?? metadata?.Regions ?? metadata?.regions ?? null
 }
 
 function extractNamedRegions(metadata, imageDimensions) {
   const regionContainer = resolveRegionContainer(metadata)
   const appliedDimensions = regionContainer?.AppliedToDimensions ?? null
-  const appliedWidth = typeof appliedDimensions?.w === 'number' ? appliedDimensions.w : imageDimensions.width
-  const appliedHeight = typeof appliedDimensions?.h === 'number' ? appliedDimensions.h : imageDimensions.height
+  const appliedWidth =
+    typeof appliedDimensions?.w === 'number' ? appliedDimensions.w : imageDimensions.width
+  const appliedHeight =
+    typeof appliedDimensions?.h === 'number' ? appliedDimensions.h : imageDimensions.height
   const regionList = asArray(regionContainer?.RegionList)
 
   return regionList
@@ -120,12 +116,9 @@ function extractNamedRegions(metadata, imageDimensions) {
         return null
       }
 
-      const useNormalized = unit === 'normalized' || (
-        rawX <= 1.01 &&
-        rawY <= 1.01 &&
-        rawWidth <= 1.01 &&
-        rawHeight <= 1.01
-      )
+      const useNormalized =
+        unit === 'normalized' ||
+        (rawX <= 1.01 && rawY <= 1.01 && rawWidth <= 1.01 && rawHeight <= 1.01)
 
       if (!useNormalized && (!appliedWidth || !appliedHeight)) {
         return null
@@ -140,8 +133,8 @@ function extractNamedRegions(metadata, imageDimensions) {
             height: rawHeight / appliedHeight,
           }
 
-      const left = Math.max(0, normalized.x - (normalized.width / 2))
-      const top = Math.max(0, normalized.y - (normalized.height / 2))
+      const left = Math.max(0, normalized.x - normalized.width / 2)
+      const top = Math.max(0, normalized.y - normalized.height / 2)
 
       return {
         name,
@@ -164,13 +157,16 @@ function buildPixelCrop(region, imageDimensions) {
   const left = Math.max(0, Math.floor((region.normalizedBox.left / 100) * imageDimensions.width))
   const top = Math.max(0, Math.floor((region.normalizedBox.top / 100) * imageDimensions.height))
   const width = Math.max(1, Math.round((region.normalizedBox.width / 100) * imageDimensions.width))
-  const height = Math.max(1, Math.round((region.normalizedBox.height / 100) * imageDimensions.height))
+  const height = Math.max(
+    1,
+    Math.round((region.normalizedBox.height / 100) * imageDimensions.height)
+  )
   const marginX = Math.round(width * FACE_MARGIN_RATIO)
   const marginY = Math.round(height * FACE_MARGIN_RATIO)
   const cropLeft = Math.max(0, left - marginX)
   const cropTop = Math.max(0, top - marginY)
-  const cropWidth = Math.min(imageDimensions.width - cropLeft, width + (marginX * 2))
-  const cropHeight = Math.min(imageDimensions.height - cropTop, height + (marginY * 2))
+  const cropWidth = Math.min(imageDimensions.width - cropLeft, width + marginX * 2)
+  const cropHeight = Math.min(imageDimensions.height - cropTop, height + marginY * 2)
 
   return {
     left,
@@ -214,11 +210,11 @@ async function writeFaceCrop(imagePath, clusterId, faceId, crop, cropsRoot) {
 
 function buildClusterSummary(detectionsByCluster) {
   return [...detectionsByCluster.values()]
-    .map((cluster) => ({
+    .map(cluster => ({
       clusterId: cluster.clusterId,
       memberCount: cluster.members.length,
       averageQualityScore: null,
-      members: cluster.members.map((member) => ({
+      members: cluster.members.map(member => ({
         faceId: member.faceId,
         sourceRecordId: member.sourceRecordId,
         sourceRelativePath: member.sourceRelativePath,
@@ -231,15 +227,22 @@ function buildClusterSummary(detectionsByCluster) {
         name: member.confirmedName,
       })),
     }))
-    .sort((left, right) => right.memberCount - left.memberCount || left.clusterId.localeCompare(right.clusterId))
+    .sort(
+      (left, right) =>
+        right.memberCount - left.memberCount || left.clusterId.localeCompare(right.clusterId)
+    )
 }
 
 function buildReviewTemplate(clusterSummary, existingReview = []) {
-  const existingByClusterId = new Map(existingReview.map((entry) => [entry.clusterId, entry]))
+  const existingByClusterId = new Map(existingReview.map(entry => [entry.clusterId, entry]))
 
-  return clusterSummary.map((cluster) => {
+  return clusterSummary.map(cluster => {
     const existing = existingByClusterId.get(cluster.clusterId)
-    const label = cluster.members[0]?.name || existing?.confirmedName || existing?.suggestedLabel || cluster.clusterId
+    const label =
+      cluster.members[0]?.name ||
+      existing?.confirmedName ||
+      existing?.suggestedLabel ||
+      cluster.clusterId
 
     return {
       clusterId: cluster.clusterId,
@@ -248,8 +251,8 @@ function buildReviewTemplate(clusterSummary, existingReview = []) {
       reviewStatus: 'confirmed',
       mergeIntoClusterId: null,
       notes: existing?.notes ?? '',
-      memberFaceIds: cluster.members.map((member) => member.faceId),
-      sampleFiles: cluster.members.slice(0, 8).map((member) => member.sourceRelativePath),
+      memberFaceIds: cluster.members.map(member => member.faceId),
+      sampleFiles: cluster.members.slice(0, 8).map(member => member.sourceRelativePath),
     }
   })
 }
@@ -264,10 +267,11 @@ async function main() {
     : path.join(absoluteWorkingRoot, 'faces', 'face-review.json')
 
   const organizationManifest = await readJson(organizationManifestPath)
-  const imageItems = organizationManifest.filter((item) =>
-    item.kind === 'image' &&
-    item.destination &&
-    !String(item.destinationRelativePath || '').startsWith(DUPLICATE_REVIEW_PREFIX),
+  const imageItems = organizationManifest.filter(
+    item =>
+      item.kind === 'image' &&
+      item.destination &&
+      !String(item.destinationRelativePath || '').startsWith(DUPLICATE_REVIEW_PREFIX)
   )
 
   let existingReview = []
@@ -326,7 +330,7 @@ async function main() {
         item.id,
         clusterId,
         String(region.regionIndex),
-        `${region.x}:${region.y}`,
+        `${region.x}:${region.y}`
       )
       const thumbnailPath = await writeFaceCrop(imagePath, clusterId, faceId, crop, cropsRoot)
       const detection = {
@@ -418,15 +422,17 @@ async function main() {
     '- Each imported person group is treated as confirmed because digiKam is the source of truth for this workflow.',
     '- Re-run this importer after `Album -> Write Metadata to Files` in digiKam whenever face tags change.',
     '',
-    ...clusterSummary.slice(0, 40).flatMap((cluster) => ([
-      `## ${cluster.members[0]?.name || cluster.clusterId}`,
-      '',
-      `- Cluster ID: \`${cluster.clusterId}\``,
-      `- Members: ${cluster.memberCount}`,
-      '',
-      ...cluster.members.slice(0, 8).map((member) => `- \`${member.sourceRelativePath}\``),
-      '',
-    ])),
+    ...clusterSummary
+      .slice(0, 40)
+      .flatMap(cluster => [
+        `## ${cluster.members[0]?.name || cluster.clusterId}`,
+        '',
+        `- Cluster ID: \`${cluster.clusterId}\``,
+        `- Members: ${cluster.memberCount}`,
+        '',
+        ...cluster.members.slice(0, 8).map(member => `- \`${member.sourceRelativePath}\``),
+        '',
+      ]),
   ])
 
   console.log(`Imported ${detections.length} named faces from digiKam metadata`)

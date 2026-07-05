@@ -46,7 +46,7 @@ Featured guestbook note card enters with `scaleIn` from 0.95 scale on a cream-to
 Film poster fills the viewport on arrival, holds for ~1.2s, then slides upward revealing the player. Uses existing poster image + a `motion.div` with `y` exit animation. No new assets needed.
 
 **Chapter navigation polish**
-Replace chapter tabs with a horizontal timeline strip: gold progress indicator slides as the film plays. Chapter names in Allura (script), timestamps in Newsreader (display). Active chapter gets `shadow-gold`. 
+Replace chapter tabs with a horizontal timeline strip: gold progress indicator slides as the film plays. Chapter names in Allura (script), timestamps in Newsreader (display). Active chapter gets `shadow-gold`.
 
 **Scroll-triggered family film reveal**
 Family film cards enter with `slideInRight` stagger as guests scroll past the main player — like credits rolling in.
@@ -68,6 +68,7 @@ Photos enter with `fadeUp` staggered at 0.04s per card, capped at first 12. Subs
 Outgoing photos exit left (`x: -20, opacity: 0`), incoming enter from right (`x: 20` → default). Soft lateral wipe reinforcing album navigation.
 
 **Lightbox polish**
+
 - Crossfade transition between photos (no hard cut)
 - Caption/metadata slides up from bottom on entry
 - Swipe gesture support on mobile
@@ -90,7 +91,7 @@ Cards enter with `fadeUp` stagger at 0.06s per card. Real-time new arrivals slid
 On accepted submission: submit button morphs to a gold checkmark (scale + opacity), warm toast fires ("Your message has been added — thank you!"), form fades out for 1.5s then fades back in. Uses existing toast infrastructure.
 
 **Warm empty state**
-Allura script: *"Be the first to leave a memory"* with a small inline gold feather SVG and arrow pointing to the form.
+Allura script: _"Be the first to leave a memory"_ with a small inline gold feather SVG and arrow pointing to the form.
 
 **Form focus polish**
 Text area and name field get `ring-2 ring-gold-300` on focus — consistent with design system, replaces default browser outline.
@@ -106,10 +107,10 @@ On hover: dashed gold border becomes solid, background shifts `cream-50` → `go
 Each queued file enters with `slideInRight`. Progress bar uses `gold-400` fill with shimmer overlay. Error: rose border flash. Success: gold checkmark pulse.
 
 **Confetti celebration on completion**
-When all files finish uploading: 20–30 small gold and cream CSS-only particles burst for ~2 seconds. Followed by Newsreader warm message: *"Your memories are safe with us — thank you for sharing."*
+When all files finish uploading: 20–30 small gold and cream CSS-only particles burst for ~2 seconds. Followed by Newsreader warm message: _"Your memories are safe with us — thank you for sharing."_
 
 **Upload count encouragement**
-Below drop zone: *"47 guests have shared memories so far"* (live count from Supabase). Social proof that invites participation.
+Below drop zone: _"47 guests have shared memories so far"_ (live count from Supabase). Social proof that invites participation.
 
 **Mobile tap alternative**
 On mobile, drop zone transforms into a prominent gold "Choose Photos" button — same personality, tap-friendly.
@@ -119,7 +120,7 @@ On mobile, drop zone transforms into a prominent gold "Choose Photos" button —
 ### People Page
 
 **Hero introduction header**
-Eyebrow chip: "The Wedding Party" in small caps. Newsreader heading: *"The people who made it beautiful."* Instrument Sans subtext (2 lines). `fadeUp` on mount. Sets emotional tone before grid appears.
+Eyebrow chip: "The Wedding Party" in small caps. Newsreader heading: _"The people who made it beautiful."_ Instrument Sans subtext (2 lines). `fadeUp` on mount. Sets emotional tone before grid appears.
 
 **Card depth on hover**
 Avatar scales to 1.08, gold ring appears around avatar circle, name shifts `charcoal-700` → `charcoal-900`, collection pills fade muted → full opacity. The card "wakes up." Transition: `--ease-luxury` at 200ms.
@@ -128,7 +129,7 @@ Avatar scales to 1.08, gold ring appears around avatar circle, name shifts `char
 On card hover: small gold arrow slides in from bottom-right (`opacity: 0, x: -4` → `opacity: 1, x: 0`), signaling the card leads to that person's gallery photos.
 
 **Warm photo count copy**
-*"23 photos together"* instead of *"23 photos"* — makes it feel like a relationship, not a database count.
+_"23 photos together"_ instead of _"23 photos"_ — makes it feel like a relationship, not a database count.
 
 ---
 

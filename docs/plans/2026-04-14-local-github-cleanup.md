@@ -15,6 +15,7 @@
 Leftover files from the DB import session. None are committed or needed.
 
 **Files to remove:**
+
 - `gallery-*.png` (6 screenshots in project root)
 - `scripts/batch*.sql` (22 batch SQL files)
 - `scripts/photo-manifest.json`

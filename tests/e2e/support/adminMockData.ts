@@ -8,8 +8,8 @@ export const adminUser = {
   email_confirmed_at: '2025-01-01T00:00:00.000Z',
   created_at: '2025-01-01T00:00:00.000Z',
   updated_at: '2025-01-01T00:00:00.000Z',
-  user_metadata: { role: 'admin' },
-  app_metadata: { provider: 'email', providers: ['email'] },
+  user_metadata: {},
+  app_metadata: { provider: 'email', providers: ['email'], role: 'admin' },
   identities: [],
 }
 

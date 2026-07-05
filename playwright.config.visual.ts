@@ -20,7 +20,7 @@
 import { defineConfig, devices } from '@playwright/test'
 import { config as loadEnv } from 'dotenv'
 
-loadEnv()
+loadEnv({ quiet: true })
 
 export default defineConfig({
   testDir: './tests/e2e-live',

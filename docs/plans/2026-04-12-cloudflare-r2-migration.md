@@ -6,11 +6,11 @@
 
 ## Why This Migration Matters
 
-| | Supabase Storage | Cloudflare R2 |
-|---|---|---|
-| Storage | $0.021/GB/month | $0.015/GB/month |
-| Bandwidth | **$0.09/GB** | **$0.00** |
-| CDN | None (single region) | Global Cloudflare PoPs |
+|           | Supabase Storage             | Cloudflare R2                    |
+| --------- | ---------------------------- | -------------------------------- |
+| Storage   | $0.021/GB/month              | $0.015/GB/month                  |
+| Bandwidth | **$0.09/GB**                 | **$0.00**                        |
+| CDN       | None (single region)         | Global Cloudflare PoPs           |
 | Free tier | 1 GB storage, 2 GB bandwidth | 10 GB storage, 1M requests/month |
 
 Your site has multiple large video files (Film page, background audio) and will grow as guest uploads accumulate. The Supabase bandwidth cost is the killer — every page load that hits the Film page pulls 50–200 MB of video. With R2, that cost disappears entirely.
@@ -41,15 +41,15 @@ VTT caption files   → /__vtt_proxy/* → Netlify redirects to media.wedding.th
 
 ## Migration Phases
 
-| Phase | What | Effort |
-|---|---|---|
-| 1 | Create R2 bucket, attach `media.wedding.theporadas.com` | 20 min |
-| 2 | Migrate existing media files with rclone | 30 min + transfer time |
-| 3 | Update upload script for R2 | 1 hr |
-| 4 | Update app code + env vars | 30 min |
-| 5 | Remove VTT proxy (optional, enabled by R2 CORS) | 15 min |
-| 6 | Migrate guest uploads to R2 | 2 hr |
-| 7 | Decommission Supabase Storage | 10 min |
+| Phase | What                                                    | Effort                 |
+| ----- | ------------------------------------------------------- | ---------------------- |
+| 1     | Create R2 bucket, attach `media.wedding.theporadas.com` | 20 min                 |
+| 2     | Migrate existing media files with rclone                | 30 min + transfer time |
+| 3     | Update upload script for R2                             | 1 hr                   |
+| 4     | Update app code + env vars                              | 30 min                 |
+| 5     | Remove VTT proxy (optional, enabled by R2 CORS)         | 15 min                 |
+| 6     | Migrate guest uploads to R2                             | 2 hr                   |
+| 7     | Decommission Supabase Storage                           | 10 min                 |
 
 Phases 1–4 are the critical path and can be completed in a single session. Phase 6 can wait until after Phase 4 is deployed and working.
 
@@ -100,6 +100,7 @@ wrangler r2 bucket create wedding-media
 ```
 
 Expected output:
+
 ```
 Created bucket 'wedding-media' with default storage class of Standard.
 ```
@@ -165,6 +166,7 @@ https://<ACCOUNT_ID>.r2.cloudflarestorage.com
 ### Step 6: Create R2 API credentials
 
 In the Cloudflare Dashboard:
+
 1. Go to **R2 → Manage R2 API tokens**
 2. Create token with **Edit** permissions on `wedding-media` bucket
 3. Save the **Access Key ID** and **Secret Access Key** — you'll need these in multiple places
@@ -288,6 +290,7 @@ rclone copy supabase-storage:wedding-media r2:wedding-media \
 ```
 
 **Flag explanations:**
+
 - `--progress`: Live transfer stats
 - `--transfers 10`: 10 parallel file transfers (lower this if bandwidth is limited)
 - `--checksum`: Verifies file integrity after copy (slower but safe)
@@ -436,7 +439,10 @@ function walk(directory) {
   const results = []
   for (const entry of fs.readdirSync(directory, { withFileTypes: true })) {
     const fullPath = path.join(directory, entry.name)
-    if (entry.isDirectory()) { results.push(...walk(fullPath)); continue }
+    if (entry.isDirectory()) {
+      results.push(...walk(fullPath))
+      continue
+    }
     results.push(fullPath)
   }
   return results
@@ -456,11 +462,11 @@ async function uploadFile(filePath, objectKey, contentType) {
       CacheControl: 'public, max-age=31536000, immutable',
     },
     partSize: 6 * 1024 * 1024, // 6 MB chunks (matches previous tus chunk size)
-    queueSize: 4,               // parallel part uploads
+    queueSize: 4, // parallel part uploads
   })
 
   let lastLoggedPercent = -1
-  upload.on('httpUploadProgress', (progress) => {
+  upload.on('httpUploadProgress', progress => {
     if (!progress.total) return
     const percent = Math.floor((progress.loaded / progress.total) * 100)
     if (percent >= lastLoggedPercent + 25 || percent === 100) {
@@ -487,7 +493,9 @@ async function main() {
     await uploadFile(filePath, objectKey, contentType)
   }
 
-  console.log(`\nDone. Files available at: ${process.env.R2_PUBLIC_BASE_URL || `https://${ACCOUNT_ID}.r2.cloudflarestorage.com/${BUCKET_NAME}`}`)
+  console.log(
+    `\nDone. Files available at: ${process.env.R2_PUBLIC_BASE_URL || `https://${ACCOUNT_ID}.r2.cloudflarestorage.com/${BUCKET_NAME}`}`
+  )
 }
 
 main().catch(error => {
@@ -690,7 +698,7 @@ const s3 = new S3Client({
 const ALLOWED_TYPES = new Set(['image/jpeg', 'image/png', 'image/webp', 'image/heic', 'image/heif'])
 const MAX_SIZE_BYTES = 20 * 1024 * 1024 // 20 MB
 
-export const handler: Handler = async (event) => {
+export const handler: Handler = async event => {
   if (event.httpMethod !== 'POST') {
     return { statusCode: 405, body: 'Method Not Allowed' }
   }
@@ -744,6 +752,7 @@ npm install @netlify/functions
 ### Step 2: Add R2 vars to Netlify environment
 
 In **Netlify Dashboard → Site Settings → Environment Variables**, add:
+
 - `R2_ACCOUNT_ID`
 - `R2_ACCESS_KEY_ID`
 - `R2_SECRET_ACCESS_KEY`
@@ -834,6 +843,7 @@ Once you've verified R2 is working for all media paths and guest uploads (new + 
 In Supabase Dashboard → Storage → wedding-media → select all → delete.
 
 Or via the Supabase MCP:
+
 ```
 mcp__execute_sql: DELETE FROM storage.objects WHERE bucket_id = 'wedding-media';
 ```
@@ -849,10 +859,11 @@ In Supabase Dashboard → Storage → wedding-media → Delete bucket.
 ```bash
 # Remove if present:
 VITE_SUPABASE_MEDIA_BUCKET=wedding-media
-SUPABASE_SERVICE_ROLE_KEY=your-service-role-key  # Only if this was ONLY used for storage uploads
 ```
 
-> Keep `SUPABASE_SERVICE_ROLE_KEY` if you still use it for admin DB operations or edge functions.
+Remove the Supabase service-role value only if it was used solely for storage uploads.
+Keep it if you still use it for admin DB operations or edge functions. See
+`docs/archival/SECURITY.md` for secret-handling rules.
 
 ---
 
@@ -860,40 +871,40 @@ SUPABASE_SERVICE_ROLE_KEY=your-service-role-key  # Only if this was ONLY used fo
 
 ### Before (current)
 
-| Variable | Where Used |
-|---|---|
-| `VITE_SUPABASE_URL` | App + upload script |
-| `VITE_SUPABASE_ANON_KEY` | App (database) |
-| `VITE_MEDIA_BASE_URL` | App (video/audio paths) |
+| Variable                    | Where Used                  |
+| --------------------------- | --------------------------- |
+| `VITE_SUPABASE_URL`         | App + upload script         |
+| `VITE_SUPABASE_ANON_KEY`    | App (database)              |
+| `VITE_MEDIA_BASE_URL`       | App (video/audio paths)     |
 | `SUPABASE_SERVICE_ROLE_KEY` | Upload script, admin DB ops |
-| `SUPABASE_MEDIA_BUCKET` | Upload script |
+| `SUPABASE_MEDIA_BUCKET`     | Upload script               |
 
 ### After (R2 migration complete)
 
-| Variable | Where Used |
-|---|---|
-| `VITE_SUPABASE_URL` | App (database only) |
-| `VITE_SUPABASE_ANON_KEY` | App (database only) |
-| `VITE_MEDIA_BASE_URL` | App (all media paths — now R2) |
-| `SUPABASE_SERVICE_ROLE_KEY` | Admin DB ops only |
-| `R2_ACCOUNT_ID` | Upload script, Netlify function |
-| `R2_ACCESS_KEY_ID` | Upload script, Netlify function |
-| `R2_SECRET_ACCESS_KEY` | Upload script, Netlify function |
-| `R2_MEDIA_BUCKET` | Upload script, Netlify function |
-| `R2_PUBLIC_BASE_URL` | Upload script |
+| Variable                    | Where Used                      |
+| --------------------------- | ------------------------------- |
+| `VITE_SUPABASE_URL`         | App (database only)             |
+| `VITE_SUPABASE_ANON_KEY`    | App (database only)             |
+| `VITE_MEDIA_BASE_URL`       | App (all media paths — now R2)  |
+| `SUPABASE_SERVICE_ROLE_KEY` | Admin DB ops only               |
+| `R2_ACCOUNT_ID`             | Upload script, Netlify function |
+| `R2_ACCESS_KEY_ID`          | Upload script, Netlify function |
+| `R2_SECRET_ACCESS_KEY`      | Upload script, Netlify function |
+| `R2_MEDIA_BUCKET`           | Upload script, Netlify function |
+| `R2_PUBLIC_BASE_URL`        | Upload script                   |
 
 ---
 
 ## Code Changes Summary
 
-| File | Change |
-|---|---|
-| `src/utils/media.ts` | Remove Supabase Storage direct URL construction for `/media/` prefix; all media goes through `VITE_MEDIA_BASE_URL` |
-| `scripts/upload-remote-media.js` | Replace `tus-js-client` + Supabase with `@aws-sdk/client-s3` + R2 |
-| `netlify/functions/guest-upload-url.ts` | New — generates R2 pre-signed URLs for guest photo uploads |
-| `src/pages/Upload.tsx` (or equivalent) | Update to use `/api/guest-upload-url` + direct PUT to R2 |
-| `netlify.toml` | Remove `/__vtt_proxy/` redirect (Phase 5) |
-| `.env` | Add R2 vars, remove Supabase storage vars |
+| File                                    | Change                                                                                                             |
+| --------------------------------------- | ------------------------------------------------------------------------------------------------------------------ |
+| `src/utils/media.ts`                    | Remove Supabase Storage direct URL construction for `/media/` prefix; all media goes through `VITE_MEDIA_BASE_URL` |
+| `scripts/upload-remote-media.js`        | Replace `tus-js-client` + Supabase with `@aws-sdk/client-s3` + R2                                                  |
+| `netlify/functions/guest-upload-url.ts` | New — generates R2 pre-signed URLs for guest photo uploads                                                         |
+| `src/pages/Upload.tsx` (or equivalent)  | Update to use `/api/guest-upload-url` + direct PUT to R2                                                           |
+| `netlify.toml`                          | Remove `/__vtt_proxy/` redirect (Phase 5)                                                                          |
+| `.env`                                  | Add R2 vars, remove Supabase storage vars                                                                          |
 
 ---
 

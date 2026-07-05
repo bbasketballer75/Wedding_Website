@@ -7,7 +7,9 @@ const workingRoot = process.argv[2]
 const reviewPathArg = process.argv[3]
 
 if (!workingRoot) {
-  console.error('Usage: node scripts/sync-guest-photo-face-metadata.mjs <working-root> [review-json]')
+  console.error(
+    'Usage: node scripts/sync-guest-photo-face-metadata.mjs <working-root> [review-json]'
+  )
   process.exit(1)
 }
 
@@ -39,7 +41,7 @@ function chunk(items, size) {
 }
 
 function resolveConfirmedNames(reviewItems) {
-  const byClusterId = new Map(reviewItems.map((item) => [item.clusterId, item]))
+  const byClusterId = new Map(reviewItems.map(item => [item.clusterId, item]))
 
   function getResolvedName(clusterId, seen = new Set()) {
     if (!clusterId || seen.has(clusterId)) return null
@@ -52,17 +54,14 @@ function resolveConfirmedNames(reviewItems) {
     return null
   }
 
-  return new Map(reviewItems.map((item) => [item.clusterId, getResolvedName(item.clusterId)]))
+  return new Map(reviewItems.map(item => [item.clusterId, getResolvedName(item.clusterId)]))
 }
 
 async function fetchExistingPhotosByIds(ids) {
   const existing = []
 
   for (const idChunk of chunk(ids, PHOTO_LOOKUP_CHUNK_SIZE)) {
-    const { data, error } = await supabase
-      .from('photos')
-      .select('id, url, faces')
-      .in('id', idChunk)
+    const { data, error } = await supabase.from('photos').select('id, url, faces').in('id', idChunk)
 
     if (error) {
       throw error
@@ -71,20 +70,20 @@ async function fetchExistingPhotosByIds(ids) {
     existing.push(...(data || []))
   }
 
-  return new Map(existing.map((row) => [row.id, row]))
+  return new Map(existing.map(row => [row.id, row]))
 }
 
 function normalizeFaces(faces) {
   return JSON.stringify(
     [...faces]
-      .map((face) => ({
+      .map(face => ({
         id: face.id,
         name: face.name,
         x: face.x,
         y: face.y,
         box: face.box ?? null,
       }))
-      .sort((left, right) => left.id.localeCompare(right.id)),
+      .sort((left, right) => left.id.localeCompare(right.id))
   )
 }
 
@@ -104,14 +103,14 @@ async function main() {
   const reviewItems = await readJson(reviewPath)
 
   const confirmedNames = resolveConfirmedNames(reviewItems)
-  const annotationsByRecordId = new Map(annotationsByPhoto.map((annotation) => [annotation.recordId, annotation.faces]))
+  const annotationsByRecordId = new Map(
+    annotationsByPhoto.map(annotation => [annotation.recordId, annotation.faces])
+  )
   const annotationsByRelativePath = new Map(
-    annotationsByPhoto.map((annotation) => [annotation.relativePath, annotation.faces]),
+    annotationsByPhoto.map(annotation => [annotation.relativePath, annotation.faces])
   )
 
-  const targetIds = organizationManifest
-    .map((item) => item.photoRowId || item.id)
-    .filter(Boolean)
+  const targetIds = organizationManifest.map(item => item.photoRowId || item.id).filter(Boolean)
   const existingById = await fetchExistingPhotosByIds(targetIds)
   const updates = []
   const unchanged = []
@@ -128,7 +127,11 @@ async function main() {
       continue
     }
 
-    const faces = (annotationsByRecordId.get(photoRowId) ?? annotationsByRelativePath.get(item.relativePath) ?? [])
+    const faces = (
+      annotationsByRecordId.get(photoRowId) ??
+      annotationsByRelativePath.get(item.relativePath) ??
+      []
+    )
       .map((face, index) => {
         const confirmedName = confirmedNames.get(face.clusterId)
         if (!confirmedName) return null
@@ -160,9 +163,7 @@ async function main() {
   }
 
   for (const updateChunk of chunk(updates, PHOTO_LOOKUP_CHUNK_SIZE)) {
-    const { error } = await supabase
-      .from('photos')
-      .upsert(updateChunk, { onConflict: 'id' })
+    const { error } = await supabase.from('photos').upsert(updateChunk, { onConflict: 'id' })
 
     if (error) {
       throw error
@@ -175,7 +176,7 @@ async function main() {
     unchangedPhotoRows: unchanged.length,
     missingPhotoRows: missing.length,
     generatedAt: new Date().toISOString(),
-    updatedRows: updates.map((item) => ({
+    updatedRows: updates.map(item => ({
       id: item.id,
       url: item.url,
       faceCount: item.faces.length,

@@ -27,6 +27,7 @@ cd .worktrees/admin-split
 ```bash
 npx tsc --noEmit
 ```
+
 Expected: no errors
 
 ---
@@ -34,15 +35,19 @@ Expected: no errors
 ## Task 1: Drop console calls from production bundle
 
 **Files:**
+
 - Modify: `vite.config.js:236`
 
 **Step 1: Apply the change**
 
 In `vite.config.js`, find the `terserOptions.compress` block and change:
+
 ```js
 drop_console: false,
 ```
+
 to:
+
 ```js
 drop_console: true,
 ```
@@ -52,6 +57,7 @@ drop_console: true,
 ```bash
 npx tsc --noEmit
 ```
+
 Expected: no errors
 
 **Step 3: Commit**
@@ -66,6 +72,7 @@ git commit -m "perf: drop console calls from production bundle"
 ## Task 2: ShareModal — focus trap + dialog ARIA
 
 **Files:**
+
 - Modify: `src/components/share/ShareModal.tsx`
 
 **Context:** The modal renders as a Framer Motion `AnimatePresence` block. The inner `motion.div` is the dialog panel. Currently has no `role`, no `aria-modal`, no focus management.
@@ -143,6 +150,7 @@ The inner `motion.div` (the white panel, currently `className="bg-white rounded-
 ```bash
 npx tsc --noEmit
 ```
+
 Expected: no errors
 
 **Step 5: Commit**
@@ -157,6 +165,7 @@ git commit -m "fix(a11y): add focus trap and dialog ARIA to ShareModal"
 ## Task 3: PhotoLightbox — focus trap + dialog ARIA
 
 **Files:**
+
 - Modify: `src/components/photo-viewer/PhotoLightbox.tsx`
 
 **Context:** PhotoLightbox is 513 lines. It renders a full-screen overlay via `AnimatePresence`. There is already a `useRef` import. Find the outermost container `motion.div` of the lightbox panel.
@@ -232,6 +241,7 @@ Find the outermost `motion.div` that wraps the lightbox content (not the backdro
 ```bash
 npx tsc --noEmit
 ```
+
 Expected: no errors
 
 **Step 5: Commit**
@@ -246,6 +256,7 @@ git commit -m "fix(a11y): add focus trap and dialog ARIA to PhotoLightbox"
 ## Task 4: Extract `utils.ts` from Admin.tsx
 
 **Files:**
+
 - Create: `src/pages/admin/utils.ts`
 - Modify: `src/pages/Admin.tsx` (remove extracted code, add import)
 
@@ -293,6 +304,7 @@ import {
 ```bash
 npx tsc --noEmit
 ```
+
 Expected: no errors. Fix any missing import in utils.ts if tsc complains.
 
 **Step 4: Commit**
@@ -307,6 +319,7 @@ git commit -m "refactor(admin): extract pure utilities to admin/utils.ts"
 ## Task 5: Extract `Dashboard.tsx`
 
 **Files:**
+
 - Create: `src/pages/admin/Dashboard.tsx`
 - Modify: `src/pages/Admin.tsx`
 
@@ -346,6 +359,7 @@ git commit -m "refactor(admin): extract Dashboard to admin/Dashboard.tsx"
 ## Task 6: Extract `PhotoModeration.tsx`
 
 **Files:**
+
 - Create: `src/pages/admin/PhotoModeration.tsx`
 - Modify: `src/pages/Admin.tsx`
 
@@ -383,6 +397,7 @@ git commit -m "refactor(admin): extract PhotoModeration to admin/PhotoModeration
 ## Task 7: Extract `GuestbookModeration.tsx`
 
 **Files:**
+
 - Create: `src/pages/admin/GuestbookModeration.tsx`
 - Modify: `src/pages/Admin.tsx`
 
@@ -413,6 +428,7 @@ git commit -m "refactor(admin): extract GuestbookModeration to its own file"
 ## Task 8: Extract `AuditLogView.tsx`
 
 **Files:**
+
 - Create: `src/pages/admin/AuditLogView.tsx`
 - Modify: `src/pages/Admin.tsx`
 
@@ -437,6 +453,7 @@ git commit -m "refactor(admin): extract AuditLogView to its own file"
 ## Task 9: Extract `FeaturedContentManager.tsx`
 
 **Files:**
+
 - Create: `src/pages/admin/FeaturedContentManager.tsx`
 - Modify: `src/pages/Admin.tsx`
 
@@ -463,6 +480,7 @@ git commit -m "refactor(admin): extract FeaturedContentManager to its own file"
 ## Task 10: Extract `Analytics.tsx` and `Settings.tsx`
 
 **Files:**
+
 - Create: `src/pages/admin/Analytics.tsx`
 - Create: `src/pages/admin/Settings.tsx`
 - Modify: `src/pages/Admin.tsx`
@@ -492,6 +510,7 @@ git commit -m "refactor(admin): extract Analytics and Settings to their own file
 ## Task 11: Create `AdminLayout.tsx` with lazy loading
 
 **Files:**
+
 - Create: `src/pages/admin/AdminLayout.tsx`
 - Modify: `src/pages/Admin.tsx`
 
@@ -513,20 +532,26 @@ import { adminNavSections, adminRouteMeta, getAdminRouteMeta } from './utils'
 import { MediaReviewPanel } from '@/components/admin/MediaReviewPanel'
 import { AlbumOrganizer } from '@/components/admin/AlbumOrganizer'
 
-const Dashboard             = lazy(() => import('./Dashboard').then(m => ({ default: m.Dashboard })))
-const PhotoModeration       = lazy(() => import('./PhotoModeration').then(m => ({ default: m.PhotoModeration })))
-const GuestbookModeration   = lazy(() => import('./GuestbookModeration').then(m => ({ default: m.GuestbookModeration })))
-const AuditLogView          = lazy(() => import('./AuditLogView').then(m => ({ default: m.AuditLogView })))
-const FeaturedContentManager = lazy(() => import('./FeaturedContentManager').then(m => ({ default: m.FeaturedContentManager })))
-const Analytics             = lazy(() => import('./Analytics').then(m => ({ default: m.Analytics })))
-const Settings              = lazy(() => import('./Settings').then(m => ({ default: m.Settings })))
+const Dashboard = lazy(() => import('./Dashboard').then(m => ({ default: m.Dashboard })))
+const PhotoModeration = lazy(() =>
+  import('./PhotoModeration').then(m => ({ default: m.PhotoModeration }))
+)
+const GuestbookModeration = lazy(() =>
+  import('./GuestbookModeration').then(m => ({ default: m.GuestbookModeration }))
+)
+const AuditLogView = lazy(() => import('./AuditLogView').then(m => ({ default: m.AuditLogView })))
+const FeaturedContentManager = lazy(() =>
+  import('./FeaturedContentManager').then(m => ({ default: m.FeaturedContentManager }))
+)
+const Analytics = lazy(() => import('./Analytics').then(m => ({ default: m.Analytics })))
+const Settings = lazy(() => import('./Settings').then(m => ({ default: m.Settings })))
 
 function AdminPageSkeleton() {
   return (
-    <div className="space-y-4 animate-pulse">
-      <div className="h-8 w-48 rounded-lg bg-gold-100/60" />
-      <div className="h-32 rounded-2xl bg-gold-50/80" />
-      <div className="h-64 rounded-2xl bg-gold-50/80" />
+    <div className='space-y-4 animate-pulse'>
+      <div className='h-8 w-48 rounded-lg bg-gold-100/60' />
+      <div className='h-32 rounded-2xl bg-gold-50/80' />
+      <div className='h-64 rounded-2xl bg-gold-50/80' />
     </div>
   )
 }
@@ -568,6 +593,7 @@ git commit -m "refactor(admin): extract AdminLayout with lazy-loaded sub-pages"
 ## Task 12: Shrink Admin.tsx to auth guard only
 
 **Files:**
+
 - Modify: `src/pages/Admin.tsx`
 
 **Context:** After all extractions, Admin.tsx should only contain the `Admin` default export (the auth guard) and its imports. Everything else has been extracted.
@@ -585,15 +611,15 @@ export default function Admin() {
 
   if (isLoading) {
     return (
-      <div className="min-h-screen flex items-center justify-center">
-        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-gold-500" />
+      <div className='min-h-screen flex items-center justify-center'>
+        <div className='animate-spin rounded-full h-12 w-12 border-b-2 border-gold-500' />
       </div>
     )
   }
 
   if (!isAuthenticated || !isAdmin) {
     const redirectTo = `${location.pathname}${location.search}${location.hash}`
-    return <Navigate to="/admin/login" replace state={{ from: redirectTo }} />
+    return <Navigate to='/admin/login' replace state={{ from: redirectTo }} />
   }
 
   return <AdminLayout />
@@ -608,6 +634,7 @@ Remove all remaining unused imports from Admin.tsx.
 npx tsc --noEmit
 npx eslint src/pages/Admin.tsx src/pages/admin/
 ```
+
 Expected: no errors or warnings
 
 **Step 3: Commit**
@@ -626,6 +653,7 @@ git commit -m "refactor(admin): Admin.tsx is now auth guard only (~30 lines)"
 ```bash
 npx tsc --noEmit
 ```
+
 Expected: no errors
 
 **Step 2: Full lint check**
@@ -633,6 +661,7 @@ Expected: no errors
 ```bash
 npx eslint src/
 ```
+
 Expected: no new errors
 
 **Step 3: Run E2E suite**
@@ -640,6 +669,7 @@ Expected: no new errors
 ```bash
 npx playwright test --reporter=list
 ```
+
 Expected: 43/43 passing
 
 **Step 4: Verify bundle**
@@ -647,6 +677,7 @@ Expected: 43/43 passing
 ```bash
 npx vite build 2>&1 | grep -E "admin|chunk|kB"
 ```
+
 Expected: admin sub-pages appear as separate chunks, no single chunk >500kB
 
 **Step 5: Push and open PR**
@@ -661,15 +692,15 @@ gh pr create --title "refactor: split Admin.tsx + fix ShareModal/PhotoLightbox a
 
 ## File size targets after completion
 
-| File | Before | After |
-|------|--------|-------|
-| `src/pages/Admin.tsx` | 3,880 lines | ~30 lines |
-| `src/pages/admin/utils.ts` | — | ~360 lines |
-| `src/pages/admin/AdminLayout.tsx` | — | ~170 lines |
-| `src/pages/admin/Dashboard.tsx` | — | ~200 lines |
-| `src/pages/admin/PhotoModeration.tsx` | — | ~1,450 lines |
-| `src/pages/admin/GuestbookModeration.tsx` | — | ~260 lines |
-| `src/pages/admin/AuditLogView.tsx` | — | ~135 lines |
-| `src/pages/admin/FeaturedContentManager.tsx` | — | ~735 lines |
-| `src/pages/admin/Analytics.tsx` | — | ~195 lines |
-| `src/pages/admin/Settings.tsx` | — | ~90 lines |
+| File                                         | Before      | After        |
+| -------------------------------------------- | ----------- | ------------ |
+| `src/pages/Admin.tsx`                        | 3,880 lines | ~30 lines    |
+| `src/pages/admin/utils.ts`                   | —           | ~360 lines   |
+| `src/pages/admin/AdminLayout.tsx`            | —           | ~170 lines   |
+| `src/pages/admin/Dashboard.tsx`              | —           | ~200 lines   |
+| `src/pages/admin/PhotoModeration.tsx`        | —           | ~1,450 lines |
+| `src/pages/admin/GuestbookModeration.tsx`    | —           | ~260 lines   |
+| `src/pages/admin/AuditLogView.tsx`           | —           | ~135 lines   |
+| `src/pages/admin/FeaturedContentManager.tsx` | —           | ~735 lines   |
+| `src/pages/admin/Analytics.tsx`              | —           | ~195 lines   |
+| `src/pages/admin/Settings.tsx`               | —           | ~90 lines    |

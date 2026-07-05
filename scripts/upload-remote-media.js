@@ -5,7 +5,7 @@ import { Upload } from '@aws-sdk/lib-storage'
 import dotenv from 'dotenv'
 
 // Load environment configurations
-dotenv.config()
+dotenv.config({ quiet: true })
 
 const R2_ACCOUNT_ID = process.env.R2_ACCOUNT_ID
 const R2_ACCESS_KEY_ID = process.env.R2_ACCESS_KEY_ID

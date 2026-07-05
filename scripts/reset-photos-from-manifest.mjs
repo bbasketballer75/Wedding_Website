@@ -1,11 +1,7 @@
 import 'dotenv/config'
 import path from 'node:path'
 import { createClient } from '@supabase/supabase-js'
-import {
-  inferCanonicalAlbum,
-  readJson,
-  toSiteMediaPath,
-} from './photo-batch-utils.mjs'
+import { inferCanonicalAlbum, readJson, toSiteMediaPath } from './photo-batch-utils.mjs'
 
 const PROJECT_URL = process.env.VITE_SUPABASE_URL
 const SERVICE_ROLE_KEY = process.env.SUPABASE_SERVICE_ROLE_KEY
@@ -42,7 +38,7 @@ async function main() {
   const manifestPath = path.join(
     path.resolve(workingRoot),
     'publish',
-    'wedding-photo-import-manifest.json',
+    'wedding-photo-import-manifest.json'
   )
   const manifest = await readJson(manifestPath)
 
@@ -101,10 +97,7 @@ async function main() {
     .from('photos')
     .select('*', { count: 'exact', head: true })
   console.log(`Deleting ${existingCount ?? 'unknown'} existing rows...`)
-  const { error: deleteError } = await supabase
-    .from('photos')
-    .delete()
-    .not('id', 'is', null)
+  const { error: deleteError } = await supabase.from('photos').delete().not('id', 'is', null)
 
   if (deleteError) throw deleteError
   console.log('All existing rows deleted.')
@@ -115,7 +108,9 @@ async function main() {
   for (const batch of chunk(rows, 100)) {
     const { error } = await supabase.from('photos').insert(batch)
     if (error) {
-      console.error(`\nInsert failed on batch starting at index ${inserted} (batch size ${batch.length})`)
+      console.error(
+        `\nInsert failed on batch starting at index ${inserted} (batch size ${batch.length})`
+      )
       throw error
     }
     inserted += batch.length

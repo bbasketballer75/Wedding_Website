@@ -8,11 +8,19 @@ const inventoryPathArg = process.argv[4]
 const analysisPathArg = process.argv[5]
 
 if (!root || !workingRoot) {
-  console.error('Usage: node scripts/organize-photo-batch.mjs <source-root> <working-root> [inventory-json] [analysis-json]')
+  console.error(
+    'Usage: node scripts/organize-photo-batch.mjs <source-root> <working-root> [inventory-json] [analysis-json]'
+  )
   process.exit(1)
 }
 
-function destinationFor(absoluteWorkingRoot, record, livePhotoStillBases, livePhotoClipBases, duplicateRelativePaths) {
+function destinationFor(
+  absoluteWorkingRoot,
+  record,
+  livePhotoStillBases,
+  livePhotoClipBases,
+  duplicateRelativePaths
+) {
   if (duplicateRelativePaths.has(record.relativePath)) {
     return path.join(absoluteWorkingRoot, 'organized', 'Review', 'Exact Duplicates')
   }
@@ -26,24 +34,38 @@ function destinationFor(absoluteWorkingRoot, record, livePhotoStillBases, livePh
       absoluteWorkingRoot,
       'organized',
       'Bach+ette',
-      record.kind === 'video' ? 'Videos' : 'Photos',
+      record.kind === 'video' ? 'Videos' : 'Photos'
     )
   }
 
   if (record.topLevelFolder === 'Guest-Shared Wedding Gallery') {
     const key = baseName(record.filename)
     if (record.kind === 'video' && livePhotoClipBases.has(key)) {
-      return path.join(absoluteWorkingRoot, 'organized', 'Guest Uploads', 'Wedding Day', 'Live Photos', 'Clips')
+      return path.join(
+        absoluteWorkingRoot,
+        'organized',
+        'Guest Uploads',
+        'Wedding Day',
+        'Live Photos',
+        'Clips'
+      )
     }
     if (record.kind === 'image' && livePhotoStillBases.has(key)) {
-      return path.join(absoluteWorkingRoot, 'organized', 'Guest Uploads', 'Wedding Day', 'Live Photos', 'Stills')
+      return path.join(
+        absoluteWorkingRoot,
+        'organized',
+        'Guest Uploads',
+        'Wedding Day',
+        'Live Photos',
+        'Stills'
+      )
     }
     return path.join(
       absoluteWorkingRoot,
       'organized',
       'Guest Uploads',
       record.collection,
-      record.kind === 'video' ? 'Standalone Videos' : 'Stills',
+      record.kind === 'video' ? 'Standalone Videos' : 'Stills'
     )
   }
 
@@ -72,7 +94,7 @@ async function main() {
   const analysis = await readJson(analysisPath)
 
   const livePhotoClipBases = new Set(
-    (analysis.livePhotoGroups ?? []).map((group) => baseName(path.basename(group.clip.relativePath))),
+    (analysis.livePhotoGroups ?? []).map(group => baseName(path.basename(group.clip.relativePath)))
   )
 
   const livePhotoStillBases = new Set()
@@ -83,7 +105,7 @@ async function main() {
   }
 
   const duplicateRelativePaths = new Set(
-    (analysis.exactDuplicateGroups ?? []).flatMap((group) => group.files.slice(1)),
+    (analysis.exactDuplicateGroups ?? []).flatMap(group => group.files.slice(1))
   )
 
   const manifest = []
@@ -93,14 +115,16 @@ async function main() {
       record,
       livePhotoStillBases,
       livePhotoClipBases,
-      duplicateRelativePaths,
+      duplicateRelativePaths
     )
     const destinationPath = await copyRecord(absoluteRoot, record, destinationRoot)
     manifest.push({
       id: record.id,
       relativePath: record.relativePath,
       destination: destinationPath,
-      destinationRelativePath: toPosix(path.relative(path.join(absoluteWorkingRoot, 'organized'), destinationPath)),
+      destinationRelativePath: toPosix(
+        path.relative(path.join(absoluteWorkingRoot, 'organized'), destinationPath)
+      ),
       topLevelFolder: record.topLevelFolder,
       kind: record.kind,
       source: record.source,
@@ -134,15 +158,21 @@ async function main() {
     '',
   ]
 
-  for (const [destinationRoot, count] of [...summaryByDestination.entries()].sort((left, right) => left[0].localeCompare(right[0]))) {
+  for (const [destinationRoot, count] of [...summaryByDestination.entries()].sort((left, right) =>
+    left[0].localeCompare(right[0])
+  )) {
     lines.push(`- \`${destinationRoot}\`: ${count}`)
   }
 
   lines.push('')
   lines.push('## Notes')
   lines.push('- Originals were not modified.')
-  lines.push('- Later files in an exact-duplicate group were copied into `organized/Review/Exact Duplicates` for manual review.')
-  lines.push('- Guest live photos were identified by short clips plus matching still-image base names.')
+  lines.push(
+    '- Later files in an exact-duplicate group were copied into `organized/Review/Exact Duplicates` for manual review.'
+  )
+  lines.push(
+    '- Guest live photos were identified by short clips plus matching still-image base names.'
+  )
 
   await writeMarkdown(summaryPath, lines)
 

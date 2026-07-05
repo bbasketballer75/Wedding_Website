@@ -12,7 +12,13 @@ const env = Object.fromEntries(
     .filter(l => l.includes('=') && !l.trim().startsWith('#'))
     .map(l => {
       const [k, ...v] = l.split('=')
-      return [k.trim(), v.join('=').trim().replace(/^['"]|['"]$/g, '')]
+      return [
+        k.trim(),
+        v
+          .join('=')
+          .trim()
+          .replace(/^['"]|['"]$/g, ''),
+      ]
     })
 )
 
@@ -43,7 +49,11 @@ async function main() {
      VALUES ($1, $2, $3)
      ON CONFLICT (version) DO NOTHING
      RETURNING version`,
-    [MIGRATION_VERSION, MIGRATION_NAME, [{ sql: '-- see supabase/migrations/' + MIGRATION_VERSION + '_' + MIGRATION_NAME + '.sql' }]]
+    [
+      MIGRATION_VERSION,
+      MIGRATION_NAME,
+      [{ sql: '-- see supabase/migrations/' + MIGRATION_VERSION + '_' + MIGRATION_NAME + '.sql' }],
+    ]
   )
   console.log(result.rowCount > 0 ? '  ✓ Registered' : '  (already registered)')
 

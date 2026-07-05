@@ -18,7 +18,7 @@ async function main() {
   console.log('Copied public/images to dist/images')
 }
 
-main().catch((error) => {
+main().catch(error => {
   console.error('Failed to copy public/images into dist:', error)
   process.exitCode = 1
 })

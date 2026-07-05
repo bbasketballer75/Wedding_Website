@@ -31,6 +31,7 @@ Button row:    glass circle icons (no text labels on small share buttons)
 ## Task 1: Guestbook Page — Dark Canvas + Hero
 
 **Files:**
+
 - Modify: `src/pages/Guestbook.tsx`
 
 No test needed — visual change. Verify with screenshot after each task.
@@ -38,6 +39,7 @@ No test needed — visual change. Verify with screenshot after each task.
 **Step 1: Update page wrapper background**
 
 Find the return statement's outermost div (line ~675):
+
 ```tsx
 // BEFORE
 <div className="min-h-screen bg-cream-50 pb-20 pt-28 sm:pt-32">
@@ -49,9 +51,10 @@ Find the return statement's outermost div (line ~675):
 **Step 2: Update hero panel**
 
 Find the hero `<motion.div>` (line ~681) that currently uses `editorial-panel`:
+
 ```tsx
 // BEFORE
-className="editorial-panel overflow-hidden px-6 py-10 sm:px-10 sm:py-14"
+className = 'editorial-panel overflow-hidden px-6 py-10 sm:px-10 sm:py-14'
 // glow blobs: bg-gold-200/30, bg-blush-200/35
 // eyebrow-chip
 // h1: text-charcoal-900
@@ -59,7 +62,8 @@ className="editorial-panel overflow-hidden px-6 py-10 sm:px-10 sm:py-14"
 // note count: text-charcoal-400
 
 // AFTER
-className="relative overflow-hidden rounded-2xl bg-white/6 backdrop-blur-md border border-gold-200/15 px-6 py-10 sm:px-10 sm:py-14"
+className =
+  'relative overflow-hidden rounded-2xl bg-white/6 backdrop-blur-md border border-gold-200/15 px-6 py-10 sm:px-10 sm:py-14'
 // glow blobs: bg-gold-500/8 blur-3xl (atmosphere only)
 // eyebrow: <span className="text-[10px] uppercase tracking-[0.3em] text-gold-400 flex items-center gap-1.5"><BookHeart className="h-3.5 w-3.5" />After the film</span>
 // h1: text-white
@@ -86,17 +90,19 @@ git commit -m "feat: guestbook dark canvas and cinematic hero"
 ## Task 2: Guestbook Page — Sidebar Cards
 
 **Files:**
+
 - Modify: `src/pages/Guestbook.tsx`
 
 **Step 1: Update sidebar "Leave a note" card** (line ~712, currently `editorial-card`)
 
 ```tsx
 // BEFORE
-className="editorial-card px-5 py-5"
+className = 'editorial-card px-5 py-5'
 // text-gold-700 eyebrow, text-charcoal-900 heading, text-charcoal-500 body
 
 // AFTER
-className="relative overflow-hidden rounded-2xl bg-white/5 backdrop-blur-sm border border-gold-200/12 px-5 py-5"
+className =
+  'relative overflow-hidden rounded-2xl bg-white/5 backdrop-blur-sm border border-gold-200/12 px-5 py-5'
 // eyebrow: text-[10px] uppercase tracking-[0.3em] text-gold-400
 // heading h2: text-white
 // body p: text-white/55
@@ -106,6 +112,7 @@ className="relative overflow-hidden rounded-2xl bg-white/5 backdrop-blur-sm bord
 **Step 2: Update sidebar "Newest note" card** (line ~728)
 
 Same pattern — `editorial-card` → glass card. Update all text colors:
+
 - `text-charcoal-900` → `text-white`
 - `text-charcoal-500` → `text-white/55`
 - `text-charcoal-600` → `text-white/60`
@@ -113,6 +120,7 @@ Same pattern — `editorial-card` → glass card. Update all text colors:
 **Step 3: Update sidebar filter card** (line ~746)
 
 Same glass card class. Update filter button active state:
+
 ```tsx
 // BEFORE active: 'cinematic-toggle-active'
 // BEFORE inactive: 'bg-cream-50 text-charcoal-600 hover:bg-gold-50/80 hover:text-charcoal-800'
@@ -121,7 +129,9 @@ Same glass card class. Update filter button active state:
 // AFTER inactive: 'bg-white/5 text-white/55 hover:bg-white/10 hover:text-white'
 // Both: 'rounded-full px-4 py-2 text-sm transition-all'
 ```
+
 Count badge color:
+
 - active: `text-white/60`
 - inactive: `text-white/30`
 
@@ -138,21 +148,24 @@ git commit -m "feat: guestbook cinematic sidebar cards"
 ## Task 3: Guestbook Page — Composer Panel
 
 **Files:**
+
 - Modify: `src/pages/Guestbook.tsx`
 
 **Step 1: Update composer outer wrapper** (line ~775, `data-testid="guestbook-composer"`)
 
 ```tsx
 // BEFORE
-className="editorial-panel px-5 py-5 sm:px-6 sm:py-6 lg:px-8"
+className = 'editorial-panel px-5 py-5 sm:px-6 sm:py-6 lg:px-8'
 
 // AFTER
-className="relative overflow-hidden rounded-2xl bg-white/6 backdrop-blur-md border border-gold-200/15 px-5 py-5 sm:px-6 sm:py-6 lg:px-8"
+className =
+  'relative overflow-hidden rounded-2xl bg-white/6 backdrop-blur-md border border-gold-200/15 px-5 py-5 sm:px-6 sm:py-6 lg:px-8'
 ```
 
 **Step 2: Update composer success state**
 
 Inside `isSubmitted` branch (line ~778):
+
 - `text-charcoal-900` → `text-white`
 - `text-charcoal-600` → `text-white/55`
 - Keep `CheckCircle` green ring (unchanged)
@@ -172,6 +185,7 @@ Inside `isSubmitted` branch (line ~778):
 The `Label` and `Input` components in the composer receive className props. Update their inline appearance:
 
 For Labels — add `text-white/70` class:
+
 ```tsx
 <Label htmlFor="guestbook-name" className="text-white/70">Your name</Label>
 <Label htmlFor="guestbook-email" className="text-white/70">
@@ -180,6 +194,7 @@ For Labels — add `text-white/70` class:
 ```
 
 The `Input` component in `src/components/ui/Input.tsx` uses global styles. Rather than modifying the shared component, pass className overrides:
+
 ```tsx
 <Input
   id="guestbook-name"
@@ -193,6 +208,7 @@ Check the Input component first to understand what classes it applies so you can
 **Step 5: Update textarea dark style similarly**
 
 Same pattern as Input — pass `className` override:
+
 ```tsx
 <Textarea
   className="bg-white/8 border-white/12 text-white placeholder:text-white/30 focus:border-gold-400/50"
@@ -201,6 +217,7 @@ Same pattern as Input — pass `className` override:
 ```
 
 Update helper text below email input:
+
 - `text-charcoal-400` → `text-white/30`
 
 **Step 6: Update submit error message** (line ~submitError area)
@@ -223,6 +240,7 @@ git commit -m "feat: guestbook cinematic composer panel"
 ## Task 4: Guestbook Page — MessageCard Component
 
 **Files:**
+
 - Modify: `src/pages/Guestbook.tsx` (the `MessageCard` function, line ~209)
 
 **Step 1: Update MessageCard outer article**
@@ -253,11 +271,24 @@ The `Avatar` component likely uses `bg-gold-100 text-gold-700` internally. If it
 **Step 3: Update Badge for message type**
 
 The badge uses light colors (`badgeClass`). Update `messageTypeMeta`:
+
 ```tsx
 const messageTypeMeta = {
-  text:  { label: 'Written note', icon: PenSquare, badgeClass: 'border-gold-400/30 bg-gold-500/10 text-gold-300' },
-  voice: { label: 'Voice note',   icon: Mic,       badgeClass: 'border-rose-400/30 bg-rose-500/10 text-rose-300' },
-  video: { label: 'Video note',   icon: Video,     badgeClass: 'border-white/15 bg-white/8 text-white/60' },
+  text: {
+    label: 'Written note',
+    icon: PenSquare,
+    badgeClass: 'border-gold-400/30 bg-gold-500/10 text-gold-300',
+  },
+  voice: {
+    label: 'Voice note',
+    icon: Mic,
+    badgeClass: 'border-rose-400/30 bg-rose-500/10 text-rose-300',
+  },
+  video: {
+    label: 'Video note',
+    icon: Video,
+    badgeClass: 'border-white/15 bg-white/8 text-white/60',
+  },
 }
 ```
 
@@ -272,6 +303,7 @@ const messageTypeMeta = {
 **Step 5: Update AudioPlayer dark theme**
 
 The `AudioPlayer` component uses light rose styles. Update:
+
 - Container: `bg-[linear-gradient(135deg,...)]` → `bg-white/8 border border-rose-400/20`
 - Play button: keep dark cinematic gradient (it already looks good)
 - Waveform label: `text-charcoal-900` → `text-white`
@@ -328,11 +360,13 @@ git commit -m "feat: guestbook cinematic message cards and audio player"
 ## Task 5: Guestbook Page — Feed, Loading, and Error States
 
 **Files:**
+
 - Modify: `src/pages/Guestbook.tsx`
 
 **Step 1: Update loading state** (find `isLoading` branch in feed)
 
 Look for the loading spinner/skeleton in the feed area. Update:
+
 - Spinner or skeleton bg: light → `bg-white/8`
 - Text: `text-charcoal-500` → `text-white/40`
 
@@ -353,10 +387,11 @@ Look for the loading spinner/skeleton in the feed area. Update:
 **Step 4: Add atmosphere glow blobs to page wrapper**
 
 Inside the outermost page div, add non-interactive atmosphere:
+
 ```tsx
-<div className="pointer-events-none fixed inset-0 overflow-hidden">
-  <div className="absolute -top-32 left-1/4 h-96 w-96 rounded-full bg-gold-500/4 blur-[120px]" />
-  <div className="absolute bottom-1/4 right-1/4 h-64 w-64 rounded-full bg-gold-400/3 blur-[100px]" />
+<div className='pointer-events-none fixed inset-0 overflow-hidden'>
+  <div className='absolute -top-32 left-1/4 h-96 w-96 rounded-full bg-gold-500/4 blur-[120px]' />
+  <div className='absolute bottom-1/4 right-1/4 h-64 w-64 rounded-full bg-gold-400/3 blur-[100px]' />
 </div>
 ```
 
@@ -373,6 +408,7 @@ git commit -m "feat: guestbook cinematic feed states and atmosphere"
 ## Task 6: Upload/Share Page — Dark Canvas, Hero, and Highlights
 
 **Files:**
+
 - Modify: `src/pages/Upload.tsx`
 
 **Step 1: Update main page wrapper background**
@@ -386,10 +422,11 @@ git commit -m "feat: guestbook cinematic feed states and atmosphere"
 ```
 
 Also add the same atmosphere blobs (inside page div, before UploadSEO):
+
 ```tsx
-<div className="pointer-events-none fixed inset-0 overflow-hidden">
-  <div className="absolute -top-32 left-1/4 h-96 w-96 rounded-full bg-gold-500/4 blur-[120px]" />
-  <div className="absolute bottom-1/4 right-1/4 h-64 w-64 rounded-full bg-gold-400/3 blur-[100px]" />
+<div className='pointer-events-none fixed inset-0 overflow-hidden'>
+  <div className='absolute -top-32 left-1/4 h-96 w-96 rounded-full bg-gold-500/4 blur-[120px]' />
+  <div className='absolute bottom-1/4 right-1/4 h-64 w-64 rounded-full bg-gold-400/3 blur-[100px]' />
 </div>
 ```
 
@@ -397,13 +434,15 @@ Also add the same atmosphere blobs (inside page div, before UploadSEO):
 
 ```tsx
 // BEFORE
-className="editorial-panel px-6 py-8 sm:px-8 sm:py-10"
+className = 'editorial-panel px-6 py-8 sm:px-8 sm:py-10'
 
 // AFTER
-className="relative overflow-hidden rounded-2xl bg-white/6 backdrop-blur-md border border-gold-200/15 px-6 py-8 sm:px-8 sm:py-10"
+className =
+  'relative overflow-hidden rounded-2xl bg-white/6 backdrop-blur-md border border-gold-200/15 px-6 py-8 sm:px-8 sm:py-10'
 ```
 
 Update all text inside the hero:
+
 - eyebrow-chip → `text-[10px] uppercase tracking-[0.3em] text-gold-400 flex items-center gap-1.5`
 - `h1` text-charcoal-900 → text-white
 - `p` text-charcoal-600 → text-white/55
@@ -417,6 +456,7 @@ Update all text inside the hero:
 **Step 3: Update share buttons**
 
 The current share buttons are text+icon pill style. Condense to icon-only glass circles plus the copy/link display:
+
 ```tsx
 // Pattern for each share button:
 <button
@@ -432,6 +472,7 @@ The current share buttons are text+icon pill style. Condense to icon-only glass 
 Wrap all share buttons in `<div className="flex flex-wrap gap-2 items-center">`.
 
 Keep the URL display pill but update style:
+
 ```tsx
 // border-white/90 bg-white → border-white/12 bg-white/6
 // Link2 icon: text-gold-600 → text-gold-400
@@ -462,6 +503,7 @@ git commit -m "feat: upload page dark canvas, cinematic hero, and highlight card
 ## Task 7: Upload/Share Page — Dropzone and File Queue
 
 **Files:**
+
 - Modify: `src/pages/Upload.tsx`
 
 **Step 1: Update upload dropzone** (line ~595, `data-testid="upload-dropzone"`)
@@ -485,6 +527,7 @@ className={cn(
 ```
 
 Update dropzone content:
+
 - Upload icon circle: `border-gold-200/70 bg-gold-100` → `border-gold-400/20 bg-gold-500/10`; icon: `text-gold-600` → `text-gold-400`
 - `h2`: `text-charcoal-900` → `text-white`
 - `p`: `text-charcoal-600` → `text-white/55`
@@ -511,6 +554,7 @@ Update dropzone content:
 **Step 4: Update individual file items in queue**
 
 Find the file thumbnail items (look for file preview grid). For each file item:
+
 - Container: light bg → `bg-white/5 border border-white/8 rounded-xl`
 - Filename: `text-charcoal-900` → `text-white`
 - Status text: `text-charcoal-500` → `text-white/50`
@@ -532,11 +576,13 @@ git commit -m "feat: upload page cinematic dropzone and file queue"
 ## Task 8: Upload/Share Page — Form, Errors, and Submit
 
 **Files:**
+
 - Modify: `src/pages/Upload.tsx`
 
 **Step 1: Find the form section** (line ~585, the `<form onSubmit={handleSubmit}>`)
 
 The form contains the dropzone (done), file queue (done), and then the contact fields sidebar. Find the contact fields panel:
+
 ```tsx
 // Update the panel wrapping name/email/message fields
 // BEFORE: editorial-panel or light bg variant
@@ -546,11 +592,13 @@ The form contains the dropzone (done), file queue (done), and then the contact f
 **Step 2: Update form Labels and Inputs**
 
 Same pattern as Guestbook — pass className to override:
+
 ```tsx
 <Label className="text-white/70">...</Label>
 <Input className="bg-white/8 border-white/12 text-white placeholder:text-white/30 focus:border-gold-400/50" ... />
 <Textarea className="bg-white/8 border-white/12 text-white placeholder:text-white/30 focus:border-gold-400/50" ... />
 ```
+
 Helper text: `text-charcoal-400` → `text-white/30`
 
 **Step 3: Update submit error message**
@@ -579,6 +627,7 @@ git commit -m "feat: upload page cinematic form and submit"
 ## Task 9: Upload/Share Page — Success State
 
 **Files:**
+
 - Modify: `src/pages/Upload.tsx`
 
 **Step 1: Update success state page wrapper** (line ~354)
@@ -630,12 +679,14 @@ git commit -m "feat: upload page cinematic success state"
 ## Task 10: Final Polish Pass
 
 **Files:**
+
 - Modify: `src/pages/Guestbook.tsx`
 - Modify: `src/pages/Upload.tsx`
 
 **Step 1: Scan both pages for any remaining `cream`, `charcoal`, `bg-white/7` or light-bg patterns**
 
 Search for leftover light values:
+
 ```bash
 grep -n "bg-cream\|text-charcoal\|bg-white/7[0-9]\|editorial-card\|editorial-panel" src/pages/Guestbook.tsx src/pages/Upload.tsx
 ```

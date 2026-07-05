@@ -1,7 +1,7 @@
 import { createClient } from '@supabase/supabase-js'
 import dotenv from 'dotenv'
 
-dotenv.config()
+dotenv.config({ quiet: true })
 
 const supabaseUrl = process.env.VITE_SUPABASE_URL?.trim()
 const supabaseAnonKey = process.env.VITE_SUPABASE_ANON_KEY?.trim()
@@ -20,14 +20,15 @@ const publicClient = createClient(supabaseUrl, supabaseAnonKey, {
   },
 })
 
-const adminClient = serviceRoleKey && allowServerRoleVerify
-  ? createClient(supabaseUrl, serviceRoleKey, {
-      auth: {
-        autoRefreshToken: false,
-        persistSession: false,
-      },
-    })
-  : null
+const adminClient =
+  serviceRoleKey && allowServerRoleVerify
+    ? createClient(supabaseUrl, serviceRoleKey, {
+        auth: {
+          autoRefreshToken: false,
+          persistSession: false,
+        },
+      })
+    : null
 
 function summarizeKey(key) {
   return `${key.slice(0, 10)}...${key.slice(-6)}`
@@ -91,9 +92,15 @@ async function main() {
   )
 
   await runCheck('Public photos access', () => verifyTableCount(publicClient, 'photos'))
-  await runCheck('Public guestbook access', () => verifyTableCount(publicClient, 'guestbook_messages'))
-  await runCheck('Public guestbook comments access', () => verifyTableCount(publicClient, 'guestbook_comments'))
-  await runCheck('Approved guest uploads access', () => verifyTableCount(publicClient, 'guest_uploads', { status: 'approved' }))
+  await runCheck('Public guestbook access', () =>
+    verifyTableCount(publicClient, 'guestbook_messages')
+  )
+  await runCheck('Public guestbook comments access', () =>
+    verifyTableCount(publicClient, 'guestbook_comments')
+  )
+  await runCheck('Approved guest uploads access', () =>
+    verifyTableCount(publicClient, 'guest_uploads', { status: 'approved' })
+  )
 
   await runOptionalCheck('Guestbook RPC access', async () => {
     const { data, error } = await publicClient.rpc('get_guestbook_messages_with_comments')
@@ -105,13 +112,23 @@ async function main() {
     return `${Array.isArray(data) ? data.length : 0} messages returned`
   })
 
-  await runCheck('guest-photos bucket readability', () => verifyStorageBucket(publicClient, 'guest-photos'))
-  await runCheck('guest-videos bucket readability', () => verifyStorageBucket(publicClient, 'guest-videos'))
-  await runCheck('guest-voice bucket readability', () => verifyStorageBucket(publicClient, 'guest-voice'))
+  await runCheck('guest-photos bucket readability', () =>
+    verifyStorageBucket(publicClient, 'guest-photos')
+  )
+  await runCheck('guest-videos bucket readability', () =>
+    verifyStorageBucket(publicClient, 'guest-videos')
+  )
+  await runCheck('guest-voice bucket readability', () =>
+    verifyStorageBucket(publicClient, 'guest-voice')
+  )
 
   if (adminClient) {
-    await runCheck('Admin guest uploads visibility', () => verifyTableCount(adminClient, 'guest_uploads'))
-    await runCheck('Admin guestbook visibility', () => verifyTableCount(adminClient, 'guestbook_messages'))
+    await runCheck('Admin guest uploads visibility', () =>
+      verifyTableCount(adminClient, 'guest_uploads')
+    )
+    await runCheck('Admin guestbook visibility', () =>
+      verifyTableCount(adminClient, 'guestbook_messages')
+    )
   }
 
   if (process.exitCode) {

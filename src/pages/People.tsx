@@ -151,8 +151,9 @@ function buildPeopleFromPhotos(photos: Photo[]): PersonCard[] {
 
       // Record every face appearance for avatar selection below.
       // face.x / face.y are 0–100 percentage values; normalize to 0–1 here.
-      if (face.box?.width) {
-        map.get(faceName)!.appearances.push({
+      const accum = map.get(faceName)
+      if (face.box?.width && accum) {
+        accum.appearances.push({
           thumbnail: getMediaPath(photo.thumbnail || photo.url),
           faceX: face.x / 100,
           faceY: face.y / 100,
