@@ -6,31 +6,30 @@ import { motion } from 'framer-motion'
  */
 export function PageLoader() {
   return (
-    <div className='min-h-screen flex items-center justify-center bg-cream-50'>
+    <div className='theme-canvas min-h-screen px-4 pt-28 sm:px-6 sm:pt-32'>
       <motion.div
-        initial={{ opacity: 0, scale: 0.9 }}
-        animate={{ opacity: 1, scale: 1 }}
-        className='text-center'
+        initial={{ opacity: 0, y: 16 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ duration: 0.45, ease: [0.16, 1, 0.3, 1] }}
+        className='mx-auto grid max-w-6xl gap-5 lg:grid-cols-[0.85fr_1.15fr]'
+        aria-label='Loading page'
+        role='status'
       >
-        <div className='relative w-16 h-16 mx-auto mb-4'>
-          <motion.div
-            className='absolute inset-0 border-4 border-gold-200 rounded-full'
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-          />
-          <motion.div
-            className='absolute inset-0 border-4 border-gold-500 rounded-full border-t-transparent'
-            animate={{ rotate: 360 }}
-            transition={{
-              duration: 1,
-              repeat: Infinity,
-              ease: 'linear',
-            }}
-          />
+        <div className='theme-panel rounded-[1.5rem] p-5 sm:p-6'>
+          <div className='theme-skeleton h-4 w-28 rounded-full' />
+          <div className='theme-skeleton mt-8 h-16 w-4/5 rounded-2xl' />
+          <div className='theme-skeleton mt-4 h-5 w-full rounded-full' />
+          <div className='theme-skeleton mt-2 h-5 w-2/3 rounded-full' />
+          <div className='mt-8 flex gap-3'>
+            <div className='theme-skeleton h-11 w-32 rounded-full' />
+            <div className='theme-skeleton h-11 w-11 rounded-full' />
+          </div>
         </div>
-        {/* text-charcoal-700 (was charcoal-500) — the old color had 1.2:1 contrast on
-            cream-50, which fails WCAG AA. Charcoal-700 is dark enough to pass. */}
-        <p className='text-charcoal-700 text-sm'>Loading...</p>
+        <div className='grid gap-4 sm:grid-cols-2'>
+          <div className='theme-skeleton aspect-[4/5] rounded-[1.35rem]' />
+          <div className='theme-skeleton hidden aspect-[4/5] rounded-[1.35rem] sm:block' />
+        </div>
+        <span className='sr-only'>Loading...</span>
       </motion.div>
     </div>
   )

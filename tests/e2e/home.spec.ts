@@ -66,6 +66,19 @@ test.describe('Home Page', () => {
     await page.getByRole('button', { name: /Explore/i }).click()
     await expect(page.locator('#welcome-panel')).toBeInViewport()
   })
+
+  test('hero renders from the poster instead of broken local video sources', async ({ page }) => {
+    await gotoPublicPage(page, '/')
+
+    const hero = page.getByTestId('home-hero')
+    const poster = hero.locator('img[src$="/images/home/intro-video-poster.png"]')
+
+    await expect(poster).toBeVisible()
+    await expect(hero.locator('video')).toHaveCount(0)
+    await expect
+      .poll(() => poster.evaluate(image => (image as HTMLImageElement).naturalWidth))
+      .toBeGreaterThan(0)
+  })
 })
 
 for (const viewport of Object.keys(viewports) as Array<keyof typeof viewports>) {

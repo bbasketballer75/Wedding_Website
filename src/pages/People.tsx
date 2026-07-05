@@ -562,7 +562,7 @@ export default function People() {
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ duration: 0.4, delay: i * 0.03 }}
                 whileHover={{ y: -3 }}
-                onClick={() => setSelectedPerson(person)}
+                onClick={() => goToGallery(person.name)}
                 className={cn(
                   'group relative flex flex-col items-center gap-3 p-5 rounded-2xl border border-charcoal-200/40 bg-white shadow-sm cursor-pointer',
                   'hover:border-gold-300/70 hover:shadow-lg transition-all duration-200 text-center focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-gold-400'
@@ -571,7 +571,8 @@ export default function People() {
                 tabIndex={0}
                 onKeyDown={e => {
                   if (e.key === 'Enter' || e.key === ' ') {
-                    setSelectedPerson(person)
+                    e.preventDefault()
+                    goToGallery(person.name)
                   }
                 }}
                 aria-label={`Browse photos of ${person.name}`}

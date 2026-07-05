@@ -4,6 +4,7 @@ import { Link, useLocation } from 'react-router-dom'
 import { cn } from '@/lib/utils'
 import { publicNavLinks } from './publicNav'
 import { Menu, X, type LucideIcon } from 'lucide-react'
+import { ThemeToggle } from '@/components/theme/ThemeToggle'
 
 function HeaderLink({
   path,
@@ -27,10 +28,10 @@ function HeaderLink({
       className={cn(
         'flex shrink-0 items-center gap-1 rounded-full px-2 py-2 text-[9px] font-medium leading-none uppercase tracking-[0.16em] transition-all duration-300 max-[360px]:gap-0 max-[360px]:px-1.5 max-[360px]:text-[8px] max-[360px]:tracking-[0.12em] min-[430px]:px-2.5 sm:gap-2 sm:px-4 sm:py-2.5 sm:text-xs sm:tracking-[0.24em]',
         isActive
-          ? 'border-2 border-gold-500 bg-transparent text-gold-700'
+          ? 'border border-[color:var(--ui-accent)] bg-[color:var(--ui-surface-elevated)] text-[color:var(--ui-accent-strong)]'
           : isPrimary
-            ? 'text-gold-700 hover:bg-white/80 hover:text-gold-800'
-            : 'text-charcoal-700 hover:bg-white/80 hover:text-charcoal-900'
+            ? 'text-[color:var(--ui-accent-strong)] hover:bg-[color:var(--ui-surface-elevated)]'
+            : 'text-[color:var(--ui-muted)] hover:bg-[color:var(--ui-surface-elevated)] hover:text-[color:var(--ui-text)]'
       )}
     >
       <Icon
@@ -105,16 +106,16 @@ function HeaderContent() {
           data-testid='public-header'
           className='fixed left-1/2 top-3 z-50 w-[calc(100vw-0.75rem)] max-w-[40rem] -translate-x-1/2 px-0 sm:top-6 sm:w-[calc(100vw-1rem)] sm:max-w-[42rem]'
         >
-          <div className='flex w-full items-center gap-0.5 overflow-x-auto scroll-smooth rounded-full border border-gold-300/45 bg-gradient-to-r from-cream-100/92 via-gold-50/92 to-cream-100/92 px-1 py-1.5 shadow-[0_18px_40px_-28px_rgba(46,33,13,0.42)] backdrop-blur-xl hide-scrollbar sm:justify-between sm:gap-0 sm:px-2 sm:py-2'>
+          <div className='theme-panel flex w-full items-center gap-0.5 overflow-x-auto scroll-smooth rounded-full px-1 py-1.5 hide-scrollbar sm:justify-between sm:gap-0 sm:px-2 sm:py-2'>
             <Link
               to='/'
-              className='shrink-0 px-3 py-2 font-display text-lg text-charcoal-900 transition-colors hover:text-gold-600 max-[360px]:px-2.5 max-[360px]:text-base sm:px-4 sm:text-xl'
+              className='shrink-0 px-3 py-2 font-display text-lg text-[color:var(--ui-text)] transition-colors hover:text-[color:var(--ui-accent-strong)] max-[360px]:px-2.5 max-[360px]:text-base sm:px-4 sm:text-xl'
               onClick={() => window.scrollTo({ top: 0, behavior: 'smooth' })}
             >
               <span className='text-gold-500'>A</span>&<span className='text-gold-500'>J</span>
             </Link>
 
-            <div className='hidden h-5 w-px bg-gold-300/60 sm:block' />
+            <div className='hidden h-5 w-px bg-[color:var(--ui-border)] sm:block' />
 
             {/* Desktop nav links - hidden on mobile */}
             <div className='hidden sm:flex items-center gap-0.5'>
@@ -129,18 +130,20 @@ function HeaderContent() {
                     isPrimary={link.isPrimary}
                   />
                   {index < publicNavLinks.length - 1 && (
-                    <div className='hidden h-5 w-px bg-gold-300/60' />
+                    <div className='hidden h-5 w-px bg-[color:var(--ui-border)]' />
                   )}
                 </div>
               ))}
             </div>
+
+            <ThemeToggle className='hidden sm:inline-flex shadow-none' />
 
             {/* Mobile hamburger button - hidden on desktop */}
             <button
               type='button'
               aria-label={isMobileMenuOpen ? 'Close menu' : 'Open menu'}
               aria-expanded={isMobileMenuOpen}
-              className='flex sm:hidden items-center justify-center w-10 h-10 rounded-full bg-white/80 text-charcoal-700 hover:bg-white transition-colors'
+              className='flex sm:hidden items-center justify-center w-10 h-10 rounded-full bg-[color:var(--ui-surface-elevated)] text-[color:var(--ui-text)] hover:bg-[color:var(--ui-surface)] transition-colors'
               onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
             >
               <AnimatePresence mode='wait' initial={false}>
@@ -177,7 +180,7 @@ function HeaderContent() {
                 animate={{ opacity: 1, y: 0 }}
                 exit={{ opacity: 0, y: -8 }}
                 transition={{ duration: 0.25, ease: [0.16, 1, 0.3, 1] }}
-                className='sm:hidden mt-2 rounded-2xl border border-gold-300/45 bg-gradient-to-r from-cream-100/98 via-gold-50/98 to-cream-100/98 px-4 py-4 shadow-lg backdrop-blur-xl'
+                className='theme-panel sm:hidden mt-2 rounded-2xl px-4 py-4'
               >
                 <nav className='flex flex-col gap-1'>
                   {publicNavLinks.map(link => (
@@ -191,6 +194,9 @@ function HeaderContent() {
                       isPrimary={link.isPrimary}
                     />
                   ))}
+                  <div className='mt-2 border-t border-[color:var(--ui-border)] pt-3'>
+                    <ThemeToggle label className='w-full justify-center shadow-none' />
+                  </div>
                 </nav>
               </motion.div>
             )}

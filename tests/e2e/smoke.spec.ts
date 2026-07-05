@@ -16,6 +16,23 @@ test.describe('Smoke Tests', () => {
     await expect(page.locator('body')).toBeVisible()
   })
 
+  test('@smoke theme toggle persists and Ctrl+T switches modes', async ({ page }) => {
+    await gotoPublicPage(page, '/gallery')
+
+    await expect(page.locator('html')).toHaveAttribute('data-theme', 'dark')
+
+    await page.getByTestId('theme-toggle').first().click()
+    await expect(page.locator('html')).toHaveAttribute('data-theme', 'light')
+
+    await page.reload()
+    await expect(page.locator('html')).toHaveAttribute('data-theme', 'light')
+
+    await page.evaluate(() => {
+      window.dispatchEvent(new KeyboardEvent('keydown', { key: 't', ctrlKey: true }))
+    })
+    await expect(page.locator('html')).toHaveAttribute('data-theme', 'dark')
+  })
+
   test('@smoke upload page loads', async ({ page }) => {
     await gotoPublicPage(page, '/upload')
     await expect(page.locator('body')).toBeVisible()

@@ -8,8 +8,13 @@ export default function Admin() {
 
   if (isLoading) {
     return (
-      <div className='min-h-screen flex items-center justify-center'>
-        <div className='animate-spin rounded-full h-12 w-12 border-b-2 border-gold-500' />
+      <div className='theme-canvas flex min-h-screen items-center justify-center px-4'>
+        <div className='theme-panel w-full max-w-2xl rounded-[1.25rem] p-5'>
+          <div className='theme-skeleton h-5 w-36 rounded-full' />
+          <div className='theme-skeleton mt-5 h-10 w-2/3 rounded-2xl' />
+          <div className='theme-skeleton mt-6 h-28 rounded-xl' />
+          <span className='sr-only'>Loading admin workspace...</span>
+        </div>
       </div>
     )
   }
