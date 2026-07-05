@@ -51,7 +51,7 @@ async function startDev() {
 
   console.log('🚀 Starting Vite development server...')
 
-  const vite = spawn('node', ['--disable-warning=DEP0205', './node_modules/vite/bin/vite.js'], {
+  const vite = spawn('npx', ['vite'], {
     stdio: 'inherit',
     shell: true,
   })
