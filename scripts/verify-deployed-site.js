@@ -134,6 +134,12 @@ async function main() {
   const indexResponse = await fetchResponse('/')
   expectHeaderIncludes(indexResponse.headers, 'cache-control', 'max-age=0', '/')
   expectHeaderIncludes(indexResponse.headers, 'content-security-policy', "default-src 'self'", '/')
+  expectHeaderMissingFragment(
+    indexResponse.headers,
+    'content-security-policy',
+    "'unsafe-eval'",
+    '/'
+  )
   expectHeaderIncludes(
     indexResponse.headers,
     'content-security-policy-report-only',
