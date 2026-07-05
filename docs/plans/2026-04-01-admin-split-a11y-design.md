@@ -11,6 +11,7 @@
 `src/pages/Admin.tsx` is 3,880 lines — a single file containing seven distinct admin sections, all shared utilities, and all sub-components. It is unnavigable for development and loads all ~1,450 lines of `PhotoModeration` even when the user navigates to a different admin section.
 
 Additionally:
+
 - `ShareModal` and `PhotoLightbox` are missing `role="dialog"`, `aria-modal`, and focus trapping — keyboard and screen reader users cannot use them correctly.
 - `drop_console: false` in `vite.config.js` means all `console.*` calls ship to production.
 

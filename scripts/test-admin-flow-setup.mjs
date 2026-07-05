@@ -95,13 +95,17 @@ async function main() {
 
   // The admin JWT should have app_metadata.role='admin' in the JWT payload
   // (decoded from the access_token). Print a snippet of the decoded payload.
-  const decodeJwtPayload = (token) => {
+  const decodeJwtPayload = token => {
     const payload = token.split('.')[1]
     return JSON.parse(Buffer.from(payload, 'base64url').toString('utf8'))
   }
 
-  console.log(`\n✓ Admin JWT app_metadata: ${JSON.stringify(decodeJwtPayload(adminSession.session.access_token).app_metadata)}`)
-  console.log(`✓ Regular JWT app_metadata: ${JSON.stringify(decodeJwtPayload(regularSession.session.access_token).app_metadata)}`)
+  console.log(
+    `\n✓ Admin JWT app_metadata: ${JSON.stringify(decodeJwtPayload(adminSession.session.access_token).app_metadata)}`
+  )
+  console.log(
+    `✓ Regular JWT app_metadata: ${JSON.stringify(decodeJwtPayload(regularSession.session.access_token).app_metadata)}`
+  )
 
   console.log(`\n=== SETUP COMPLETE ===`)
   console.log(`Save these for Playwright verification:`)
@@ -115,7 +119,7 @@ async function main() {
   console.log(`REGULAR_REFRESH_TOKEN=${regularSession.session.refresh_token}`)
 }
 
-main().catch((err) => {
+main().catch(err => {
   console.error('Setup failed:', err.message)
   process.exit(1)
 })

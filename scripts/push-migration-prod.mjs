@@ -12,7 +12,13 @@ const env = Object.fromEntries(
     .filter(l => l.includes('=') && !l.trim().startsWith('#'))
     .map(l => {
       const [k, ...v] = l.split('=')
-      return [k.trim(), v.join('=').trim().replace(/^['"]|['"]$/g, '')]
+      return [
+        k.trim(),
+        v
+          .join('=')
+          .trim()
+          .replace(/^['"]|['"]$/g, ''),
+      ]
     })
 )
 
@@ -31,22 +37,40 @@ const PROBE_IPS = ['172.64.149.246'] // extracted from working HTTPS connection
 
 const STRATEGIES = [
   // 1. Direct db host (DNS resolution required)
-  { host: `db.${PROJECT_REF}.supabase.co`, port: 5432, user: 'postgres', servername: `db.${PROJECT_REF}.supabase.co` },
+  {
+    host: `db.${PROJECT_REF}.supabase.co`,
+    port: 5432,
+    user: 'postgres',
+    servername: `db.${PROJECT_REF}.supabase.co`,
+  },
   // 2. Pooler with project-prefixed username
-  { host: 'aws-1-us-east-1.pooler.supabase.com', port: 6543, user: `postgres.${PROJECT_REF}`, servername: 'aws-1-us-east-1.pooler.supabase.com' },
+  {
+    host: 'aws-1-us-east-1.pooler.supabase.com',
+    port: 6543,
+    user: `postgres.${PROJECT_REF}`,
+    servername: 'aws-1-us-east-1.pooler.supabase.com',
+  },
   // 3. Pooler on port 5432 with same setup
-  { host: 'aws-1-us-east-1.pooler.supabase.com', port: 5432, user: `postgres.${PROJECT_REF}`, servername: 'aws-1-us-east-1.pooler.supabase.com' },
+  {
+    host: 'aws-1-us-east-1.pooler.supabase.com',
+    port: 5432,
+    user: `postgres.${PROJECT_REF}`,
+    servername: 'aws-1-us-east-1.pooler.supabase.com',
+  },
 ]
 
 async function main() {
-  const sqlPath = process.argv[2] || 'supabase/migrations/20260623000100_admin_role_app_metadata.sql'
+  const sqlPath =
+    process.argv[2] || 'supabase/migrations/20260623000100_admin_role_app_metadata.sql'
   const sql = readFileSync(sqlPath, 'utf8')
   console.log(`Migration: ${sqlPath} (${sql.length} chars)`)
 
   // First try via DNS
   for (const { host, port, user, servername } of STRATEGIES) {
     const config = {
-      host, port, user,
+      host,
+      port,
+      user,
       database: 'postgres',
       password: PASSWORD,
       ssl: { rejectUnauthorized: false, servername },
@@ -63,7 +87,9 @@ async function main() {
       return
     } catch (err) {
       console.error(`✗ Failed: ${err.message}`)
-      try { await client.end() } catch {}
+      try {
+        await client.end()
+      } catch {}
     }
   }
 
@@ -71,7 +97,9 @@ async function main() {
   for (const ip of PROBE_IPS) {
     for (const { port, user, servername } of STRATEGIES) {
       const config = {
-        host: ip, port, user,
+        host: ip,
+        port,
+        user,
         database: 'postgres',
         password: PASSWORD,
         ssl: { rejectUnauthorized: false, servername },
@@ -88,7 +116,9 @@ async function main() {
         return
       } catch (err) {
         console.error(`✗ Failed: ${err.message}`)
-        try { await client.end() } catch {}
+        try {
+          await client.end()
+        } catch {}
       }
     }
   }

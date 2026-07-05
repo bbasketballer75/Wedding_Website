@@ -30,22 +30,22 @@ No file uploads. Imports utilities from `scripts/photo-batch-utils.mjs`.
 
 ## Row Mapping
 
-| DB column         | Source                                              |
-|-------------------|-----------------------------------------------------|
-| `url`             | `toSiteMediaPath(photoRowDraft.url)`               |
-| `thumbnail`       | `toSiteMediaPath(photoRowDraft.thumbnail)`         |
-| `download_url`    | same as `url`                                       |
-| `album`           | `inferCanonicalAlbum(topLevelFolder, sourcePath)`  |
-| `category`        | same as `album`                                     |
-| `tags`            | `photoRowDraft.tags`                               |
-| `faces`           | `photoRowDraft.faces`                              |
-| `album_sort_order`| sequential per album, 1-based, manifest order      |
-| `is_professional` | `photoRowDraft.is_professional`                    |
-| `date`            | `photoRowDraft.date` (ISO string)                  |
-| `caption`         | `photoRowDraft.caption`                            |
-| `location`        | `photoRowDraft.location`                           |
-| `photographer`    | `photoRowDraft.photographer`                       |
-| `likes`           | `0`                                                |
+| DB column          | Source                                            |
+| ------------------ | ------------------------------------------------- |
+| `url`              | `toSiteMediaPath(photoRowDraft.url)`              |
+| `thumbnail`        | `toSiteMediaPath(photoRowDraft.thumbnail)`        |
+| `download_url`     | same as `url`                                     |
+| `album`            | `inferCanonicalAlbum(topLevelFolder, sourcePath)` |
+| `category`         | same as `album`                                   |
+| `tags`             | `photoRowDraft.tags`                              |
+| `faces`            | `photoRowDraft.faces`                             |
+| `album_sort_order` | sequential per album, 1-based, manifest order     |
+| `is_professional`  | `photoRowDraft.is_professional`                   |
+| `date`             | `photoRowDraft.date` (ISO string)                 |
+| `caption`          | `photoRowDraft.caption`                           |
+| `location`         | `photoRowDraft.location`                          |
+| `photographer`     | `photoRowDraft.photographer`                      |
+| `likes`            | `0`                                               |
 
 ## Usage
 
@@ -58,13 +58,13 @@ Requires `VITE_SUPABASE_URL` and `SUPABASE_SERVICE_ROLE_KEY` in `.env`.
 
 ## Expected Result
 
-| Collection tab  | Expected rows |
-|-----------------|---------------|
-| Proposal        | 0 (hardcoded) |
-| Bach+ette       | 508           |
-| Wedding Photos  | 577           |
-| Guest Photos    | 329           |
-| **Total**       | **1,414**     |
+| Collection tab | Expected rows |
+| -------------- | ------------- |
+| Proposal       | 0 (hardcoded) |
+| Bach+ette      | 508           |
+| Wedding Photos | 577           |
+| Guest Photos   | 329           |
+| **Total**      | **1,414**     |
 
 ## Out of Scope
 

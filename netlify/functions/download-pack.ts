@@ -4,7 +4,7 @@ import JSZip from 'jszip'
 
 const MAX_PHOTOS = 50
 
-export const handler: Handler = async (event) => {
+export const handler: Handler = async event => {
   if (event.httpMethod !== 'POST') {
     return { statusCode: 405, body: 'Method Not Allowed' }
   }
@@ -59,7 +59,7 @@ export const handler: Handler = async (event) => {
       } catch {
         // skip failed photos
       }
-    }),
+    })
   )
 
   const zipBuffer = await zip.generateAsync({ type: 'nodebuffer', compression: 'DEFLATE' })

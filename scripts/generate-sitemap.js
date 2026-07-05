@@ -3,7 +3,7 @@ import dotenv from 'dotenv'
 import { SitemapStream, streamToPromise } from 'sitemap'
 import { Readable } from 'stream'
 
-dotenv.config()
+dotenv.config({ quiet: true })
 
 const DOMAIN = (process.env.VITE_SITE_URL || 'https://www.theporadas.com').replace(/\/+$/, '')
 

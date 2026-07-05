@@ -2,7 +2,7 @@ import fs from 'node:fs'
 import path from 'node:path'
 import dotenv from 'dotenv'
 
-dotenv.config()
+dotenv.config({ quiet: true })
 
 const rootDir = process.cwd()
 const distDir = path.join(rootDir, 'dist')
@@ -51,7 +51,9 @@ requireEnv('VITE_GA_ID')
 requireEnv('VITE_SENTRY_DSN')
 
 if (!process.env.VITE_APP_VERSION?.trim()) {
-  addWarning('VITE_APP_VERSION is not set. Launch is safer with an explicit release label for Sentry and deployment notes.')
+  addWarning(
+    'VITE_APP_VERSION is not set. Launch is safer with an explicit release label for Sentry and deployment notes.'
+  )
 } else {
   addPass('VITE_APP_VERSION is configured.')
 }

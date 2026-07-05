@@ -2,8 +2,76 @@
 type R2Bucket = any
 type ExportedHandler<E> = { fetch: (req: Request, env: E) => Promise<Response> }
 
+const ALLOWED_ORIGINS = new Set([
+  'https://www.theporadas.com',
+  'https://theporadas.com',
+  'https://wedding.theporadas.com',
+  'http://localhost:5173',
+  'http://localhost:4173',
+  'http://127.0.0.1:5173',
+  'http://127.0.0.1:4173',
+  'http://127.0.0.1:4174',
+])
+
+function applyCorsHeaders(headers: Headers, request: Request): Headers {
+  const origin = request.headers.get('Origin')
+
+  if (origin && ALLOWED_ORIGINS.has(origin)) {
+    headers.set('Access-Control-Allow-Origin', origin)
+    headers.set('Vary', 'Origin')
+  }
+
+  headers.set('Access-Control-Allow-Methods', 'GET, HEAD, OPTIONS')
+  headers.set(
+    'Access-Control-Allow-Headers',
+    'Range, Content-Type, If-None-Match, If-Modified-Since'
+  )
+  headers.set(
+    'Access-Control-Expose-Headers',
+    'Accept-Ranges, Content-Length, Content-Range, Content-Type, ETag'
+  )
+  headers.set('Access-Control-Max-Age', '86400')
+
+  return headers
+}
+
+function getRangeBounds(range: any, size: number): { start: number; end: number } | null {
+  if (!range) {
+    return null
+  }
+
+  if (typeof range.offset === 'number' && typeof range.length === 'number') {
+    return { start: range.offset, end: range.offset + range.length - 1 }
+  }
+
+  if (typeof range.offset === 'number' && typeof range.end === 'number') {
+    return { start: range.offset, end: range.end }
+  }
+
+  if (typeof range.suffix === 'number') {
+    const start = Math.max(size - range.suffix, 0)
+    return { start, end: size - 1 }
+  }
+
+  return null
+}
+
 export default {
   async fetch(request: Request, env: { MEDIA_BUCKET: R2Bucket }): Promise<Response> {
+    if (request.method === 'OPTIONS') {
+      return new Response(null, {
+        status: 204,
+        headers: applyCorsHeaders(new Headers(), request),
+      })
+    }
+
+    if (request.method !== 'GET' && request.method !== 'HEAD') {
+      return new Response('Method Not Allowed', {
+        status: 405,
+        headers: applyCorsHeaders(new Headers({ Allow: 'GET, HEAD, OPTIONS' }), request),
+      })
+    }
+
     const url = new URL(request.url)
     let path = url.pathname
     path = decodeURIComponent(path)
@@ -141,26 +209,53 @@ export default {
     else if (rewrittenPath.startsWith('/background_audio/')) {
       rewrittenPath = rewrittenPath.slice(1)
     }
+    // Case 10: /video/... - video and caption files in R2 root
+    else if (rewrittenPath.startsWith('/video/')) {
+      rewrittenPath = rewrittenPath.slice(1)
+    }
 
     try {
-      const object = await env.MEDIA_BUCKET.get(rewrittenPath)
+      const object = await env.MEDIA_BUCKET.get(rewrittenPath, {
+        onlyIf: request.headers,
+        range: request.headers,
+      })
 
       if (!object) {
         return new Response(`Not Found: ${rewrittenPath}`, {
           status: 404,
-          headers: { 'Content-Type': 'text/plain' },
+          headers: applyCorsHeaders(new Headers({ 'Content-Type': 'text/plain' }), request),
         })
       }
 
-      return new Response(object.body, {
-        headers: {
-          'Content-Type': object.httpMetadata?.contentType || 'application/octet-stream',
-          'Cache-Control': 'public, max-age=31536000, immutable',
-        },
+      const headers = new Headers()
+      object.writeHttpMetadata?.(headers)
+      headers.set('Content-Type', object.httpMetadata?.contentType || 'application/octet-stream')
+      headers.set('Cache-Control', 'public, max-age=31536000, immutable')
+      headers.set('Accept-Ranges', 'bytes')
+
+      if (object.httpEtag) {
+        headers.set('ETag', object.httpEtag)
+      }
+
+      let status = 'body' in object ? 200 : 412
+      const rangeBounds = getRangeBounds(object.range, object.size)
+
+      if (rangeBounds) {
+        status = 206
+        headers.set('Content-Range', `bytes ${rangeBounds.start}-${rangeBounds.end}/${object.size}`)
+        headers.set('Content-Length', String(rangeBounds.end - rangeBounds.start + 1))
+      }
+
+      return new Response(request.method === 'HEAD' ? null : object.body, {
+        status,
+        headers: applyCorsHeaders(headers, request),
       })
     } catch (e) {
       const msg = e instanceof Error ? e.message : String(e)
-      return new Response(`Error: ${msg}`, { status: 500 })
+      return new Response(`Error: ${msg}`, {
+        status: 500,
+        headers: applyCorsHeaders(new Headers({ 'Content-Type': 'text/plain' }), request),
+      })
     }
   },
 } satisfies ExportedHandler<{ MEDIA_BUCKET: R2Bucket }>

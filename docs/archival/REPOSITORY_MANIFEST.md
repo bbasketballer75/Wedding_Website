@@ -4,14 +4,14 @@ This document serves as a high-level map of the Austin & Jordyn Wedding Website 
 
 ## 📁 Repository Structure
 
-| Directory | Purpose | Key Contents |
-| :--- | :--- | :--- |
-| `docs/archival/` | **Central Archive Hub** | All maintenance, setup, and historical docs. |
-| `src/` | **Application Source** | React components and functional logic. |
-| `src/data/` | **Archival Content** | Static data for engagement and wedding stories. |
-| `supabase/` | **Backend Infrastructure** | Database schema, migrations, and edge functions. |
-| `e2e/`, `tests/` | **Verification Suite** | Playwright and Vitest configuration. |
-| `scripts/` | **Utility Scripts** | Tools for media processing and data maintenance. |
+| Directory        | Purpose                    | Key Contents                                     |
+| :--------------- | :------------------------- | :----------------------------------------------- |
+| `docs/archival/` | **Central Archive Hub**    | All maintenance, setup, and historical docs.     |
+| `src/`           | **Application Source**     | React components and functional logic.           |
+| `src/data/`      | **Archival Content**       | Static data for engagement and wedding stories.  |
+| `supabase/`      | **Backend Infrastructure** | Database schema, migrations, and edge functions. |
+| `e2e/`, `tests/` | **Verification Suite**     | Playwright and Vitest configuration.             |
+| `scripts/`       | **Utility Scripts**        | Tools for media processing and data maintenance. |
 
 ## 📖 Essential Documentation Index
 
@@ -34,4 +34,4 @@ All documents are located in `docs/archival/`:
 
 ---
 
-*Created April 2026 for the permanent digital preservation of our celebration.*
+_Created April 2026 for the permanent digital preservation of our celebration._

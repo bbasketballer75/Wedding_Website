@@ -1,6 +1,6 @@
 import dotenv from 'dotenv'
 
-dotenv.config()
+dotenv.config({ quiet: true })
 
 const siteUrl = process.env.VITE_SITE_URL?.trim()
 const failures = []

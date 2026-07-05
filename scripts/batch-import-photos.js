@@ -10,7 +10,8 @@ import path from 'node:path'
 
 // Config
 const SUPABASE_URL = 'https://zaczcyzvavetgfuucljf.supabase.co'
-const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InphY3pjeXp2YXZldGdmdXVjbGpmIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzczMzgzMDMsImV4cCI6MjA5MjkxNDMwM30.fcqeXGrkDtrsj6Vw58RVuv-Az5fi38ZXRIGTmSN6Nqc'
+const SUPABASE_KEY =
+  'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InphY3pjeXp2YXZldGdmdXVjbGpmIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzczMzgzMDMsImV4cCI6MjA5MjkxNDMwM30.fcqeXGrkDtrsj6Vw58RVuv-Az5fi38ZXRIGTmSN6Nqc'
 const R2_ACCOUNT_ID = 'eeb5d94194e46f57e8c91d48edf9719a'
 const R2_ACCESS_KEY_ID = 'fa9bb76945943d79b604ad5f2231a15a'
 const R2_SECRET_ACCESS_KEY = '4c7f51c2a8cf8ecf61c8e915b44dbb44e729b39a851174bd0f01a927dc1c3bbe'
@@ -56,7 +57,12 @@ async function listR2(prefix) {
   const objects = []
   let ContinuationToken
   do {
-    const cmd = new ListObjectsV2Command({ Bucket: BUCKET, Prefix: prefix, ContinuationToken, MaxKeys: 1000 })
+    const cmd = new ListObjectsV2Command({
+      Bucket: BUCKET,
+      Prefix: prefix,
+      ContinuationToken,
+      MaxKeys: 1000,
+    })
     const r = await s3.send(cmd)
     objects.push(...(r.Contents || []).map(o => o.Key))
     ContinuationToken = r.NextContinuationToken
@@ -77,10 +83,30 @@ async function batchInsert(records, batchSize = 50) {
 }
 
 const ALBUM_MAP = {
-  'media/Bach+ette/Photos/': { album: 'Bach+ette', category: 'Bach+ette', photographer: 'Professional', is_professional: true },
-  'media/Professional/': { album: 'Wedding Day', category: 'Wedding Day', photographer: 'Professional', is_professional: true },
-  'media/Guest Uploads/': { album: 'Guest Uploads', category: 'Guest Uploads', photographer: 'Guest', is_professional: false },
-  'media/Engagement/Photos/': { album: 'Engagement', category: 'Engagement', photographer: 'Professional', is_professional: true },
+  'media/Bach+ette/Photos/': {
+    album: 'Bach+ette',
+    category: 'Bach+ette',
+    photographer: 'Professional',
+    is_professional: true,
+  },
+  'media/Professional/': {
+    album: 'Wedding Day',
+    category: 'Wedding Day',
+    photographer: 'Professional',
+    is_professional: true,
+  },
+  'media/Guest Uploads/': {
+    album: 'Guest Uploads',
+    category: 'Guest Uploads',
+    photographer: 'Guest',
+    is_professional: false,
+  },
+  'media/Engagement/Photos/': {
+    album: 'Engagement',
+    category: 'Engagement',
+    photographer: 'Professional',
+    is_professional: true,
+  },
 }
 
 async function importFromR2() {
@@ -95,7 +121,12 @@ async function importFromR2() {
   // Determine album for each photo
   let sortOrder = 1
   const records = photoKeys.map(key => {
-    let albumMeta = { album: 'Wedding Day', category: 'Wedding Day', photographer: 'Unknown', is_professional: false }
+    let albumMeta = {
+      album: 'Wedding Day',
+      category: 'Wedding Day',
+      photographer: 'Unknown',
+      is_professional: false,
+    }
     for (const [prefix, meta] of Object.entries(ALBUM_MAP)) {
       if (key.startsWith(prefix)) {
         albumMeta = meta

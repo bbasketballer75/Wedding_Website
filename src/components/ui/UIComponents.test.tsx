@@ -125,7 +125,7 @@ describe('Aria-Label Verification', () => {
       // Should contain aria-label attributes
       const ariaLabelMatches = content.match(/aria-label\s*=/g)
       expect(ariaLabelMatches).toBeTruthy()
-      expect(ariaLabelMatches!.length).toBeGreaterThan(0)
+      expect(ariaLabelMatches?.length ?? 0).toBeGreaterThan(0)
     })
   })
 

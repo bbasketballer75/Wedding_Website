@@ -61,6 +61,11 @@ Object.defineProperty(window, 'localStorage', {
   configurable: true,
 })
 
+Object.defineProperty(window, 'scrollTo', {
+  configurable: true,
+  value: vi.fn(),
+})
+
 // Silence JSDOM warnings
 Object.defineProperty(globalThis.HTMLMediaElement.prototype, 'pause', {
   configurable: true,

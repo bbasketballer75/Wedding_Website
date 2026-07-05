@@ -19,7 +19,9 @@ const optimizedRoot = process.argv[3]
 const organizationManifestArg = process.argv[4]
 
 if (!organizedRoot || !optimizedRoot) {
-  console.error('Usage: node scripts/optimize-photo-batch.mjs <organized-root> <optimized-root> [organization-manifest]')
+  console.error(
+    'Usage: node scripts/optimize-photo-batch.mjs <organized-root> <optimized-root> [organization-manifest]'
+  )
   process.exit(1)
 }
 
@@ -72,25 +74,33 @@ async function optimizeImage(sourcePath, relativePath, optimizedRootPath, manife
       .webp({ quality: 72, effort: 4 })
       .toFile(thumbPath)
   } catch {
-    await execFileAsync('magick', [
-      sourcePath,
-      '-auto-orient',
-      '-resize',
-      `${displayLongEdge}x${displayLongEdge}>`,
-      '-quality',
-      '82',
-      displayPath,
-    ], { maxBuffer: 1024 * 1024 * 32 })
+    await execFileAsync(
+      'magick',
+      [
+        sourcePath,
+        '-auto-orient',
+        '-resize',
+        `${displayLongEdge}x${displayLongEdge}>`,
+        '-quality',
+        '82',
+        displayPath,
+      ],
+      { maxBuffer: 1024 * 1024 * 32 }
+    )
 
-    await execFileAsync('magick', [
-      sourcePath,
-      '-auto-orient',
-      '-resize',
-      `${thumbLongEdge}x${thumbLongEdge}>`,
-      '-quality',
-      '72',
-      thumbPath,
-    ], { maxBuffer: 1024 * 1024 * 32 })
+    await execFileAsync(
+      'magick',
+      [
+        sourcePath,
+        '-auto-orient',
+        '-resize',
+        `${thumbLongEdge}x${thumbLongEdge}>`,
+        '-quality',
+        '72',
+        thumbPath,
+      ],
+      { maxBuffer: 1024 * 1024 * 32 }
+    )
   }
 
   const displayStat = await fs.stat(displayPath)
@@ -162,9 +172,13 @@ async function main() {
     const relativePath = path.relative(absoluteOrganizedRoot, sourcePath)
     const extension = path.extname(sourcePath).toLowerCase()
     if (IMAGE_EXTENSIONS.has(extension)) {
-      manifest.push(await optimizeImage(sourcePath, relativePath, absoluteOptimizedRoot, manifestLookup))
+      manifest.push(
+        await optimizeImage(sourcePath, relativePath, absoluteOptimizedRoot, manifestLookup)
+      )
     } else {
-      manifest.push(await copyOther(sourcePath, relativePath, absoluteOptimizedRoot, manifestLookup))
+      manifest.push(
+        await copyOther(sourcePath, relativePath, absoluteOptimizedRoot, manifestLookup)
+      )
     }
   }
 
@@ -172,13 +186,13 @@ async function main() {
   const summaryPath = path.join(absoluteOptimizedRoot, 'optimized-summary.md')
   await writeJson(manifestPath, manifest)
 
-  const imageCount = manifest.filter((item) => item.type === 'image').length
-  const passthroughCount = manifest.filter((item) => item.type === 'passthrough').length
+  const imageCount = manifest.filter(item => item.type === 'image').length
+  const passthroughCount = manifest.filter(item => item.type === 'passthrough').length
   const totalDisplayBytes = manifest
-    .filter((item) => item.type === 'image')
+    .filter(item => item.type === 'image')
     .reduce((sum, item) => sum + item.displayBytes + item.thumbBytes, 0)
   const totalPassthroughBytes = manifest
-    .filter((item) => item.type === 'passthrough')
+    .filter(item => item.type === 'passthrough')
     .reduce((sum, item) => sum + item.sizeBytes, 0)
 
   const summary = [

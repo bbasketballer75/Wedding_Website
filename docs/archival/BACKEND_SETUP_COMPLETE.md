@@ -3,21 +3,26 @@
 ## What Was Done
 
 ### 1. Supabase Client Installed
+
 ```bash
 npm install @supabase/supabase-js
 ```
 
 ### 2. Environment Configuration Created
+
 File: `.env`
+
 ```bash
 VITE_SUPABASE_URL=https://rxzbbtghnrvzubqrbhhx.supabase.co
 VITE_SUPABASE_ANON_KEY=your-anon-key-here
 ```
 
 ### 3. Database Schema Created
+
 File: `supabase-schema.sql`
 
 Contains:
+
 - **photos** table - Stores gallery photos
 - **guest_uploads** table - Stores pending guest uploads
 - **guestbook_messages** table - Stores guestbook entries
@@ -26,15 +31,18 @@ Contains:
 - Sample data for testing
 
 ### 4. Supabase Client Library
+
 File: `src/lib/supabase.ts`
 
 Exports:
+
 - `supabase` client instance
 - TypeScript interfaces for all tables
 
 ### 5. Updated Components
 
 #### Upload Page (`src/pages/Upload.tsx`)
+
 - ✅ Real file uploads to Supabase Storage
 - ✅ Automatic bucket selection (photos vs videos)
 - ✅ Progress tracking
@@ -43,6 +51,7 @@ Exports:
 - ✅ Loading states
 
 #### Gallery Page (`src/pages/Gallery.tsx`)
+
 - ✅ Fetches photos from Supabase
 - ✅ Falls back to sample photos if empty/error
 - ✅ Loading indicators
@@ -50,6 +59,7 @@ Exports:
 - ✅ "247 Moments" count now dynamic
 
 #### Guestbook Page (`src/pages/Guestbook.tsx`)
+
 - ✅ Fetches messages from Supabase
 - ✅ Submits new messages to database
 - ✅ Uploads voice/video to storage
@@ -141,14 +151,14 @@ Wedding_Website_Clean/
 
 ## Features Now Working
 
-| Feature | Status | How It Works |
-|---------|--------|--------------|
-| Photo Uploads | ✅ Ready | Files → Supabase Storage → `guest_uploads` table |
-| Video Uploads | ✅ Ready | Same as photos, stored in `guest-videos` bucket |
+| Feature         | Status   | How It Works                                     |
+| --------------- | -------- | ------------------------------------------------ |
+| Photo Uploads   | ✅ Ready | Files → Supabase Storage → `guest_uploads` table |
+| Video Uploads   | ✅ Ready | Same as photos, stored in `guest-videos` bucket  |
 | Gallery Display | ✅ Ready | Fetches from `photos` table, fallback to samples |
-| Guestbook | ✅ Ready | Fetches from `guestbook_messages` table |
-| Voice Messages | ✅ Ready | Uploaded to `guest-voice` bucket |
-| Video Messages | ✅ Ready | Uploaded to `guest-videos` bucket |
+| Guestbook       | ✅ Ready | Fetches from `guestbook_messages` table          |
+| Voice Messages  | ✅ Ready | Uploaded to `guest-voice` bucket                 |
+| Video Messages  | ✅ Ready | Uploaded to `guest-videos` bucket                |
 
 ---
 
@@ -167,19 +177,23 @@ Wedding_Website_Clean/
 ## Troubleshooting
 
 ### "Invalid API key" error
+
 - Make sure you're using the `anon public` key
 - Not the service role key
 - Not the publishable key
 
 ### "Bucket not found" error
+
 - Create buckets in Supabase Dashboard → Storage
 - Names must be exact: `guest-photos`, `guest-videos`, `guest-voice`
 
 ### "RLS policy violation" error
+
 - Run the SQL schema again
 - Check that policies exist in Table Editor → Policies
 
 ### Uploads not saving
+
 - Check browser console for errors
 - Verify `.env` file has correct values
 - Restart dev server after changing `.env`

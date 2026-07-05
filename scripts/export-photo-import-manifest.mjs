@@ -17,7 +17,7 @@ if (!workingRoot) {
 }
 
 function resolveConfirmedNames(reviewItems) {
-  const byClusterId = new Map(reviewItems.map((item) => [item.clusterId, item]))
+  const byClusterId = new Map(reviewItems.map(item => [item.clusterId, item]))
 
   function getResolvedName(clusterId, seen = new Set()) {
     if (!clusterId || seen.has(clusterId)) return null
@@ -30,7 +30,7 @@ function resolveConfirmedNames(reviewItems) {
     return null
   }
 
-  return new Map(reviewItems.map((item) => [item.clusterId, getResolvedName(item.clusterId)]))
+  return new Map(reviewItems.map(item => [item.clusterId, getResolvedName(item.clusterId)]))
 }
 
 function getSourcePriority(source) {
@@ -47,18 +47,22 @@ function getSourcePriority(source) {
 }
 
 function pickCanonicalDuplicateRecord(records) {
-  return [...records].sort((left, right) => {
-    const sourceDelta = getSourcePriority(right.source) - getSourcePriority(left.source)
-    if (sourceDelta !== 0) return sourceDelta
+  return (
+    [...records].sort((left, right) => {
+      const sourceDelta = getSourcePriority(right.source) - getSourcePriority(left.source)
+      if (sourceDelta !== 0) return sourceDelta
 
-    const qualityDelta = (right.qualityScore ?? 0) - (left.qualityScore ?? 0)
-    if (qualityDelta !== 0) return qualityDelta
+      const qualityDelta = (right.qualityScore ?? 0) - (left.qualityScore ?? 0)
+      if (qualityDelta !== 0) return qualityDelta
 
-    const dateDelta = String(left.captureDate ?? '').localeCompare(String(right.captureDate ?? ''))
-    if (dateDelta !== 0) return dateDelta
+      const dateDelta = String(left.captureDate ?? '').localeCompare(
+        String(right.captureDate ?? '')
+      )
+      if (dateDelta !== 0) return dateDelta
 
-    return left.relativePath.localeCompare(right.relativePath)
-  })[0] ?? null
+      return left.relativePath.localeCompare(right.relativePath)
+    })[0] ?? null
+  )
 }
 
 function buildDuplicateKeepers(inventory) {
@@ -75,16 +79,14 @@ function buildDuplicateKeepers(inventory) {
     [...groups.entries()].map(([duplicateGroupId, records]) => [
       duplicateGroupId,
       pickCanonicalDuplicateRecord(records),
-    ]),
+    ])
   )
 }
 
 function buildTags(record) {
-  const tags = new Set([
-    record.source,
-    record.collection,
-    record.storyLaneSuggestion,
-  ].filter(Boolean))
+  const tags = new Set(
+    [record.source, record.collection, record.storyLaneSuggestion].filter(Boolean)
+  )
 
   if (record.coverCandidateRank) tags.add(`cover-candidate-${record.coverCandidateRank}`)
   if (record.duplicateGroupId) tags.add('duplicate-group')
@@ -104,12 +106,16 @@ async function main() {
   const inventory = await readJson(path.join(catalogRoot, 'wedding-master-inventory.enriched.json'))
   const optimizedManifest = await readJson(path.join(optimizedRoot, 'optimized-manifest.json'))
   const annotationsByPhoto = await readJson(path.join(facesRoot, 'face-annotations-by-photo.json'))
-  const reviewItems = await readJson(reviewPathArg ? path.resolve(reviewPathArg) : path.join(facesRoot, 'face-review.json'))
+  const reviewItems = await readJson(
+    reviewPathArg ? path.resolve(reviewPathArg) : path.join(facesRoot, 'face-review.json')
+  )
 
-  const recordById = new Map(inventory.map((record) => [record.id, record]))
-  const annotationsByRecordId = new Map(annotationsByPhoto.map((annotation) => [annotation.recordId, annotation.faces]))
+  const recordById = new Map(inventory.map(record => [record.id, record]))
+  const annotationsByRecordId = new Map(
+    annotationsByPhoto.map(annotation => [annotation.recordId, annotation.faces])
+  )
   const annotationsByRelativePath = new Map(
-    annotationsByPhoto.map((annotation) => [annotation.relativePath, annotation.faces]),
+    annotationsByPhoto.map(annotation => [annotation.relativePath, annotation.faces])
   )
   const confirmedNames = resolveConfirmedNames(reviewItems)
   const duplicateKeepers = buildDuplicateKeepers(inventory)
@@ -117,9 +123,11 @@ async function main() {
   const albumExceptions = []
 
   const rows = optimizedManifest
-    .filter((item) => item.type === 'image' && item.sourceRelativePath)
-    .map((item) => {
-      const record = [...recordById.values()].find((candidate) => candidate.relativePath === item.sourceRelativePath)
+    .filter(item => item.type === 'image' && item.sourceRelativePath)
+    .map(item => {
+      const record = [...recordById.values()].find(
+        candidate => candidate.relativePath === item.sourceRelativePath
+      )
       const keeper = record?.duplicateGroupId ? duplicateKeepers.get(record.duplicateGroupId) : null
 
       if (record?.duplicateGroupId && keeper?.id && keeper.id !== record.id) {
@@ -141,9 +149,9 @@ async function main() {
       }
 
       const faces = (
-        annotationsByRecordId.get(record?.id)
-        ?? annotationsByRelativePath.get(record?.relativePath)
-        ?? []
+        annotationsByRecordId.get(record?.id) ??
+        annotationsByRelativePath.get(record?.relativePath) ??
+        []
       )
         .map((face, index) => {
           const confirmedName = confirmedNames.get(face.clusterId)
@@ -159,10 +167,13 @@ async function main() {
         })
         .filter(Boolean)
 
-      const topLevelFolder = record?.topLevelFolder ?? String(item.sourceRelativePath || '').split('/')[0] ?? ''
+      const topLevelFolder =
+        record?.topLevelFolder ?? String(item.sourceRelativePath || '').split('/')[0] ?? ''
       const album =
-        inferCanonicalAlbum(topLevelFolder, record?.relativePath ?? item.sourceRelativePath ?? '')
-        ?? normalizeAlbum(item.collection ?? record?.collection)
+        inferCanonicalAlbum(
+          topLevelFolder,
+          record?.relativePath ?? item.sourceRelativePath ?? ''
+        ) ?? normalizeAlbum(item.collection ?? record?.collection)
 
       if (!album) {
         albumExceptions.push({
@@ -219,7 +230,8 @@ async function main() {
               ? `${record.latitude}, ${record.longitude}`
               : null,
           date: record?.captureDate ?? null,
-          photographer: record?.source === 'professional' ? 'Batch Import (Professional)' : 'Batch Import',
+          photographer:
+            record?.source === 'professional' ? 'Batch Import (Professional)' : 'Batch Import',
           is_professional: record?.source === 'professional',
           tags: buildTags({
             source: record?.source,
@@ -252,19 +264,19 @@ async function main() {
     `Working root: \`${absoluteWorkingRoot}\``,
     '',
     `Rows: **${rows.length}**`,
-    `Rows with confirmed faces: **${rows.filter((row) => row.faces.length > 0).length}**`,
+    `Rows with confirmed faces: **${rows.filter(row => row.faces.length > 0).length}**`,
     `Exact duplicates excluded: **${exclusions.length}**`,
     `Album mapping exceptions: **${albumExceptions.length}**`,
     '',
     buildMarkdownTable(
-      rows.slice(0, 30).map((row) => ({
+      rows.slice(0, 30).map(row => ({
         Source: row.sourceRelativePath,
         Display: row.displayRelativePath,
         Album: row.album,
         StoryLane: row.storyLaneSuggestion,
         Faces: row.faces.length,
       })),
-      ['Source', 'Display', 'Album', 'StoryLane', 'Faces'],
+      ['Source', 'Display', 'Album', 'StoryLane', 'Faces']
     ),
   ])
   await writeMarkdown(exclusionsMarkdownPath, [
@@ -277,13 +289,13 @@ async function main() {
     exclusions.length === 0
       ? 'No exact duplicate rows were excluded.'
       : buildMarkdownTable(
-          exclusions.slice(0, 50).map((row) => ({
+          exclusions.slice(0, 50).map(row => ({
             Source: row.sourceRelativePath,
             Kept: row.keptSourceRelativePath,
             Group: row.duplicateGroupId,
             SourceType: row.keptSource,
           })),
-          ['Source', 'Kept', 'Group', 'SourceType'],
+          ['Source', 'Kept', 'Group', 'SourceType']
         ),
   ])
   await writeMarkdown(albumExceptionsMarkdownPath, [
@@ -296,13 +308,13 @@ async function main() {
     albumExceptions.length === 0
       ? 'All rows mapped cleanly into the canonical album list.'
       : buildMarkdownTable(
-          albumExceptions.slice(0, 50).map((row) => ({
+          albumExceptions.slice(0, 50).map(row => ({
             Source: row.sourceRelativePath,
             Folder: row.topLevelFolder,
             RawCollection: row.rawCollection,
             Reason: row.reason,
           })),
-          ['Source', 'Folder', 'RawCollection', 'Reason'],
+          ['Source', 'Folder', 'RawCollection', 'Reason']
         ),
   ])
 

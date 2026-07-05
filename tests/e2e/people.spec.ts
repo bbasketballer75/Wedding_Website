@@ -1,10 +1,18 @@
-import { expect, expectSectionScreenshot, gotoPublicPage, test, viewports } from './support/publicSite'
+import {
+  expect,
+  expectSectionScreenshot,
+  gotoPublicPage,
+  test,
+  viewports,
+} from './support/publicSite'
 
 test.describe('People Page', () => {
   test('renders person cards from face data', async ({ page }) => {
     await gotoPublicPage(page, '/people')
 
-    await expect(page.getByRole('heading', { name: 'The people who made it beautiful.' })).toBeVisible()
+    await expect(
+      page.getByRole('heading', { name: 'The people who made it beautiful.' })
+    ).toBeVisible()
 
     // At least one person card rendered from the mock face data
     const firstCard = page.getByRole('button', { name: /Browse photos of/i }).first()
@@ -24,7 +32,9 @@ test.describe('People Page', () => {
 for (const viewport of Object.keys(viewports) as Array<keyof typeof viewports>) {
   test(`people visual baseline (${viewport})`, async ({ page }) => {
     await gotoPublicPage(page, '/people', viewport)
-    await expect(page.getByRole('heading', { name: 'The people who made it beautiful.' })).toBeVisible()
+    await expect(
+      page.getByRole('heading', { name: 'The people who made it beautiful.' })
+    ).toBeVisible()
     await expectSectionScreenshot(page.getByTestId('people-page'), `people-page-${viewport}.png`)
   })
 }

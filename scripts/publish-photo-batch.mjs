@@ -24,7 +24,9 @@ const manifestArg = process.argv[3]
 const optimizedRootArg = process.argv[4]
 
 if (!workingRoot) {
-  console.error('Usage: node scripts/publish-photo-batch.mjs <working-root> [manifest-json] [optimized-root]')
+  console.error(
+    'Usage: node scripts/publish-photo-batch.mjs <working-root> [manifest-json] [optimized-root]'
+  )
   process.exit(1)
 }
 
@@ -86,7 +88,8 @@ function normalizeDateValue(value) {
 }
 
 async function ensureBucket() {
-  const { data: existingBucket, error: getBucketError } = await supabase.storage.getBucket(BUCKET_NAME)
+  const { data: existingBucket, error: getBucketError } =
+    await supabase.storage.getBucket(BUCKET_NAME)
 
   if (!getBucketError && existingBucket) {
     return
@@ -138,9 +141,11 @@ async function uploadFile(filePath, objectName, contentType) {
 function normalizePhotoDraft(row) {
   const topLevelFolder = String(row.sourceRelativePath || '').split('/')[0] || ''
   const album =
-    inferCanonicalAlbum(topLevelFolder, row.sourceRelativePath ?? '')
-    ?? normalizeAlbum(row.photoRowDraft.album ?? row.album ?? row.collection ?? row.photoRowDraft.category)
-    ?? 'Wedding Day'
+    inferCanonicalAlbum(topLevelFolder, row.sourceRelativePath ?? '') ??
+    normalizeAlbum(
+      row.photoRowDraft.album ?? row.album ?? row.collection ?? row.photoRowDraft.category
+    ) ??
+    'Wedding Day'
 
   return {
     url: toSiteMediaPath(row.photoRowDraft.url),
@@ -183,10 +188,7 @@ async function fetchExistingPhotos(urls) {
   const existing = []
 
   for (const urlChunk of chunk(urls, PHOTO_LOOKUP_CHUNK_SIZE)) {
-    const { data, error } = await supabase
-      .from('photos')
-      .select('*')
-      .in('url', urlChunk)
+    const { data, error } = await supabase.from('photos').select('*').in('url', urlChunk)
 
     if (error) {
       throw error
@@ -195,13 +197,11 @@ async function fetchExistingPhotos(urls) {
     existing.push(...(data || []))
   }
 
-  return new Map(existing.map((row) => [row.url, row]))
+  return new Map(existing.map(row => [row.url, row]))
 }
 
 async function fetchAlbumSortTracker() {
-  const { data, error } = await supabase
-    .from('photos')
-      .select('album, category, album_sort_order')
+  const { data, error } = await supabase.from('photos').select('album, category, album_sort_order')
 
   if (error) {
     throw error
@@ -219,11 +219,7 @@ async function deletePhotoRowsByUrls(urls) {
   let deletedCount = 0
 
   for (const urlChunk of chunk(urls, PHOTO_LOOKUP_CHUNK_SIZE)) {
-    const { data, error } = await supabase
-      .from('photos')
-      .delete()
-      .in('url', urlChunk)
-      .select('id')
+    const { data, error } = await supabase.from('photos').delete().in('url', urlChunk).select('id')
 
     if (error) {
       throw error
@@ -236,13 +232,15 @@ async function deletePhotoRowsByUrls(urls) {
 }
 
 async function syncPhotoRows(rows) {
-  const existingByUrl = await fetchExistingPhotos(rows.map((row) => toSiteMediaPath(row.photoRowDraft.url)))
+  const existingByUrl = await fetchExistingPhotos(
+    rows.map(row => toSiteMediaPath(row.photoRowDraft.url))
+  )
   const nextSortByAlbum = await fetchAlbumSortTracker()
   const inserts = []
   const updates = []
   const skipped = []
 
-  const reserveSortOrder = (album) => {
+  const reserveSortOrder = album => {
     nextSortByAlbum[album] = (nextSortByAlbum[album] || 0) + 1
     return nextSortByAlbum[album]
   }
@@ -291,9 +289,7 @@ async function syncPhotoRows(rows) {
   let updatedCount = 0
 
   if (inserts.length > 0) {
-    const { error } = await supabase
-      .from('photos')
-      .insert(inserts)
+    const { error } = await supabase.from('photos').insert(inserts)
 
     if (error) {
       throw error
@@ -303,9 +299,7 @@ async function syncPhotoRows(rows) {
   }
 
   if (updates.length > 0) {
-    const { error } = await supabase
-      .from('photos')
-      .upsert(updates, { onConflict: 'id' })
+    const { error } = await supabase.from('photos').upsert(updates, { onConflict: 'id' })
 
     if (error) {
       throw error
@@ -349,11 +343,11 @@ async function main() {
   await ensureBucket()
 
   const skippedRows = []
-  const publishableRows = manifestRows.filter((row) => {
+  const publishableRows = manifestRows.filter(row => {
     const topLevelFolder = String(row.sourceRelativePath || '').split('/')[0] || ''
     const canonicalAlbum =
-      inferCanonicalAlbum(topLevelFolder, row.sourceRelativePath ?? '')
-      ?? normalizeAlbum(row.album ?? row.collection)
+      inferCanonicalAlbum(topLevelFolder, row.sourceRelativePath ?? '') ??
+      normalizeAlbum(row.album ?? row.collection)
 
     if (canonicalAlbum === 'Engagement') {
       skippedRows.push({
@@ -367,12 +361,10 @@ async function main() {
   })
 
   const publishableSourcePaths = new Set(
-    publishableRows
-      .map((row) => row.sourceRelativePath)
-      .filter(Boolean),
+    publishableRows.map(row => row.sourceRelativePath).filter(Boolean)
   )
 
-  const uploadTargets = optimizedManifest.flatMap((item) => {
+  const uploadTargets = optimizedManifest.flatMap(item => {
     if (item.type === 'image') {
       if (!item.sourceRelativePath || !publishableSourcePaths.has(item.sourceRelativePath)) {
         return []
@@ -412,11 +404,10 @@ async function main() {
 
   const syncResults = await syncPhotoRows(publishableRows)
   const duplicateUrlsToDelete = exclusions
-    .filter((row) => row.reason === 'exact-duplicate-excluded' && row.displayRelativePath)
-    .map((row) => toSiteMediaPath(row.displayRelativePath))
-  const deletedDuplicatePhotoRows = duplicateUrlsToDelete.length > 0
-    ? await deletePhotoRowsByUrls(duplicateUrlsToDelete)
-    : 0
+    .filter(row => row.reason === 'exact-duplicate-excluded' && row.displayRelativePath)
+    .map(row => toSiteMediaPath(row.displayRelativePath))
+  const deletedDuplicatePhotoRows =
+    duplicateUrlsToDelete.length > 0 ? await deletePhotoRowsByUrls(duplicateUrlsToDelete) : 0
 
   const report = {
     workingRoot: absoluteWorkingRoot,

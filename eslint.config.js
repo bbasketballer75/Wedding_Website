@@ -25,6 +25,7 @@ export default [
       '.agent/**',
       'supabase/**',
       '.worktrees/**',
+      '.wrangler/**',
       'netlify/**',
       '.minimax/**',
       '.claude/**',

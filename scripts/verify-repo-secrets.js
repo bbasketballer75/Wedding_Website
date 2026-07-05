@@ -82,7 +82,9 @@ for (const filePath of filePaths) {
   const lines = content.split(/\r?\n/)
 
   if (
-    forbiddenMentionRoots.some((prefix) => relativePath === prefix || relativePath.startsWith(`${prefix}/`)) &&
+    forbiddenMentionRoots.some(
+      prefix => relativePath === prefix || relativePath.startsWith(`${prefix}/`)
+    ) &&
     content.includes('SUPABASE_SERVICE_ROLE_KEY')
   ) {
     failures.push(`${relativePath} mentions SUPABASE_SERVICE_ROLE_KEY in a browser-facing path.`)
@@ -93,7 +95,9 @@ for (const filePath of filePaths) {
     !allowedDocumentationMentions.has(path.basename(relativePath)) &&
     /SUPABASE_SERVICE_ROLE_KEY\s*[:=]/.test(content)
   ) {
-    warnings.push(`${relativePath} contains a service-role assignment example. Prefer linking back to SECURITY.md instead.`)
+    warnings.push(
+      `${relativePath} contains a service-role assignment example. Prefer linking back to SECURITY.md instead.`
+    )
   }
 
   lines.forEach((line, index) => {
@@ -104,7 +108,9 @@ for (const filePath of filePaths) {
 
     const value = match[1]
     if (!isPlaceholderValue(value)) {
-      failures.push(`${relativePath}:${index + 1} contains a populated SUPABASE_SERVICE_ROLE_KEY assignment.`)
+      failures.push(
+        `${relativePath}:${index + 1} contains a populated SUPABASE_SERVICE_ROLE_KEY assignment.`
+      )
     }
   })
 }

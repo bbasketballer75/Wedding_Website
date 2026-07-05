@@ -2,7 +2,7 @@ import { createClient } from '@supabase/supabase-js'
 import dotenv from 'dotenv'
 
 // Load environment configurations from .env
-dotenv.config()
+dotenv.config({ quiet: true })
 
 const supabaseUrl = process.env.VITE_SUPABASE_URL?.trim()
 const supabaseAnonKey = process.env.VITE_SUPABASE_ANON_KEY?.trim()
@@ -71,12 +71,12 @@ async function checkGuestIdentities() {
 
 async function checkGeneralCounts() {
   console.log('\n--- 📊 General Database Counts ---')
-  
+
   // Photos Count
   const { count: photosCount, error: photosError } = await supabase
     .from('photos')
     .select('id', { count: 'exact', head: true })
-    
+
   if (photosError) console.error(`Photos count failed: ${photosError.message}`)
   else console.log(` - Total Photos in Gallery:       ${photosCount ?? 0}`)
 
@@ -84,7 +84,7 @@ async function checkGeneralCounts() {
   const { count: msgsCount, error: msgsError } = await supabase
     .from('guestbook_messages')
     .select('id', { count: 'exact', head: true })
-    
+
   if (msgsError) console.error(`Messages count failed: ${msgsError.message}`)
   else console.log(` - Total Guestbook Messages:      ${msgsCount ?? 0}`)
 
@@ -92,7 +92,7 @@ async function checkGeneralCounts() {
   const { count: uploadsCount, error: uploadsError } = await supabase
     .from('guest_uploads')
     .select('id', { count: 'exact', head: true })
-    
+
   if (uploadsError) console.error(`Uploads count failed: ${uploadsError.message}`)
   else console.log(` - Total Guest Photo Uploads:     ${uploadsCount ?? 0}`)
 }
@@ -100,7 +100,7 @@ async function checkGeneralCounts() {
 async function main() {
   console.log('Connecting to live Supabase project to verify curation status...')
   console.log(`Database URL: ${supabaseUrl}`)
-  
+
   await checkGeneralCounts()
   await checkFeaturedSlots()
   await checkGuestIdentities()

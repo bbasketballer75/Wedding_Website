@@ -15,10 +15,7 @@ import type { MediaReviewBatch, MediaReviewFace } from '@/lib/supabase'
 import { useToast } from '@/context/ToastContext'
 import { useMediaReviewStore } from '@/stores/mediaReviewStore'
 import { normalizeFaceDraft, PERSON_GROUP_SAMPLE_LIMIT } from './MediaReviewPanel.helpers'
-import {
-  handleSyncManifestMetadata,
-  handleApplyConfirmedFaces,
-} from './ReviewImportManifest'
+import { handleSyncManifestMetadata, handleApplyConfirmedFaces } from './ReviewImportManifest'
 
 export function useMediaReviewPanel() {
   const { addToast } = useToast()
@@ -133,7 +130,7 @@ export function useMediaReviewPanel() {
       batch,
       importRows,
       message => addToast(message, 'success'),
-      message => addToast(message, 'error'),
+      message => addToast(message, 'error')
     )
   }
 
@@ -144,7 +141,7 @@ export function useMediaReviewPanel() {
       state.faces,
       state.importRows,
       message => addToast(message, 'success'),
-      message => addToast(message, 'error'),
+      message => addToast(message, 'error')
     )
   }
 

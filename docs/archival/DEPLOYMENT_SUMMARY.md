@@ -8,13 +8,13 @@
 
 ## Current Live Architecture
 
-| Layer | Current provider | Notes |
-|-------|------------------|-------|
-| Frontend hosting | Netlify | Serves the React/Vite app |
-| DNS | Cloudflare | Canonical `www` plus redirect handling |
-| Large media | Cloudflare R2 | Film and other offloaded media served through `VITE_MEDIA_BASE_URL` |
-| Backend data | Supabase | Guestbook, uploads, moderation, and gallery feed |
-| Monitoring | Sentry, Google Analytics, GitHub uptime workflow | Active in the live setup |
+| Layer            | Current provider                                 | Notes                                                               |
+| ---------------- | ------------------------------------------------ | ------------------------------------------------------------------- |
+| Frontend hosting | Netlify                                          | Serves the React/Vite app                                           |
+| DNS              | Cloudflare                                       | Canonical `www` plus redirect handling                              |
+| Large media      | Cloudflare R2                                    | Film and other offloaded media served through `VITE_MEDIA_BASE_URL` |
+| Backend data     | Supabase                                         | Guestbook, uploads, moderation, and gallery feed                    |
+| Monitoring       | Sentry, Google Analytics, GitHub uptime workflow | Active in the live setup                                            |
 
 ---
 

@@ -24,8 +24,9 @@ That guide reflects:
 5. Click **Run**
 
 This creates:
+
 - `photos` table
-- `guest_uploads` table  
+- `guest_uploads` table
 - `guestbook_messages` table
 - Row Level Security (RLS) policies
 
@@ -35,11 +36,11 @@ This creates:
 2. Click **New Bucket**
 3. Create these 3 buckets:
 
-| Bucket Name | Public | File Size Limit |
-|-------------|--------|-----------------|
-| `guest-photos` | ✅ Yes | 10MB |
-| `guest-videos` | ✅ Yes | 100MB |
-| `guest-voice` | ✅ Yes | 10MB |
+| Bucket Name    | Public | File Size Limit |
+| -------------- | ------ | --------------- |
+| `guest-photos` | ✅ Yes | 10MB            |
+| `guest-videos` | ✅ Yes | 100MB           |
+| `guest-voice`  | ✅ Yes | 10MB            |
 
 4. For each bucket, after creation:
    - Click on the bucket
@@ -71,13 +72,16 @@ VITE_SUPABASE_ANON_KEY=your-anon-key-here
 ## Troubleshooting
 
 ### "Invalid API key" error
+
 - Make sure you're using the `anon public` key, not the service role key
 - The key should start with `eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9`
 
 ### "Bucket not found" error
+
 - Make sure you created the buckets exactly as named: `guest-photos`, `guest-videos`, `guest-voice`
 - Bucket names are case-sensitive
 
 ### "RLS policy violation" error
+
 - Make sure you ran the SQL schema completely
 - Check that the storage policies exist in Storage > Policies

@@ -2,7 +2,7 @@ import fs from 'node:fs'
 import path from 'node:path'
 import dotenv from 'dotenv'
 
-dotenv.config()
+dotenv.config({ quiet: true })
 
 const rootDir = process.cwd()
 const envFiles = [
@@ -100,7 +100,9 @@ validateUrl('VITE_SITE_URL', process.env.VITE_SITE_URL?.trim(), false)
 validateUrl('VITE_MEDIA_BASE_URL', process.env.VITE_MEDIA_BASE_URL?.trim(), false)
 
 if (!process.env.VITE_SITE_URL?.trim()) {
-  addWarning('VITE_SITE_URL is not set. Canonical URLs and share metadata will fall back to the default domain.')
+  addWarning(
+    'VITE_SITE_URL is not set. Canonical URLs and share metadata will fall back to the default domain.'
+  )
 }
 
 if (!process.env.VITE_SENTRY_DSN?.trim()) {
@@ -110,13 +112,17 @@ if (!process.env.VITE_SENTRY_DSN?.trim()) {
 }
 
 if (!process.env.VITE_GA_ID?.trim()) {
-  addWarning('VITE_GA_ID is not set. If analytics is required for launch, `npm run verify:launch` will fail.')
+  addWarning(
+    'VITE_GA_ID is not set. If analytics is required for launch, `npm run verify:launch` will fail.'
+  )
 } else {
   addPass('VITE_GA_ID is configured.')
 }
 
 if (!process.env.VITE_APP_VERSION?.trim()) {
-  addWarning('VITE_APP_VERSION is not set. Monitoring will fall back to the package version unless a launch-specific release label is provided.')
+  addWarning(
+    'VITE_APP_VERSION is not set. Monitoring will fall back to the package version unless a launch-specific release label is provided.'
+  )
 } else {
   addPass('VITE_APP_VERSION is configured.')
 }
@@ -138,11 +144,15 @@ for (const envFile of envFiles) {
   }
 
   if (isPlaceholderValue(serviceRoleValue)) {
-    addWarning(`${envFile} includes a placeholder SUPABASE_SERVICE_ROLE_KEY entry. Remove it from browser-facing env files before launch.`)
+    addWarning(
+      `${envFile} includes a placeholder SUPABASE_SERVICE_ROLE_KEY entry. Remove it from browser-facing env files before launch.`
+    )
     continue
   }
 
-  addFailure(`${envFile} contains a populated SUPABASE_SERVICE_ROLE_KEY. Move it to a server-only secret store.`)
+  addFailure(
+    `${envFile} contains a populated SUPABASE_SERVICE_ROLE_KEY. Move it to a server-only secret store.`
+  )
 }
 
 if (failures.length > 0) {

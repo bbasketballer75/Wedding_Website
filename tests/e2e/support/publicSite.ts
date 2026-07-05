@@ -166,6 +166,10 @@ export async function preparePublicPage(page: Page) {
   })
   page.on('console', msg => {
     if (msg.type() === 'error') {
+      const sourceUrl = msg.location().url
+      if (sourceUrl.includes('/guest-upload-url')) {
+        return
+      }
       console.log(`[Browser Console Error] ${msg.text()}`)
     }
   })

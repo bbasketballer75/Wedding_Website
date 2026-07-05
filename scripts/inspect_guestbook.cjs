@@ -21,8 +21,7 @@ async function inspect() {
 
   // 2. Sample Data (Limit 5)
   // SKILL RULE: Never output full tables.
-  const { data, error } = await supabase
-    .rpc('get_guestbook_messages_with_comments')
+  const { data, error } = await supabase.rpc('get_guestbook_messages_with_comments')
 
   if (error) {
     console.error('Error fetching data:', error)
@@ -30,7 +29,7 @@ async function inspect() {
   }
 
   const sample = Array.isArray(data)
-    ? data.slice(0, 5).map((entry) => ({
+    ? data.slice(0, 5).map(entry => ({
         id: entry.id,
         name: entry.name,
         type: entry.type,

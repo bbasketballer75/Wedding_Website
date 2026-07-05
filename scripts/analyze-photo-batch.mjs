@@ -14,7 +14,9 @@ const outputDir = process.argv[3]
 const inventoryPathArg = process.argv[4]
 
 if (!root || !outputDir) {
-  console.error('Usage: node scripts/analyze-photo-batch.mjs <root-folder> <output-dir> [inventory-json]')
+  console.error(
+    'Usage: node scripts/analyze-photo-batch.mjs <root-folder> <output-dir> [inventory-json]'
+  )
   process.exit(1)
 }
 
@@ -70,17 +72,21 @@ function buildExactDuplicateGroups(inventory) {
       count: records.length,
       files: records
         .sort((left, right) => left.relativePath.localeCompare(right.relativePath))
-        .map((record) => record.relativePath),
+        .map(record => record.relativePath),
     }))
     .sort((left, right) => right.count - left.count || left.files[0].localeCompare(right.files[0]))
 }
 
 function buildSimilarShotGroups(images) {
-  const candidates = images.filter((record) => record.averageHash)
+  const candidates = images.filter(record => record.averageHash)
   const groups = groupConnected(candidates, (left, right) => {
     if (left.id === right.id) return false
     if (left.topLevelFolder !== right.topLevelFolder) return false
-    if (left.orientation !== 'unknown' && right.orientation !== 'unknown' && left.orientation !== right.orientation) {
+    if (
+      left.orientation !== 'unknown' &&
+      right.orientation !== 'unknown' &&
+      left.orientation !== right.orientation
+    ) {
       return false
     }
 
@@ -90,28 +96,30 @@ function buildSimilarShotGroups(images) {
   })
 
   return groups
-    .filter((group) => group.length > 1)
-    .map((group) => ({
-      similarGroupId: createStableId('similar', ...group.map((record) => record.id).sort()),
+    .filter(group => group.length > 1)
+    .map(group => ({
+      similarGroupId: createStableId('similar', ...group.map(record => record.id).sort()),
       count: group.length,
       folder: group[0]?.topLevelFolder ?? '',
-      averageQualityScore:
-        Number(
-          (
-            group.reduce((sum, record) => sum + (record.qualityScore || 0), 0) /
-            Math.max(group.length, 1)
-          ).toFixed(2),
-        ),
+      averageQualityScore: Number(
+        (
+          group.reduce((sum, record) => sum + (record.qualityScore || 0), 0) /
+          Math.max(group.length, 1)
+        ).toFixed(2)
+      ),
       files: group
         .sort((left, right) => (right.qualityScore || 0) - (left.qualityScore || 0))
-        .map((record) => ({
+        .map(record => ({
           id: record.id,
           relativePath: record.relativePath,
           captureDate: record.captureDate,
           qualityScore: record.qualityScore,
         })),
     }))
-    .sort((left, right) => right.count - left.count || right.averageQualityScore - left.averageQualityScore)
+    .sort(
+      (left, right) =>
+        right.count - left.count || right.averageQualityScore - left.averageQualityScore
+    )
 }
 
 function buildLivePhotoGroups(images, videos) {
@@ -124,20 +132,25 @@ function buildLivePhotoGroups(images, videos) {
   }
 
   return videos
-    .map((video) => {
+    .map(video => {
       const imageMatches = imagesByBase.get(buildBaseKey(video)) ?? []
-      const likelyShortClip = typeof video.durationSeconds === 'number' && video.durationSeconds <= 4.5
+      const likelyShortClip =
+        typeof video.durationSeconds === 'number' && video.durationSeconds <= 4.5
       if (!likelyShortClip && imageMatches.length === 0) return null
 
       return {
-        livePhotoGroupId: createStableId('live-photo', video.id, ...imageMatches.map((image) => image.id)),
+        livePhotoGroupId: createStableId(
+          'live-photo',
+          video.id,
+          ...imageMatches.map(image => image.id)
+        ),
         folder: video.topLevelFolder,
         clip: {
           id: video.id,
           relativePath: video.relativePath,
           durationSeconds: video.durationSeconds,
         },
-        stills: imageMatches.map((image) => ({
+        stills: imageMatches.map(image => ({
           id: image.id,
           relativePath: image.relativePath,
           qualityScore: image.qualityScore,
@@ -145,7 +158,11 @@ function buildLivePhotoGroups(images, videos) {
       }
     })
     .filter(Boolean)
-    .sort((left, right) => (right.stills.length - left.stills.length) || (left.clip.relativePath.localeCompare(right.clip.relativePath)))
+    .sort(
+      (left, right) =>
+        right.stills.length - left.stills.length ||
+        left.clip.relativePath.localeCompare(right.clip.relativePath)
+    )
 }
 
 function buildCoverCandidates(images) {
@@ -195,12 +212,12 @@ function buildStoryGroups(inventory) {
       storyLaneSuggestion: records[0]?.storyLaneSuggestion ?? 'review',
       captureDate: records[0]?.captureDate?.slice(0, 10) ?? null,
       itemCount: records.length,
-      imageCount: records.filter((record) => record.kind === 'image').length,
-      videoCount: records.filter((record) => record.kind === 'video').length,
+      imageCount: records.filter(record => record.kind === 'image').length,
+      videoCount: records.filter(record => record.kind === 'video').length,
       representativeFiles: records
         .sort((left, right) => (right.qualityScore || 0) - (left.qualityScore || 0))
         .slice(0, 5)
-        .map((record) => record.relativePath),
+        .map(record => record.relativePath),
     }))
     .sort((left, right) => {
       const leftDate = left.captureDate || '9999-99-99'
@@ -232,7 +249,7 @@ function attachMemberships(inventory, report) {
     for (const candidate of bucket.images) coverMap.set(candidate.relativePath, candidate.rank)
   }
 
-  return inventory.map((record) => ({
+  return inventory.map(record => ({
     ...record,
     duplicateGroupId: duplicateMap.get(record.relativePath) ?? null,
     similarGroupId: similarMap.get(record.relativePath) ?? null,
@@ -249,8 +266,8 @@ async function main() {
     : path.join(absoluteOutputDir, 'wedding-master-inventory.json')
 
   const inventory = await readJson(inventoryPath)
-  const imageRecords = inventory.filter((record) => record.kind === 'image')
-  const videoRecords = inventory.filter((record) => record.kind === 'video')
+  const imageRecords = inventory.filter(record => record.kind === 'image')
+  const videoRecords = inventory.filter(record => record.kind === 'video')
 
   const report = {
     generatedAt: new Date().toISOString(),
@@ -264,7 +281,10 @@ async function main() {
 
   const enrichedInventory = attachMemberships(inventory, report)
   const analysisPath = path.join(absoluteOutputDir, 'wedding-master-analysis.json')
-  const enrichedInventoryPath = path.join(absoluteOutputDir, 'wedding-master-inventory.enriched.json')
+  const enrichedInventoryPath = path.join(
+    absoluteOutputDir,
+    'wedding-master-inventory.enriched.json'
+  )
   const markdownPath = path.join(absoluteOutputDir, 'wedding-master-analysis.md')
 
   await writeJson(analysisPath, report)
@@ -292,14 +312,14 @@ async function main() {
       lines.push('')
       lines.push(
         buildMarkdownTable(
-          bucket.images.map((image) => ({
+          bucket.images.map(image => ({
             Rank: image.rank,
             Quality: image.qualityScore,
             CaptureDate: image.captureDate ? image.captureDate.slice(0, 10) : '',
             File: image.relativePath,
           })),
-          ['Rank', 'Quality', 'CaptureDate', 'File'],
-        ),
+          ['Rank', 'Quality', 'CaptureDate', 'File']
+        )
       )
       lines.push('')
     }
@@ -313,7 +333,7 @@ async function main() {
     for (const group of report.similarShotGroups.slice(0, 20)) {
       lines.push(`### ${group.similarGroupId} (${group.count} files)`)
       lines.push('')
-      group.files.forEach((file) => {
+      group.files.forEach(file => {
         lines.push(`- \`${file.relativePath}\` (${file.qualityScore ?? 'n/a'})`)
       })
       lines.push('')
@@ -327,15 +347,15 @@ async function main() {
   } else {
     lines.push(
       buildMarkdownTable(
-        report.livePhotoGroups.slice(0, 40).map((group) => ({
+        report.livePhotoGroups.slice(0, 40).map(group => ({
           Group: group.livePhotoGroupId,
           Folder: group.folder,
           Clip: group.clip.relativePath,
           Duration: group.clip.durationSeconds == null ? '' : group.clip.durationSeconds.toFixed(2),
           Stills: group.stills.length,
         })),
-        ['Group', 'Folder', 'Clip', 'Duration', 'Stills'],
-      ),
+        ['Group', 'Folder', 'Clip', 'Duration', 'Stills']
+      )
     )
   }
   lines.push('')

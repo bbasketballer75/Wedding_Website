@@ -38,25 +38,25 @@ async function buildRecord(filePath, absoluteRoot) {
       : kind === 'video'
         ? await getVideoMetadata(filePath)
         : {
-          width: null,
-          height: null,
-          orientation: 'unknown',
-          format: null,
-          captureDate: stats.mtime.toISOString(),
-          captureDateSource: 'filesystem.mtime',
-          latitude: null,
-          longitude: null,
-          cameraMake: null,
-          cameraModel: null,
-          lensModel: null,
-          averageHash: null,
-          sharpness: null,
-          brightness: null,
-          qualityScore: null,
-          collection: sourceInfo.collection,
-          storyLaneSuggestion: sourceInfo.storyLaneSuggestion,
-          memoryTrailSuggestion: sourceInfo.memoryTrailSuggestion,
-        }
+            width: null,
+            height: null,
+            orientation: 'unknown',
+            format: null,
+            captureDate: stats.mtime.toISOString(),
+            captureDateSource: 'filesystem.mtime',
+            latitude: null,
+            longitude: null,
+            cameraMake: null,
+            cameraModel: null,
+            lensModel: null,
+            averageHash: null,
+            sharpness: null,
+            brightness: null,
+            qualityScore: null,
+            collection: sourceInfo.collection,
+            storyLaneSuggestion: sourceInfo.storyLaneSuggestion,
+            memoryTrailSuggestion: sourceInfo.memoryTrailSuggestion,
+          }
 
   return {
     id: createStableId('media', relativePath, String(stats.size), stats.mtime.toISOString()),
@@ -105,31 +105,27 @@ async function main() {
   const summaryPath = path.join(outputDir, 'wedding-master-summary.md')
 
   await writeJson(inventoryPath, records)
-  await writeCsv(
-    csvPath,
-    records,
-    [
-      'id',
-      'topLevelFolder',
-      'relativePath',
-      'filename',
-      'kind',
-      'source',
-      'collection',
-      'storyLaneSuggestion',
-      'memoryTrailSuggestion',
-      'sizeBytes',
-      'width',
-      'height',
-      'orientation',
-      'durationSeconds',
-      'captureDate',
-      'latitude',
-      'longitude',
-      'qualityScore',
-      'contentHash',
-    ],
-  )
+  await writeCsv(csvPath, records, [
+    'id',
+    'topLevelFolder',
+    'relativePath',
+    'filename',
+    'kind',
+    'source',
+    'collection',
+    'storyLaneSuggestion',
+    'memoryTrailSuggestion',
+    'sizeBytes',
+    'width',
+    'height',
+    'orientation',
+    'durationSeconds',
+    'captureDate',
+    'latitude',
+    'longitude',
+    'qualityScore',
+    'contentHash',
+  ])
 
   const byFolder = createTopLevelSummary(records)
   const storyCounts = records.reduce((acc, record) => {
@@ -144,8 +140,8 @@ async function main() {
     `Root: \`${absoluteRoot}\``,
     '',
     `Total files: **${records.length}**`,
-    `Images: **${records.filter((record) => record.kind === 'image').length}**`,
-    `Videos: **${records.filter((record) => record.kind === 'video').length}**`,
+    `Images: **${records.filter(record => record.kind === 'image').length}**`,
+    `Videos: **${records.filter(record => record.kind === 'video').length}**`,
     '',
     '## Story-Lane Suggestions',
     '',
@@ -163,7 +159,7 @@ async function main() {
     summaryLines.push(`- Videos: ${folder.videos}`)
     if (folder.images > 0) {
       summaryLines.push(
-        `- Portrait / Landscape / Square: ${folder.portraits} / ${folder.landscapes} / ${folder.squares}`,
+        `- Portrait / Landscape / Square: ${folder.portraits} / ${folder.landscapes} / ${folder.squares}`
       )
     }
     summaryLines.push('')

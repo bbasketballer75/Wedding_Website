@@ -80,9 +80,7 @@ async function fetchAllPhotos() {
 
 async function upsertAlbumUpdates(updates) {
   for (const updateChunk of chunk(updates, PHOTO_LOOKUP_CHUNK_SIZE)) {
-    const { error } = await supabase
-      .from('photos')
-      .upsert(updateChunk, { onConflict: 'id' })
+    const { error } = await supabase.from('photos').upsert(updateChunk, { onConflict: 'id' })
 
     if (error) {
       throw error
@@ -93,9 +91,9 @@ async function upsertAlbumUpdates(updates) {
 function createNextSortTracker(rows) {
   return rows.reduce((acc, row) => {
     const album =
-      normalizeAlbum(row.album)
-      ?? normalizeAlbum(row.category)
-      ?? (row.is_professional ? 'Wedding Day' : 'Guest Uploads')
+      normalizeAlbum(row.album) ??
+      normalizeAlbum(row.category) ??
+      (row.is_professional ? 'Wedding Day' : 'Guest Uploads')
 
     if (!album) {
       return acc
@@ -118,11 +116,11 @@ async function main() {
 
   const manifestRows = await readJson(manifestPath)
   const manifestEntries = manifestRows
-    .map((row) => {
+    .map(row => {
       const topLevelFolder = String(row.sourceRelativePath || '').split('/')[0] || ''
       const album =
-        inferCanonicalAlbum(topLevelFolder, row.sourceRelativePath ?? '')
-        ?? normalizeAlbum(row.album ?? row.photoRowDraft?.album ?? row.collection ?? row.category)
+        inferCanonicalAlbum(topLevelFolder, row.sourceRelativePath ?? '') ??
+        normalizeAlbum(row.album ?? row.photoRowDraft?.album ?? row.collection ?? row.category)
       if (!album) return null
 
       return {
@@ -134,21 +132,21 @@ async function main() {
     })
     .filter(Boolean)
 
-  const manifestByUrl = new Map(manifestEntries.map((row) => [row.url, row]))
-  const manifestUrls = manifestEntries.map((row) => row.url)
+  const manifestByUrl = new Map(manifestEntries.map(row => [row.url, row]))
+  const manifestUrls = manifestEntries.map(row => row.url)
   const [matchedLiveRows, allLiveRows] = await Promise.all([
     fetchPhotosByUrls(manifestUrls),
     fetchAllPhotos(),
   ])
 
-  const matchedLiveByUrl = new Map(matchedLiveRows.map((row) => [row.url, row]))
+  const matchedLiveByUrl = new Map(matchedLiveRows.map(row => [row.url, row]))
   const updates = []
   const unchanged = []
   const exceptions = []
   const fallbackUpdates = []
   const nextSortByAlbum = createNextSortTracker(allLiveRows)
 
-  const reserveSortOrder = (album) => {
+  const reserveSortOrder = album => {
     nextSortByAlbum[album] = (nextSortByAlbum[album] || 0) + 1
     return nextSortByAlbum[album]
   }
@@ -171,7 +169,11 @@ async function main() {
 
     const currentAlbum = normalizeAlbum(existing.album ?? existing.category)
     const hasSortOrder = Number(existing.album_sort_order || 0) > 0
-    if (currentAlbum === manifestEntry.album && existing.category === manifestEntry.album && hasSortOrder) {
+    if (
+      currentAlbum === manifestEntry.album &&
+      existing.category === manifestEntry.album &&
+      hasSortOrder
+    ) {
       unchanged.push({
         id: existing.id,
         url: existing.url,
@@ -198,9 +200,9 @@ async function main() {
     }
 
     const fallbackAlbum =
-      normalizeAlbum(liveRow.album)
-      ?? normalizeAlbum(liveRow.category)
-      ?? (liveRow.is_professional ? 'Wedding Day' : 'Guest Uploads')
+      normalizeAlbum(liveRow.album) ??
+      normalizeAlbum(liveRow.category) ??
+      (liveRow.is_professional ? 'Wedding Day' : 'Guest Uploads')
 
     if (!fallbackAlbum) {
       exceptions.push({
@@ -215,7 +217,11 @@ async function main() {
 
     const hasSortOrder = Number(liveRow.album_sort_order || 0) > 0
 
-    if (normalizeAlbum(liveRow.album) === fallbackAlbum && liveRow.category === fallbackAlbum && hasSortOrder) {
+    if (
+      normalizeAlbum(liveRow.album) === fallbackAlbum &&
+      liveRow.category === fallbackAlbum &&
+      hasSortOrder
+    ) {
       continue
     }
 
