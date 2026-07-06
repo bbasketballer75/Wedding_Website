@@ -60,10 +60,10 @@ test.describe('Home Page', () => {
     await expect(page).toHaveURL(/\/guestbook$/)
   })
 
-  test('hero explore CTA scrolls into the welcome panel', async ({ page }) => {
+  test('hero entry CTA scrolls into the welcome panel', async ({ page }) => {
     await gotoPublicPage(page, '/')
 
-    await page.getByRole('button', { name: /Explore/i }).click()
+    await page.getByRole('button', { name: /Enter archive/i }).click()
     await expect(page.locator('#welcome-panel')).toBeInViewport()
   })
 
