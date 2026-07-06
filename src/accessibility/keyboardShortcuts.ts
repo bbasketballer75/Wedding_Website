@@ -77,7 +77,7 @@ export class KeyboardShortcutManager {
     if (!this.enabled) return
 
     // Don't trigger shortcuts when typing in input fields
-    if (this.isInputElement(event.target as HTMLElement)) return
+    if (event.target instanceof HTMLElement && this.isInputElement(event.target)) return
 
     const key = event.key.toLowerCase()
     const modifiers: ('ctrl' | 'alt' | 'shift' | 'meta')[] = []

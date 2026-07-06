@@ -1774,7 +1774,7 @@ export default function Gallery() {
                       placeholder='Search by caption, location, photographer, or tags'
                       value={searchQuery}
                       onChange={event => setSearchQuery(event.target.value)}
-                      className='h-12 rounded-full border-gold-200/70 bg-cream-50/85 pl-11 pr-11 shadow-none'
+                      className='h-12 rounded-full border-gold-200/70 bg-cream-50/85 pl-11 pr-11 text-charcoal-900 placeholder:text-charcoal-400 shadow-none'
                     />
                     {searchQuery && (
                       <button

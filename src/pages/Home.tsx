@@ -17,11 +17,10 @@ import { FeaturedNoteSection } from '@/components/sections/FeaturedNoteSection'
 import ElegantDivider from '@/components/sections/ElegantDivider'
 import { publicNavLinks } from '@/components/layout/publicNav'
 import { HomeSEO } from '@/components/seo/SEOHead'
+import { ThemeToggle } from '@/components/theme/ThemeToggle'
 import { cn } from '@/lib/utils'
 
 const HERO_POSTER = '/images/home/intro-video-poster.png'
-const HERO_VIDEO_WEBM = '/video/home-hero.webm'
-const HERO_VIDEO_MP4 = '/video/home-hero.mp4'
 
 // Nav item component
 function NavItem({
@@ -72,11 +71,10 @@ export default function Home() {
   const [heroMateriallyVisible, setHeroMateriallyVisible] = useState(true)
   const heroRef = useRef<HTMLDivElement>(null)
   const containerRef = useRef<HTMLDivElement>(null)
-  const videoRef = useRef<HTMLVideoElement>(null)
 
   const { scrollY } = useScroll()
   const heroOpacity = useTransform(scrollY, [0, 260, 860], [1, 1, 0])
-  const heroScale = useTransform(scrollY, [0, 860], [1, 1.08])
+  const heroScale = useTransform(scrollY, [0, 860], prefersReducedMotion ? [1, 1] : [1, 1.08])
 
   // Track scroll position for section transitions
   useMotionValueEvent(scrollY, 'change', latest => {
@@ -111,48 +109,12 @@ export default function Home() {
     }
   }, [])
 
-  useEffect(() => {
-    const video = videoRef.current
-
-    if (!video) {
-      return
-    }
-
-    const attemptPlayback = () => {
-      video.muted = true
-      video.defaultMuted = true
-      video.playsInline = true
-      video.setAttribute('playsinline', '')
-      video.setAttribute('webkit-playsinline', '')
-      video.load()
-
-      const playback = video.play()
-      if (playback && typeof playback.catch === 'function') {
-        playback.catch(() => {})
-      }
-    }
-
-    attemptPlayback()
-
-    const handleVisibilityChange = () => {
-      if (document.visibilityState === 'visible') {
-        attemptPlayback()
-      }
-    }
-
-    document.addEventListener('visibilitychange', handleVisibilityChange)
-
-    return () => {
-      document.removeEventListener('visibilitychange', handleVisibilityChange)
-    }
-  }, [])
-
   const scrollToContent = () => {
     document.getElementById('welcome-panel')?.scrollIntoView({ behavior: 'smooth', block: 'start' })
   }
 
   return (
-    <div ref={containerRef} className='min-h-screen bg-cream-50'>
+    <div ref={containerRef} className='theme-canvas min-h-screen'>
       <HomeSEO />
 
       {/* Sticky Nav Bar - Always Visible */}
@@ -174,7 +136,7 @@ export default function Home() {
           className={cn(
             'flex w-full items-center gap-1 overflow-x-auto rounded-full px-1.5 py-1.5 transition-all duration-500 hide-scrollbar sm:justify-between sm:gap-0 sm:px-2 sm:py-2',
             scrolled
-              ? 'bg-gradient-to-r from-cream-100/95 via-gold-50/95 to-cream-100/95 backdrop-blur-md border border-gold-300/50 shadow-lg'
+              ? 'theme-panel'
               : 'bg-[linear-gradient(135deg,rgba(41,29,23,0.9),rgba(58,42,33,0.9))] backdrop-blur-md border border-gold-200/18 shadow-2xl'
           )}
         >
@@ -218,6 +180,7 @@ export default function Home() {
               />
             </div>
           ))}
+          <ThemeToggle className='shadow-none' />
         </motion.div>
       </motion.nav>
 
@@ -227,29 +190,16 @@ export default function Home() {
         data-testid='home-hero'
         className='relative min-h-[100svh] w-full overflow-hidden md:min-h-screen'
       >
-        <motion.div style={{ opacity: heroOpacity, scale: heroScale }} className='absolute inset-0'>
+        <motion.div
+          style={{ opacity: heroOpacity, scale: heroScale }}
+          className='absolute inset-0 will-change-transform'
+        >
           <img
             src={HERO_POSTER}
             alt=''
             aria-hidden='true'
             className='h-full w-full scale-[1.02] object-cover object-[58%_center] sm:scale-100 sm:object-center'
           />
-        </motion.div>
-
-        <motion.div style={{ opacity: heroOpacity, scale: heroScale }} className='absolute inset-0'>
-          <video
-            ref={videoRef}
-            autoPlay
-            muted
-            loop
-            playsInline
-            preload='auto'
-            poster={HERO_POSTER}
-            className={cn('h-full w-full', 'object-cover object-[58%_center] sm:object-center')}
-          >
-            <source src={HERO_VIDEO_WEBM} type='video/webm' />
-            <source src={HERO_VIDEO_MP4} type='video/mp4' />
-          </video>
         </motion.div>
 
         <div className='absolute inset-0 bg-[radial-gradient(circle_at_top,rgba(255,255,255,0.08),transparent_42%),linear-gradient(to_bottom,rgba(21,20,19,0.26),rgba(21,20,19,0.12)_35%,rgba(21,20,19,0.48))]' />

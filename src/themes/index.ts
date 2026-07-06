@@ -1,58 +1,56 @@
-// src/themes/index.ts
-
 export interface ThemeConfig {
-  name: string
-  className: string // Class to be applied to <html> element
-  displayName: string // User-friendly name
-  variables: Record<string, string> // CSS variable overrides
+  name: ThemeMode
+  className: string
+  displayName: string
+  variables: Record<string, string>
 }
 
-export const themes: Record<string, ThemeConfig> = {
-  light: {
-    name: 'light',
-    className: 'light-theme',
-    displayName: 'Light',
-    variables: {
-      '--color-gold-500': '#d4af37',
-      '--color-gold-600': '#ca8a04',
-      '--color-cream-50': '#fefdfb',
-      '--color-cream-100': '#fbfaf8',
-      '--color-dark-900': '#0a0a0a',
-      '--color-dark-700': '#262626',
-    },
-  },
+export type ThemeMode = 'dark' | 'light'
+
+export const isThemeMode = (value: unknown): value is ThemeMode =>
+  value === 'dark' || value === 'light'
+
+export const themes: Record<ThemeMode, ThemeConfig> = {
   dark: {
     name: 'dark',
     className: 'dark-theme',
     displayName: 'Dark',
     variables: {
-      '--color-gold-500': '#d4af37',
-      '--color-gold-400': '#facc15',
-      '--color-cream-50': '#0a0a0a',
-      '--color-cream-100': '#171717',
-      '--color-dark-900': '#fefdfb',
-      '--color-dark-700': '#f0ede8',
+      '--ui-canvas': '#090605',
+      '--ui-canvas-soft': '#130d09',
+      '--ui-surface': 'rgba(255, 247, 235, 0.07)',
+      '--ui-surface-elevated': 'rgba(255, 247, 235, 0.12)',
+      '--ui-glass': 'rgba(15, 10, 7, 0.72)',
+      '--ui-border': 'rgba(232, 212, 176, 0.18)',
+      '--ui-text': '#fff7eb',
+      '--ui-muted': 'rgba(255, 247, 235, 0.68)',
+      '--ui-subtle': 'rgba(255, 247, 235, 0.48)',
+      '--ui-accent': '#d4af37',
+      '--ui-accent-strong': '#f5d586',
+      '--ui-shadow': '0 24px 70px rgba(0, 0, 0, 0.36)',
+      '--ui-focus-ring': 'rgba(245, 213, 134, 0.58)',
     },
   },
-  roseGarden: {
-    name: 'roseGarden',
-    className: 'rose-garden-theme',
-    displayName: 'Rose Garden',
+  light: {
+    name: 'light',
+    className: 'light-theme',
+    displayName: 'Light',
     variables: {
-      '--color-gold-500': '#e2b4b4',
-      '--color-cream-50': '#1a1012',
-      '--color-cream-100': '#2a1a1c',
-      '--color-dark-900': '#fefafb',
-      '--color-dark-700': '#c5a3a8',
+      '--ui-canvas': '#fbf8f1',
+      '--ui-canvas-soft': '#f3ecdf',
+      '--ui-surface': 'rgba(255, 255, 255, 0.74)',
+      '--ui-surface-elevated': 'rgba(255, 255, 255, 0.92)',
+      '--ui-glass': 'rgba(255, 252, 245, 0.82)',
+      '--ui-border': 'rgba(126, 94, 44, 0.22)',
+      '--ui-text': '#17110d',
+      '--ui-muted': 'rgba(23, 17, 13, 0.68)',
+      '--ui-subtle': 'rgba(23, 17, 13, 0.48)',
+      '--ui-accent': '#9f7430',
+      '--ui-accent-strong': '#5e451e',
+      '--ui-shadow': '0 22px 60px rgba(75, 49, 21, 0.14)',
+      '--ui-focus-ring': 'rgba(159, 116, 48, 0.42)',
     },
-  },
-  system: {
-    name: 'system',
-    className: 'system-theme',
-    displayName: 'System Preference',
-    variables: {},
   },
 }
 
-// Default theme to use
-export const defaultThemeName = 'light' // Forced to light for Elegant Wedding aesthetic
+export const defaultThemeName: ThemeMode = 'dark'

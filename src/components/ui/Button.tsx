@@ -22,17 +22,21 @@ const buttonVariants = cva(
         ),
         // Secondary outline
         secondary: cn(
-          'bg-transparent border border-gold-500/60 text-gold-700',
-          'hover:bg-gold-50/50 hover:border-gold-500',
+          'bg-transparent border border-[color:var(--ui-border)] text-[color:var(--ui-accent-strong)]',
+          'hover:bg-[color:var(--ui-surface-elevated)] hover:border-[color:var(--ui-accent)]',
           'rounded-full'
         ),
         // Ghost (subtle)
-        ghost: cn('bg-transparent text-gold-700', 'hover:bg-gold-50/50', 'rounded-full'),
+        ghost: cn(
+          'bg-transparent text-[color:var(--ui-accent-strong)]',
+          'hover:bg-[color:var(--ui-surface-elevated)]',
+          'rounded-full'
+        ),
         // Glass effect
         glass: cn(
-          'bg-white/70 backdrop-blur-xl text-charcoal-700',
-          'border border-white/50 shadow-lg',
-          'hover:bg-white/90 hover:shadow-xl',
+          'bg-[color:var(--ui-surface)] backdrop-blur-xl text-[color:var(--ui-text)]',
+          'border border-[color:var(--ui-border)] shadow-[var(--ui-shadow)]',
+          'hover:bg-[color:var(--ui-surface-elevated)] hover:shadow-xl',
           'rounded-full'
         ),
         // Shimmer effect for special moments

@@ -1,14 +1,13 @@
-import { defaultThemeName } from '@/themes' // Import defaultThemeName
+import { defaultThemeName, isThemeMode, type ThemeMode } from '@/themes'
 import type { Toast, UserPreferences } from '@/types'
 import { create } from 'zustand'
 import { persist } from 'zustand/middleware'
 
 export interface UIState {
   // Theme
-  currentTheme: string // Stores the name of the active theme (e.g., 'dark', 'roseGarden')
-  systemTheme: 'light' | 'dark' // Stores the detected system preference
-  setCurrentTheme: (themeName: string) => void
-  setSystemTheme: (theme: 'light' | 'dark') => void
+  currentTheme: ThemeMode
+  toggleTheme: () => void
+  setCurrentTheme: (theme: ThemeMode) => void
 
   // Toast notifications
   toasts: Toast[]
@@ -45,14 +44,15 @@ export const useUIStore = create<UIState>()(
   persist(
     (set, get) => ({
       currentTheme: defaultThemeName,
-      systemTheme:
-        typeof window !== 'undefined' && window.matchMedia
-          ? window.matchMedia('(prefers-color-scheme: dark)').matches
-            ? 'dark'
-            : 'light'
-          : 'light',
-      setCurrentTheme: themeName => set({ currentTheme: themeName }),
-      setSystemTheme: theme => set({ systemTheme: theme }),
+      toggleTheme: () =>
+        set(state => ({
+          currentTheme: state.currentTheme === 'dark' ? 'light' : 'dark',
+        })),
+      setCurrentTheme: theme => {
+        if (isThemeMode(theme)) {
+          set({ currentTheme: theme })
+        }
+      },
 
       // Toast notifications
       toasts: [],
@@ -86,7 +86,6 @@ export const useUIStore = create<UIState>()(
 
       // User preferences
       preferences: {
-        // theme: 'system', // Removed, now managed by currentTheme
         musicEnabled: true,
         animationsEnabled: true,
         autoPlayVideos: false,

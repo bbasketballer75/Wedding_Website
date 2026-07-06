@@ -10,6 +10,8 @@ import { KeyboardShortcutsModal } from '@/components/accessibility/KeyboardShort
 import { AccessibilityProvider, useAccessibility } from '@/accessibility/AccessibilityProvider'
 import { trackPageView } from '@/services/AnalyticsService'
 import { RouteErrorBoundary } from '@/components/error/ErrorBoundary'
+import { ThemeController } from '@/components/theme/ThemeController'
+import { initializeDefaultShortcuts } from '@/accessibility/keyboardShortcuts'
 
 // Lazy load pages for code splitting
 const Home = lazy(() => import('@/pages/Home'))
@@ -101,7 +103,7 @@ function AppContent() {
   }, [location.pathname, location.search, location.hash])
 
   return (
-    <div className='min-h-screen bg-cream-50'>
+    <div className='theme-canvas min-h-screen'>
       {/* Skip Link for keyboard navigation */}
       <SkipLink />
       <KeyboardShortcutsModal />
@@ -264,8 +266,13 @@ function AppContent() {
 }
 
 function App() {
+  useEffect(() => {
+    initializeDefaultShortcuts()
+  }, [])
+
   return (
     <AccessibilityProvider>
+      <ThemeController />
       <AppContent />
     </AccessibilityProvider>
   )

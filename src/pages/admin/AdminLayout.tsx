@@ -5,6 +5,7 @@ import { LogOut } from 'lucide-react'
 import { MediaReviewPanel } from '@/components/admin/MediaReviewPanel'
 import { AlbumOrganizer } from '@/components/admin/AlbumOrganizer'
 import { Button } from '@/components/ui/Button'
+import { ThemeToggle } from '@/components/theme/ThemeToggle'
 import { useToast } from '@/context/ToastContext'
 import { cn } from '@/lib/utils'
 import { adminNavSections, getAdminRouteMeta } from './utils'
@@ -29,9 +30,9 @@ const Settings = lazy(() => import('./Settings').then(m => ({ default: m.Setting
 function AdminPageSkeleton() {
   return (
     <div className='space-y-4 animate-pulse'>
-      <div className='h-8 w-48 rounded-lg bg-gold-100/60' />
-      <div className='h-32 rounded-2xl bg-gold-50/80' />
-      <div className='h-64 rounded-2xl bg-gold-50/80' />
+      <div className='theme-skeleton h-8 w-48 rounded-lg' />
+      <div className='theme-skeleton h-32 rounded-2xl' />
+      <div className='theme-skeleton h-64 rounded-2xl' />
     </div>
   )
 }
@@ -50,26 +51,29 @@ export function AdminLayout() {
   }
 
   return (
-    <div className='min-h-screen bg-[radial-gradient(circle_at_top,_rgba(219,180,92,0.14),_transparent_38%),linear-gradient(180deg,#fffdf9_0%,#f8f2ea_100%)]'>
+    <div className='theme-canvas min-h-screen'>
       {/* Admin Header */}
       <header
         data-testid='admin-header'
-        className='sticky top-0 z-30 border-b border-gold-100/80 bg-white/90 backdrop-blur'
+        className='sticky top-0 z-30 border-b border-[color:var(--ui-border)] bg-[color:var(--ui-glass)] backdrop-blur-xl'
       >
         <div className='mx-auto flex max-w-7xl flex-col gap-4 px-4 py-4 sm:flex-row sm:items-center sm:justify-between'>
           <div className='min-w-0'>
-            <Link to='/' className='font-display text-xl text-charcoal-900'>
+            <Link to='/' className='font-display text-xl text-[color:var(--ui-text)]'>
               <span className='text-gold-500'>A</span>&<span className='text-gold-500'>J</span>
-              <span className='ml-2 text-sm font-normal text-charcoal-500'>Admin</span>
+              <span className='theme-muted ml-2 text-sm font-normal'>Admin</span>
             </Link>
-            <p className='mt-1 text-sm text-charcoal-500'>
+            <p className='theme-muted mt-1 text-sm'>
               A calmer workspace for moderation, people review, and site upkeep.
             </p>
           </div>
           <div className='flex flex-wrap items-center gap-3 sm:justify-end'>
-            <div className='rounded-full border border-gold-100 bg-cream-50/80 px-4 py-2 text-sm text-charcoal-600'>
+            <ThemeToggle className='shadow-none' />
+            <div className='rounded-full border border-[color:var(--ui-border)] bg-[color:var(--ui-surface)] px-4 py-2 text-sm text-[color:var(--ui-muted)]'>
               Signed in as{' '}
-              <span className='font-medium text-charcoal-900'>{user?.email || 'admin'}</span>
+              <span className='font-medium text-[color:var(--ui-text)]'>
+                {user?.email || 'admin'}
+              </span>
             </div>
             <Button
               data-testid='admin-signout'
@@ -88,15 +92,13 @@ export function AdminLayout() {
         className={cn('mx-auto px-4 py-6 xl:py-8', isReviewRoute ? 'max-w-[110rem]' : 'max-w-7xl')}
       >
         {!isDashboardRoute && !isReviewRoute && (
-          <section className='mb-4 rounded-[1.15rem] border border-gold-100 bg-white/92 px-4 py-4 shadow-sm sm:px-5'>
+          <section className='theme-panel mb-4 rounded-[1.15rem] px-4 py-4 sm:px-5'>
             <div className='max-w-3xl'>
-              <p className='text-[10px] uppercase tracking-[0.32em] text-charcoal-500'>
+              <p className='theme-subtle text-[10px] uppercase tracking-[0.24em]'>
                 {currentPage.eyebrow}
               </p>
-              <h1 className='mt-1 font-display text-[1.6rem] leading-tight text-charcoal-900'>
-                {currentPage.title}
-              </h1>
-              <p className='mt-1 text-sm leading-5 text-charcoal-500'>{currentPage.description}</p>
+              <h1 className='mt-1 font-display text-[1.6rem] leading-tight'>{currentPage.title}</h1>
+              <p className='theme-muted mt-1 text-sm leading-5'>{currentPage.description}</p>
             </div>
           </section>
         )}
@@ -127,14 +129,12 @@ export function AdminLayout() {
 
         {isReviewRoute ? (
           <main className='min-w-0'>
-            <div className='mb-4 flex items-center justify-between gap-3 rounded-[1.15rem] border border-gold-100 bg-white/92 px-4 py-3 shadow-sm'>
+            <div className='theme-panel mb-4 flex items-center justify-between gap-3 rounded-[1.15rem] px-4 py-3'>
               <div className='min-w-0'>
-                <p className='text-[10px] uppercase tracking-[0.32em] text-charcoal-500'>
+                <p className='theme-subtle text-[10px] uppercase tracking-[0.24em]'>
                   {currentPage.eyebrow}
                 </p>
-                <h1 className='mt-1 text-xl font-display leading-tight text-charcoal-900'>
-                  {currentPage.title}
-                </h1>
+                <h1 className='mt-1 text-xl font-display leading-tight'>{currentPage.title}</h1>
               </div>
               <Button variant='secondary' size='sm' asChild>
                 <Link to='/admin'>Back to Dashboard</Link>
@@ -163,12 +163,12 @@ export function AdminLayout() {
               className='hidden w-full xl:block xl:w-64 xl:flex-shrink-0'
               aria-label='Admin navigation'
             >
-              <div className='overflow-hidden rounded-[1.4rem] border border-gold-100 bg-white/95 shadow-sm xl:sticky xl:top-24'>
-                <div className='border-b border-gold-100 px-4 py-4'>
-                  <p className='text-[11px] uppercase tracking-[0.32em] text-charcoal-500'>
+              <div className='theme-panel overflow-hidden rounded-[1.4rem] xl:sticky xl:top-24'>
+                <div className='border-b border-[color:var(--ui-border)] px-4 py-4'>
+                  <p className='theme-subtle text-[11px] uppercase tracking-[0.24em]'>
                     Workspace map
                   </p>
-                  <p className='mt-2 text-sm leading-5 text-charcoal-500'>
+                  <p className='theme-muted mt-2 text-sm leading-5'>
                     Open the tool that matches the work in front of you.
                   </p>
                 </div>
@@ -176,7 +176,7 @@ export function AdminLayout() {
                   {adminNavSections.map(section => (
                     <div key={section.title}>
                       <div className='px-2 pb-1'>
-                        <p className='text-[11px] uppercase tracking-[0.28em] text-charcoal-400'>
+                        <p className='theme-subtle text-[11px] uppercase tracking-[0.22em]'>
                           {section.title}
                         </p>
                       </div>
@@ -191,21 +191,21 @@ export function AdminLayout() {
                               to={item.path}
                               className={`block rounded-[1rem] border px-3 py-3 transition-all ${
                                 isActive
-                                  ? 'border-gold-300 bg-gold-50 text-gold-800 shadow-[0_10px_20px_rgba(219,180,92,0.14)]'
-                                  : 'border-gold-100 bg-white text-charcoal-700 hover:border-gold-200 hover:bg-cream-50/80'
+                                  ? 'border-[color:var(--ui-accent)] bg-[color:var(--ui-surface-elevated)] text-[color:var(--ui-accent-strong)] shadow-[var(--ui-shadow)]'
+                                  : 'border-[color:var(--ui-border)] bg-[color:var(--ui-surface)] text-[color:var(--ui-muted)] hover:border-[color:var(--ui-accent)] hover:bg-[color:var(--ui-surface-elevated)] hover:text-[color:var(--ui-text)]'
                               }`}
                               aria-current={isActive ? 'page' : undefined}
                             >
                               <div className='flex items-start gap-3'>
                                 <div
-                                  className={`rounded-lg p-2 ${isActive ? 'bg-white text-gold-700' : 'bg-cream-50 text-charcoal-500'}`}
+                                  className={`rounded-lg p-2 ${isActive ? 'bg-[color:var(--ui-glass)] text-[color:var(--ui-accent-strong)]' : 'bg-[color:var(--ui-surface-elevated)] text-[color:var(--ui-muted)]'}`}
                                 >
                                   <Icon className='h-4 w-4' />
                                 </div>
                                 <div className='min-w-0'>
                                   <p className='text-sm font-medium'>{item.label}</p>
                                   <p
-                                    className={`mt-1 text-xs leading-5 ${isActive ? 'text-gold-700/90' : 'text-charcoal-500'}`}
+                                    className={`mt-1 text-xs leading-5 ${isActive ? 'text-[color:var(--ui-accent-strong)]' : 'text-[color:var(--ui-muted)]'}`}
                                   >
                                     {item.description}
                                   </p>
