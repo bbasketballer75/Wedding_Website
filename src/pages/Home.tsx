@@ -1,4 +1,4 @@
-import { type ElementType, useState, useEffect, useRef } from 'react'
+import { type ElementType, useState, useRef } from 'react'
 import {
   motion,
   useScroll,
@@ -7,7 +7,7 @@ import {
   useReducedMotion,
 } from 'framer-motion'
 import { Link } from 'react-router-dom'
-import { ChevronDown } from 'lucide-react'
+import { Images, Play } from 'lucide-react'
 import { LoveTimeline } from '@/components/timeline/LoveTimeline'
 import { AnniversaryCountdown } from '@/components/sections/AnniversaryCountdown'
 import { GuestHighlightReel } from '@/components/sections/GuestHighlightReel'
@@ -66,48 +66,16 @@ function NavItem({
 
 export default function Home() {
   const prefersReducedMotion = useReducedMotion()
-  const [showUI, setShowUI] = useState(false)
   const [scrolled, setScrolled] = useState(false)
-  const [heroMateriallyVisible, setHeroMateriallyVisible] = useState(true)
-  const heroRef = useRef<HTMLDivElement>(null)
   const containerRef = useRef<HTMLDivElement>(null)
 
   const { scrollY } = useScroll()
-  const heroOpacity = useTransform(scrollY, [0, 260, 860], [1, 1, 0])
   const heroScale = useTransform(scrollY, [0, 860], prefersReducedMotion ? [1, 1] : [1, 1.08])
 
   // Track scroll position for section transitions
   useMotionValueEvent(scrollY, 'change', latest => {
     setScrolled(latest > 100)
   })
-
-  useEffect(() => {
-    const timer = setTimeout(() => setShowUI(true), 1200)
-    return () => clearTimeout(timer)
-  }, [])
-
-  useEffect(() => {
-    const hero = heroRef.current
-
-    if (!hero) {
-      return
-    }
-
-    const observer = new IntersectionObserver(
-      ([entry]) => {
-        setHeroMateriallyVisible(entry.isIntersecting && entry.intersectionRatio > 0.35)
-      },
-      {
-        threshold: [0, 0.35, 0.5, 1],
-      }
-    )
-
-    observer.observe(hero)
-
-    return () => {
-      observer.disconnect()
-    }
-  }, [])
 
   const scrollToContent = () => {
     document.getElementById('welcome-panel')?.scrollIntoView({ behavior: 'smooth', block: 'start' })
@@ -117,20 +85,13 @@ export default function Home() {
     <div ref={containerRef} className='theme-canvas min-h-screen'>
       <HomeSEO />
 
-      {/* Sticky Nav Bar - Always Visible */}
+      {/* Sticky Nav Bar */}
       <motion.nav
-        initial={{ opacity: 0, y: -20 }}
-        animate={{
-          opacity: showUI && !heroMateriallyVisible ? 1 : 0,
-          y: showUI && !heroMateriallyVisible ? 0 : -20,
-        }}
+        initial={false}
+        animate={{ opacity: 1, y: 0 }}
         transition={{ duration: 0.6, delay: 0.3 }}
         data-testid='home-nav'
-        aria-hidden={!showUI || heroMateriallyVisible}
-        className={cn(
-          'fixed top-3 left-1/2 z-50 w-[calc(100vw-0.75rem)] max-w-[40rem] -translate-x-1/2 sm:top-6 sm:w-[calc(100vw-1rem)] sm:max-w-[52rem]',
-          heroMateriallyVisible && 'pointer-events-none'
-        )}
+        className='fixed top-3 left-1/2 z-50 w-[calc(100vw-0.75rem)] max-w-[40rem] -translate-x-1/2 sm:top-6 sm:w-[calc(100vw-1rem)] sm:max-w-[62rem]'
       >
         <motion.div
           className={cn(
@@ -186,47 +147,67 @@ export default function Home() {
 
       {/* Hero Section */}
       <section
-        ref={heroRef}
         data-testid='home-hero'
-        className='relative min-h-[100svh] w-full overflow-hidden md:min-h-screen'
+        className='relative min-h-[100svh] w-full overflow-hidden bg-[#050403] md:min-h-screen'
       >
         <motion.div
-          style={{ opacity: heroOpacity, scale: heroScale }}
-          className='absolute inset-0 will-change-transform'
+          style={{ scale: heroScale }}
+          className='absolute inset-0 flex items-center justify-center will-change-transform'
         >
           <img
             src={HERO_POSTER}
             alt=''
             aria-hidden='true'
-            className='h-full w-full scale-[1.02] object-cover object-[58%_center] sm:scale-100 sm:object-center'
+            className='max-h-[66svh] w-[min(92vw,72rem)] object-contain opacity-95 sm:max-h-[70vh]'
           />
         </motion.div>
 
-        <div className='absolute inset-0 bg-[radial-gradient(circle_at_top,rgba(255,255,255,0.08),transparent_42%),linear-gradient(to_bottom,rgba(21,20,19,0.26),rgba(21,20,19,0.12)_35%,rgba(21,20,19,0.48))]' />
+        <div className='absolute inset-0 bg-[radial-gradient(circle_at_center,rgba(255,255,255,0.08),transparent_42%),linear-gradient(to_bottom,rgba(5,4,3,0.5),rgba(5,4,3,0.04)_40%,rgba(5,4,3,0.82))]' />
 
-        {/* Explore Button - Fixed at bottom of hero */}
+        {/* Entry actions */}
         <motion.div
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: showUI ? 1 : 0, y: showUI ? 0 : 20 }}
+          initial={false}
+          animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.6, delay: 0.5 }}
-          style={{ opacity: heroOpacity }}
-          className='absolute bottom-6 left-1/2 -translate-x-1/2 z-10 sm:bottom-8'
+          className='absolute inset-x-0 bottom-5 z-10 px-4 sm:bottom-8 sm:px-8'
         >
-          <motion.button
-            onClick={scrollToContent}
-            animate={prefersReducedMotion ? undefined : { y: [0, -3, 0] }}
-            transition={{ duration: 4, repeat: Infinity, ease: 'easeInOut' }}
-            whileHover={{ scale: 1.03, y: -6 }}
-            whileTap={{ scale: 0.95 }}
-            className='group flex items-center gap-3'
-          >
-            <span className='rounded-full bg-gold-500 px-5 py-2.5 text-[11px] font-medium uppercase tracking-[0.25em] text-white shadow-[0_8px_24px_-8px_rgba(180,140,50,0.55)]'>
-              Explore
-            </span>
-            <span className='flex h-9 w-9 items-center justify-center rounded-full border border-white/40 bg-white/18 text-white shadow-sm backdrop-blur-sm transition-transform duration-300 group-hover:translate-y-0.5'>
-              <ChevronDown className='h-4 w-4' />
-            </span>
-          </motion.button>
+          <div className='mx-auto flex max-w-6xl flex-col gap-4 rounded-[1.35rem] border border-white/14 bg-black/34 p-4 text-candle-100 shadow-[0_24px_80px_rgba(0,0,0,0.42)] backdrop-blur-md sm:flex-row sm:items-end sm:justify-between sm:p-5'>
+            <div className='min-w-0'>
+              <p className='text-[11px] font-medium uppercase tracking-[0.2em] text-gold-300/80'>
+                Austin and Jordyn Porada
+              </p>
+              <p className='mt-2 max-w-xl text-sm leading-6 text-candle-100/72 sm:text-base'>
+                Wedding film, photographs, guest memories, and the story we built with everyone who
+                celebrated with us.
+              </p>
+            </div>
+
+            <div className='flex flex-wrap gap-2 sm:justify-end'>
+              <motion.button
+                type='button'
+                onClick={scrollToContent}
+                whileHover={prefersReducedMotion ? undefined : { y: -2 }}
+                whileTap={{ scale: 0.98 }}
+                className='inline-flex min-h-11 items-center justify-center rounded-full bg-gold-500 px-5 text-[11px] font-semibold uppercase tracking-[0.16em] text-charcoal-900 shadow-[0_8px_24px_-8px_rgba(180,140,50,0.55)] transition hover:bg-gold-400'
+              >
+                Enter archive
+              </motion.button>
+              <Link
+                to='/film'
+                className='inline-flex min-h-11 items-center justify-center gap-2 rounded-full border border-white/24 bg-white/10 px-5 text-[11px] font-semibold uppercase tracking-[0.16em] text-candle-100 backdrop-blur-sm transition hover:bg-white/18'
+              >
+                <Play className='h-4 w-4' />
+                Film
+              </Link>
+              <Link
+                to='/gallery'
+                className='inline-flex min-h-11 items-center justify-center gap-2 rounded-full border border-white/24 bg-white/10 px-5 text-[11px] font-semibold uppercase tracking-[0.16em] text-candle-100 backdrop-blur-sm transition hover:bg-white/18'
+              >
+                <Images className='h-4 w-4' />
+                Gallery
+              </Link>
+            </div>
+          </div>
         </motion.div>
       </section>
 
