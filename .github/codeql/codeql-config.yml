@@ -1,0 +1,12 @@
+name: "Wedding_Website CodeQL config"
+
+# Build output, vendored dependencies, and deploy caches are not our source.
+# Scanning them buries real findings under third-party results we do not own
+# and cannot patch.
+paths-ignore:
+  - "**/node_modules"
+  - "**/dist"
+  - "**/build"
+  - "**/.wrangler"
+  - "**/coverage"
+  - "**/.netlify"
