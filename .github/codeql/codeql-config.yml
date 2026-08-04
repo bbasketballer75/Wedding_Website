@@ -1,12 +1,21 @@
-name: "Wedding_Website CodeQL config"
+name: 'Wedding_Website CodeQL config'
 
 # Build output, vendored dependencies, and deploy caches are not our source.
 # Scanning them buries real findings under third-party results we do not own
 # and cannot patch.
+# Both forms are listed deliberately: the bare name excludes the directory
+# entry itself, and the trailing /** form excludes everything beneath it.
+# Relying on the bare name alone can leave the contents in scope.
 paths-ignore:
-  - "**/node_modules"
-  - "**/dist"
-  - "**/build"
-  - "**/.wrangler"
-  - "**/coverage"
-  - "**/.netlify"
+  - '**/node_modules'
+  - '**/node_modules/**'
+  - '**/dist'
+  - '**/dist/**'
+  - '**/build'
+  - '**/build/**'
+  - '**/.wrangler'
+  - '**/.wrangler/**'
+  - '**/coverage'
+  - '**/coverage/**'
+  - '**/.netlify'
+  - '**/.netlify/**'
