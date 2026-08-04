@@ -50,10 +50,7 @@ export interface PromotionDraft {
 }
 
 export type ModerationQueueFilter =
-  | 'pending'
-  | 'approved-unpublished'
-  | 'approved-published'
-  | 'rejected'
+  'pending' | 'approved-unpublished' | 'approved-published' | 'rejected'
 
 export type AuditActor = NonNullable<RecordModerationAuditInput['actor']>
 export type AuditEntriesByEntityId = Record<string, ModerationAuditLog[]>
