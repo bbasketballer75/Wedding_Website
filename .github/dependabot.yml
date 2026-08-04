@@ -1,0 +1,54 @@
+# Dependabot configuration for Wedding_Website.
+#
+# Scope: npm (the app's own dependencies) + github-actions (CI pins).
+#
+# Note this differs deliberately from the hermes-agent fork, whose upstream
+# (NousResearch) enables github-actions ONLY because that project pins every
+# source dependency exactly as a supply-chain posture and moves pins by hand.
+# This repo is an application, not a pinned library — staying current on npm
+# is worth more here than pin-stability, so both ecosystems are enabled.
+#
+# Minor/patch updates are grouped into one PR per ecosystem per week to keep
+# the noise down. Major bumps still open individually because they need real
+# review. Dependabot *security* updates are separate: they are CVE-triggered,
+# open immediately regardless of this schedule, and are controlled by the
+# repo setting (Settings -> Code security -> Dependabot security updates).
+
+version: 2
+updates:
+  - package-ecosystem: 'npm'
+    directory: '/'
+    schedule:
+      interval: 'weekly'
+      day: 'monday'
+    open-pull-requests-limit: 5
+    labels:
+      - 'dependencies'
+    commit-message:
+      # No `include: scope`: Dependabot appends its own "(deps)"
+      # scope to the prefix, producing chore(deps)(deps): which is not
+      # a valid Conventional Commit header (required by AGENTS.md).
+      prefix: 'chore(deps)'
+    groups:
+      npm-minor-patch:
+        update-types:
+          - 'minor'
+          - 'patch'
+
+  - package-ecosystem: 'github-actions'
+    directory: '/'
+    schedule:
+      interval: 'weekly'
+      day: 'monday'
+    open-pull-requests-limit: 5
+    labels:
+      - 'dependencies'
+      - 'github-actions'
+    commit-message:
+      # Same reason as above -- the prefix already carries the scope.
+      prefix: 'chore(actions)'
+    groups:
+      actions-minor-patch:
+        update-types:
+          - 'minor'
+          - 'patch'
