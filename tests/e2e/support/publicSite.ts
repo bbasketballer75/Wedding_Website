@@ -10,12 +10,7 @@ import {
 } from './mockData'
 
 type JsonValue =
-  | null
-  | boolean
-  | number
-  | string
-  | readonly JsonValue[]
-  | { [key: string]: JsonValue }
+  null | boolean | number | string | readonly JsonValue[] | { [key: string]: JsonValue }
 
 const JSON_HEADERS = {
   'access-control-allow-origin': '*',
