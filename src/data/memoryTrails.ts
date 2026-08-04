@@ -1,9 +1,5 @@
 export type MemoryTrailId =
-  | 'ceremony'
-  | 'family'
-  | 'dance-floor'
-  | 'engagement-season'
-  | 'bach-ette'
+  'ceremony' | 'family' | 'dance-floor' | 'engagement-season' | 'bach-ette'
 
 export interface MemoryTrail {
   id: MemoryTrailId
