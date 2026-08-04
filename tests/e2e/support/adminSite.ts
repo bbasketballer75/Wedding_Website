@@ -18,12 +18,7 @@ import { galleryPhotos } from './mockData'
 // ─── Types ────────────────────────────────────────────────────────────────────
 
 type JsonValue =
-  | null
-  | boolean
-  | number
-  | string
-  | readonly JsonValue[]
-  | { [key: string]: JsonValue }
+  null | boolean | number | string | readonly JsonValue[] | { [key: string]: JsonValue }
 
 // ─── Constants ────────────────────────────────────────────────────────────────
 
