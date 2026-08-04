@@ -824,12 +824,10 @@ const curatedPhotos = (
       collection: 'Proposal',
     },
   ] satisfies Array<Omit<GalleryPhoto, 'albumSortOrder'>>
-).map(
-  (photo, index): GalleryPhoto => ({
-    ...photo,
-    albumSortOrder: index + 1,
-  })
-)
+).map((photo, index): GalleryPhoto => ({
+  ...photo,
+  albumSortOrder: index + 1,
+}))
 
 const viewOptions = [
   {
