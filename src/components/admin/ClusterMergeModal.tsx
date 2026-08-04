@@ -43,8 +43,7 @@ function getOverlayStyle(face: MediaReviewFace) {
   const dimensions =
     face.metadata && typeof face.metadata === 'object'
       ? ((face.metadata as Record<string, unknown>)['detectionDimensions'] as
-          | Record<string, unknown>
-          | undefined)
+          Record<string, unknown> | undefined)
       : undefined
   const width = typeof dimensions?.width === 'number' ? dimensions.width : null
   const height = typeof dimensions?.height === 'number' ? dimensions.height : null
