@@ -21,7 +21,7 @@
 # All actions are pinned to full commit SHAs, matching the supply-chain
 # posture used elsewhere in this account.
 
-name: "CodeQL"
+name: 'CodeQL'
 
 on:
   pull_request:
@@ -29,7 +29,7 @@ on:
   push:
     branches: [main]
   schedule:
-    - cron: "0 6 * * 1"
+    - cron: '0 6 * * 1'
   workflow_dispatch:
 
 jobs:
@@ -68,4 +68,4 @@ jobs:
       - name: Perform CodeQL Analysis
         uses: github/codeql-action/analyze@3b0bd1d116c0bde30213346b22d4f634d96a2fb0 # v3
         with:
-          category: "/language:${{ matrix.language }}"
+          category: '/language:${{ matrix.language }}'
