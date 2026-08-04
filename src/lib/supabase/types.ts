@@ -245,11 +245,7 @@ export interface ModerationAuditTimelineFilters {
 
 export type MediaReviewBatchStatus = 'pending' | 'in_review' | 'approved' | 'archived'
 export type MediaReviewClusterStatus =
-  | 'pending'
-  | 'confirmed'
-  | 'ignored'
-  | 'merged'
-  | 'split_requested'
+  'pending' | 'confirmed' | 'ignored' | 'merged' | 'split_requested'
 export type MediaReviewFaceStatus = 'pending' | 'confirmed' | 'ignored'
 export type GuestFaceTaggingBatchStatus = 'prepared' | 'synced' | 'failed'
 
@@ -377,10 +373,7 @@ export type SiteEditorialFeatureSlot =
   | 'film_featured_guest_video'
 
 export type SiteEditorialFeatureSourceType =
-  | 'guest_upload'
-  | 'guestbook_message'
-  | 'film_chapter'
-  | 'custom'
+  'guest_upload' | 'guestbook_message' | 'film_chapter' | 'custom'
 
 export interface SiteEditorialFeature {
   id: string
