@@ -454,6 +454,7 @@ export const useMediaReviewStore = create<MediaReviewState>()(
         const firstDraft = faceDrafts[firstFace.id] || normalizeFaceDraft(firstFace)
 
         return {
+          reviewStatus: firstDraft.reviewStatus,
           confirmedName: firstDraft.confirmedName,
           personKey:
             firstDraft.personKey ||
