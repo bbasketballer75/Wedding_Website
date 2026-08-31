@@ -126,7 +126,7 @@
   "devDependencies": {
     "@aws-sdk/lib-storage": "^3.1115.0",
     "@axe-core/playwright": "4.13.0",
-    "@eslint/js": "9.39.4",
+    "@eslint/js": "10.0.1",
     "@lhci/cli": "^0.15.1",
     "@playwright/test": "^1.62.1",
     "@tensorflow/tfjs": "^4.22.0",
