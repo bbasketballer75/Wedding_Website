@@ -26,37 +26,22 @@ test.describe('Home Page', () => {
     await expect(page.locator('#main-content')).toBeFocused()
   })
 
-  test('routes top-level home nav links into the public experience', async ({ page }) => {
+  test('routes first-viewport home nav links into the public experience', async ({ page }) => {
     await gotoPublicPage(page, '/')
+    await expect.poll(() => page.evaluate(() => window.scrollY)).toBe(0)
 
-    // Wait for showUI timer (1200ms from mount) then scroll well past the hero
-    await page.waitForTimeout(1400)
-    await page.evaluate(() => window.scrollBy(0, window.innerHeight * 2.5))
-
-    // Wait until the nav sheds pointer-events-none (heroMateriallyVisible = false AND showUI = true)
     const nav = page.getByTestId('home-nav')
-    await page.waitForFunction(
-      () => {
-        const el = document.querySelector('[data-testid="home-nav"]')
-        return el && window.getComputedStyle(el).pointerEvents !== 'none'
-      },
-      { timeout: 8000 }
-    )
-
-    await nav.getByRole('link', { name: 'Watch Film' }).click()
+    const filmLink = nav.getByRole('link', { name: 'Watch Film' })
+    await expect(nav).toBeInViewport()
+    await expect(filmLink).toBeInViewport()
+    await filmLink.click()
     await expect(page).toHaveURL(/\/film$/)
 
     await gotoPublicPage(page, '/')
-    await page.waitForTimeout(1400)
-    await page.evaluate(() => window.scrollBy(0, window.innerHeight * 2.5))
-    await page.waitForFunction(
-      () => {
-        const el = document.querySelector('[data-testid="home-nav"]')
-        return el && window.getComputedStyle(el).pointerEvents !== 'none'
-      },
-      { timeout: 8000 }
-    )
-    await nav.getByRole('link', { name: 'Guestbook' }).click()
+    await expect.poll(() => page.evaluate(() => window.scrollY)).toBe(0)
+    const guestbookLink = page.getByTestId('home-nav').getByRole('link', { name: 'Guestbook' })
+    await expect(guestbookLink).toBeInViewport()
+    await guestbookLink.click()
     await expect(page).toHaveURL(/\/guestbook$/)
   })
 
