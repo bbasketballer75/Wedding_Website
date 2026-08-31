@@ -1,9 +1,10 @@
 import { useState, useRef, useEffect } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
 import { Button } from '@/components/ui/Button'
-import { X, Link2, Check, Facebook, Twitter, Mail, Share2 } from 'lucide-react'
+import { X, Link2, Check, Mail, Share2 } from 'lucide-react'
 import { cn } from '@/lib/utils'
 import { focusManager } from '@/accessibility/focusManagement'
+import { SocialPlatformIcon } from '@/components/ui/SocialPlatformIcon'
 
 interface ShareModalProps {
   isOpen: boolean
@@ -12,6 +13,14 @@ interface ShareModalProps {
   description?: string
   url?: string
   imageUrl?: string
+}
+
+function FacebookShareIcon({ className }: { className?: string }) {
+  return <SocialPlatformIcon platform='facebook' className={className} />
+}
+
+function TwitterShareIcon({ className }: { className?: string }) {
+  return <SocialPlatformIcon platform='twitter' className={className} />
 }
 
 export function ShareModal({
@@ -57,7 +66,7 @@ export function ShareModal({
     },
     {
       name: 'Facebook',
-      icon: Facebook,
+      icon: FacebookShareIcon,
       color: 'bg-blue-100 text-blue-700',
       onClick: () => {
         const fbUrl = `https://www.facebook.com/sharer/sharer.php?u=${encodeURIComponent(url)}`
@@ -66,7 +75,7 @@ export function ShareModal({
     },
     {
       name: 'Twitter',
-      icon: Twitter,
+      icon: TwitterShareIcon,
       color: 'bg-sky-100 text-sky-700',
       onClick: () => {
         const text = encodeURIComponent(`${title} 💍 ${description}`)

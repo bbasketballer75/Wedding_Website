@@ -15,8 +15,6 @@ import {
   Link2,
   Copy,
   Check,
-  Facebook,
-  Twitter,
   CheckCircle,
   AlertCircle,
   Loader2,
@@ -34,6 +32,7 @@ import { compressImage } from '@/utils/imageCompressor'
 import { withRetry, isTransientError } from '@/utils/retry'
 import { useClaimStore } from '@/stores/claimStore'
 import { ClaimModal } from '@/components/gallery/ClaimModal'
+import { SocialPlatformIcon } from '@/components/ui/SocialPlatformIcon'
 
 enum UploadError {
   NETWORK_TIMEOUT = 'NETWORK_TIMEOUT',
@@ -1365,7 +1364,7 @@ export default function UploadPage() {
                 className='flex h-10 w-10 items-center justify-center rounded-full border border-white/12 bg-white/6 text-white/60 transition-all hover:border-gold-400/30 hover:text-gold-300 hover:bg-white/10'
                 aria-label='Share on Facebook'
               >
-                <Facebook className='h-4 w-4' />
+                <SocialPlatformIcon platform='facebook' className='h-4 w-4' />
               </button>
               <button
                 type='button'
@@ -1377,7 +1376,7 @@ export default function UploadPage() {
                 className='flex h-10 w-10 items-center justify-center rounded-full border border-white/12 bg-white/6 text-white/60 transition-all hover:border-gold-400/30 hover:text-gold-300 hover:bg-white/10'
                 aria-label='Share on X'
               >
-                <Twitter className='h-4 w-4' />
+                <SocialPlatformIcon platform='twitter' className='h-4 w-4' />
               </button>
               <button
                 type='button'
