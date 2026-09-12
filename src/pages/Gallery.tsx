@@ -13,6 +13,7 @@ import { Button } from '@/components/ui/Button'
 import { Input } from '@/components/ui/Input'
 import { downloadBatch, downloadFile } from '@/utils/download'
 import { useInfiniteScroll } from '@/hooks/useInfiniteScroll'
+import { useGalleryData } from '@/hooks/useGalleryData'
 import {
   Search,
   Grid3X3,
@@ -27,9 +28,7 @@ import {
 import { cn } from '@/lib/utils'
 import {
   addPhotoComment,
-  fetchPhotoEngagementSummary,
   fetchPhotoComments,
-  fetchPhotoLikeStatuses,
   supabase,
   togglePhotoLike,
   Photo,
@@ -46,11 +45,8 @@ import {
   type CollectionTab,
   type GalleryPhoto,
 } from '@/components/gallery/constants'
-import {
-  formatPhotoCommentTimestamp,
-  mapSupabasePhoto,
-  normalizeGalleryPhoto,
-} from '@/components/gallery/data'
+import { formatPhotoCommentTimestamp, normalizeGalleryPhoto } from '@/components/gallery/data'
+import type { PhotoComment, PhotoFace } from '@/lib/supabase'
 
 // Lazy-loaded so it splits into its own chunk — saves ~35 kB gzip on initial Gallery load.
 const PhotoLightbox = lazy(() =>
@@ -777,11 +773,12 @@ export default function Gallery() {
   const [viewMode, setViewMode] = useState<'masonry' | 'grid' | 'timeline'>('masonry')
   const [lightboxIndex, setLightboxIndex] = useState<number | null>(null)
   const [faceFilter, setFaceFilter] = useState<string | null>(null)
-  const [photos, setPhotos] = useState<GalleryPhoto[]>(() =>
+  const { photos, isLoading, loadError, setPhotos } = useGalleryData(
+    'Proposal',
+    curatedPhotos.map(normalizeGalleryPhoto),
     curatedPhotos.map(normalizeGalleryPhoto)
   )
   const [downloadingId, setDownloadingId] = useState<string | null>(null)
-  const [isLoading, setIsLoading] = useState(true)
   const [selectMode, setSelectMode] = useState(false)
   const queue = useDownloadStore(state => state.queue)
   const addToQueue = useDownloadStore(state => state.addToQueue)
@@ -794,7 +791,6 @@ export default function Gallery() {
 
   const selectedPhotoIds = useMemo(() => new Set(queue.map(p => p.id)), [queue])
   const [isDownloadingPack, setIsDownloadingPack] = useState(false)
-  const [loadError, setLoadError] = useState<string | null>(null)
   const [engagementSessionId] = useState(getPhotoEngagementSessionId)
   const [submittingCommentPhotoId, setSubmittingCommentPhotoId] = useState<string | null>(null)
   const [sharedPhotoMeta, setSharedPhotoMeta] = useState<{ url: string; caption?: string } | null>(
@@ -803,113 +799,6 @@ export default function Gallery() {
   const deferredSearchQuery = useDeferredValue(searchQuery)
   const galleryScrollRef = useRef<HTMLDivElement>(null)
   const collectionSwitchDirectionRef = useRef(0)
-
-  // Fetch photos from Supabase on mount
-  useEffect(() => {
-    const fetchPhotos = async () => {
-      try {
-        setIsLoading(true)
-        setLoadError(null)
-
-        const PAGE_SIZE = 1000
-        let allRows: Photo[] = []
-        let from = 0
-        let fetchError = null
-
-        while (true) {
-          const { data, error } = await supabase
-            .from('photos')
-            .select('*')
-            .order('created_at', { ascending: false })
-            .range(from, from + PAGE_SIZE - 1)
-
-          if (error) {
-            fetchError = error
-            break
-          }
-          if (!data || data.length === 0) break
-          allRows = [...allRows, ...data]
-          if (data.length < PAGE_SIZE) break
-          from += PAGE_SIZE
-        }
-
-        if (fetchError) {
-          setLoadError(
-            'The live gallery is taking a moment — the collections below are still ready to explore.'
-          )
-          return
-        }
-
-        const livePhotos = (allRows || []).map(mapSupabasePhoto)
-        const mergedPhotos = [...curatedPhotos.map(normalizeGalleryPhoto), ...livePhotos].reduce<
-          GalleryPhoto[]
-        >((acc, photo) => {
-          const duplicateIndex = acc.findIndex(
-            existing =>
-              existing.id === photo.id ||
-              existing.url === photo.url ||
-              existing.thumbnail === photo.thumbnail
-          )
-
-          if (duplicateIndex >= 0) {
-            acc[duplicateIndex] = {
-              ...acc[duplicateIndex],
-              ...photo,
-            }
-          } else {
-            acc.push(photo)
-          }
-
-          return acc
-        }, [])
-
-        const [likeStatusResult, engagementSummaryResult] = await Promise.all([
-          fetchPhotoLikeStatuses(
-            mergedPhotos.map(photo => photo.id),
-            engagementSessionId
-          ),
-          fetchPhotoEngagementSummary(mergedPhotos.map(photo => photo.id)),
-        ])
-
-        const likeStatusResponse = likeStatusResult.data
-        const likeStatuses = Array.isArray(likeStatusResponse) ? likeStatusResponse : []
-        const engagementSummaries = Array.isArray(engagementSummaryResult.data)
-          ? engagementSummaryResult.data
-          : []
-
-        const likeStatusByPhotoId = new Map(
-          likeStatuses.map(status => [status.photo_key, status] as const)
-        )
-        const engagementSummaryByPhotoId = new Map(
-          engagementSummaries.map(summary => [summary.photo_key, summary] as const)
-        )
-
-        setPhotos(
-          mergedPhotos.map(photo => {
-            const likeStatus = likeStatusByPhotoId.get(photo.id)
-            const engagementSummary = engagementSummaryByPhotoId.get(photo.id)
-
-            return {
-              ...photo,
-              likes: likeStatus?.likes_count ?? engagementSummary?.likes_count ?? photo.likes,
-              likeCount: likeStatus?.likes_count ?? engagementSummary?.likes_count ?? photo.likes,
-              liked: likeStatus?.liked ?? photo.liked,
-              commentCount: engagementSummary?.comments_count ?? photo.comments?.length ?? 0,
-            }
-          })
-        )
-      } catch {
-        setLoadError(
-          'Could not connect to the live gallery right now. The curated collections below are still ready to browse.'
-        )
-      } finally {
-        setIsLoading(false)
-      }
-    }
-
-    fetchPhotos()
-  }, [engagementSessionId])
-
   // Fetch shared photo metadata from Supabase when ?shared= param is present
   useEffect(() => {
     const requestedShared = searchParams.get('shared')
@@ -1014,7 +903,7 @@ export default function Gallery() {
         photo.photographer,
         photo.collection,
         photo.source,
-        ...(photo.faces || []).map(face => face.name),
+        ...(photo.faces || []).map((face: PhotoFace) => face.name),
         ...(photo.tags || []),
       ]
         .filter(Boolean)
@@ -1023,7 +912,8 @@ export default function Gallery() {
 
       const matchesSearch = !normalizedQuery || searchableText.includes(normalizedQuery)
       const matchesFace =
-        !faceFilter || photo.faces?.some(f => resolveAlias(f.name) === resolveAlias(faceFilter))
+        !faceFilter ||
+        photo.faces?.some((f: PhotoFace) => resolveAlias(f.name) === resolveAlias(faceFilter))
 
       return matchesSearch && matchesFace
     })
@@ -1308,7 +1198,7 @@ export default function Gallery() {
             ? {
                 ...photo,
                 comments: (photo.comments || []).filter(
-                  comment => comment.id !== optimisticComment.id
+                  (comment: PhotoComment) => comment.id !== optimisticComment.id
                 ),
                 commentCount: Math.max((photo.commentCount ?? photo.comments?.length ?? 1) - 1, 0),
               }
@@ -1332,7 +1222,7 @@ export default function Gallery() {
         photo.id === photoId
           ? {
               ...photo,
-              comments: (photo.comments || []).map(comment =>
+              comments: (photo.comments || []).map((comment: PhotoComment) =>
                 comment.id === optimisticComment.id ? newComment : comment
               ),
             }
@@ -1413,7 +1303,7 @@ export default function Gallery() {
     return () => {
       cancelled = true
     }
-  }, [filteredPhotos, lightboxIndex])
+  }, [filteredPhotos, lightboxIndex, setPhotos])
 
   const shareParam = searchParams.get('share')
   const sharedParam = searchParams.get('shared')

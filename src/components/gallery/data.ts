@@ -17,6 +17,7 @@
 import { getMediaPath } from '@/utils/media'
 import type { Photo } from '@/lib/supabase'
 import type { GalleryPhoto } from '@/components/gallery/constants'
+export type { GalleryPhoto }
 
 // ─── Path normalization ────────────────────────────────────────────────────
 
