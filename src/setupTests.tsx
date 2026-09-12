@@ -18,6 +18,7 @@ globalThis.IntersectionObserver = class IntersectionObserver implements Intersec
   readonly root: Element | Document | null = null
   readonly rootMargin: string = ''
   readonly thresholds: readonly number[] = []
+  readonly scrollMargin: string = ''
 
   constructor(
     public callback: IntersectionObserverCallback,

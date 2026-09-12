@@ -168,7 +168,7 @@
     "sitemap": "9.0.1",
     "supabase": "^2.115.0",
     "terser": "5.50.0",
-    "typescript": "^5.9.3",
+    "typescript": "^6.0.3",
     "vite": "^8.2.2",
     "vite-plugin-pwa": "^1.2.0",
     "vitest": "^4.1.9",
