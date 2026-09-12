@@ -69,7 +69,7 @@
     "test:visual:ui": "playwright test --config playwright.config.visual.ts --ui",
     "test:live:images": "playwright test tests/e2e-live/image-audit.spec.ts --config playwright.config.visual.ts",
     "perf": "npm run build && node scripts/run-lhci.js",
-    "verify:env": "node scripts/verify-release-env.js",
+    "verify:env": "node scripts/check-repo-hygiene.js && node scripts/verify-release-env.js",
     "verify:launch": "npm run verify:release && node scripts/verify-launch-readiness.js",
     "verify:deployed": "node scripts/verify-deployed-site.js",
     "verify:admin:live": "node scripts/verify-live-admin-smoke.js",

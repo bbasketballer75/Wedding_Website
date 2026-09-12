@@ -20,9 +20,13 @@ dev-dist
 # Local tool caches
 .minimax/
 .playwright-mcp/
+.playwright-cli/
 .hermes/
+.agents/
 .harness/reins/*/memory/
 .harness/reins/*/opencode/
+.lighthouseci/
+.remember/
 
 # Git worktrees
 .worktrees/
@@ -59,6 +63,15 @@ playwright-report
 click-test.png
 test-failed-guestbook.png
 *.bak
+
+# Backup / snapshot directories (root cause of 2026-09-11 lint hang:
+# `mv node_modules node_modules.bak-2026...` then `eslint .` recursed into
+# the backup because it was un-ignored. Always back up via `git stash` or
+# a path outside the repo.)
+node_modules.bak-*/
+*.bak-*/
+verify-*.log
+.verify-release-run*.log
 
 # Cache
 .cache
