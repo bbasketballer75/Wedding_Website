@@ -11,7 +11,6 @@ import { Button } from '@/components/ui/Button'
 import { Input } from '@/components/ui/Input'
 import { GallerySkeleton } from '@/components/ui/Skeleton'
 import { downloadBatch, downloadFile } from '@/utils/download'
-import { getMediaPath } from '@/utils/media'
 import { useInfiniteScroll } from '@/hooks/useInfiniteScroll'
 import {
   Search,
@@ -48,25 +47,18 @@ import {
   getPhotoEngagementSessionId,
   resolveAlias,
   type CollectionTab,
+  type GalleryPhoto,
 } from '@/components/gallery/constants'
+import {
+  formatPhotoCommentTimestamp,
+  mapSupabasePhoto,
+  normalizeGalleryPhoto,
+} from '@/components/gallery/data'
 
 // Lazy-loaded so it splits into its own chunk — saves ~35 kB gzip on initial Gallery load.
 const PhotoLightbox = lazy(() =>
   import('@/components/photo-viewer/PhotoLightbox').then(m => ({ default: m.PhotoLightbox }))
 )
-
-// Extended photo type for gallery display
-// Makes is_professional and created_at optional so static curated photos don't need them
-interface GalleryPhoto extends Omit<Photo, 'is_professional' | 'created_at'> {
-  is_professional?: boolean
-  created_at?: string
-  downloadUrl?: string
-  albumSortOrder?: number
-  aspectRatio: number
-  createdAt?: string
-  source: 'professional' | 'guest'
-  collection: 'Proposal' | 'Bach+ette' | 'Wedding Photos' | 'Guest Photos'
-}
 
 interface DetectedFace {
   id: string
@@ -780,144 +772,6 @@ const viewOptions = [
     icon: CalendarDays,
   },
 ] as const
-
-const normalizeGalleryMediaPath = (path?: string | null): string => {
-  if (!path) {
-    return ''
-  }
-
-  return getMediaPath(path)
-}
-
-const normalizeGalleryPhoto = (photo: GalleryPhoto): GalleryPhoto => ({
-  ...photo,
-  url: normalizeGalleryMediaPath(photo.url),
-  thumbnail: normalizeGalleryMediaPath(photo.thumbnail || photo.url),
-  downloadUrl: normalizeGalleryMediaPath(photo.downloadUrl || photo.url),
-})
-
-const formatPhotoCommentTimestamp = (value: string) =>
-  new Date(value).toLocaleString('en-US', {
-    month: 'short',
-    day: 'numeric',
-    hour: 'numeric',
-    minute: '2-digit',
-  })
-
-// Helper to convert Supabase photo to local Photo type
-const normalizeCollectionValue = (value?: string | null): GalleryPhoto['collection'] | null => {
-  const normalized = (value || '').trim().toLowerCase()
-
-  if (normalized === 'engagement' || normalized === 'proposal') {
-    return 'Proposal'
-  }
-
-  if (
-    normalized === 'bach+ette' ||
-    normalized === 'bach' ||
-    normalized === 'bachelorette' ||
-    normalized === 'bachelor'
-  ) {
-    return 'Bach+ette'
-  }
-
-  if (
-    normalized === 'wedding day' ||
-    normalized === 'wedding-day' ||
-    normalized === 'wedding photos' ||
-    // All wedding-photo sub-albums map to Wedding Photos collection
-    normalized === 'couple' ||
-    normalized === 'parents' ||
-    normalized === 'rings' ||
-    normalized === 'film' ||
-    normalized === 'home' ||
-    normalized === 'parent-film-cards' ||
-    normalized === 'wedding-party' ||
-    normalized === 'shared-gallery-new'
-  ) {
-    return 'Wedding Photos'
-  }
-
-  if (
-    normalized === 'guest uploads' ||
-    normalized === 'guest-upload' ||
-    normalized === 'guest' ||
-    normalized === 'guest photos'
-  ) {
-    return 'Guest Photos'
-  }
-
-  return null
-}
-
-const deriveCollection = (
-  photo: Pick<
-    Photo,
-    'album' | 'is_professional' | 'category' | 'caption' | 'tags' | 'location' | 'url' | 'thumbnail'
-  >
-): GalleryPhoto['collection'] => {
-  const normalizedAlbum = normalizeCollectionValue(photo.album)
-  if (normalizedAlbum) {
-    return normalizedAlbum
-  }
-
-  const normalizedCategory = normalizeCollectionValue(photo.category)
-  if (normalizedCategory) {
-    return normalizedCategory
-  }
-
-  if (!photo.is_professional) {
-    return 'Guest Photos'
-  }
-
-  const pathAndTags = [photo.url, photo.thumbnail, ...(photo.tags || [])]
-    .filter(Boolean)
-    .join(' ')
-    .toLowerCase()
-
-  if (pathAndTags.includes('engagement') || pathAndTags.includes('proposal')) {
-    return 'Proposal'
-  }
-
-  if (
-    pathAndTags.includes('bach') ||
-    pathAndTags.includes('bachelorette') ||
-    pathAndTags.includes('bachelor') ||
-    pathAndTags.includes('ette')
-  ) {
-    return 'Bach+ette'
-  }
-
-  return 'Wedding Photos'
-}
-
-const mapSupabasePhoto = (photo: Photo): GalleryPhoto =>
-  normalizeGalleryPhoto({
-    id: photo.id,
-    url: photo.url,
-    thumbnail: photo.thumbnail,
-    downloadUrl: photo.download_url ?? photo.url,
-    caption: photo.caption,
-    album: photo.album,
-    albumSortOrder: photo.album_sort_order ?? undefined,
-    category: photo.category || 'Uncategorized',
-    likes: photo.likes,
-    aspectRatio: 1, // Default, could be calculated from image dimensions
-    time: photo.date
-      ? new Date(photo.date).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
-      : undefined,
-    location: photo.location,
-    photographer: photo.photographer,
-    date: photo.date,
-    createdAt: photo.created_at,
-    created_at: photo.created_at,
-    is_professional: photo.is_professional,
-    faces: photo.faces || [],
-    tags: photo.tags,
-    source: photo.is_professional ? 'professional' : 'guest',
-    collection: deriveCollection(photo),
-  })
-
 export default function Gallery() {
   const { addToast } = useToast()
   const [searchParams] = useSearchParams()

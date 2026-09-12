@@ -17,11 +17,26 @@
  */
 
 import { getMediaPath } from '@/utils/media'
+import type { Photo } from '@/lib/supabase'
+
 import { partyData } from '@/data/weddingParty'
 
 // ─── Collection tab type & metadata ────────────────────────────────────────
 
 export type CollectionTab = 'Proposal' | 'Bach+ette' | 'Wedding Photos' | 'Guest Photos'
+// ─── Photo type ──────────────────────────────────────────────────────────────
+// Extended photo type for gallery display.
+// Makes is_professional and created_at optional so static curated photos don't need them.
+export interface GalleryPhoto extends Omit<Photo, 'is_professional' | 'created_at'> {
+  is_professional?: boolean
+  created_at?: string
+  downloadUrl?: string
+  albumSortOrder?: number
+  aspectRatio: number
+  createdAt?: string
+  source: 'professional' | 'guest'
+  collection: CollectionTab
+}
 
 export const collectionTabs: CollectionTab[] = [
   'Proposal',
