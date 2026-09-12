@@ -14,6 +14,7 @@ import { Input } from '@/components/ui/Input'
 import { downloadBatch, downloadFile } from '@/utils/download'
 import { useInfiniteScroll } from '@/hooks/useInfiniteScroll'
 import { useGalleryData } from '@/hooks/useGalleryData'
+import { useGalleryEngagement } from '@/hooks/useGalleryEngagement'
 import {
   Search,
   Grid3X3,
@@ -26,27 +27,19 @@ import {
   Share2,
 } from 'lucide-react'
 import { cn } from '@/lib/utils'
-import {
-  addPhotoComment,
-  fetchPhotoComments,
-  supabase,
-  togglePhotoLike,
-  Photo,
-} from '@/lib/supabase'
+import { fetchPhotoComments, supabase, Photo } from '@/lib/supabase'
 import { useGalleryStore } from '@/stores/galleryStore'
 import { useToast } from '@/context/ToastContext'
 import {
   COLLECTION_COVERS,
-  PHOTO_COMMENT_AUTHOR_KEY,
   collectionMeta,
   collectionTabs,
-  getPhotoEngagementSessionId,
   resolveAlias,
   type CollectionTab,
   type GalleryPhoto,
 } from '@/components/gallery/constants'
 import { formatPhotoCommentTimestamp, normalizeGalleryPhoto } from '@/components/gallery/data'
-import type { PhotoComment, PhotoFace } from '@/lib/supabase'
+import type { PhotoFace } from '@/lib/supabase'
 
 // Lazy-loaded so it splits into its own chunk — saves ~35 kB gzip on initial Gallery load.
 const PhotoLightbox = lazy(() =>
@@ -791,8 +784,9 @@ export default function Gallery() {
 
   const selectedPhotoIds = useMemo(() => new Set(queue.map(p => p.id)), [queue])
   const [isDownloadingPack, setIsDownloadingPack] = useState(false)
-  const [engagementSessionId] = useState(getPhotoEngagementSessionId)
-  const [submittingCommentPhotoId, setSubmittingCommentPhotoId] = useState<string | null>(null)
+  const { submittingCommentPhotoId, toggleLike, submitComment } = useGalleryEngagement({
+    setPhotos,
+  })
   const [sharedPhotoMeta, setSharedPhotoMeta] = useState<{ url: string; caption?: string } | null>(
     null
   )
@@ -1024,29 +1018,6 @@ export default function Gallery() {
     }
   }
 
-  const handleLike = (photoId: string) => {
-    void (async () => {
-      const { data } = await togglePhotoLike(photoId, engagementSessionId)
-
-      if (!data) {
-        return
-      }
-
-      setPhotos(prev =>
-        prev.map(photo =>
-          photo.id === photoId
-            ? {
-                ...photo,
-                liked: data.liked,
-                likes: data.likes_count,
-                likeCount: data.likes_count,
-              }
-            : photo
-        )
-      )
-    })()
-  }
-
   const handleDownload = async (photoId: string) => {
     const photo = photos.find(p => p.id === photoId)
     if (!photo) return
@@ -1147,90 +1118,6 @@ export default function Gallery() {
     const shareUrl = `${window.location.origin}/gallery?share=${ids}`
     void navigator.clipboard?.writeText(shareUrl)
     addToast('Share link copied to clipboard', 'success')
-  }
-
-  const handleAddComment = async (
-    photoId: string,
-    payload: { author: string; content: string }
-  ) => {
-    const normalizedContent = payload.content.trim()
-    const normalizedAuthor = payload.author.trim() || 'Guest'
-
-    if (!normalizedContent) {
-      return false
-    }
-
-    if (typeof window !== 'undefined') {
-      window.localStorage.setItem(PHOTO_COMMENT_AUTHOR_KEY, normalizedAuthor)
-    }
-
-    const optimisticComment = {
-      id: `pending-${Date.now()}`,
-      author: normalizedAuthor,
-      content: normalizedContent,
-      timestamp: 'Sending...',
-    }
-
-    setSubmittingCommentPhotoId(photoId)
-    setPhotos(prev =>
-      prev.map(photo =>
-        photo.id === photoId
-          ? {
-              ...photo,
-              comments: [...(photo.comments || []), optimisticComment],
-              commentCount: (photo.commentCount ?? photo.comments?.length ?? 0) + 1,
-            }
-          : photo
-      )
-    )
-
-    const { data, error } = await addPhotoComment(
-      photoId,
-      normalizedContent,
-      normalizedAuthor,
-      engagementSessionId
-    )
-
-    if (error || !data) {
-      setPhotos(prev =>
-        prev.map(photo =>
-          photo.id === photoId
-            ? {
-                ...photo,
-                comments: (photo.comments || []).filter(
-                  (comment: PhotoComment) => comment.id !== optimisticComment.id
-                ),
-                commentCount: Math.max((photo.commentCount ?? photo.comments?.length ?? 1) - 1, 0),
-              }
-            : photo
-        )
-      )
-      setSubmittingCommentPhotoId(current => (current === photoId ? null : current))
-      addToast("That didn't go through — try again in a moment.", 'error')
-      return false
-    }
-
-    const newComment = {
-      id: data.id,
-      author: data.author,
-      content: data.content,
-      timestamp: formatPhotoCommentTimestamp(data.created_at),
-    }
-
-    setPhotos(prev =>
-      prev.map(photo =>
-        photo.id === photoId
-          ? {
-              ...photo,
-              comments: (photo.comments || []).map((comment: PhotoComment) =>
-                comment.id === optimisticComment.id ? newComment : comment
-              ),
-            }
-          : photo
-      )
-    )
-    setSubmittingCommentPhotoId(current => (current === photoId ? null : current))
-    return true
   }
 
   const handleFaceFilter = (faceName: string) => {
@@ -1606,7 +1493,7 @@ export default function Gallery() {
                 selectMode={selectMode}
                 selectedIds={selectedPhotoIds}
                 onPhotoClick={(_, index) => openLightbox(index)}
-                onLike={handleLike}
+                onLike={toggleLike}
                 onToggleSelect={handleToggleSelect}
                 onLoadMore={loadMore}
                 emptyStateTitle={emptyStateTitle}
@@ -1622,10 +1509,10 @@ export default function Gallery() {
       <Suspense fallback={null}>
         <PhotoLightbox
           photos={filteredPhotos as Photo[]}
-          onLike={handleLike}
+          onLike={toggleLike}
           onDownload={handleDownload}
           isDownloading={downloadingId !== null}
-          onAddComment={handleAddComment}
+          onAddComment={submitComment}
           isSubmittingComment={submittingCommentPhotoId === filteredPhotos[lightboxIndex ?? 0]?.id}
           highlightedFaceName={faceFilter}
         />
