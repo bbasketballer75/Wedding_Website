@@ -11,10 +11,10 @@ import { GalleryHeader } from '@/components/gallery/GalleryHeader'
 import { GalleryGrid } from '@/components/gallery/GalleryGrid'
 import { Button } from '@/components/ui/Button'
 import { Input } from '@/components/ui/Input'
-import { downloadBatch, downloadFile } from '@/utils/download'
 import { useInfiniteScroll } from '@/hooks/useInfiniteScroll'
 import { useGalleryData } from '@/hooks/useGalleryData'
 import { useGalleryEngagement } from '@/hooks/useGalleryEngagement'
+import { useGalleryDownloads } from '@/hooks/useGalleryDownloads'
 import {
   Search,
   Grid3X3,
@@ -771,22 +771,22 @@ export default function Gallery() {
     curatedPhotos.map(normalizeGalleryPhoto),
     curatedPhotos.map(normalizeGalleryPhoto)
   )
-  const [downloadingId, setDownloadingId] = useState<string | null>(null)
   const [selectMode, setSelectMode] = useState(false)
   const queue = useDownloadStore(state => state.queue)
   const addToQueue = useDownloadStore(state => state.addToQueue)
   const removeFromQueue = useDownloadStore(state => state.removeFromQueue)
-  const clearQueue = useDownloadStore(state => state.clearQueue)
-  const setDownloading = useDownloadStore(state => state.setDownloading)
-  const setProgress = useDownloadStore(state => state.setProgress)
-  const setProgressStatus = useDownloadStore(state => state.setProgressStatus)
-  const setPanelOpen = useDownloadStore(state => state.setPanelOpen)
-
   const selectedPhotoIds = useMemo(() => new Set(queue.map(p => p.id)), [queue])
-  const [isDownloadingPack, setIsDownloadingPack] = useState(false)
+  const {
+    downloadingId,
+    isDownloadingPack,
+    handleDownload,
+    handleDownloadPack,
+    handleShareSelection,
+  } = useGalleryDownloads({ photos, selectedPhotoIds })
   const { submittingCommentPhotoId, toggleLike, submitComment } = useGalleryEngagement({
     setPhotos,
   })
+  const clearQueue = useDownloadStore(state => state.clearQueue)
   const [sharedPhotoMeta, setSharedPhotoMeta] = useState<{ url: string; caption?: string } | null>(
     null
   )
@@ -1017,21 +1017,6 @@ export default function Gallery() {
       useGalleryStore.getState().openImageModal(index)
     }
   }
-
-  const handleDownload = async (photoId: string) => {
-    const photo = photos.find(p => p.id === photoId)
-    if (!photo) return
-
-    setDownloadingId(photoId)
-    try {
-      const filename = `Austin-Jordyn-Wedding-${photo.caption || photo.id}.jpg`
-      await downloadFile(photo.downloadUrl || photo.url, filename)
-    } catch {
-      // Error handled via UI
-    }
-    setDownloadingId(null)
-  }
-
   const handleToggleSelect = (photoId: string) => {
     if (selectedPhotoIds.has(photoId)) {
       removeFromQueue(photoId)
@@ -1077,47 +1062,6 @@ export default function Gallery() {
         addedCount++
       }
     }
-  }
-
-  const handleDownloadPack = async () => {
-    if (queue.length === 0) return
-    setIsDownloadingPack(true)
-    try {
-      setDownloading(true)
-      setProgress(0)
-      setProgressStatus('Initializing downloads...')
-
-      await downloadBatch(queue, (prog, stat) => {
-        setProgress(prog)
-        setProgressStatus(stat)
-      })
-
-      // Complete!
-      setTimeout(() => {
-        setDownloading(false)
-        setPanelOpen(false)
-        clearQueue()
-        handleExitSelectMode()
-      }, 1000)
-    } catch (error) {
-      console.error(error)
-      setProgressStatus(error instanceof Error ? error.message : 'Download failed')
-      setProgress(0)
-
-      setTimeout(() => {
-        setDownloading(false)
-      }, 3000)
-    } finally {
-      setIsDownloadingPack(false)
-    }
-  }
-
-  const handleShareSelection = () => {
-    if (selectedPhotoIds.size === 0) return
-    const ids = [...selectedPhotoIds].join(',')
-    const shareUrl = `${window.location.origin}/gallery?share=${ids}`
-    void navigator.clipboard?.writeText(shareUrl)
-    addToast('Share link copied to clipboard', 'success')
   }
 
   const handleFaceFilter = (faceName: string) => {
