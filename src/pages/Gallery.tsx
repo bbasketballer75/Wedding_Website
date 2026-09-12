@@ -1,17 +1,16 @@
 import { useState, useMemo, useEffect, useDeferredValue, useRef, lazy, Suspense } from 'react'
-import { AnimatePresence, motion } from 'framer-motion'
+import { motion } from 'framer-motion'
 import { useSearchParams } from 'react-router-dom'
 import { GallerySEO } from '@/components/seo/SEOHead'
-import { VirtualizedPhotoGrid } from '@/components/gallery/VirtualizedPhotoGrid'
 import { useDownloadStore } from '@/stores/downloadStore'
 import { DownloadQueuePanel } from '@/components/gallery/DownloadQueuePanel'
 import { ProgressModal } from '@/components/gallery/ProgressModal'
 import { FaceRecognition } from '@/components/face-recognition/FaceRecognition'
 import { GalleryUploadLookup } from '@/components/gallery/GalleryUploadLookup'
 import { GalleryHeader } from '@/components/gallery/GalleryHeader'
+import { GalleryGrid } from '@/components/gallery/GalleryGrid'
 import { Button } from '@/components/ui/Button'
 import { Input } from '@/components/ui/Input'
-import { GallerySkeleton } from '@/components/ui/Skeleton'
 import { downloadBatch, downloadFile } from '@/utils/download'
 import { useInfiniteScroll } from '@/hooks/useInfiniteScroll'
 import {
@@ -19,7 +18,6 @@ import {
   Grid3X3,
   LayoutGrid,
   CalendarDays,
-  Filter,
   Loader2,
   X,
   CheckSquare,
@@ -1706,80 +1704,25 @@ export default function Gallery() {
               ref={galleryScrollRef}
               className='overflow-hidden lg:h-[calc(100vh-18rem)] lg:min-h-[32rem] lg:overflow-y-auto lg:pr-2 [&::-webkit-scrollbar]:w-1.5 [&::-webkit-scrollbar-track]:rounded-full [&::-webkit-scrollbar-track]:bg-gold-100/40 [&::-webkit-scrollbar-thumb]:rounded-full [&::-webkit-scrollbar-thumb]:bg-gold-400/50 hover:[&::-webkit-scrollbar-thumb]:bg-gold-500/70'
             >
-              {isLoading ? (
-                <GallerySkeleton count={12} />
-              ) : filteredPhotos.length > 0 ? (
-                <>
-                  <AnimatePresence mode='wait' custom={collectionSwitchDirectionRef.current}>
-                    <motion.div
-                      key={`${selectedCollection}-${viewMode}`}
-                      custom={collectionSwitchDirectionRef.current}
-                      variants={{
-                        initial: (dir: number) => ({ opacity: 0, x: dir >= 0 ? 30 : -30 }),
-                        animate: { opacity: 1, x: 0 },
-                        exit: (dir: number) => ({ opacity: 0, x: dir >= 0 ? -30 : 30 }),
-                      }}
-                      initial='initial'
-                      animate='animate'
-                      exit='exit'
-                      transition={{ duration: 0.28, ease: [0.25, 0.46, 0.45, 0.94] }}
-                    >
-                      {viewMode === 'timeline' ? (
-                        <div>
-                          <h2 className='mb-4 font-display text-2xl text-charcoal-900'>
-                            Timeline view
-                          </h2>
-                          <VirtualizedPhotoGrid
-                            photos={displayedItems as Photo[]}
-                            onPhotoClick={
-                              selectMode ? undefined : (_, index) => openLightbox(index)
-                            }
-                            onLike={selectMode ? undefined : handleLike}
-                            selectMode={selectMode}
-                            selectedIds={selectedPhotoIds}
-                            onToggleSelect={handleToggleSelect}
-                          />
-                        </div>
-                      ) : (
-                        <VirtualizedPhotoGrid
-                          photos={displayedItems as Photo[]}
-                          onPhotoClick={selectMode ? undefined : (_, index) => openLightbox(index)}
-                          onLike={selectMode ? undefined : handleLike}
-                          selectMode={selectMode}
-                          selectedIds={selectedPhotoIds}
-                          onToggleSelect={handleToggleSelect}
-                        />
-                      )}
-                    </motion.div>
-                  </AnimatePresence>
-
-                  {hasMore && (
-                    <div ref={observerRef} className='flex justify-center py-8'>
-                      {isLoadingMore ? (
-                        <div className='flex items-center gap-2 rounded-full bg-cream-50 px-4 py-2 text-charcoal-500'>
-                          <Loader2 className='h-4 w-4 animate-spin text-gold-500' />
-                          Loading more moments...
-                        </div>
-                      ) : (
-                        <Button variant='secondary' onClick={loadMore}>
-                          Load more
-                        </Button>
-                      )}
-                    </div>
-                  )}
-                </>
-              ) : (
-                <div className='flex min-h-[20rem] flex-col items-center justify-center text-center'>
-                  <div className='flex h-16 w-16 items-center justify-center rounded-full bg-gold-100 text-gold-600'>
-                    <Filter className='h-7 w-7' />
-                  </div>
-                  <p className='mt-6 font-display text-2xl text-charcoal-900'>{emptyStateTitle}</p>
-                  <p className='mt-2 max-w-md text-charcoal-500'>{emptyStateBody}</p>
-                  <Button variant='secondary' className='mt-6' onClick={clearAllFilters}>
-                    Return to all collections
-                  </Button>
-                </div>
-              )}
+              <GalleryGrid
+                photos={displayedItems as Photo[]}
+                isLoading={isLoading}
+                viewMode={viewMode}
+                selectedCollection={selectedCollection}
+                collectionSwitchDirection={collectionSwitchDirectionRef.current}
+                hasMore={hasMore}
+                isLoadingMore={isLoadingMore}
+                observerRef={observerRef}
+                selectMode={selectMode}
+                selectedIds={selectedPhotoIds}
+                onPhotoClick={(_, index) => openLightbox(index)}
+                onLike={handleLike}
+                onToggleSelect={handleToggleSelect}
+                onLoadMore={loadMore}
+                emptyStateTitle={emptyStateTitle}
+                emptyStateBody={emptyStateBody}
+                onClearFilters={clearAllFilters}
+              />
             </div>
           </div>
         </div>
