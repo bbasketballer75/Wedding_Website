@@ -40,33 +40,20 @@ import {
 } from '@/lib/supabase'
 import { useGalleryStore } from '@/stores/galleryStore'
 import { useToast } from '@/context/ToastContext'
-import { partyData } from '@/data/weddingParty'
+import {
+  COLLECTION_COVERS,
+  PHOTO_COMMENT_AUTHOR_KEY,
+  collectionMeta,
+  collectionTabs,
+  getPhotoEngagementSessionId,
+  resolveAlias,
+  type CollectionTab,
+} from '@/components/gallery/constants'
 
 // Lazy-loaded so it splits into its own chunk — saves ~35 kB gzip on initial Gallery load.
 const PhotoLightbox = lazy(() =>
   import('@/components/photo-viewer/PhotoLightbox').then(m => ({ default: m.PhotoLightbox }))
 )
-
-// Maps first-name-only face tags to full names so "Austin" and "Austin Porada"
-// are treated as the same person in filters and the detected-faces widget.
-const FACE_NAME_ALIASES: Record<string, string> = (() => {
-  const map: Record<string, string> = {}
-  for (const person of [
-    ...partyData.couple,
-    ...partyData.parents,
-    ...partyData.groomsmen,
-    ...partyData.bridesmaids,
-  ]) {
-    if (person.name && person.fullName && person.name !== person.fullName) {
-      map[person.name] = person.fullName
-    }
-  }
-  return map
-})()
-
-function resolveAlias(name: string): string {
-  return FACE_NAME_ALIASES[name] ?? name
-}
 
 // Extended photo type for gallery display
 // Makes is_professional and created_at optional so static curated photos don't need them
@@ -91,59 +78,6 @@ interface DetectedFace {
   collections?: string[]
   professionalCount?: number
   guestCount?: number
-}
-
-type CollectionTab = 'Proposal' | 'Bach+ette' | 'Wedding Photos' | 'Guest Photos'
-
-const collectionTabs: CollectionTab[] = ['Proposal', 'Bach+ette', 'Wedding Photos', 'Guest Photos']
-
-const collectionMeta: Record<
-  CollectionTab,
-  {
-    eyebrow: string
-    title: string
-    description: string
-    supporting: string
-    sourceHint: string
-  }
-> = {
-  Proposal: {
-    eyebrow: 'Before the wedding',
-    title: 'Proposal and engagement portraits',
-    description: 'The proposal, portraits, and the whole season before the wedding day.',
-    supporting: 'Everything from the engagement chapter lives here.',
-    sourceHint: 'Proposal album',
-  },
-  'Bach+ette': {
-    eyebrow: 'Pre-wedding weekends',
-    title: 'Bachelor and bachelorette memories',
-    description: 'The full pre-wedding weekend album.',
-    supporting: 'Everything from the bachelor and bachelorette events lives here.',
-    sourceHint: 'Bach+ette album',
-  },
-  'Wedding Photos': {
-    eyebrow: 'The day itself',
-    title: 'Wedding day coverage',
-    description: 'The photographer-led archive for the day itself.',
-    supporting: 'This is the main album for ceremony, portraits, and reception coverage.',
-    sourceHint: 'Wedding-day album',
-  },
-  'Guest Photos': {
-    eyebrow: 'From family and friends',
-    title: 'Guest Perspectives',
-    description: 'A collection of memories and angles shared by our loved ones.',
-    supporting: 'This stays separate from the photographer coverage on purpose.',
-    sourceHint: 'Guest album',
-  },
-}
-
-const COLLECTION_COVERS: Record<CollectionTab, string> = {
-  Proposal: '/images/engagement/PoradaProposal-29.webp',
-  'Bach+ette': getMediaPath('/media/_thumbs/Bach+ette/Photos/PXL_20240816_221115487.MP.webp'),
-  'Wedding Photos': getMediaPath('/media/_thumbs/Professional/Wedding Day/Photos/DSC06261.webp'),
-  'Guest Photos': getMediaPath(
-    '/media/_thumbs/Guest Uploads/Wedding Day/Live Photos/Stills/20250511_180812-0b9c.webp'
-  ),
 }
 
 const curatedPhotos = (
@@ -861,28 +795,6 @@ const normalizeGalleryPhoto = (photo: GalleryPhoto): GalleryPhoto => ({
   thumbnail: normalizeGalleryMediaPath(photo.thumbnail || photo.url),
   downloadUrl: normalizeGalleryMediaPath(photo.downloadUrl || photo.url),
 })
-
-const PHOTO_ENGAGEMENT_SESSION_KEY = 'wedding-gallery-engagement-session'
-const PHOTO_COMMENT_AUTHOR_KEY = 'wedding-gallery-comment-author'
-
-const getPhotoEngagementSessionId = () => {
-  if (typeof window === 'undefined') {
-    return 'server-preview-session'
-  }
-
-  const existingSessionId = window.localStorage.getItem(PHOTO_ENGAGEMENT_SESSION_KEY)
-  if (existingSessionId) {
-    return existingSessionId
-  }
-
-  const generatedSessionId =
-    typeof window.crypto?.randomUUID === 'function'
-      ? window.crypto.randomUUID()
-      : `session-${Date.now()}-${Math.random().toString(36).slice(2, 10)}`
-
-  window.localStorage.setItem(PHOTO_ENGAGEMENT_SESSION_KEY, generatedSessionId)
-  return generatedSessionId
-}
 
 const formatPhotoCommentTimestamp = (value: string) =>
   new Date(value).toLocaleString('en-US', {
