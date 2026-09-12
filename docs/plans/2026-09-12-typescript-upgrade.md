@@ -2,11 +2,13 @@
 
 > **For Hermes:** Two-step major-version upgrade. Each step ships as its own PR with explicit before/after test runs.
 
-**Goal:** Move the project from TypeScript 5.9.3 to TypeScript 7.x, unlocking newer type-system features and unblocking the eslint/js 10.x bump (Plan C).
+> **⚠️ 2026-09-12 UPDATE: Plan B.1 (5→6) shipped in PR #78. Plan B.2 (6→7) is BLOCKED.** `@typescript-eslint@8.x` does not support TypeScript 7.0; per the official typescript-eslint guidance, you must run their tool with the TS 6 API until typescript-eslint ships v8.45+ (or v9) with TS 7 support. Attempted install at 2026-09-12 04:13Z showed typescript-eslint throws "does not support TS 7.0" on lint. **TS 7 migration must wait for typescript-eslint ecosystem.**
 
-**Architecture:** Two PRs (5→6, then 6→7), each independently mergeable. Each PR runs the full test suite + smoke build before commit. If 5→6 surfaces issues that need 6→7 fixes, fold them into the second PR.
+**Goal (original):** Move the project from TypeScript 5.9.3 to TypeScript 7.x, unlocking newer type-system features and unblocking the eslint/js 10.x bump (Plan C).
 
-**Tech Stack:** TypeScript 5.9 → 6 → 7, Vite 8, Vitest 4.
+**Architecture (original):** Two PRs (5→6, then 6→7), each independently mergeable. Each PR runs the full test suite + smoke build before commit. If 5→6 surfaces issues that need 6→7 fixes, fold them into the second PR.
+
+**Tech Stack (original):** TypeScript 5.9 → 6 → 7, Vite 8, Vitest 4.
 
 ---
 
