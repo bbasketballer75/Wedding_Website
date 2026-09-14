@@ -1,0 +1,88 @@
+name: Visual regression (production)
+
+# Runs the visual screenshot suite against the LIVE Netlify deployment
+# at https://www.theporadas.com and uploads the Playwright report as an
+# artifact. Schedule: nightly at 04:00 UTC. Also runnable manually via
+# workflow_dispatch (the `update_snapshots` input regenerates the baseline
+# instead of comparing against it).
+#
+# This is OUTSIDE the PR CI gate. Visual diffs against live production
+# are too slow + flaky (real CDN images, real Supabase timing) to gate
+# merges on, so this workflow runs independently and produces a signal
+# that can be reviewed the morning after.
+#
+# First run: baselines don't exist yet. Set `update_snapshots: true`
+# on the manual trigger to seed them, then commit the generated files
+# from tests/e2e-live/__screenshots__/ in a follow-up PR.
+
+on:
+  schedule:
+    # 04:00 UTC nightly. After auto-deploys from earlier in the day
+    # have settled.
+    - cron: '0 4 * * *'
+  workflow_dispatch:
+    inputs:
+      update_snapshots:
+        description: 'Regenerate baseline screenshots instead of comparing against them'
+        required: false
+        type: boolean
+        default: false
+
+jobs:
+  visual:
+    name: Visual regression (production)
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    permissions:
+      contents: read
+    env:
+      # CI placeholder values. The prod config does NOT read these (the
+      # site is already deployed), but the workspace's package scripts
+      # may still call dotenv.loadEnv() during install.
+      VITE_SUPABASE_URL: https://placeholder.supabase.co
+      VITE_SUPABASE_ANON_KEY: ci-placeholder-anon-key
+      VITE_SITE_URL: https://www.theporadas.com
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v7
+
+      - name: Setup Node 22
+        uses: actions/setup-node@v7
+        with:
+          node-version: '22'
+          cache: 'npm'
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Sanity-check the live site before snapshotting
+        run: curl -fsS -o /dev/null -w 'live:%{http_code}\n' https://www.theporadas.com
+
+      - name: Run visual regression against production
+        run: |
+          if [ "${{ inputs.update_snapshots }}" = "true" ]; then
+            echo "Regenerating baseline screenshots..."
+            npm run test:visual:prod:update
+          else
+            echo "Comparing against baseline screenshots..."
+            npm run test:visual:prod
+          fi
+
+      - name: Upload Playwright report
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: playwright-report-visual-prod
+          path: playwright-report-visual-prod/
+          retention-days: 30
+
+      - name: Summarize result
+        if: always()
+        run: |
+          if [ "${{ inputs.update_snapshots }}" = "true" ]; then
+            echo "Baselines updated. If this was a scheduled run, the regenerated snapshots need to be committed manually."
+          elif [ "${{ job.status }}" = "success" ]; then
+            echo "Visual regression: no diffs detected against baseline."
+          else
+            echo "Visual regression: diffs detected. See the uploaded playwright-report-visual-prod artifact for screenshots."
+          fi

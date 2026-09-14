@@ -81,7 +81,9 @@
     "security:audit": "npm audit",
     "security:fix": "npm audit fix --legacy-peer-deps",
     "typecheck": "tsc --noEmit",
-    "typecheck:legacy": "tsc6 --noEmit"
+    "typecheck:legacy": "tsc6 --noEmit",
+    "test:visual:prod": "playwright test --config playwright.config.visual-prod.ts",
+    "test:visual:prod:update": "playwright test --config playwright.config.visual-prod.ts --update-snapshots"
   },
   "dependencies": {
     "@aws-sdk/client-s3": "^3.1115.0",
