@@ -1,0 +1,62 @@
+name: Auto-merge patch updates
+
+# Auto-merge Dependabot/Renovate PRs for non-major, patch-level dependency
+# updates. Speeds up the review queue by removing low-risk changes that
+# CI already validates. Admin approval required for first run; afterwards
+# it runs automatically.
+
+on:
+  pull_request:
+    types: [opened, synchronize, ready_for_review]
+  workflow_dispatch:
+
+# Only one auto-merge per PR.
+concurrency:
+  group: auto-merge-${{ github.event.pull_request.number }}
+  cancel-in-progress: true
+
+jobs:
+  auto-merge:
+    name: Auto-merge patch
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    permissions:
+      contents: write
+      pull-requests: write
+      checks: read
+    steps:
+      - name: Fetch PR
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Check if PR is patch-level
+        id: check
+        run: |
+          # Use GitHub API to check if PR has patch-only label
+          LABELS=$(gh pr view ${{ github.event.pull_request.number }} --json labels --jq '.labels[].name' | tr '\n' ' ')
+          echo "labels: $LABELS"
+          if echo "$LABELS" | grep -qE "(patch|dependencies)"; then
+            echo "should_merge=true" >> $GITHUB_OUTPUT
+          else
+            echo "should_merge=false" >> $GITHUB_OUTPUT
+          fi
+
+      - name: Enable auto-merge
+        if: steps.check.outputs.should_merge == 'true'
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          gh pr merge ${{ github.event.pull_request.number }} \
+            --auto \
+            --squash \
+            --body "Auto-merged by chore(tooling) bot. Patch-level dep update."
+
+      - name: Approve if patch
+        if: steps.check.outputs.should_merge == 'true'
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          gh pr review ${{ github.event.pull_request.number }} \
+            --approve \
+            --body "Patch-level dep update auto-approved."

@@ -1,0 +1,86 @@
+name: PR Review (Claude)
+
+# Auto-review pull requests via Claude Code action. Posts inline review
+# comments with Claude findings. Advisory only (continue-on-error) so
+# PRs are not blocked on missing config or transient Claude errors.
+#
+# Setup: gh secret set CLAUDE_CODE_OAUTH_TOKEN (repo-level). Generate the
+# token at https://claude.ai/code -> Settings -> Tokens.
+
+on:
+  pull_request:
+    types: [opened, synchronize, reopened]
+    branches: [main]
+  workflow_dispatch:
+
+# Cancel any in-flight review for the same PR when a new commit lands.
+concurrency:
+  group: pr-review-${{ github.event.pull_request.number }}
+  cancel-in-progress: true
+
+jobs:
+  review:
+    name: Review with Claude
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    # Advisory only — fails gracefully when secret is missing or Claude errors.
+    continue-on-error: true
+    permissions:
+      contents: read
+      pull-requests: write
+    steps:
+      - name: Checkout PR head
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 1
+
+      - name: Run Claude review
+        id: review
+        uses: anthropics/claude-code-action@v1
+        with:
+          claude_code_oauth_token: ${{ secrets.CLAUDE_CODE_OAUTH_TOKEN }}
+          # Read-only: reviewer should never execute writes during a review.
+          allowed_tools: Read,Grep,Glob
+          # Write Claude final response here; the comment step reads it back.
+          output_file: claude-review-output.md
+          prompt: |
+            You are reviewing a pull request to the Wedding_Website_Clean
+            repository. Focus your review on:
+
+            1. Correctness: type errors, React anti-patterns, missed edge cases.
+            2. Safety: missing useEffect deps, leaked subscriptions, state
+               mutations in render.
+            3. Tests: are new test cases meaningful? Are they using mocks
+               correctly (vi.mock factory hoisting, vi.mocked vs require)?
+            4. Build hygiene: no console.log, no dead imports, no unused
+               vars, no leaked local-only paths.
+
+            The PR description has the plan context. The diff is in
+            ${{ github.event.pull_request.diff_url }}.
+
+            Output a concise review (under 400 words):
+            - Looks good
+            - Minor issues (be specific)
+            - Blockers (be specific, point to file:line)
+
+            Do not approve or reject — humans decide. Just analyze and
+            suggest. Keep tone direct, no fluff.
+
+      - name: Post review as PR comment
+        if: steps.review.conclusion == 'success'
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          if [ ! -f claude-review-output.md ]; then
+            echo "::notice::claude-review-output.md not produced, skipping comment"
+            exit 0
+          fi
+          body=$(cat claude-review-output.md)
+          {
+            echo "## Claude review (automated)"
+            echo ""
+            echo "$body"
+            echo ""
+            echo "<sub>Run #${{ github.run_number }} on ${{ github.event.pull_request.head.sha }}</sub>"
+          } > /tmp/comment.md
+          gh pr comment "${{ github.event.pull_request.number }}" --body-file /tmp/comment.md

@@ -1,54 +1,47 @@
-# Dependabot configuration for Wedding_Website.
-#
-# Scope: npm (the app's own dependencies) + github-actions (CI pins).
-#
-# Note this differs deliberately from the hermes-agent fork, whose upstream
-# (NousResearch) enables github-actions ONLY because that project pins every
-# source dependency exactly as a supply-chain posture and moves pins by hand.
-# This repo is an application, not a pinned library — staying current on npm
-# is worth more here than pin-stability, so both ecosystems are enabled.
-#
-# Minor/patch updates are grouped into one PR per ecosystem per week to keep
-# the noise down. Major bumps still open individually because they need real
-# review. Dependabot *security* updates are separate: they are CVE-triggered,
-# open immediately regardless of this schedule, and are controlled by the
-# repo setting (Settings -> Code security -> Dependabot security updates).
-
+# Dependabot configuration — npm weekly + GitHub Actions weekly.
+# Mirrors the upstream behavior of bbasketballer75/hermes-agent and
+# bbasketballer75/honcho (which have this config) but tuned for the
+# Wedding_Website_Clean repository layout.
 version: 2
 updates:
-  - package-ecosystem: 'npm'
-    directory: '/'
+  - package-ecosystem: "npm"
+    directory: "/"
     schedule:
-      interval: 'weekly'
-      day: 'monday'
-    open-pull-requests-limit: 5
+      interval: "weekly"
+      day: "monday"
+      time: "06:00"
+      timezone: "America/New_York"
+    open-pull-requests-limit: 10
     labels:
-      - 'dependencies'
+      - "dependencies"
     commit-message:
-      # No `include: scope`: Dependabot appends its own "(deps)"
-      # scope to the prefix, producing chore(deps)(deps): which is not
-      # a valid Conventional Commit header (required by AGENTS.md).
-      prefix: 'chore(deps)'
+      prefix: "chore(deps)"
     groups:
-      npm-minor-patch:
-        update-types:
-          - 'minor'
-          - 'patch'
+      production:
+        applies-to: version-updates
+        patterns:
+          - "minor"
+          - "patch"
+    ignore:
+      - dependency-name: "*"
+        update-types: ["version-update:semver-major"]
 
-  - package-ecosystem: 'github-actions'
-    directory: '/'
+  - package-ecosystem: "github-actions"
+    directory: "/"
     schedule:
-      interval: 'weekly'
-      day: 'monday'
+      interval: "weekly"
+      day: "monday"
+      time: "06:30"
+      timezone: "America/New_York"
     open-pull-requests-limit: 5
     labels:
-      - 'dependencies'
-      - 'github-actions'
+      - "dependencies"
+      - "github-actions"
     commit-message:
-      # Same reason as above -- the prefix already carries the scope.
-      prefix: 'chore(actions)'
+      prefix: "chore(actions)"
     groups:
       actions-minor-patch:
-        update-types:
-          - 'minor'
-          - 'patch'
+        applies-to: version-updates
+        patterns:
+          - "minor"
+          - "patch"
