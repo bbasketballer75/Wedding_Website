@@ -19,3 +19,24 @@ deployed the refreshed site to production.
 
 Public automated checks are green. Signed-in admin moderation still needs a live admin credential
 smoke pass before treating private workflows as fully verified.
+
+## Re-verified — 2026-09-14
+
+Following the 2026-09-14 revival pass (Phases A through E in
+`/Users/bbask/Coding_Projects/Wedding_Website_Clean/.hermes/plans/2026-09-14_162706-revive-wedding-website.md`)
+the items above remain verified against the current `main` (`a0f928d`):
+
+- Live site: `https://www.theporadas.com` returns HTTP 200.
+- Release gate green on `main`:
+  - `npm run lint` (eslint 10 + @typescript-eslint 8.70)
+  - `npx tsc --noEmit` (TypeScript 7.0.2) and `npx tsc6 --noEmit` (TypeScript 6 alias
+    that typescript-eslint resolves through)
+  - `npm run test:run` — 182/182 passing across 33 test files
+  - `npm run build` — clean build + postbuild
+- Branch `main` is protected: `Validate (lint, format, typecheck, test, build)` is
+  the required status check; merges that fail the gate are blocked.
+- Admin moderation smoke is still a manual step — see
+  `docs/archival/ADMIN_LIVE_QA_CHECKLIST.md` for the runbook. None of the
+  changes in the revival pass touched admin authentication or RLS, so the
+  earlier "Signed-in admin moderation still needs a live admin credential
+  smoke pass" caveat above remains the only unverified item.
