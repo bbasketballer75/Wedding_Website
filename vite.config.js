@@ -2,6 +2,9 @@
 import tailwindcss from '@tailwindcss/vite'
 import react from '@vitejs/plugin-react'
 import path from 'path'
+// React Compiler: automatic memoization plugin
+// eslint-disable-next-line @typescript-eslint/no-require-imports
+import reactCompiler from 'babel-plugin-react-compiler'
 import { visualizer } from 'rollup-plugin-visualizer'
 import { fileURLToPath } from 'url'
 import { defineConfig, loadEnv } from 'vite'
@@ -165,6 +168,12 @@ export default defineConfig(({ mode }) => {
       react({
         // Enable fast refresh for TypeScript
         fastRefresh: true,
+        // React Compiler: automatic memoization (replaces manual useCallback/
+        // useMemo). Off by default in @vitejs/plugin-react@6.1.0 — opt in
+        // here. babel-plugin-react-compiler is already installed as a devDep.
+        babel: {
+          plugins: [[reactCompiler, { target: '19' }]],
+        },
       }),
       tailwindcss(),
       {

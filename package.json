@@ -147,6 +147,7 @@
     "@vitest/coverage-v8": "^4.1.11",
     "@vitest/ui": "^4.1.9",
     "@vladmandic/human": "^3.3.6",
+    "babel-plugin-react-compiler": "^19.1.0-rc.3",
     "csso": "^5.0.5",
     "dotenv": "17.4.2",
     "esbuild": "^0.28.2",
