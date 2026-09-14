@@ -144,7 +144,7 @@
     "@typescript-eslint/eslint-plugin": "8.67.0",
     "@typescript-eslint/parser": "8.67.0",
     "@vitejs/plugin-react": "^6.1.0",
-    "@vitest/coverage-v8": "^4.1.11",
+    "@vitest/coverage-v8": "^5.0.0",
     "@vitest/ui": "^4.1.9",
     "@vladmandic/human": "^3.3.6",
     "babel-plugin-react-compiler": "^1.0.0",
