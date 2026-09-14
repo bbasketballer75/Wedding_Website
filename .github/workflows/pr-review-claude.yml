@@ -20,6 +20,10 @@ jobs:
     name: Review with Claude
     runs-on: ubuntu-latest
     timeout-minutes: 10
+    # Claude PR review requires CLAUDE_CODE_OAUTH_TOKEN repo secret to be
+    # configured. Until then, this job fails (gracefully — continue-on-error)
+    # so PRs are not blocked on missing config.
+    continue-on-error: true
     # Only allow this workflow to read PR contents and post comments. No
     # write to code or secrets — this is a read-only reviewer.
     permissions:
