@@ -1,4 +1,4 @@
-import { useState, useMemo, useEffect, useDeferredValue, useRef, lazy, Suspense } from 'react'
+import { useState, useMemo, useEffect, useRef, lazy, Suspense } from 'react'
 import { motion } from 'framer-motion'
 import { useSearchParams } from 'react-router-dom'
 import { GallerySEO } from '@/components/seo/SEOHead'
@@ -15,6 +15,8 @@ import { useInfiniteScroll } from '@/hooks/useInfiniteScroll'
 import { useGalleryData } from '@/hooks/useGalleryData'
 import { useGalleryEngagement } from '@/hooks/useGalleryEngagement'
 import { useGalleryDownloads } from '@/hooks/useGalleryDownloads'
+import { useGallerySearchFilters } from '@/hooks/useGallerySearchFilters'
+import { useGalleryToolbar } from '@/hooks/useGalleryToolbar'
 import {
   Search,
   Grid3X3,
@@ -32,31 +34,16 @@ import { useGalleryStore } from '@/stores/galleryStore'
 import { useToast } from '@/context/ToastContext'
 import {
   COLLECTION_COVERS,
-  collectionMeta,
   collectionTabs,
-  resolveAlias,
   type CollectionTab,
   type GalleryPhoto,
 } from '@/components/gallery/constants'
 import { formatPhotoCommentTimestamp, normalizeGalleryPhoto } from '@/components/gallery/data'
-import type { PhotoFace } from '@/lib/supabase'
 
 // Lazy-loaded so it splits into its own chunk — saves ~35 kB gzip on initial Gallery load.
 const PhotoLightbox = lazy(() =>
   import('@/components/photo-viewer/PhotoLightbox').then(m => ({ default: m.PhotoLightbox }))
 )
-
-interface DetectedFace {
-  id: string
-  name: string
-  photoCount: number
-  confidence?: number
-  thumbnail?: string
-  latestMoment?: string
-  collections?: string[]
-  professionalCount?: number
-  guestCount?: number
-}
 
 const curatedPhotos = (
   [
@@ -761,17 +748,37 @@ const viewOptions = [
 export default function Gallery() {
   const { addToast } = useToast()
   const [searchParams] = useSearchParams()
-  const [searchQuery, setSearchQuery] = useState('')
-  const [selectedCollection, setSelectedCollection] = useState<CollectionTab>('Proposal')
-  const [viewMode, setViewMode] = useState<'masonry' | 'grid' | 'timeline'>('masonry')
   const [lightboxIndex, setLightboxIndex] = useState<number | null>(null)
-  const [faceFilter, setFaceFilter] = useState<string | null>(null)
   const { photos, isLoading, loadError, setPhotos } = useGalleryData(
     'Proposal',
     curatedPhotos.map(normalizeGalleryPhoto),
     curatedPhotos.map(normalizeGalleryPhoto)
   )
-  const [selectMode, setSelectMode] = useState(false)
+  const {
+    viewMode,
+    setViewMode,
+    selectMode,
+    setSelectMode,
+    selectedCollection,
+    setSelectedCollection,
+    handleCollectionChange,
+    collectionSwitchDirectionRef,
+    emptyStateTitle,
+    emptyStateBody,
+  } = useGalleryToolbar()
+  const {
+    searchQuery,
+    faceFilter,
+    setSearchQuery,
+    setFaceFilter,
+    deferredSearchQuery,
+    filteredPhotos,
+    detectedFaces,
+    handleFaceFilter,
+    clearFaceFilter,
+    clearAllFilters,
+    hasActiveFilters,
+  } = useGallerySearchFilters({ photos, selectedCollection })
   const queue = useDownloadStore(state => state.queue)
   const addToQueue = useDownloadStore(state => state.addToQueue)
   const removeFromQueue = useDownloadStore(state => state.removeFromQueue)
@@ -790,9 +797,7 @@ export default function Gallery() {
   const [sharedPhotoMeta, setSharedPhotoMeta] = useState<{ url: string; caption?: string } | null>(
     null
   )
-  const deferredSearchQuery = useDeferredValue(searchQuery)
   const galleryScrollRef = useRef<HTMLDivElement>(null)
-  const collectionSwitchDirectionRef = useRef(0)
   // Fetch shared photo metadata from Supabase when ?shared= param is present
   useEffect(() => {
     const requestedShared = searchParams.get('shared')
@@ -862,57 +867,10 @@ export default function Gallery() {
         )
       }
     }
+    // eslint-disable-next-line react-hooks/exhaustive-deps -- setters from useGalleryToolbar / useGallerySearchFilters are stable; intentionally re-running on photo set changes only.
   }, [photos, searchParams])
 
-  const albumOrderedPhotos = useMemo(
-    () =>
-      [...photos].sort((a, b) => {
-        const leftOrder = Number.isFinite(a.albumSortOrder)
-          ? Number(a.albumSortOrder)
-          : Number.MAX_SAFE_INTEGER
-        const rightOrder = Number.isFinite(b.albumSortOrder)
-          ? Number(b.albumSortOrder)
-          : Number.MAX_SAFE_INTEGER
-
-        if (leftOrder !== rightOrder) {
-          return leftOrder - rightOrder
-        }
-
-        return new Date(b.createdAt || 0).getTime() - new Date(a.createdAt || 0).getTime()
-      }),
-    [photos]
-  )
-
-  const collectionScopedPhotos = useMemo(() => {
-    return albumOrderedPhotos.filter(photo => photo.collection === selectedCollection)
-  }, [albumOrderedPhotos, selectedCollection])
-
-  const filteredPhotos = useMemo(() => {
-    const normalizedQuery = deferredSearchQuery.trim().toLowerCase()
-
-    return collectionScopedPhotos.filter(photo => {
-      const searchableText = [
-        photo.caption,
-        photo.location,
-        photo.photographer,
-        photo.collection,
-        photo.source,
-        ...(photo.faces || []).map((face: PhotoFace) => face.name),
-        ...(photo.tags || []),
-      ]
-        .filter(Boolean)
-        .join(' ')
-        .toLowerCase()
-
-      const matchesSearch = !normalizedQuery || searchableText.includes(normalizedQuery)
-      const matchesFace =
-        !faceFilter ||
-        photo.faces?.some((f: PhotoFace) => resolveAlias(f.name) === resolveAlias(faceFilter))
-
-      return matchesSearch && matchesFace
-    })
-  }, [collectionScopedPhotos, deferredSearchQuery, faceFilter])
-
+  // Open the lightbox when ?photo= or ?shared= URL params are present.
   useEffect(() => {
     const requestedPhotoId = searchParams.get('photo')
     const sharedParam = searchParams.get('shared')
@@ -950,50 +908,6 @@ export default function Gallery() {
     rootRef: galleryScrollRef,
   })
 
-  const detectedFaces = useMemo<DetectedFace[]>(
-    () =>
-      Array.from(
-        photos
-          .reduce<Map<string, DetectedFace>>((acc, photo) => {
-            for (const face of photo.faces || []) {
-              const resolvedName = resolveAlias(face.name)
-              const existing = acc.get(resolvedName)
-              if (existing) {
-                existing.photoCount += 1
-                if (!existing.thumbnail) {
-                  existing.thumbnail = photo.thumbnail || photo.url
-                }
-                if (!existing.latestMoment && photo.caption) {
-                  existing.latestMoment = photo.caption
-                }
-                if (!existing.collections?.includes(photo.collection)) {
-                  existing.collections = [...(existing.collections || []), photo.collection]
-                }
-                if (photo.source === 'professional') {
-                  existing.professionalCount = (existing.professionalCount || 0) + 1
-                } else {
-                  existing.guestCount = (existing.guestCount || 0) + 1
-                }
-              } else {
-                acc.set(resolvedName, {
-                  id: face.id || resolvedName.toLowerCase().replace(/\s+/g, '-'),
-                  name: resolvedName,
-                  photoCount: 1,
-                  thumbnail: photo.thumbnail || photo.url,
-                  latestMoment: photo.caption,
-                  collections: [photo.collection],
-                  professionalCount: photo.source === 'professional' ? 1 : 0,
-                  guestCount: photo.source === 'guest' ? 1 : 0,
-                })
-              }
-            }
-
-            return acc
-          }, new Map())
-          .values()
-      ).sort((a, b) => b.photoCount - a.photoCount || a.name.localeCompare(b.name)),
-    [photos]
-  )
   const collectionCounts = useMemo(() => {
     return collectionTabs.reduce<Record<CollectionTab, number>>(
       (acc, tab) => {
@@ -1008,9 +922,6 @@ export default function Gallery() {
       }
     )
   }, [photos])
-
-  const selectedCollectionMeta = collectionMeta[selectedCollection]
-  const hasActiveFilters = Boolean(searchQuery || faceFilter)
 
   const openLightbox = (index: number) => {
     if (index >= 0) {
@@ -1063,31 +974,6 @@ export default function Gallery() {
       }
     }
   }
-
-  const handleFaceFilter = (faceName: string) => {
-    setFaceFilter(faceName)
-    setSearchQuery('')
-  }
-
-  const clearFaceFilter = () => {
-    setFaceFilter(null)
-  }
-
-  const clearAllFilters = () => {
-    setSearchQuery('')
-    setFaceFilter(null)
-  }
-
-  const handleCollectionChange = (tab: CollectionTab) => {
-    const newIndex = collectionTabs.indexOf(tab)
-    const currentIndex = collectionTabs.indexOf(selectedCollection)
-    collectionSwitchDirectionRef.current = newIndex > currentIndex ? 1 : -1
-    setSelectedCollection(tab)
-  }
-
-  const emptyStateTitle = `${selectedCollectionMeta.title} is waiting for the next upload`
-
-  const emptyStateBody = `${selectedCollectionMeta.description} ${selectedCollectionMeta.supporting}`
 
   useEffect(() => {
     galleryScrollRef.current?.scrollTo({ top: 0, behavior: 'smooth' })
