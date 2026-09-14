@@ -44,3 +44,7 @@ database/migrations/*.sql
 
 # GitHub Actions workflows (YAML; prettier chokes on multi-line strings)
 .github/workflows/*.yml
+# CODEOWNERS (GitHub's special format; not standard YAML)
+.github/CODEOWNERS
+# Dependabot config (YAML but with custom schema; prettier reformats incorrectly)
+.github/dependabot.yml
