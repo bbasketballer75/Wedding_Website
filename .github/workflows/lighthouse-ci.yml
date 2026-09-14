@@ -1,0 +1,47 @@
+name: Lighthouse CI
+
+# Run Lighthouse on PRs and pushes to main. Asserts perf/a11y scores stay
+# above thresholds so the Gallery refactor (Plan A) and any future work
+# cannot regress site quality silently.
+
+on:
+  pull_request:
+    branches: [main]
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+# Cancel any in-flight Lighthouse run for the same ref.
+concurrency:
+  group: lhci-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  lighthouse:
+    name: Lighthouse audit
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+
+      - name: Install + build
+        run: |
+          npm ci
+          npm run build
+
+      - name: Serve preview in background
+        run: |
+          npm run preview -- --host 127.0.0.1 --port 4173 --strictPort &
+          npx wait-on http://127.0.0.1:4173 --timeout 60000
+
+      - name: Run Lighthouse against preview
+        uses: treosh/lighthouse-ci-action@v11
+        with:
+          configPath: .lighthouserc.cjs
+          uploadArtifacts: true
