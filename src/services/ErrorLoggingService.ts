@@ -45,6 +45,14 @@ export function initErrorTracking(): void {
     return
   }
 
+  // One-line smoke signal: visible in DevTools console and grep-able in
+  // the production bundle, so a deploy can be verified end-to-end without
+  // a full error event. See /Users/bbask/Documents/Hermes-Workspace/.agents/sentry-onboarding.md
+  // for the full verification recipe.
+  if (typeof console !== 'undefined') {
+    console.info('[sentry] initialized:', true)
+  }
+
   Sentry.init({
     dsn,
     environment: getEnvironment(),
