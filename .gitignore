@@ -60,6 +60,7 @@ coverage
 .nyc_output
 test-results
 playwright-report
+playwright-report-visual
 click-test.png
 test-failed-guestbook.png
 *.bak
