@@ -144,8 +144,8 @@
     "@typescript-eslint/eslint-plugin": "^8.70.0",
     "@typescript-eslint/parser": "8.70.0",
     "@vitejs/plugin-react": "^6.1.0",
-    "@vitest/coverage-v8": "^4.1.11",
-    "@vitest/ui": "^4.1.9",
+    "@vitest/coverage-v8": "^5.0.0",
+    "@vitest/ui": "^5.0.0",
     "@vladmandic/human": "^3.3.6",
     "babel-plugin-react-compiler": "^1.0.0",
     "csso": "^5.0.5",
@@ -172,7 +172,7 @@
     "typescript": "^6.0.3",
     "vite": "^8.2.2",
     "vite-plugin-pwa": "^1.2.0",
-    "vitest": "^4.1.9",
+    "vitest": "^5.0.0",
     "wait-on": "9.1.0"
   },
   "overrides": {
