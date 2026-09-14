@@ -6,7 +6,9 @@ const failures = []
 const warnings = []
 
 const skipDirectories = new Set([
+  '.agents',
   '.git',
+  '.worktrees',
   'coverage',
   'dist',
   'node_modules',
