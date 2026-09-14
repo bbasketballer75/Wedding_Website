@@ -41,3 +41,6 @@ coverage
 
 # Database
 database/migrations/*.sql
+
+# GitHub Actions workflows (YAML; prettier chokes on multi-line strings)
+.github/workflows/*.yml
