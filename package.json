@@ -102,7 +102,7 @@
     "@sentry/react": "^10.70.0",
     "@supabase/supabase-js": "^2.112.3",
     "@tailwindcss/vite": "^4.3.3",
-    "@tanstack/react-virtual": "^3.14.10",
+    "@tanstack/react-virtual": "^3.14.11",
     "blurhash": "^2.0.5",
     "canvas-confetti": "^1.9.4",
     "class-variance-authority": "0.7.1",
