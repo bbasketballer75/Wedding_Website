@@ -1,0 +1,11 @@
+# Default owners for everything in this repository.
+# Wedding_Website_Clean is a solo-dev project; @bbasketballer75 is the
+# sole human owner. AI agents (Claude, MiniMax, etc.) don't have GitHub
+# accounts so they're not listed here — they operate via @bbasketballer75's
+# delegated access (gh auth switch).
+*       @bbasketballer75
+
+# Workflows and infra require explicit review even from the owner.
+/.github/        @bbasketballer75
+/docs/           @bbasketballer75
+/scripts/        @bbasketballer75
