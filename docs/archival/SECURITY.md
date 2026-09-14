@@ -52,3 +52,21 @@ const supabase = createClient(
 - Keep verifying Row Level Security policies for guest uploads, guestbook content, and admin moderation tables.
 - If server-side automation is added later, store service-role credentials only in server runtimes and deployment secrets.
 - Review npm audit output for the remaining `vite-plugin-pwa` / `workbox-build` advisory chain before a public production launch.
+
+## Branch Protection Policy
+
+`main` is protected with these settings (set 2026-09-14):
+
+- **Required status check**: `Validate (lint, format, typecheck, test, build)`
+  - Strict: `true` — a re-run is forced on every new push to a PR head
+- **`enforce_admins: true`** — admins cannot bypass the gate via `--admin`.
+  This closes the loop hole where an admin (or an admin-acting agent)
+  could land a red build. Reversing this is a one-line API call to
+  `POST /repos/{owner}/{repo}/branches/main/protection/enforce_admins`
+  if an emergency hot-fix ever needs to bypass the gate; the call is
+  fully auditable in git history.
+- No required reviewers, no push restrictions, no required signatures.
+
+The Validate gate is fast (~3 min) and reliable; every PR landed in
+the 2026-09-14 revival pass cleared it on first try. Enforcing it
+strictly is the right default for a solo-dev + agents workflow.
