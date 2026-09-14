@@ -9,6 +9,7 @@ import { FaceRecognition } from '@/components/face-recognition/FaceRecognition'
 import { GalleryUploadLookup } from '@/components/gallery/GalleryUploadLookup'
 import { GalleryHeader } from '@/components/gallery/GalleryHeader'
 import { GalleryGrid } from '@/components/gallery/GalleryGrid'
+import { GallerySelectionActionsBar } from '@/components/gallery/GallerySelectionActionsBar'
 import { Button } from '@/components/ui/Button'
 import { Input } from '@/components/ui/Input'
 import { useInfiniteScroll } from '@/hooks/useInfiniteScroll'
@@ -17,17 +18,7 @@ import { useGalleryEngagement } from '@/hooks/useGalleryEngagement'
 import { useGalleryDownloads } from '@/hooks/useGalleryDownloads'
 import { useGallerySearchFilters } from '@/hooks/useGallerySearchFilters'
 import { useGalleryToolbar } from '@/hooks/useGalleryToolbar'
-import {
-  Search,
-  Grid3X3,
-  LayoutGrid,
-  CalendarDays,
-  Loader2,
-  X,
-  CheckSquare,
-  Download,
-  Share2,
-} from 'lucide-react'
+import { Search, Grid3X3, LayoutGrid, CalendarDays, X, CheckSquare } from 'lucide-react'
 import { cn } from '@/lib/utils'
 import { fetchPhotoComments, supabase, Photo } from '@/lib/supabase'
 import { useGalleryStore } from '@/stores/galleryStore'
@@ -563,42 +554,12 @@ export default function Gallery() {
 
       {/* Selection action bar */}
       {selectMode && selectedPhotoIds.size > 0 && (
-        <div className='sticky top-20 z-40 px-4 pb-2'>
-          <div className='mx-auto max-w-7xl'>
-            <motion.div
-              initial={{ opacity: 0, y: -8 }}
-              animate={{ opacity: 1, y: 0 }}
-              className='flex items-center justify-between rounded-2xl border border-gold-300/60 bg-gradient-to-r from-cream-100/95 via-gold-50/95 to-cream-100/95 px-4 py-3 shadow-lg backdrop-blur-md'
-            >
-              <span className='text-sm font-medium text-charcoal-700'>
-                {selectedPhotoIds.size} photo{selectedPhotoIds.size !== 1 ? 's' : ''} selected
-              </span>
-              <div className='flex items-center gap-2'>
-                <button
-                  type='button'
-                  onClick={handleShareSelection}
-                  className='inline-flex items-center gap-1.5 rounded-full border border-gold-200/80 bg-white/80 px-4 py-2 text-sm text-charcoal-600 transition-colors hover:text-charcoal-800'
-                >
-                  <Share2 className='h-3.5 w-3.5' />
-                  Copy link
-                </button>
-                <button
-                  type='button'
-                  onClick={() => void handleDownloadPack()}
-                  disabled={isDownloadingPack}
-                  className='inline-flex items-center gap-1.5 rounded-full bg-gold-500 px-4 py-2 text-sm font-medium text-white shadow-sm transition-colors hover:bg-gold-600 disabled:opacity-60'
-                >
-                  {isDownloadingPack ? (
-                    <Loader2 className='h-3.5 w-3.5 animate-spin' />
-                  ) : (
-                    <Download className='h-3.5 w-3.5' />
-                  )}
-                  Download zip
-                </button>
-              </div>
-            </motion.div>
-          </div>
-        </div>
+        <GallerySelectionActionsBar
+          selectedCount={selectedPhotoIds.size}
+          isDownloadingPack={isDownloadingPack}
+          onShare={handleShareSelection}
+          onDownload={() => void handleDownloadPack()}
+        />
       )}
 
       <section className='flex-1 min-h-0 px-4 pb-8'>
