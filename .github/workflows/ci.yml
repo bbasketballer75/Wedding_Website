@@ -43,8 +43,14 @@ jobs:
       - name: Format check
         run: npm run format:check
 
-      - name: Type check
+      - name: Type check (TypeScript 7)
         run: npx tsc --noEmit
+
+      # Type check using the TypeScript 6 compatibility package that
+      # typescript-eslint still resolves through. Detects drift between
+      # the two compilers.
+      - name: Type check (TypeScript 6, typescript-eslint peer)
+        run: npx tsc6 --noEmit
 
       - name: Unit tests
         run: npm run test:run
