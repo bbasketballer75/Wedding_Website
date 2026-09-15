@@ -2,18 +2,26 @@ import { useState, useEffect } from 'react'
 import { motion } from 'framer-motion'
 import { Sparkles, ArrowRight } from 'lucide-react'
 import { fetchSiteEditorialFeatureBySlot } from '@/lib/supabase'
+import { EditorialFeatureErrorBanner } from './EditorialFeatureErrorBanner'
 import type { SiteEditorialFeature } from '@/lib/supabase'
 import { Button } from '@/components/ui/Button'
 
 export function MomentOfTheWeekSection() {
   const [feature, setFeature] = useState<SiteEditorialFeature | null>(null)
   const [loading, setLoading] = useState(true)
+  const [error, setError] = useState<string | null>(null)
 
   useEffect(() => {
     let mounted = true
     async function load() {
-      const { data } = await fetchSiteEditorialFeatureBySlot('home_moment_of_the_week')
+      const { data, error: fetchError } =
+        await fetchSiteEditorialFeatureBySlot('home_moment_of_the_week')
       if (!mounted) return
+      if (fetchError) {
+        setError(fetchError.message)
+        setLoading(false)
+        return
+      }
       setFeature(data && data.is_active ? data : null)
       setLoading(false)
     }
@@ -41,6 +49,8 @@ export function MomentOfTheWeekSection() {
     )
   }
 
+  if (error)
+    return <EditorialFeatureErrorBanner slot='home_moment_of_the_week' errorMessage={error} />
   if (!feature) return null
 
   return (
