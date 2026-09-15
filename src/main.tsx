@@ -8,11 +8,15 @@ import { AuthProvider } from './providers/AuthProvider'
 import { AppProviders } from './providers/AppProviders'
 import { initAnalytics } from './services/AnalyticsService'
 import { initErrorTracking } from './services/ErrorLoggingService'
-import { swManager } from './utils/serviceWorker'
+import { swManager, purgeLegacyMediaCaches } from './utils/serviceWorker'
 
 // Initialize error tracking (Sentry) in production
 initErrorTracking()
 initAnalytics()
+
+// Reclaim the pre-v2 gallery caches, which held opaque responses that broke the
+// photo lightbox. Fire-and-forget; it is a no-op once they are gone.
+void purgeLegacyMediaCaches()
 
 // Register service worker via vite-plugin-pwa
 const updateSW = registerSW({

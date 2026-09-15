@@ -2,6 +2,7 @@ import type { GalleryImage, PaginationState, SearchFilters } from '@/types'
 import { create } from 'zustand'
 import { devtools, subscribeWithSelector } from 'zustand/middleware'
 import { persist, createJSONStorage } from 'zustand/middleware'
+import { prefetchImage } from '@/utils/prefetchImage'
 
 // Safe sessionStorage wrapper per D-01
 const safeSessionStorage = {
@@ -90,11 +91,7 @@ const prefetchAdjacentImages = (currentIndex: number, images: GalleryImage[]) =>
   }
 
   toPrefetch.forEach(url => {
-    const link = document.createElement('link')
-    link.rel = 'prefetch'
-    link.as = 'image'
-    link.href = url
-    document.head.appendChild(link)
+    prefetchImage(url)
   })
 }
 
