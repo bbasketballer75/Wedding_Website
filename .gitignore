@@ -130,3 +130,13 @@ vendor/
 coverage/
 .cache/
 tmp/
+
+# Deno lockfile: build artifact, not a source of truth for this repo.
+# The only Deno consumer is netlify/edge-functions/gallery-share.ts, whose sole
+# import is a type-only import from https://edge.netlify.com (erased at build),
+# so it has no runtime dependencies to pin. Deno still generated a lockfile that
+# mirrored all 91 root package.json deps, which rewrote the file on every
+# dependency bump and left the working tree permanently dirty. Netlify's edge
+# bundler does not need it. Re-add a lockfile (next to a deno.json) if a real
+# Deno edge function with npm/jsr imports is ever introduced.
+deno.lock
