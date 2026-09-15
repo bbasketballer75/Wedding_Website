@@ -2,9 +2,35 @@ import { useState, useEffect } from 'react'
 import { motion } from 'framer-motion'
 import { Sparkles, ArrowRight } from 'lucide-react'
 import { fetchSiteEditorialFeatureBySlot } from '@/lib/supabase'
-import { EditorialFeatureErrorBanner } from './EditorialFeatureErrorBanner'
 import type { SiteEditorialFeature } from '@/lib/supabase'
 import { Button } from '@/components/ui/Button'
+
+// Self-contained error banner - defined locally to prevent Vite/rolldown
+// DCE-eliminating the import-only component from production bundles.
+function InlineEditorialErrorBanner({
+  slot,
+  errorMessage,
+}: {
+  slot: string
+  errorMessage: string | null
+}) {
+  if (!errorMessage) return null
+  return (
+    <section className='py-8 px-4' data-testid={`editorial-error-${slot}`}>
+      <div
+        className='mx-auto max-w-2xl rounded-lg border border-amber-300/60 bg-amber-50/80 p-4 text-sm text-amber-900'
+        role='status'
+      >
+        <p className='font-medium'>Content unavailable</p>
+        <p className='mt-1 text-amber-800/90'>
+          The &ldquo;{slot}&rdquo; slot couldn&rsquo;t load ({errorMessage}).&nbsp; If you see this
+          on the live site, check the Netlify environment variables for &nbsp;
+          <code>VITE_SUPABASE_URL</code> and <code>VITE_SUPABASE_ANON_KEY</code>.
+        </p>
+      </div>
+    </section>
+  )
+}
 
 export function MomentOfTheWeekSection() {
   const [feature, setFeature] = useState<SiteEditorialFeature | null>(null)
@@ -50,7 +76,7 @@ export function MomentOfTheWeekSection() {
   }
 
   if (error)
-    return <EditorialFeatureErrorBanner slot='home_moment_of_the_week' errorMessage={error} />
+    return <InlineEditorialErrorBanner slot='home_moment_of_the_week' errorMessage={error} />
   if (!feature) return null
 
   return (
