@@ -188,6 +188,10 @@
     "serialize-javascript": "7.0.5",
     "axios": ">=1.15.0",
     "tmp": ">=0.2.4",
-    "uuid": ">=11.1.1"
+    "uuid": ">=11.1.1",
+    "@rolldown/binding-linux-x64-gnu": "1.2.8",
+    "@rolldown/binding-linux-x64-musl": "1.2.8",
+    "@rolldown/binding-linux-arm64-gnu": "1.2.8",
+    "@rolldown/binding-linux-arm64-musl": "1.2.8"
   }
 }
