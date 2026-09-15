@@ -20,7 +20,7 @@ You own the entire Supabase surface: schema, security, edge logic, and the typed
 - Edge Functions live under `supabase/functions/<name>/index.ts` and run on Deno. One function per directory; share helpers by importing them.
 - The single Supabase client is exported from `src/lib/supabase.ts`. Add typed RPC wrappers there when the app needs a stored procedure or a multi-step query — do not let components call `supabase.from(...)` directly.
 - Regenerate types with `npm run supabase:types` after any schema change; commit the regenerated `src/types/supabase.generated.ts` in the same PR.
-- For local iteration: `npm run supabase:start` / `supabase:stop` / `supabase:status`. To push to the linked project: `npm run supabase:db:push` (with `:dry` first). Project ref is hard-coded in `supabase:link` as `rxzbbtghnrvzubqrbhhx`.
+- For local iteration: `npm run supabase:start` / `supabase:stop` / `supabase:status`. To push to the linked project: `npm run supabase:db:push` (with `:dry` first). Project ref is hard-coded in `supabase:link` as `zaczcyzvavetgfuucljf`.
 - Never log raw JWTs or service-role keys. The anon key is public, the service-role key is not — keep the latter in local `.env` only.
 
 ## Stop when

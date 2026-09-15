@@ -28,7 +28,7 @@
     "fix": "npm run lint:fix && npm run format",
     "preview": "vite preview",
     "supabase": "npx supabase",
-    "supabase:link": "npx supabase link --project-ref rxzbbtghnrvzubqrbhhx",
+    "supabase:link": "npx supabase link --project-ref zaczcyzvavetgfuucljf",
     "supabase:start": "npx supabase start",
     "supabase:stop": "npx supabase stop",
     "supabase:status": "npx supabase status",
