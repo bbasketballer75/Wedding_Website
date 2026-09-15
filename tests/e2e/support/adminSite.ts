@@ -31,7 +31,7 @@ const JSON_HEADERS = {
 
 // The Supabase project ref is derived from the env var.
 // Key format: sb-{projectRef}-auth-token
-const SUPABASE_URL = process.env.VITE_SUPABASE_URL ?? 'https://rxzbbtghnrvzubqrbhhx.supabase.co'
+const SUPABASE_URL = process.env.VITE_SUPABASE_URL ?? 'https://zaczcyzvavetgfuucljf.supabase.co'
 const PROJECT_REF = new URL(SUPABASE_URL).hostname.split('.')[0]
 export const SUPABASE_STORAGE_KEY = `sb-${PROJECT_REF}-auth-token`
 
