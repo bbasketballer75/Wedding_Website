@@ -2,18 +2,27 @@ import { useState, useEffect } from 'react'
 import { motion } from 'framer-motion'
 import { ArrowRight } from 'lucide-react'
 import { fetchSiteEditorialFeatureBySlot } from '@/lib/supabase'
+import { EditorialFeatureErrorBanner } from './EditorialFeatureErrorBanner'
 import type { SiteEditorialFeature } from '@/lib/supabase'
 import { Button } from '@/components/ui/Button'
 
 export function FeaturedNoteSection() {
   const [feature, setFeature] = useState<SiteEditorialFeature | null>(null)
   const [loading, setLoading] = useState(true)
+  const [error, setError] = useState<string | null>(null)
 
   useEffect(() => {
     let mounted = true
     async function load() {
-      const { data } = await fetchSiteEditorialFeatureBySlot('home_featured_guestbook_note')
+      const { data, error: fetchError } = await fetchSiteEditorialFeatureBySlot(
+        'home_featured_guestbook_note'
+      )
       if (!mounted) return
+      if (fetchError) {
+        setError(fetchError.message)
+        setLoading(false)
+        return
+      }
       setFeature(data && data.is_active ? data : null)
       setLoading(false)
     }
@@ -38,6 +47,8 @@ export function FeaturedNoteSection() {
     )
   }
 
+  if (error)
+    return <EditorialFeatureErrorBanner slot='home_featured_guestbook_note' errorMessage={error} />
   if (!feature) return null
 
   return (
