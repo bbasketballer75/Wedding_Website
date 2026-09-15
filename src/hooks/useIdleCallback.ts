@@ -1,4 +1,5 @@
 import { useCallback, useEffect, useRef, useState } from 'react'
+import { prefetchImage } from '@/utils/prefetchImage'
 
 // Check if requestIdleCallback is available
 const isRequestIdleCallbackAvailable =
@@ -66,19 +67,8 @@ export const useIdlePrefetch = (resources: string[] = []) => {
   const prefetchResource = useCallback((url: string) => {
     if (hasPrefetched.current.has(url)) return
 
-    const link = document.createElement('link')
-    link.rel = 'prefetch'
-    link.href = url
-    document.head.appendChild(link)
-
     hasPrefetched.current.add(url)
-
-    // Remove after 10 seconds to keep DOM clean
-    setTimeout(() => {
-      if (document.head.contains(link)) {
-        document.head.removeChild(link)
-      }
-    }, 10000)
+    prefetchImage(url)
   }, [])
 
   const schedulePrefetch = useIdleCallback(

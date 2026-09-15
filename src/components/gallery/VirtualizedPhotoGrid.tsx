@@ -5,6 +5,7 @@ import { cn } from '@/lib/utils'
 import { VirtualizedMasonryGrid } from './components/VirtualizedMasonryGrid'
 import type { Photo } from '@/lib/supabase'
 import { useLongPress } from '@/hooks/useLongPress'
+import { prefetchImage } from '@/utils/prefetchImage'
 
 interface PhotoGridProps {
   photos: Photo[]
@@ -87,12 +88,7 @@ function prefetchAdjacentPhotos(
     const url = photo.thumbnail || photo.url
     if (!prefetchMap[url]) {
       prefetchMap[url] = url
-
-      const link = document.createElement('link')
-      link.rel = 'prefetch'
-      link.as = 'image'
-      link.href = url
-      document.head.appendChild(link)
+      prefetchImage(url)
     }
   }
 }

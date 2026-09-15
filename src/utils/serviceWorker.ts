@@ -176,6 +176,34 @@ export class ServiceWorkerManager {
   }
 }
 
+// Legacy runtime-cache purge.
+//
+// Releases before the v2 cache-name bump stored opaque (status 0) responses in
+// `gallery-images-v1` / `gallery-direct-media-v1`. Those entries are what broke
+// the photo lightbox — a cached opaque response cannot be served to a
+// CORS-mode fetch() — and the full-size media cache could hold hundreds of
+// megabytes of dead data. The v2 caches defined in vite.config.js replace them;
+// this reclaims the storage. Safe to call on every load: once the old caches are
+// gone it does nothing.
+export async function purgeLegacyMediaCaches(): Promise<string[]> {
+  if (typeof caches === 'undefined') return []
+
+  const legacyCaches = ['gallery-images-v1', 'gallery-direct-media-v1']
+  const removed: string[] = []
+
+  await Promise.all(
+    legacyCaches.map(async name => {
+      try {
+        if (await caches.delete(name)) removed.push(name)
+      } catch {
+        // CacheStorage can be unavailable (private mode / storage disabled).
+      }
+    })
+  )
+
+  return removed
+}
+
 // Create singleton instance
 export const swManager = new ServiceWorkerManager()
 

@@ -207,13 +207,27 @@ export default defineConfig(({ mode }) => {
               urlPattern: /^https?:\/\/.*\/media\/_thumbs\/.*/i,
               handler: 'CacheFirst',
               options: {
-                cacheName: 'gallery-images-v1',
+                // v2: cache names are bumped because the v1 caches were
+                // populated with opaque (status 0) responses, which the
+                // lightbox's CORS fetch() cannot consume. See statuses below.
+                cacheName: 'gallery-images-v2',
                 expiration: {
                   maxEntries: 500,
                   maxAgeSeconds: 30 * 24 * 60 * 60, // 30 days
                 },
+                // Statuses is deliberately [200] only — NOT [0, 200].
+                //
+                // Allowing status 0 lets the workbox strategy store opaque
+                // responses. Gallery <img> tags load in no-cors mode, so their
+                // responses ARE opaque, and they got cached under the same URL
+                // the lightbox later reads with a CORS-mode fetch(). Serving a
+                // cached opaque response to a non-no-cors request is rejected
+                // by the browser ("an opaque response was used for a request
+                // whose type is not no-cors"), which surfaced as
+                // `net::ERR_FAILED` / "TypeError: Failed to fetch" whenever a
+                // photo was opened.
                 cacheableResponse: {
-                  statuses: [0, 200],
+                  statuses: [200],
                 },
               },
             },
@@ -221,13 +235,14 @@ export default defineConfig(({ mode }) => {
               urlPattern: /^https?:\/\/.*\/media\/(?!_thumbs).*/i,
               handler: 'CacheFirst',
               options: {
-                cacheName: 'gallery-direct-media-v1',
+                cacheName: 'gallery-direct-media-v2',
                 expiration: {
                   maxEntries: 300,
                   maxAgeSeconds: 30 * 24 * 60 * 60, // 30 days
                 },
+                // See the _thumbs route above for why 0 is excluded.
                 cacheableResponse: {
-                  statuses: [0, 200],
+                  statuses: [200],
                 },
               },
             },
