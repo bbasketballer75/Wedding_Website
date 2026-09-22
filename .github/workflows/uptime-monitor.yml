@@ -1,57 +1,181 @@
 name: Uptime Monitor
 
 on:
-  push:
-    branches:
-      - main
   schedule:
-    - cron: '*/5 * * * *'
+    - cron: '0 * * * *'   # hourly; reduce noise from 5-minute flakes
   workflow_dispatch:
 
 jobs:
   check-site:
     runs-on: ubuntu-latest
+    timeout-minutes: 10
     permissions:
       contents: read
       issues: write
     env:
-      SITE_URL: https://www.theporadas.com
+      PRIMARY_URL: https://www.theporadas.com
+      APEX_URL: https://theporadas.com
       EXPECTED_TEXT: Austin & Jordyn
     steps:
-      - name: Check site availability
-        id: check
+      - name: Probe www.theporadas.com
+        id: probe_primary
         shell: bash
         run: |
-          set -euo pipefail
+          set -uo pipefail
 
-          status=$(curl -L --silent --show-error --output response.html --write-out "%{http_code}" "$SITE_URL")
+          # Single probe with retry; capture everything we need to triage
+          # when the check fails (status code, size, first 2KB of body, and
+          # the curl exit code that explains why curl gave up).
+          set +e
+          status=$(curl -L --silent --show-error \
+                        --output /tmp/response.html \
+                        --max-time 30 \
+                        --retry 2 --retry-delay 5 --retry-connrefused \
+                        --write-out "%{http_code}" \
+                        "$PRIMARY_URL")
+          curl_rc=$?
+          set -e
 
-          if [ "$status" != "200" ]; then
-            echo "message=Expected HTTP 200 but received $status from $SITE_URL" >> "$GITHUB_OUTPUT"
-            exit 1
+          bytes=$(wc -c < /tmp/response.html 2>/dev/null | tr -d ' ' || echo 0)
+
+          # Classify the failure so the alert tells us which way to look
+          # (cert problem vs. origin down vs. content drift).
+          if [ "$status" = "200" ]; then
+            classification="ok"
+          elif [ "$curl_rc" = "60" ] || [ "$curl_rc" = "77" ]; then
+            classification="tls"
+          elif [ "$status" = "000" ] && [ "$curl_rc" = "28" ]; then
+            classification="timeout"
+          elif [ "$status" = "000" ]; then
+            classification="connect"
+          elif [ "$status" -ge 500 ] 2>/dev/null; then
+            classification="server-error"
+          elif [ "$status" -ge 400 ] 2>/dev/null; then
+            classification="client-error"
+          else
+            classification="unknown"
           fi
 
-          if ! grep -q "$EXPECTED_TEXT" response.html; then
-            echo "message=Homepage loaded but did not include expected text '$EXPECTED_TEXT'" >> "$GITHUB_OUTPUT"
-            exit 1
+          # Content check (only meaningful for HTTP 200)
+          content_ok="false"
+          if [ "$status" = "200" ] && [ -s /tmp/response.html ]; then
+            if grep -q "$EXPECTED_TEXT" /tmp/response.html; then
+              content_ok="true"
+            fi
           fi
 
-          echo "message=Site responded with HTTP 200 and expected content." >> "$GITHUB_OUTPUT"
+          {
+            echo "status=$status"
+            echo "bytes=$bytes"
+            echo "curl_rc=$curl_rc"
+            echo "classification=$classification"
+            echo "content_ok=$content_ok"
+          } >> "$GITHUB_OUTPUT"
 
-      - name: Create uptime alert issue on failure
+          echo "::notice title=Uptime probe (www)::HTTP $status / $bytes bytes / classification=$classification"
+
+      - name: Probe apex (theporadas.com) for fallback signal
+        id: probe_apex
+        if: steps.probe_primary.outputs.classification != 'ok'
+        shell: bash
+        run: |
+          set -uo pipefail
+          set +e
+          apex_status=$(curl -L --silent --show-error \
+                            --output /tmp/apex.html \
+                            --max-time 30 \
+                            --retry 2 --retry-delay 5 \
+                            --write-out "%{http_code}" \
+                            "$APEX_URL")
+          apex_rc=$?
+          set -e
+          apex_bytes=$(wc -c < /tmp/apex.html 2>/dev/null | tr -d ' ' || echo 0)
+          echo "apex_status=$apex_status"
+          echo "apex_rc=$apex_rc"
+          echo "apex_bytes=$apex_bytes"
+          echo "::notice title=Uptime probe (apex)::HTTP $apex_status / $apex_bytes bytes"
+
+      - name: Build failure report
+        id: report
+        if: steps.probe_primary.outputs.classification != 'ok' || steps.probe_primary.outputs.content_ok != 'true'
+        shell: bash
+        run: |
+          {
+            echo "## ❌ Uptime check failed"
+            echo
+            echo "- **Target:** \`$PRIMARY_URL\`"
+            echo "- **Classification:** \`${{ steps.probe_primary.outputs.classification }}\`"
+            echo "- **HTTP status:** \`${{ steps.probe_primary.outputs.status }}\`"
+            echo "- **Curl exit code:** \`${{ steps.probe_primary.outputs.curl_rc }}\`"
+            echo "- **Response size:** \`${{ steps.probe_primary.outputs.bytes }}\` bytes"
+            echo "- **Content check:** \`${{ steps.probe_primary.outputs.content_ok }}\`"
+            if [ -n "${{ steps.probe_apex.outputs.apex_status }}" ]; then
+              echo "- **Apex \`$APEX_URL\`:** HTTP \`${{ steps.probe_apex.outputs.apex_status }}\` / \`${{ steps.probe_apex.outputs.apex_bytes }}\` bytes"
+            fi
+            echo "- **Run:** ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}"
+            echo
+            echo "### Response body (first 2 KB)"
+            echo '```html'
+            head -c 2048 /tmp/response.html 2>/dev/null || echo '(empty)'
+            echo
+            echo '```'
+            echo
+            echo "### Triage hints"
+            case "${{ steps.probe_primary.outputs.classification }}" in
+              tls)
+                echo "- Cert/SNI mismatch. Check Netlify SSL/TLS provisioning for \`theporadas.com\`."
+                echo "- \`openssl s_client -servername www.theporadas.com -connect www.theporadas.com:443\` should show a cert whose SAN includes \`www.theporadas.com\` or \`theporadas.com\`." ;;
+              timeout)
+                echo "- Origin did not respond within 30s. Check Netlify deploy status and origin health." ;;
+              connect)
+                echo "- Could not establish a TCP connection. Likely DNS, firewall, or origin is fully down." ;;
+              server-error)
+                echo "- Origin returned 5xx. Check deploy logs and recent runtime errors in Sentry." ;;
+              client-error)
+                echo "- Origin returned 4xx. Check whether the page was renamed, removed, or auth-gated." ;;
+              *)
+                echo "- Unknown failure mode. Inspect the run logs and the response body above." ;;
+            esac
+          } >> "$GITHUB_STEP_SUMMARY"
+
+          # Build a short failure message for the issue body
+          msg="Classification=${{ steps.probe_primary.outputs.classification }}; HTTP=${{ steps.probe_primary.outputs.status }}; curl_rc=${{ steps.probe_primary.outputs.curl_rc }}"
+          {
+            echo "classification=${{ steps.probe_primary.outputs.classification }}"
+            echo "status=${{ steps.probe_primary.outputs.status }}"
+            echo "curl_rc=${{ steps.probe_primary.outputs.curl_rc }}"
+            echo "content_ok=${{ steps.probe_primary.outputs.content_ok }}"
+            echo "apex_status=${{ steps.probe_apex.outputs.apex_status }}"
+            echo "message=$msg"
+          } >> "$GITHUB_OUTPUT"
+
+      - name: Fail the job so the alert path runs
+        if: steps.probe_primary.outputs.classification != 'ok' || steps.probe_primary.outputs.content_ok != 'true'
+        shell: bash
+        run: |
+          echo "Uptime check failed: ${{ steps.report.outputs.message }}"
+          exit 1
+
+      - name: Create or update uptime alert issue
         if: failure()
         uses: actions/github-script@v9
         with:
           script: |
             const title = 'Uptime Alert: Wedding site check failed'
+            const classification = '${{ steps.probe_primary.outputs.classification }}' || 'unknown';
+            const status = '${{ steps.probe_primary.outputs.status }}' || 'unknown';
+            const curlRc = '${{ steps.probe_primary.outputs.curl_rc }}' || 'unknown';
+            const contentOk = '${{ steps.probe_primary.outputs.content_ok }}' || 'unknown';
+            const apexStatus = '${{ steps.probe_apex.outputs.apex_status }}' || '';
+            const apexLine = apexStatus ? `\n- **Apex status:** \`${apexStatus}\`` : '';
             const body = [
-              `The automated uptime check failed for ${process.env.SITE_URL}.`,
+              `The automated uptime check failed for ${process.env.PRIMARY_URL}.`,
               '',
-              `Failure: ${process.env.FAILURE_MESSAGE || 'Unknown failure'}`,
+              `Failure: classification=\`${classification}\`, HTTP=\`${status}\`, curl_rc=\`${curlRc}\`, content_ok=\`${contentOk}\`${apexLine}`,
               '',
               `Run: ${context.serverUrl}/${context.repo.owner}/${context.repo.repo}/actions/runs/${context.runId}`,
               `Time (UTC): ${new Date().toISOString()}`
-            ].join('\n')
+            ].join('\n');
 
             // Search across open and closed issues so a closed alert can be
             // reopened instead of spawning a duplicate issue.
@@ -60,9 +184,9 @@ jobs:
               repo: context.repo.repo,
               state: 'all',
               per_page: 100
-            })
+            });
 
-            const existing = issues.find((issue) => issue.title === title)
+            const existing = issues.find((issue) => issue.title === title);
 
             if (!existing) {
               await github.rest.issues.create({
@@ -70,8 +194,8 @@ jobs:
                 repo: context.repo.repo,
                 title,
                 body
-              })
-              return
+              });
+              return;
             }
 
             // Reopen a closed alert so the single issue stays the canonical tracker.
@@ -81,21 +205,21 @@ jobs:
                 repo: context.repo.repo,
                 issue_number: existing.number,
                 state: 'open'
-              })
+              });
             }
 
             // Throttle comments to one per hour to avoid spamming the issue
-            const oneHourAgo = new Date(Date.now() - 60 * 60 * 1000).toISOString()
+            const oneHourAgo = new Date(Date.now() - 60 * 60 * 1000).toISOString();
             const { data: comments } = await github.rest.issues.listComments({
               owner: context.repo.owner,
               repo: context.repo.repo,
               issue_number: existing.number,
               since: oneHourAgo
-            })
+            });
 
             const recentBotComment = comments.find(
               (comment) => comment.user && comment.user.login === 'github-actions[bot]'
-            )
+            );
 
             if (!recentBotComment) {
               await github.rest.issues.createComment({
@@ -103,7 +227,7 @@ jobs:
                 repo: context.repo.repo,
                 issue_number: existing.number,
                 body
-              })
+              });
             }
         env:
-          FAILURE_MESSAGE: ${{ steps.check.outputs.message }}
+          PRIMARY_URL: https://www.theporadas.com
