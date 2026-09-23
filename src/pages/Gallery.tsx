@@ -55,14 +55,9 @@ export default function Gallery() {
   } = useGalleryToolbar()
   const {
     searchQuery,
-    faceFilter,
     setSearchQuery,
-    setFaceFilter,
     deferredSearchQuery,
     filteredPhotos,
-    detectedFaces,
-    handleFaceFilter,
-    clearFaceFilter,
     clearAllFilters,
     hasActiveFilters,
   } = useGallerySearchFilters({ photos, selectedCollection })
@@ -109,11 +104,9 @@ export default function Gallery() {
     const requestedQuery = searchParams.get('q') || ''
     const requestedCollection = searchParams.get('collection') as CollectionTab | null
     const requestedPhotoId = searchParams.get('photo')
-    const requestedPerson = searchParams.get('person')
     const requestedShare = searchParams.get('share')
 
     setSearchQuery(current => (current !== requestedQuery ? requestedQuery : current))
-    setFaceFilter(current => (current !== requestedPerson ? requestedPerson : current))
 
     if (requestedShare && photos.length > 0) {
       const ids = requestedShare.split(',').filter(Boolean)
@@ -272,7 +265,7 @@ export default function Gallery() {
 
   useEffect(() => {
     galleryScrollRef.current?.scrollTo({ top: 0, behavior: 'smooth' })
-  }, [selectedCollection, deferredSearchQuery, faceFilter, viewMode])
+  }, [selectedCollection, deferredSearchQuery, viewMode])
 
   useEffect(() => {
     if (lightboxIndex === null) {
@@ -352,10 +345,6 @@ export default function Gallery() {
               selectedPhotoIdsCount={selectedPhotoIds.size}
               onSelectAllVisible={handleSelectAllVisible}
               onClearQueue={() => clearQueue()}
-              onFaceFilter={handleFaceFilter}
-              detectedFaces={detectedFaces}
-              faceFilter={faceFilter}
-              onClearFaceFilter={clearFaceFilter}
               hasActiveFilters={hasActiveFilters}
               onClearAllFilters={clearAllFilters}
             />
@@ -435,7 +424,6 @@ export default function Gallery() {
           isDownloading={downloadingId !== null}
           onAddComment={submitComment}
           isSubmittingComment={submittingCommentPhotoId === filteredPhotos[lightboxIndex ?? 0]?.id}
-          highlightedFaceName={faceFilter}
         />
       </Suspense>
 
