@@ -50,10 +50,13 @@ export function useUploadQueue(): UseUploadQueueResult {
     setStoredUploads(stored)
   }, [])
 
-  // Persist upload queue to localStorage whenever files change
+  // Persist upload queue to localStorage whenever files change.
+  // Also persist the empty queue so removing the last file doesn't leave stale entries.
   useEffect(() => {
     if (files.length > 0) {
       saveUploadQueue(files)
+    } else {
+      clearUploadQueue()
     }
   }, [files])
 

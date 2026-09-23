@@ -14,7 +14,7 @@ export function useGuestbookReplies(): UseGuestbookRepliesResult {
     async (messageId: string, replyContent: string): Promise<void> => {
       const newComment: Comment = {
         id: `local-${Date.now()}`,
-        author: 'You',
+        author: 'Guest',
         content: replyContent,
         created_at: new Date().toISOString(),
       }
