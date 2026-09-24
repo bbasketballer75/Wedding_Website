@@ -3,10 +3,6 @@ import { render, screen, fireEvent } from '@testing-library/react'
 import type { CollectionTab } from '@/components/gallery/constants'
 import { GalleryControlPanel } from './GalleryControlPanel'
 
-vi.mock('@/components/face-recognition/FaceRecognition', () => ({
-  FaceRecognition: () => <div data-testid='face-recognition-stub' />,
-}))
-
 const noop = () => {}
 
 describe('GalleryControlPanel', () => {
@@ -28,10 +24,6 @@ describe('GalleryControlPanel', () => {
     selectedPhotoIdsCount: 0,
     onSelectAllVisible: noop,
     onClearQueue: noop,
-    onFaceFilter: noop,
-    detectedFaces: [],
-    faceFilter: null,
-    onClearFaceFilter: noop,
     hasActiveFilters: false,
     onClearAllFilters: noop,
   }
@@ -96,8 +88,7 @@ describe('GalleryControlPanel', () => {
   })
 
   it('shows the active-filters strip when hasActiveFilters is true', () => {
-    render(<GalleryControlPanel {...baseProps} hasActiveFilters={true} faceFilter='Jordyn' />)
+    render(<GalleryControlPanel {...baseProps} hasActiveFilters={true} />)
     expect(screen.getByText(/Active filters/i)).toBeInTheDocument()
-    expect(screen.getByText('Jordyn')).toBeInTheDocument()
   })
 })
