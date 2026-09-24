@@ -21,7 +21,6 @@ const Upload = lazy(() => import('@/pages/Upload'))
 const Guestbook = lazy(() => import('@/pages/Guestbook'))
 const Admin = lazy(() => import('@/pages/Admin'))
 const AdminLogin = lazy(() => import('@/pages/AdminLogin'))
-const People = lazy(() => import('@/pages/People'))
 const Activity = lazy(() => import('@/pages/Activity'))
 const NotFound = lazy(() => import('@/pages/NotFound'))
 const GuestShare = lazy(() => import('@/pages/GuestShare'))
@@ -80,7 +79,6 @@ function AppContent() {
       '/upload': 'Share Memories',
       '/guestbook': 'Guestbook',
       '/guest-photos': 'Guest Memories',
-      '/people': 'People',
       '/activity': 'Activity',
       '/admin/login': 'Admin Login',
       '/admin': 'Admin Dashboard',
@@ -180,16 +178,6 @@ function AppContent() {
                   <RouteErrorBoundary>
                     <LazyPage title='Guest Memories'>
                       <GuestPhotos />
-                    </LazyPage>
-                  </RouteErrorBoundary>
-                }
-              />
-              <Route
-                path='/people'
-                element={
-                  <RouteErrorBoundary>
-                    <LazyPage title='People'>
-                      <People />
                     </LazyPage>
                   </RouteErrorBoundary>
                 }
