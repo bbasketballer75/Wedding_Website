@@ -28,8 +28,9 @@ import {
 import { cn } from '@/lib/utils'
 import { focusManager } from '@/accessibility/focusManagement'
 import { useGalleryStore } from '@/stores/galleryStore'
-import { type Photo, fetchVerifiedIdentities } from '@/lib/supabase'
+import { type Photo } from '@/lib/supabase'
 import { useTouchGestures } from '@/hooks/useTouchGestures'
+import { useVerifiedNames } from './useVerifiedNames'
 import exifr from 'exifr'
 
 interface PhotoLightboxProps {
@@ -63,21 +64,7 @@ export function PhotoLightbox({
   const closeImageModal = useGalleryStore(s => s.closeImageModal)
   const nextImage = useGalleryStore(s => s.nextImage)
   const previousImage = useGalleryStore(s => s.previousImage)
-  const [verifiedNames, setVerifiedNames] = useState<string[]>([])
-
-  useEffect(() => {
-    async function loadVerified() {
-      try {
-        const identities = await fetchVerifiedIdentities()
-        setVerifiedNames(identities.map(i => i.display_name.trim().toLowerCase()))
-      } catch (err) {
-        console.error('Error loading verified identities in Lightbox:', err)
-      }
-    }
-    if (isOpen) {
-      void loadVerified()
-    }
-  }, [isOpen])
+  const verifiedNames = useVerifiedNames(isOpen)
 
   const [showInfo, setShowInfo] = useState(() =>
     typeof window === 'undefined' ? true : window.innerWidth >= 1024
