@@ -3,7 +3,11 @@
   command = "npm run verify:env && npm run build"
 
 [build.environment]
-  NODE_VERSION = "22.11.0"
+  # Float latest 22.x: rolldown (vite 8) optional native bindings require
+  # node >=22.12.0; the 22.11.0 pin made npm ci silently skip them and every
+  # Linux build failed with "Cannot find module '@rolldown/binding-linux-x64-gnu'"
+  # (2026-09-24, reproduced in Docker on node:22.11.0).
+  NODE_VERSION = "22"
   NPM_VERSION = "11.11.0"
 
 [[redirects]]
