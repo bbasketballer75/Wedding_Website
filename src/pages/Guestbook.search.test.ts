@@ -7,6 +7,7 @@
  */
 
 import { describe, it, expect } from 'vitest'
+import { INITIAL_VISIBLE_MESSAGES } from './guestbook/constants'
 
 // ─── Predicate ────────────────────────────────────────────────────────────────
 // This mirrors `messages.filter(m => ...)` in Guestbook.tsx.
@@ -26,8 +27,7 @@ function applyFilter(
 // ─── Pagination reset ─────────────────────────────────────────────────────────
 // The Guestbook resets visibleCount to INITIAL_VISIBLE_MESSAGES when searchQuery changes.
 // We verify the visible-slice behaviour mirrors what the component produces.
-
-const INITIAL_VISIBLE_MESSAGES = 10 // must match the constant in Guestbook.tsx
+// INITIAL_VISIBLE_MESSAGES is imported from guestbook/constants.ts (single source of truth).
 
 function computeVisible<T>(items: T[], visibleCount: number): T[] {
   return items.slice(0, Math.min(visibleCount, items.length))

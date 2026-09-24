@@ -1,4 +1,4 @@
-import { useState, useRef, useEffect, useCallback, useMemo } from 'react'
+import { useMemo, useRef } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
 import {
   Play,
@@ -16,46 +16,14 @@ import {
   Smartphone,
 } from 'lucide-react'
 import { cn, formatTime } from '@/lib/utils'
-import {
-  clearSavedVideoProgress,
-  getVideoProgressStorageKey,
-  writeSavedVideoProgress,
-} from '@/utils/videoProgress'
-
-interface Chapter {
-  label: string
-  time: number
-  thumbnail?: string
-}
-
-type RemotePlaybackState = 'connecting' | 'connected' | 'disconnected'
-
-interface RemotePlaybackController {
-  state: RemotePlaybackState
-  prompt: () => Promise<void>
-  addEventListener?: (type: string, listener: EventListenerOrEventListenerObject) => void
-  removeEventListener?: (type: string, listener: EventListenerOrEventListenerObject) => void
-}
-
-type CastableVideoElement = HTMLVideoElement & {
-  remote?: RemotePlaybackController
-  webkitShowPlaybackTargetPicker?: () => void
-  webkitCurrentPlaybackTargetIsWireless?: boolean
-}
-
-interface VideoPlayerProps {
-  src: string
-  title?: string
-  chapters?: Chapter[]
-  poster?: string
-  captionsSrc?: string
-  previewStartTime?: number
-  storageKey?: string
-  onTimeUpdate?: (time: number) => void
-  onEnded?: () => void
-  className?: string
-  requireLandscapeOnPhone?: boolean
-}
+import { type VideoPlayerProps } from './types'
+import { usePortraitLock } from './usePortraitLock'
+import { useCastPlayback } from './useCastPlayback'
+import { usePreviewVideo } from './usePreviewVideo'
+import { useVideoProgress } from './useVideoProgress'
+import { useControlsVisibility } from './useControlsVisibility'
+import { useChapterMenu } from './useChapterMenu'
+import { useVideoPlayback } from './useVideoPlayback'
 
 export function VideoPlayer({
   src,
@@ -74,468 +42,66 @@ export function VideoPlayer({
   const previewVideoRef = useRef<HTMLVideoElement>(null)
   const containerRef = useRef<HTMLDivElement>(null)
 
-  const [isPlaying, setIsPlaying] = useState(false)
-  const [currentTime, setCurrentTime] = useState(0)
-  const [duration, setDuration] = useState(0)
-  const [volume, setVolume] = useState(1)
-  const [isMuted, setIsMuted] = useState(false)
-  const [isFullscreen, setIsFullscreen] = useState(false)
-  const [showControls, setShowControls] = useState(true)
-  const [isLoading, setIsLoading] = useState(true)
-  const [showChapterMenu, setShowChapterMenu] = useState(false)
-  const [hasStartedPlayback, setHasStartedPlayback] = useState(false)
-  const [isPhonePortrait, setIsPhonePortrait] = useState(false)
-  const [captionsEnabled, setCaptionsEnabled] = useState(false)
-  const [isCasting, setIsCasting] = useState(false)
-  const [previewReady, setPreviewReady] = useState(false)
-
-  const controlsTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null)
   const resolvedStorageKey = storageKey || src
   const resolvedChapters = useMemo(
     () =>
       chapters.filter(chapter => Number.isFinite(chapter.time) && chapter.label.trim().length > 0),
     [chapters]
   )
-  const progressPercent = duration > 0 ? (currentTime / duration) * 100 : 0
+
+  const isPhonePortrait = usePortraitLock()
   const shouldRequireLandscape = requireLandscapeOnPhone && isPhonePortrait
-  const shouldShowControlsOverlay = showControls || shouldRequireLandscape
+
+  const {
+    isPlaying,
+    setIsPlaying,
+    currentTime,
+    setCurrentTime,
+    duration,
+    volume,
+    isMuted,
+    isFullscreen,
+    isLoading,
+    hasStartedPlayback,
+    setHasStartedPlayback,
+    captionsEnabled,
+    setCaptionsEnabled,
+    togglePlay,
+    handleLoadedMetadata,
+    handleSeek,
+    skip,
+    toggleMute,
+    handleVolumeChange,
+    toggleFullscreen,
+  } = useVideoPlayback(videoRef, containerRef, src, captionsSrc, shouldRequireLandscape)
+
   const shouldShowPreviewVideo = !hasStartedPlayback && !shouldRequireLandscape
-  const canCast = useMemo(() => {
-    if (typeof window === 'undefined') {
-      return false
-    }
-
-    const supportsAirPlay =
-      'WebKitPlaybackTargetAvailabilityEvent' in window ||
-      'webkitShowPlaybackTargetPicker' in HTMLMediaElement.prototype
-    const supportsRemotePlayback =
-      'remote' in HTMLMediaElement.prototype || 'RemotePlayback' in window
-
-    return supportsAirPlay || supportsRemotePlayback
-  }, [])
-
-  useEffect(() => {
-    if (typeof window === 'undefined') {
-      return
-    }
-
-    const updateViewportState = () => {
-      setIsPhonePortrait(
-        window.matchMedia('(max-width: 767px) and (orientation: portrait)').matches
-      )
-    }
-
-    updateViewportState()
-    window.addEventListener('resize', updateViewportState)
-    window.addEventListener('orientationchange', updateViewportState)
-
-    return () => {
-      window.removeEventListener('resize', updateViewportState)
-      window.removeEventListener('orientationchange', updateViewportState)
-    }
-  }, [])
-
-  useEffect(() => {
-    const video = videoRef.current as CastableVideoElement | null
-
-    if (!video) {
-      return
-    }
-
-    video.disableRemotePlayback = false
-    video.setAttribute('x-webkit-airplay', 'allow')
-    video.setAttribute('airplay', 'allow')
-
-    const syncCastState = () => {
-      const remoteState = video.remote?.state
-      const wirelessTarget = Boolean(video.webkitCurrentPlaybackTargetIsWireless)
-      setIsCasting(wirelessTarget || remoteState === 'connecting' || remoteState === 'connected')
-    }
-
-    syncCastState()
-
-    const remote = video.remote
-    remote?.addEventListener?.('connecting', syncCastState)
-    remote?.addEventListener?.('connect', syncCastState)
-    remote?.addEventListener?.('disconnect', syncCastState)
-    video.addEventListener(
-      'webkitcurrentplaybacktargetiswirelesschanged',
-      syncCastState as EventListener
-    )
-
-    return () => {
-      remote?.removeEventListener?.('connecting', syncCastState)
-      remote?.removeEventListener?.('connect', syncCastState)
-      remote?.removeEventListener?.('disconnect', syncCastState)
-      video.removeEventListener(
-        'webkitcurrentplaybacktargetiswirelesschanged',
-        syncCastState as EventListener
-      )
-    }
-  }, [])
-
-  useEffect(() => {
-    const previewVideo = previewVideoRef.current
-
-    if (!previewVideo) {
-      return
-    }
-
-    if (!shouldShowPreviewVideo) {
-      previewVideo.pause()
-      previewVideo.currentTime = 0
-      return
-    }
-
-    let isCancelled = false
-
-    const markReady = () => {
-      if (isCancelled) {
-        return
-      }
-
-      window.requestAnimationFrame(() => {
-        if (!isCancelled) {
-          setPreviewReady(true)
-        }
-      })
-    }
-
-    const seekAndPlay = () => {
-      if (!previewVideo.duration || !Number.isFinite(previewVideo.duration)) {
-        return false
-      }
-
-      const safePreviewStart = Math.min(previewStartTime, Math.max(previewVideo.duration - 0.1, 0))
-
-      if (Math.abs(previewVideo.currentTime - safePreviewStart) > 0.35) {
-        const handleSeeked = () => {
-          previewVideo.removeEventListener('seeked', handleSeeked)
-
-          if (isCancelled) {
-            return
-          }
-
-          markReady()
-          const playAttempt = previewVideo.play()
-          if (playAttempt && typeof playAttempt.catch === 'function') {
-            playAttempt.catch(() => {})
-          }
-        }
-
-        previewVideo.addEventListener('seeked', handleSeeked, { once: true })
-        previewVideo.currentTime = safePreviewStart
-        return true
-      }
-
-      markReady()
-      const playAttempt = previewVideo.play()
-      if (playAttempt && typeof playAttempt.catch === 'function') {
-        playAttempt.catch(() => {})
-      }
-      return true
-    }
-
-    const handleCanPlay = () => {
-      if (previewVideo.readyState >= HTMLMediaElement.HAVE_CURRENT_DATA) {
-        seekAndPlay()
-      }
-    }
-
-    const handleEnded = () => {
-      const safePreviewStart = Math.min(previewStartTime, Math.max(previewVideo.duration - 0.1, 0))
-      previewVideo.currentTime = safePreviewStart
-      const playAttempt = previewVideo.play()
-      if (playAttempt && typeof playAttempt.catch === 'function') {
-        playAttempt.catch(() => {})
-      }
-    }
-
-    previewVideo.preload = 'auto'
-    previewVideo.load()
-
-    if (previewVideo.readyState >= HTMLMediaElement.HAVE_CURRENT_DATA) {
-      seekAndPlay()
-    } else {
-      previewVideo.addEventListener('canplay', handleCanPlay)
-    }
-
-    previewVideo.addEventListener('ended', handleEnded)
-
-    return () => {
-      isCancelled = true
-      previewVideo.removeEventListener('canplay', handleCanPlay)
-      previewVideo.removeEventListener('ended', handleEnded)
-    }
-  }, [previewStartTime, shouldShowPreviewVideo])
-
-  // Load saved progress
-  useEffect(() => {
-    const saved = localStorage.getItem(getVideoProgressStorageKey(resolvedStorageKey))
-    if (saved && videoRef.current) {
-      videoRef.current.currentTime = parseFloat(saved)
-    }
-  }, [resolvedStorageKey])
-
-  // Save progress periodically
-  useEffect(() => {
-    if (!isPlaying) return
-
-    const interval = setInterval(() => {
-      if (videoRef.current) {
-        writeSavedVideoProgress(resolvedStorageKey, videoRef.current.currentTime)
-      }
-    }, 5000)
-
-    return () => clearInterval(interval)
-  }, [isPlaying, resolvedStorageKey])
-
-  const activeChapter = resolvedChapters.findIndex((ch, i) => {
-    const nextCh = resolvedChapters[i + 1]
-    return currentTime >= ch.time && (!nextCh || currentTime < nextCh.time)
-  })
-
-  const togglePlay = useCallback(() => {
-    if (shouldRequireLandscape) {
-      return
-    }
-
-    if (videoRef.current) {
-      if (isPlaying) {
-        videoRef.current.pause()
-      } else {
-        setHasStartedPlayback(true)
-        videoRef.current.play()
-      }
-      setIsPlaying(!isPlaying)
-    }
-  }, [isPlaying, shouldRequireLandscape])
-
-  const handleTimeUpdate = useCallback(() => {
-    if (videoRef.current) {
-      setCurrentTime(videoRef.current.currentTime)
-      writeSavedVideoProgress(resolvedStorageKey, videoRef.current.currentTime)
-      onTimeUpdate?.(videoRef.current.currentTime)
-    }
-  }, [onTimeUpdate, resolvedStorageKey])
-
-  const handleEnded = useCallback(() => {
-    clearSavedVideoProgress(resolvedStorageKey)
-    onEnded?.()
-  }, [onEnded, resolvedStorageKey])
-
-  const handleLoadedMetadata = useCallback(() => {
-    if (videoRef.current) {
-      setDuration(videoRef.current.duration)
-      setIsLoading(false)
-    }
-  }, [])
-
-  const handleSeek = useCallback((e: React.ChangeEvent<HTMLInputElement>) => {
-    const time = parseFloat(e.target.value)
-    if (videoRef.current) {
-      videoRef.current.currentTime = time
-      setCurrentTime(time)
-    }
-  }, [])
-
-  const skip = useCallback((seconds: number) => {
-    if (videoRef.current) {
-      videoRef.current.currentTime += seconds
-    }
-  }, [])
-
-  const toggleMute = useCallback(() => {
-    if (videoRef.current) {
-      videoRef.current.muted = !isMuted
-      setIsMuted(!isMuted)
-    }
-  }, [isMuted])
-
-  const handleVolumeChange = useCallback((e: React.ChangeEvent<HTMLInputElement>) => {
-    const vol = parseFloat(e.target.value)
-    if (videoRef.current) {
-      videoRef.current.volume = vol
-      setVolume(vol)
-      setIsMuted(vol === 0)
-    }
-  }, [])
-
-  const toggleFullscreen = useCallback(async () => {
-    if (!containerRef.current) return
-
-    try {
-      if (!isFullscreen) {
-        await containerRef.current.requestFullscreen()
-      } else {
-        await document.exitFullscreen()
-      }
-      setIsFullscreen(!isFullscreen)
-    } catch (error) {
-      console.error('Fullscreen error:', error)
-    }
-  }, [isFullscreen])
-
-  const handleCast = useCallback(async () => {
-    const video = videoRef.current as CastableVideoElement | null
-
-    if (!video) {
-      return
-    }
-
-    try {
-      if (typeof video.webkitShowPlaybackTargetPicker === 'function') {
-        video.webkitShowPlaybackTargetPicker()
-        return
-      }
-
-      if (typeof video.remote?.prompt === 'function') {
-        await video.remote.prompt()
-      }
-    } catch (error) {
-      console.error('Remote playback error:', error)
-    }
-  }, [])
-
-  const jumpToChapter = useCallback(
-    (chapter: Chapter, index: number) => {
-      if (shouldRequireLandscape) {
-        return
-      }
-
-      if (videoRef.current) {
-        videoRef.current.currentTime = chapter.time
-        setShowChapterMenu(false)
-        if (index >= 0 && !isPlaying) {
-          void videoRef.current.play()
-          setIsPlaying(true)
-        }
-      }
-    },
-    [isPlaying, shouldRequireLandscape]
+  const { previewReady, setPreviewReady } = usePreviewVideo(
+    previewVideoRef,
+    previewStartTime,
+    shouldShowPreviewVideo
+  )
+  const { canCast, isCasting, handleCast } = useCastPlayback(videoRef)
+  const { handleTimeUpdate, handleEnded } = useVideoProgress(
+    videoRef,
+    resolvedStorageKey,
+    isPlaying,
+    setCurrentTime,
+    onTimeUpdate,
+    onEnded
+  )
+  const { showControls, setShowControls, handleMouseMove } = useControlsVisibility(isPlaying)
+  const { showChapterMenu, setShowChapterMenu, activeChapter, jumpToChapter } = useChapterMenu(
+    videoRef,
+    resolvedChapters,
+    currentTime,
+    isPlaying,
+    setIsPlaying,
+    shouldRequireLandscape
   )
 
-  // Mouse activity for controls
-  const handleMouseMove = useCallback(() => {
-    setShowControls(true)
-
-    if (controlsTimeoutRef.current) {
-      clearTimeout(controlsTimeoutRef.current)
-    }
-
-    if (isPlaying) {
-      controlsTimeoutRef.current = setTimeout(() => {
-        setShowControls(false)
-      }, 3000)
-    }
-  }, [isPlaying])
-
-  // Keyboard shortcuts
-  useEffect(() => {
-    const handleKeyDown = (e: KeyboardEvent) => {
-      if (e.target instanceof HTMLInputElement) return
-
-      switch (e.key) {
-        case ' ':
-        case 'k':
-          e.preventDefault()
-          togglePlay()
-          break
-        case 'ArrowLeft':
-          e.preventDefault()
-          skip(-10)
-          break
-        case 'ArrowRight':
-          e.preventDefault()
-          skip(10)
-          break
-        case 'ArrowUp':
-          e.preventDefault()
-          if (videoRef.current) {
-            const newVol = Math.min(1, videoRef.current.volume + 0.1)
-            videoRef.current.volume = newVol
-            setVolume(newVol)
-          }
-          break
-        case 'ArrowDown':
-          e.preventDefault()
-          if (videoRef.current) {
-            const newVol = Math.max(0, videoRef.current.volume - 0.1)
-            videoRef.current.volume = newVol
-            setVolume(newVol)
-          }
-          break
-        case 'f':
-          e.preventDefault()
-          toggleFullscreen()
-          break
-        case 'm':
-          e.preventDefault()
-          toggleMute()
-          break
-        case 'Escape':
-          if (showChapterMenu) {
-            setShowChapterMenu(false)
-          }
-          break
-      }
-    }
-
-    window.addEventListener('keydown', handleKeyDown)
-    return () => window.removeEventListener('keydown', handleKeyDown)
-  }, [togglePlay, skip, toggleFullscreen, toggleMute, showChapterMenu])
-
-  useEffect(() => {
-    if (!showChapterMenu) {
-      return
-    }
-
-    const handlePointerDown = (event: MouseEvent | TouchEvent) => {
-      const target = event.target as Node | null
-      const menu = document.getElementById('video-chapter-menu')
-      const toggle = document.getElementById('video-chapter-toggle')
-
-      if (!target) {
-        return
-      }
-
-      if (menu?.contains(target) || toggle?.contains(target)) {
-        return
-      }
-
-      setShowChapterMenu(false)
-    }
-
-    document.addEventListener('mousedown', handlePointerDown)
-    document.addEventListener('touchstart', handlePointerDown)
-
-    return () => {
-      document.removeEventListener('mousedown', handlePointerDown)
-      document.removeEventListener('touchstart', handlePointerDown)
-    }
-  }, [showChapterMenu])
-
-  useEffect(() => {
-    if (!shouldRequireLandscape || !videoRef.current) {
-      return
-    }
-
-    if (!videoRef.current.paused) {
-      videoRef.current.pause()
-    }
-  }, [shouldRequireLandscape])
-
-  useEffect(() => {
-    const video = videoRef.current
-
-    if (!video || video.textTracks.length === 0) {
-      return
-    }
-
-    Array.from(video.textTracks).forEach((track, index) => {
-      track.mode = index === 0 && captionsEnabled ? 'showing' : 'hidden'
-    })
-  }, [captionsEnabled, src, captionsSrc])
+  const progressPercent = duration > 0 ? (currentTime / duration) * 100 : 0
+  const shouldShowControlsOverlay = showControls || shouldRequireLandscape
 
   return (
     <div
@@ -898,7 +464,7 @@ export function VideoPlayer({
                   {captionsSrc && (
                     <button
                       type='button'
-                      onClick={() => setCaptionsEnabled(current => !current)}
+                      onClick={() => setCaptionsEnabled(!captionsEnabled)}
                       className={cn(
                         'rounded-full border px-3 py-1.5 text-[10px] uppercase tracking-[0.22em] transition-colors',
                         captionsEnabled
