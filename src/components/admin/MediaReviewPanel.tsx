@@ -1,9 +1,8 @@
-import { Inbox, Users } from 'lucide-react'
+import { Inbox } from 'lucide-react'
 import { ListSkeleton } from '@/components/ui/Skeleton'
 import { ComponentErrorBoundary } from '@/components/error/ErrorBoundary'
 
 import { BatchList } from './BatchList'
-import { FaceReviewGrid } from './FaceReviewGrid'
 import { ClusterMergeModal } from './ClusterMergeModal'
 import { GuestUploadModerationList } from './GuestUploadModerationList'
 import { useMediaReviewStore } from '@/stores/mediaReviewStore'
@@ -46,7 +45,6 @@ export interface ReviewImportManifestRow {
 export function MediaReviewPanel() {
   const {
     loading,
-    faces,
     photoInspectorOpen,
     cropPreviewUrls,
     selectedPhoto,
@@ -58,7 +56,6 @@ export function MediaReviewPanel() {
     handleRefresh,
     handleSyncManifest,
     handleApplyFaces,
-    handleOpenPhotoInspector,
     handleSaveFaces,
     handleResetFaces,
     handleSelectFace,
@@ -74,7 +71,6 @@ export function MediaReviewPanel() {
   }
 
   const hasSelectedBatch = useMediaReviewStore.getState().selectedBatchId !== null
-  const hasFaces = faces.length > 0
 
   return (
     <ComponentErrorBoundary componentName='Media Review Panel'>
@@ -91,37 +87,21 @@ export function MediaReviewPanel() {
 
         {/* Main content based on state */}
         {hasSelectedBatch ? (
-          hasFaces ? (
-            <>
-              <FaceReviewGrid
-                onSaveFaces={handleSaveFaces}
-                onResetFaces={handleResetFaces}
-                onOpenPhotoInspector={handleOpenPhotoInspector}
-              />
-
-              <ClusterMergeModal
-                isOpen={photoInspectorOpen}
-                onClose={() => setPhotoInspectorOpen(false)}
-                selectedPhoto={selectedPhoto}
-                selectedFace={selectedFace}
-                selectedFaceDraft={selectedFaceDraft}
-                onUpdateDraft={updateDraft}
-                onSaveFaces={handleSaveFaces}
-                onResetFaces={handleResetFaces}
-                cropPreviewUrls={cropPreviewUrls}
-                onSelectFace={handleSelectFace}
-                onNavigateFace={handleNavigateFace}
-              />
-            </>
-          ) : (
-            <div className='rounded-xl border border-dashed border-gold-200 bg-white'>
-              <EmptyState
-                icon={Users}
-                title='No face review rows staged'
-                description='This batch does not have staged per-face review rows yet. Re-run the review push after exporting the manifest so the people queue has real faces to review.'
-              />
-            </div>
-          )
+          <>
+            <ClusterMergeModal
+              isOpen={photoInspectorOpen}
+              onClose={() => setPhotoInspectorOpen(false)}
+              selectedPhoto={selectedPhoto}
+              selectedFace={selectedFace}
+              selectedFaceDraft={selectedFaceDraft}
+              onUpdateDraft={updateDraft}
+              onSaveFaces={handleSaveFaces}
+              onResetFaces={handleResetFaces}
+              cropPreviewUrls={cropPreviewUrls}
+              onSelectFace={handleSelectFace}
+              onNavigateFace={handleNavigateFace}
+            />
+          </>
         ) : (
           <div className='rounded-xl border border-dashed border-gold-200 bg-white'>
             <EmptyState
