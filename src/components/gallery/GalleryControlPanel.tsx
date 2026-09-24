@@ -1,7 +1,7 @@
 /**
  * GalleryControlPanel — the white card containing collection tabs +
  * search + view-mode + select toggle + select-mode action bar +
- * FaceRecognition + active-filter chips.
+ * active-filter chips.
  *
  * Extracted from src/pages/Gallery.tsx on 2026-09-14 as part of the
  * Gallery.tsx 1356 -> <500 line reduction.
@@ -12,7 +12,6 @@ import type { CollectionTab } from '@/components/gallery/constants'
 import { collectionTabs, COLLECTION_COVERS } from '@/components/gallery/constants'
 import { Button } from '@/components/ui/Button'
 import { Input } from '@/components/ui/Input'
-import { FaceRecognition } from '@/components/face-recognition/FaceRecognition'
 import { cn } from '@/lib/utils'
 
 const viewOptions = [
@@ -20,17 +19,6 @@ const viewOptions = [
   { key: 'grid', label: 'Grid', icon: Grid3X3 },
   { key: 'timeline', label: 'Timeline', icon: CalendarDays },
 ] as const
-
-type FaceDetectedFace = {
-  id: string
-  name: string
-  photoCount: number
-  thumbnail?: string
-  latestMoment?: string
-  collections?: string[]
-  professionalCount?: number
-  guestCount?: number
-}
 
 export interface GalleryControlPanelProps {
   collectionCounts: Record<CollectionTab, number>
@@ -48,11 +36,6 @@ export interface GalleryControlPanelProps {
   selectedPhotoIdsCount: number
   onSelectAllVisible: () => void
   onClearQueue: () => void
-
-  onFaceFilter: (name: string) => void
-  detectedFaces: FaceDetectedFace[]
-  faceFilter: string | null
-  onClearFaceFilter: () => void
 
   hasActiveFilters: boolean
   onClearAllFilters: () => void
@@ -72,10 +55,6 @@ export function GalleryControlPanel(props: GalleryControlPanelProps) {
     selectedPhotoIdsCount,
     onSelectAllVisible,
     onClearQueue,
-    onFaceFilter,
-    detectedFaces,
-    faceFilter,
-    onClearFaceFilter,
     hasActiveFilters,
     onClearAllFilters,
   } = props
@@ -228,16 +207,6 @@ export function GalleryControlPanel(props: GalleryControlPanelProps) {
           </motion.div>
         )}
 
-        <div className='mt-3 flex items-center justify-between border-t border-charcoal-900/6 pt-3'>
-          <FaceRecognition onPhotoFilter={onFaceFilter} detectedFaces={detectedFaces} />
-          <a
-            href='/people'
-            className='text-xs text-charcoal-400 hover:text-gold-600 transition-colors'
-          >
-            People page →
-          </a>
-        </div>
-
         {hasActiveFilters && (
           <div className='mt-4 flex flex-wrap items-center gap-2 border-t border-charcoal-900/8 pt-4'>
             <span className='text-[10px] uppercase tracking-[0.28em] text-charcoal-500'>
@@ -250,16 +219,6 @@ export function GalleryControlPanel(props: GalleryControlPanelProps) {
               <span className='inline-flex items-center gap-2 rounded-full bg-cream-50 px-3 py-1.5 text-sm text-charcoal-600'>
                 {`Search: "${searchQuery}"`}
               </span>
-            )}
-            {faceFilter && (
-              <button
-                type='button'
-                onClick={onClearFaceFilter}
-                className='inline-flex items-center gap-2 rounded-full bg-cream-50 px-3 py-1.5 text-sm text-charcoal-600 transition-colors hover:text-gold-700'
-              >
-                {faceFilter}
-                <X className='h-3.5 w-3.5' />
-              </button>
             )}
             <button
               type='button'
