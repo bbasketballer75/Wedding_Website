@@ -1,0 +1,35 @@
+# Normalize line endings at the git layer.
+# Rationale: global core.autocrlf=false means a tool that writes CRLF would commit
+# CRLF verbatim, producing mixed-EOL files that break subsequent edits.
+
+# Default: detect text, always check out and commit as LF
+* text=auto eol=lf
+
+# Batch files must stay CRLF or the Windows shell mis-parses them
+*.cmd text eol=crlf
+*.bat text eol=crlf
+
+# Binary assets: never touch, never try to diff
+*.png binary
+*.jpg binary
+*.jpeg binary
+*.gif binary
+*.webp binary
+*.ico binary
+*.avif binary
+*.svg text eol=lf
+*.woff binary
+*.woff2 binary
+*.ttf binary
+*.otf binary
+*.eot binary
+*.mp4 binary
+*.webm binary
+*.mov binary
+*.mp3 binary
+*.zip binary
+*.gz binary
+*.pdf binary
+
+# Lockfiles: treated as text, but generated - do not let tooling rewrite line endings
+package-lock.json -diff linguist-generated=true
