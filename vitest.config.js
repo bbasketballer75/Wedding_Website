@@ -7,6 +7,7 @@ export default defineConfig({
   plugins: [react()],
   test: {
     globals: true,
+    testTimeout: 15000,
     env: {
       VITE_SUPABASE_URL: 'https://test-project.supabase.co',
       VITE_SUPABASE_ANON_KEY: 'test-anon-key',
