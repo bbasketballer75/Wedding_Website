@@ -28,21 +28,21 @@ async function resolveConfig(env: Record<string, string | undefined>): Promise<R
   ]
   const saved = Object.fromEntries(keys.map(key => [key, process.env[key]]))
 
-  for (const [key, value] of Object.entries(env)) {
-    if (value === undefined) delete process.env[key]
-    else process.env[key] = value
+  for (const key of keys) {
+    if (env[key] === undefined) delete process.env[key]
+    else process.env[key] = env[key]
   }
 
-  vi.resetModules()
-  const mod = await import(/* @vite-ignore */ CONFIG_PATH)
-  const config = (mod.default as (ctx: { mode: string }) => ResolvedConfig)({ mode: 'production' })
-
-  for (const [key, value] of Object.entries(saved)) {
-    if (value === undefined) delete process.env[key]
-    else process.env[key] = value
+  try {
+    vi.resetModules()
+    const mod = await import(/* @vite-ignore */ CONFIG_PATH)
+    return (mod.default as (ctx: { mode: string }) => ResolvedConfig)({ mode: 'production' })
+  } finally {
+    for (const [key, value] of Object.entries(saved)) {
+      if (value === undefined) delete process.env[key]
+      else process.env[key] = value
+    }
   }
-
-  return config
 }
 
 function releaseOf(config: ResolvedConfig): string {
@@ -107,16 +107,43 @@ describe('Sentry source map emission (vite build)', () => {
       SENTRY_AUTH_TOKEN: 'test-token',
       SENTRY_ORG: 'friendly-city-t9',
       SENTRY_PROJECT: 'theporadas-com',
-      SENTRY_DSN:
-        'https://00000000000000000000000000000000@o4511356027011072.ingest.us.sentry.io/4512087393042432',
     })
 
     expect(config.build.sourcemap).toBe('hidden')
+    const plugins = config.plugins.flat(Infinity) as Array<{ name?: string }>
+    expect(plugins.some(plugin => plugin?.name?.startsWith('sentry-'))).toBe(true)
   })
 
   it('never emits published source maps without upload credentials', async () => {
     const config = await resolveConfig({ SENTRY_AUTH_TOKEN: undefined })
 
     expect(config.build.sourcemap).toBe(false)
+    const plugins = config.plugins.flat(Infinity) as Array<{ name?: string }>
+    expect(plugins.some(plugin => plugin?.name?.startsWith('sentry-'))).toBe(false)
   })
+
+  const credentials = {
+    SENTRY_AUTH_TOKEN: 'fixture-token-never-log',
+    SENTRY_ORG: 'friendly-city-t9',
+    SENTRY_PROJECT: 'theporadas-com',
+  }
+  const names = Object.keys(credentials) as Array<keyof typeof credentials>
+  for (let mask = 1; mask < 7; mask += 1) {
+    const configured = names.filter((_, index) => mask & (1 << index))
+    it(`refuses partial source-map credentials: ${configured.join(', ')}`, async () => {
+      const env = Object.fromEntries(configured.map(name => [name, credentials[name]]))
+      const missing = names.filter(name => !configured.includes(name))
+      let failure: unknown
+      try {
+        await resolveConfig(env)
+      } catch (error) {
+        failure = error
+      }
+      expect(failure).toBeInstanceOf(Error)
+      const message = (failure as Error).message
+      expect(message).toContain('Incomplete Sentry source-map configuration')
+      for (const name of missing) expect(message).toContain(name)
+      expect(message).not.toContain(credentials.SENTRY_AUTH_TOKEN)
+    })
+  }
 })

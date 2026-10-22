@@ -36,6 +36,27 @@ const sentryUploadEnabled = Boolean(
   process.env.SENTRY_AUTH_TOKEN && process.env.SENTRY_ORG && process.env.SENTRY_PROJECT
 )
 
+// A partially configured upload is the failure this whole mechanism exists to
+// prevent, and it is silent: the gate above simply turns false, the build
+// ships with no source maps, and the release environment check does not look
+// at these variables at all. Refuse the build and name what is missing, so a
+// half-configured Netlify environment fails loudly instead of producing an
+// unsymbolicated deploy.
+const sentryUploadVariables = ['SENTRY_AUTH_TOKEN', 'SENTRY_ORG', 'SENTRY_PROJECT']
+const missingSentryUploadVariables = sentryUploadVariables.filter(
+  variable => !process.env[variable]?.trim()
+)
+const presentSentryUploadVariables = sentryUploadVariables.filter(variable =>
+  process.env[variable]?.trim()
+)
+if (presentSentryUploadVariables.length > 0 && missingSentryUploadVariables.length > 0) {
+  throw new Error(
+    `Incomplete Sentry source-map configuration: missing ${missingSentryUploadVariables.join(
+      ', '
+    )}. Set all of ${sentryUploadVariables.join(', ')} to upload source maps, or remove them all to build without symbolication.`
+  )
+}
+
 function getNodeModulePackage(id) {
   const normalized = id.replace(/\\/g, '/')
   const nodeModulesIndex = normalized.lastIndexOf('/node_modules/')
