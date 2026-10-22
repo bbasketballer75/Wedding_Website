@@ -45,18 +45,19 @@ export function initErrorTracking(): void {
     return
   }
 
-  // One-line smoke signal: visible in DevTools console and grep-able in
-  // the production bundle, so a deploy can be verified end-to-end without
-  // a full error event. See /Users/bbask/Documents/Hermes-Workspace/.agents/sentry-onboarding.md
-  // for the full verification recipe.
-  if (typeof console !== 'undefined') {
-    console.info('[sentry] initialized:', true)
-  }
-
+  // Deploy verification surface (no console marker — production builds run
+  // terser with `drop_console`, so any console signal here is stripped):
+  //   1. the emitted bundle contains `release:"<deployed commit>"`,
+  //   2. loading the site issues a request to the DSN host (envelope/session),
+  //      which requires that host to be allowlisted in public/_headers CSP.
+  // Regression coverage: src/services/ErrorLoggingService.test.ts and
+  // src/__tests__/sentryCspHeaders.test.ts.
   Sentry.init({
     dsn,
     environment: getEnvironment(),
-    release: import.meta.env.VITE_APP_VERSION || __APP_VERSION__ || 'development',
+    // __APP_VERSION__ is the build-time release identity (deploy commit ref).
+    // Reading VITE_APP_VERSION here would let a stale static env value win.
+    release: __APP_VERSION__ || 'development',
     enabled: import.meta.env.PROD,
     sendDefaultPii: false,
 
