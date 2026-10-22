@@ -121,7 +121,7 @@ if (!process.env.VITE_GA_ID?.trim()) {
 
 if (!process.env.VITE_APP_VERSION?.trim()) {
   addWarning(
-    'VITE_APP_VERSION is not set. Monitoring will fall back to the package version unless a launch-specific release label is provided.'
+    'VITE_APP_VERSION is not set. In CI the release is derived from the deploy commit (COMMIT_REF); this label only applies to builds without a commit ref, falling back to the package version.'
   )
 } else {
   addPass('VITE_APP_VERSION is configured.')

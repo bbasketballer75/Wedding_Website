@@ -10,10 +10,52 @@ import { fileURLToPath } from 'url'
 import { defineConfig, loadEnv } from 'vite'
 import { VitePWA } from 'vite-plugin-pwa'
 import packageJson from './package.json' with { type: 'json' }
+import { sentryVitePlugin } from '@sentry/vite-plugin'
 
 const __filename = fileURLToPath(import.meta.url)
 const __dirname = path.dirname(__filename)
 const DEFAULT_SITE_URL = 'https://www.theporadas.com'
+
+// Sentry release identity.
+//
+// The release MUST change on every deploy: it is the key that ties a stack frame
+// in Sentry to the source map artifacts uploaded for that build. A static label
+// (the previous behaviour: `VITE_APP_VERSION="2026-04-14-launch"` set once in
+// Netlify) meant every deploy shared one release, so artifacts could never be
+// associated per deploy and regressions could not be attributed to a commit.
+//
+// Netlify exposes the deploy commit as COMMIT_REF; local builds fall back to the
+// optional VITE_APP_VERSION label and finally to the package version.
+const commitRef = (process.env.COMMIT_REF || '').trim()
+const releaseVersion = commitRef || process.env.VITE_APP_VERSION || packageJson.version
+
+// Source maps are only emitted when they can be uploaded and then deleted from
+// the published output. Without credentials we would either ship readable maps
+// publicly or ship none at all — so we ship none.
+const sentryUploadEnabled = Boolean(
+  process.env.SENTRY_AUTH_TOKEN && process.env.SENTRY_ORG && process.env.SENTRY_PROJECT
+)
+
+// A partially configured upload is the failure this whole mechanism exists to
+// prevent, and it is silent: the gate above simply turns false, the build
+// ships with no source maps, and the release environment check does not look
+// at these variables at all. Refuse the build and name what is missing, so a
+// half-configured Netlify environment fails loudly instead of producing an
+// unsymbolicated deploy.
+const sentryUploadVariables = ['SENTRY_AUTH_TOKEN', 'SENTRY_ORG', 'SENTRY_PROJECT']
+const missingSentryUploadVariables = sentryUploadVariables.filter(
+  variable => !process.env[variable]?.trim()
+)
+const presentSentryUploadVariables = sentryUploadVariables.filter(variable =>
+  process.env[variable]?.trim()
+)
+if (presentSentryUploadVariables.length > 0 && missingSentryUploadVariables.length > 0) {
+  throw new Error(
+    `Incomplete Sentry source-map configuration: missing ${missingSentryUploadVariables.join(
+      ', '
+    )}. Set all of ${sentryUploadVariables.join(', ')} to upload source maps, or remove them all to build without symbolication.`
+  )
+}
 
 function getNodeModulePackage(id) {
   const normalized = id.replace(/\\/g, '/')
@@ -256,6 +298,29 @@ export default defineConfig(({ mode }) => {
           gzipSize: true,
           brotliSize: true,
         }),
+      // Upload source maps for this exact release, then delete them from dist so
+      // they are never served publicly. Injects debug IDs into the bundle, which
+      // lets Sentry symbolicate even if the release label ever drifts.
+      sentryUploadEnabled &&
+        sentryVitePlugin({
+          org: process.env.SENTRY_ORG,
+          project: process.env.SENTRY_PROJECT,
+          authToken: process.env.SENTRY_AUTH_TOKEN,
+          telemetry: false,
+          // Fail the build instead of warning. A deploy that silently ships
+          // without symbolication is exactly the failure this configuration
+          // exists to prevent; unset SENTRY_AUTH_TOKEN to skip upload entirely.
+          errorHandler: error => {
+            throw error
+          },
+          release: {
+            name: releaseVersion,
+          },
+          sourcemaps: {
+            assets: ['./dist/**'],
+            filesToDeleteAfterUpload: ['./dist/**/*.map'],
+          },
+        }),
     ].filter(Boolean),
     resolve: {
       alias: {
@@ -301,6 +366,10 @@ export default defineConfig(({ mode }) => {
           drop_debugger: mode === 'production',
         },
       },
+      // 'hidden' keeps the maps out of the bundle's sourceMappingURL comment; the
+      // Sentry plugin uploads them and removes them from dist. Only enabled when
+      // upload credentials exist — see sentryUploadEnabled above.
+      sourcemap: sentryUploadEnabled ? 'hidden' : false,
     },
     server: {
       port: 5173,
@@ -335,7 +404,8 @@ export default defineConfig(({ mode }) => {
     },
     define: {
       __DEV__: process.env.NODE_ENV === 'development',
-      __APP_VERSION__: JSON.stringify(process.env.VITE_APP_VERSION || packageJson.version),
+      // Consumed by ErrorLoggingService as the Sentry release.
+      __APP_VERSION__: JSON.stringify(releaseVersion),
     },
   }
 })
