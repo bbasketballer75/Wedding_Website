@@ -8,6 +8,10 @@ export default defineConfig({
   test: {
     globals: true,
     environment: 'jsdom',
+    env: {
+      VITE_SUPABASE_URL: 'https://test.supabase.co',
+      VITE_SUPABASE_ANON_KEY: 'test-anon-key',
+    },
     setupFiles: ['./src/setupTests.tsx'],
     css: true,
     include: ['src/**/*.{test,spec}.{js,ts,jsx,tsx}'],
