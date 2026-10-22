@@ -180,7 +180,7 @@
     "wait-on": "9.1.0"
   },
   "overrides": {
-    "@rollup/plugin-terser": "1.0.0",
+    "@rollup/plugin-terser": "1.0.2",
     "@lhci/utils": {
       "js-yaml": "^4.1.1"
     },
