@@ -10,6 +10,26 @@
  */
 import { describe, it, expect, afterEach, vi } from 'vitest'
 
+// Intercept the actual plugin factory so the tests assert what the upload
+// plugin RECEIVES, not merely that it was installed. The factory is stubbed;
+// no network, no upload, no credentials leave the process. The returned
+// plugin keeps a `sentry-` name so the installation assertions stay honest.
+const sentryPluginCalls = vi.hoisted(() => [] as Array<Record<string, unknown>>)
+
+vi.mock('@sentry/vite-plugin', () => ({
+  sentryVitePlugin: (options: Record<string, unknown>) => {
+    sentryPluginCalls.push(options)
+    return { name: 'sentry-vite-plugin' }
+  },
+}))
+
+// Every case here resolves the real vite.config.js, which drags in the whole
+// plugin graph (react compiler, tailwind, PWA, sentry). Under a full-suite run
+// that first dynamic import can take several seconds; the 5s default then fires
+// mid-await, which also leaves process.env mutated and cascades into later
+// assertions. The extra budget keeps the gate about behaviour, not machine load.
+vi.setConfig({ testTimeout: 30_000 })
+
 const CONFIG_PATH = '../../vite.config.js'
 
 interface ResolvedConfig {
@@ -18,17 +38,22 @@ interface ResolvedConfig {
   plugins: Array<{ name?: string } | false | null | undefined>
 }
 
-async function resolveConfig(env: Record<string, string | undefined>): Promise<ResolvedConfig> {
-  const keys = [
-    'COMMIT_REF',
-    'VITE_APP_VERSION',
-    'SENTRY_AUTH_TOKEN',
-    'SENTRY_ORG',
-    'SENTRY_PROJECT',
-  ]
-  const saved = Object.fromEntries(keys.map(key => [key, process.env[key]]))
+const CONFIG_KEYS = [
+  'COMMIT_REF',
+  'CONTEXT',
+  'NETLIFY',
+  'VITE_APP_VERSION',
+  'SENTRY_AUTH_TOKEN',
+  'SENTRY_ORG',
+  'SENTRY_PROJECT',
+]
 
-  for (const key of keys) {
+async function resolveConfig(env: Record<string, string | undefined>): Promise<ResolvedConfig> {
+  const saved = Object.fromEntries(CONFIG_KEYS.map(key => [key, process.env[key]]))
+
+  sentryPluginCalls.length = 0
+
+  for (const key of CONFIG_KEYS) {
     if (env[key] === undefined) delete process.env[key]
     else process.env[key] = env[key]
   }
@@ -43,6 +68,21 @@ async function resolveConfig(env: Record<string, string | undefined>): Promise<R
       else process.env[key] = value
     }
   }
+}
+
+/** Resolve the config and return the error it threw, or undefined if it succeeded. */
+async function failureOf(env: Record<string, string | undefined>): Promise<Error | undefined> {
+  try {
+    await resolveConfig(env)
+    return undefined
+  } catch (error) {
+    return error as Error
+  }
+}
+
+function sentryPluginOf(config: ResolvedConfig): boolean {
+  const plugins = config.plugins.flat(Infinity) as Array<{ name?: string }>
+  return plugins.some(plugin => plugin?.name?.startsWith('sentry-'))
 }
 
 function releaseOf(config: ResolvedConfig): string {
@@ -144,6 +184,221 @@ describe('Sentry source map emission (vite build)', () => {
       expect(message).toContain('Incomplete Sentry source-map configuration')
       for (const name of missing) expect(message).toContain(name)
       expect(message).not.toContain(credentials.SENTRY_AUTH_TOKEN)
+      expect(message).not.toContain(credentials.SENTRY_ORG)
+      expect(message).not.toContain(credentials.SENTRY_PROJECT)
     })
   }
+})
+
+describe('Sentry credential normalization (vite build)', () => {
+  const credentials = {
+    SENTRY_AUTH_TOKEN: 'fixture-token-never-log',
+    SENTRY_ORG: 'friendly-city-t9',
+    SENTRY_PROJECT: 'theporadas-com',
+  }
+  const names = Object.keys(credentials) as Array<keyof typeof credentials>
+
+  afterEach(() => {
+    vi.resetModules()
+  })
+
+  // Every combination of real, empty, and whitespace-only values. "Absent"
+  // must mean the same thing to the fail-closed guard and to the flag that
+  // enables the upload, or a half-blank environment uploads with blank
+  // credentials instead of failing.
+  const states: Array<[string, string]> = [
+    ['real', 'real'],
+    ['empty', ''],
+    ['whitespace', '   '],
+  ]
+  const combinations = states.flatMap(([aLabel, aValue]) =>
+    states.flatMap(([bLabel, bValue]) =>
+      states.map(([cLabel, cValue]) => ({
+        label: `${aLabel}/${bLabel}/${cLabel}`,
+        values: [aValue, bValue, cValue],
+      }))
+    )
+  )
+
+  for (const { label, values } of combinations) {
+    it(`classifies ${label} consistently between the guard and the upload flag`, async () => {
+      const env = Object.fromEntries(names.map((name, index) => [name, values[index]]))
+      const configured = names.filter((_, index) => values[index].trim() !== '')
+      const failure = await failureOf(env)
+
+      if (configured.length === 0) {
+        // Nothing usable is configured: the documented "build without
+        // symbolication" path, even if blank variables are present.
+        expect(failure).toBeUndefined()
+        const config = await resolveConfig(env)
+        expect(config.build.sourcemap).toBe(false)
+        expect(sentryPluginOf(config)).toBe(false)
+        return
+      }
+
+      if (configured.length < names.length) {
+        expect(failure).toBeInstanceOf(Error)
+        const message = failure?.message ?? ''
+        expect(message).toContain('Incomplete Sentry source-map configuration')
+        for (const name of names.filter(name => !configured.includes(name))) {
+          expect(message).toContain(name)
+        }
+        for (const name of names) expect(message).not.toContain(credentials[name])
+        return
+      }
+
+      expect(failure).toBeUndefined()
+      const config = await resolveConfig(env)
+      expect(config.build.sourcemap).toBe('hidden')
+      expect(sentryPluginOf(config)).toBe(true)
+    })
+  }
+
+  it('trims whitespace around configured credentials before the upload flag sees them', async () => {
+    const config = await resolveConfig({
+      SENTRY_AUTH_TOKEN: '  fixture-token-never-log  ',
+      SENTRY_ORG: '\tfriendly-city-t9 ',
+      SENTRY_PROJECT: ' theporadas-com\n',
+    })
+
+    expect(config.build.sourcemap).toBe('hidden')
+    expect(sentryPluginOf(config)).toBe(true)
+  })
+
+  it('passes trimmed credentials to the upload plugin, not the padded environment', async () => {
+    // The presence gate always trimmed; the plugin used to receive the raw
+    // process.env values, so `SENTRY_ORG=' org '` passed the "OK" gate and
+    // reached Sentry with the padding. Assert the contract at the boundary the
+    // plugin actually sees.
+    await resolveConfig({
+      SENTRY_AUTH_TOKEN: '  fixture-token-never-log  ',
+      SENTRY_ORG: '\tfriendly-city-t9 ',
+      SENTRY_PROJECT: ' theporadas-com\n',
+    })
+
+    expect(sentryPluginCalls).toHaveLength(1)
+    expect(sentryPluginCalls[0]).toMatchObject({
+      org: 'friendly-city-t9',
+      project: 'theporadas-com',
+      authToken: 'fixture-token-never-log',
+    })
+  })
+
+  it('never invokes the upload plugin when no credentials are configured', async () => {
+    const config = await resolveConfig({
+      SENTRY_AUTH_TOKEN: '   ',
+      SENTRY_ORG: '',
+      SENTRY_PROJECT: undefined,
+    })
+
+    expect(sentryPluginOf(config)).toBe(false)
+    expect(sentryPluginCalls).toHaveLength(0)
+  })
+
+  it('never invokes the upload plugin when the credential set is partial', async () => {
+    const failure = await failureOf({
+      SENTRY_AUTH_TOKEN: 'fixture-token-never-log',
+      SENTRY_ORG: 'friendly-city-t9',
+      SENTRY_PROJECT: undefined,
+    })
+
+    expect(failure).toBeInstanceOf(Error)
+    expect(sentryPluginCalls).toHaveLength(0)
+  })
+})
+
+describe('Sentry upload release identity (vite build)', () => {
+  const credentials = {
+    SENTRY_AUTH_TOKEN: 'fixture-token-never-log',
+    SENTRY_ORG: 'friendly-city-t9',
+    SENTRY_PROJECT: 'theporadas-com',
+  }
+
+  afterEach(() => {
+    vi.resetModules()
+  })
+
+  it('uses the deploy commit as the release when uploading from production', async () => {
+    const config = await resolveConfig({
+      ...credentials,
+      COMMIT_REF: COMMIT,
+      CONTEXT: 'production',
+      VITE_APP_VERSION: '2026-04-14-launch',
+    })
+
+    expect(releaseOf(config)).toBe(COMMIT)
+    expect(config.build.sourcemap).toBe('hidden')
+    expect(sentryPluginOf(config)).toBe(true)
+  })
+
+  it('refuses to upload from production without a commit ref', async () => {
+    const failure = await failureOf({
+      ...credentials,
+      COMMIT_REF: undefined,
+      CONTEXT: 'production',
+      VITE_APP_VERSION: '2026-04-14-launch',
+    })
+
+    expect(failure).toBeInstanceOf(Error)
+    expect(failure?.message).toContain('COMMIT_REF')
+    expect(failure?.message).not.toContain(credentials.SENTRY_AUTH_TOKEN)
+  })
+
+  it('refuses to upload from a Netlify deploy when the commit ref is whitespace', async () => {
+    const failure = await failureOf({ ...credentials, COMMIT_REF: '   ', NETLIFY: 'true' })
+
+    expect(failure).toBeInstanceOf(Error)
+    expect(failure?.message).toContain('COMMIT_REF')
+  })
+
+  it('refuses to upload from a deploy preview without a commit ref', async () => {
+    const failure = await failureOf({
+      ...credentials,
+      COMMIT_REF: undefined,
+      CONTEXT: 'deploy-preview',
+    })
+
+    expect(failure).toBeInstanceOf(Error)
+    expect(failure?.message).toContain('COMMIT_REF')
+  })
+
+  it('allows a credential-free production build without a commit ref', async () => {
+    const config = await resolveConfig({
+      COMMIT_REF: undefined,
+      CONTEXT: 'production',
+      VITE_APP_VERSION: undefined,
+    })
+
+    expect(config.build.sourcemap).toBe(false)
+    expect(sentryPluginOf(config)).toBe(false)
+    expect(releaseOf(config)).toMatch(/^\d+\.\d+\.\d+/)
+  })
+
+  it('allows a credentialed local build and labels it with VITE_APP_VERSION', async () => {
+    const config = await resolveConfig({
+      ...credentials,
+      COMMIT_REF: undefined,
+      CONTEXT: undefined,
+      NETLIFY: undefined,
+      VITE_APP_VERSION: 'local-upload-check',
+    })
+
+    expect(releaseOf(config)).toBe('local-upload-check')
+    expect(config.build.sourcemap).toBe('hidden')
+  })
+
+  it('ignores a whitespace-only VITE_APP_VERSION label', async () => {
+    const config = await resolveConfig({
+      COMMIT_REF: undefined,
+      VITE_APP_VERSION: '   ',
+    })
+
+    expect(releaseOf(config)).toMatch(/^\d+\.\d+\.\d+/)
+  })
+
+  it('trims whitespace around the commit ref', async () => {
+    const config = await resolveConfig({ COMMIT_REF: `  ${COMMIT}\n` })
+
+    expect(releaseOf(config)).toBe(COMMIT)
+  })
 })

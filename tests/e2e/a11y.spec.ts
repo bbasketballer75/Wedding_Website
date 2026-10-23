@@ -12,7 +12,7 @@ const defaultRoutes = [
   '/gallery',
   '/upload',
   '/guestbook',
-  '/people',
+  '/activity',
   '/guest-photos',
 ]
 
@@ -23,6 +23,18 @@ test.describe('Public Route Accessibility', () => {
       await expectNoCriticalViolations(page)
     })
   }
+
+  // `/people` was retired with the face-recognition frontend (the route is gone
+  // from src/App.tsx). The meaningful expectation is now that the retired URL
+  // lands on the 404 page — not that a People page renders — and that the 404
+  // page is itself accessible.
+  test('retired /people route serves an accessible 404 page', async ({ page }) => {
+    await gotoPublicPage(page, '/people')
+
+    await expect(page).toHaveTitle(/Page Not Found/)
+    await expect(page.getByRole('heading', { name: 'Page Not Found' })).toBeVisible()
+    await expectNoCriticalViolations(page)
+  })
 
   test('skip link and primary navigation are keyboard reachable with visible focus', async ({
     page,

@@ -11,12 +11,13 @@ import { defineConfig, loadEnv } from 'vite'
 import { VitePWA } from 'vite-plugin-pwa'
 import packageJson from './package.json' with { type: 'json' }
 import { sentryVitePlugin } from '@sentry/vite-plugin'
+import { resolveSentryBuildConfig } from './scripts/lib/sentry-upload-config.js'
 
 const __filename = fileURLToPath(import.meta.url)
 const __dirname = path.dirname(__filename)
 const DEFAULT_SITE_URL = 'https://www.theporadas.com'
 
-// Sentry release identity.
+// Sentry release identity and upload configuration.
 //
 // The release MUST change on every deploy: it is the key that ties a stack frame
 // in Sentry to the source map artifacts uploaded for that build. A static label
@@ -26,36 +27,24 @@ const DEFAULT_SITE_URL = 'https://www.theporadas.com'
 //
 // Netlify exposes the deploy commit as COMMIT_REF; local builds fall back to the
 // optional VITE_APP_VERSION label and finally to the package version.
-const commitRef = (process.env.COMMIT_REF || '').trim()
-const releaseVersion = commitRef || process.env.VITE_APP_VERSION || packageJson.version
+//
+// All of the presence/normalization rules live in scripts/lib/sentry-upload-config.js
+// so the build gate and `npm run verify:env` cannot drift apart. That module
+// trims every variable, treats whitespace-only as absent everywhere (a
+// whitespace-only triple used to pass the guard and still enable the upload),
+// refuses a partial set instead of silently dropping to "no source maps", and
+// refuses to upload from a deploy build that has no COMMIT_REF (a constant
+// release cannot be matched to per-deploy artifacts). The same resolver now
+// returns the trimmed credentials, and those (never raw process.env) are what
+// the upload plugin receives.
+const sentryBuild = resolveSentryBuildConfig(process.env, packageJson.version)
+const releaseVersion = sentryBuild.releaseVersion
+const sentryCredentials = sentryBuild.credentials
 
 // Source maps are only emitted when they can be uploaded and then deleted from
 // the published output. Without credentials we would either ship readable maps
 // publicly or ship none at all — so we ship none.
-const sentryUploadEnabled = Boolean(
-  process.env.SENTRY_AUTH_TOKEN && process.env.SENTRY_ORG && process.env.SENTRY_PROJECT
-)
-
-// A partially configured upload is the failure this whole mechanism exists to
-// prevent, and it is silent: the gate above simply turns false, the build
-// ships with no source maps, and the release environment check does not look
-// at these variables at all. Refuse the build and name what is missing, so a
-// half-configured Netlify environment fails loudly instead of producing an
-// unsymbolicated deploy.
-const sentryUploadVariables = ['SENTRY_AUTH_TOKEN', 'SENTRY_ORG', 'SENTRY_PROJECT']
-const missingSentryUploadVariables = sentryUploadVariables.filter(
-  variable => !process.env[variable]?.trim()
-)
-const presentSentryUploadVariables = sentryUploadVariables.filter(variable =>
-  process.env[variable]?.trim()
-)
-if (presentSentryUploadVariables.length > 0 && missingSentryUploadVariables.length > 0) {
-  throw new Error(
-    `Incomplete Sentry source-map configuration: missing ${missingSentryUploadVariables.join(
-      ', '
-    )}. Set all of ${sentryUploadVariables.join(', ')} to upload source maps, or remove them all to build without symbolication.`
-  )
-}
+const sentryUploadEnabled = sentryBuild.uploadEnabled
 
 function getNodeModulePackage(id) {
   const normalized = id.replace(/\\/g, '/')
@@ -303,9 +292,9 @@ export default defineConfig(({ mode }) => {
       // lets Sentry symbolicate even if the release label ever drifts.
       sentryUploadEnabled &&
         sentryVitePlugin({
-          org: process.env.SENTRY_ORG,
-          project: process.env.SENTRY_PROJECT,
-          authToken: process.env.SENTRY_AUTH_TOKEN,
+          org: sentryCredentials.org,
+          project: sentryCredentials.project,
+          authToken: sentryCredentials.authToken,
           telemetry: false,
           // Fail the build instead of warning. A deploy that silently ships
           // without symbolication is exactly the failure this configuration

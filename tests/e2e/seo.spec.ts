@@ -21,7 +21,6 @@ const seoExpectations = [
     canonicalSuffix: '/upload',
     robots: 'index, follow',
   },
-  { route: '/people', title: 'People', canonicalSuffix: '/people', robots: 'index, follow' },
 ] as const
 
 test.describe('SEO Metadata', () => {
@@ -59,14 +58,18 @@ test.describe('SEO Metadata', () => {
     })
   }
 
-  test('marks the 404 page as noindex', async ({ page }) => {
-    await gotoPublicPage(page, '/this-page-does-not-exist')
+  // Unknown URLs and the retired /people route (removed with the face-recognition
+  // frontend) must both be served as noindex 404s, not as a resurrected page.
+  for (const route of ['/this-page-does-not-exist', '/people']) {
+    test(`marks ${route} as a noindex 404`, async ({ page }) => {
+      await gotoPublicPage(page, route)
 
-    await expect(page).toHaveTitle(/Page Not Found \| Austin & Jordyn's Wedding/)
-    await expect(page.locator('meta[name="robots"]')).toHaveAttribute(
-      'content',
-      'noindex, nofollow'
-    )
-    await expect(page.locator('link[rel="canonical"]')).toHaveAttribute('href', /\/404$/)
-  })
+      await expect(page).toHaveTitle(/Page Not Found \| Austin & Jordyn's Wedding/)
+      await expect(page.locator('meta[name="robots"]')).toHaveAttribute(
+        'content',
+        'noindex, nofollow'
+      )
+      await expect(page.locator('link[rel="canonical"]')).toHaveAttribute('href', /\/404$/)
+    })
+  }
 })

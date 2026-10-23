@@ -3,6 +3,14 @@ name: Lighthouse CI
 # Run Lighthouse on PRs and pushes to main. Asserts perf/a11y scores stay
 # above thresholds so the Gallery refactor (Plan A) and any future work
 # cannot regress site quality silently.
+#
+# The audit runs against `vite preview` of the real production build, so the
+# build MUST get the same placeholder env the Validate job uses. Without
+# VITE_SUPABASE_URL / VITE_SUPABASE_ANON_KEY the bundle throws at module
+# evaluation (src/lib/supabase/client.ts), `#root` never mounts and every
+# route reports NO_FCP ("the page did not paint any content") — that was the
+# permanent failure this job carried from 2026-10-22. Placeholders only: no
+# real keys reach CI, and data-backed sections render their empty states.
 
 on:
   pull_request:
@@ -21,11 +29,17 @@ jobs:
     name: Lighthouse audit
     runs-on: ubuntu-latest
     timeout-minutes: 10
-    # Lighthouse CI runs as advisory only. The project's .lighthouserc.cjs
-    # is configured for local dev, not a static-dist URL — this workflow
-    # currently can't run a meaningful audit. continue-on-error keeps PRs
-    # unblocked; artifacts are still uploaded for human review.
+    # Advisory only: the audit is real and fails visibly on a threshold
+    # regression, but this job is not in the branch-protection set (only
+    # `Validate (lint, format, typecheck, test, build)` is required).
+    # Promoted to a required gate only by an explicit policy decision.
     continue-on-error: true
+    env:
+      # Placeholder values so the audited bundle can boot without leaking
+      # real keys. Mirrors .github/workflows/ci.yml.
+      VITE_SUPABASE_URL: https://placeholder.supabase.co
+      VITE_SUPABASE_ANON_KEY: ci-placeholder-anon-key
+      VITE_SITE_URL: https://www.theporadas.com
     steps:
       - name: Checkout
         uses: actions/checkout@v7
@@ -34,6 +48,7 @@ jobs:
         uses: actions/setup-node@v7
         with:
           node-version: '22'
+          cache: 'npm'
 
       - name: Install + build
         run: |

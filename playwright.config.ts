@@ -3,6 +3,17 @@ import { config as loadEnv } from 'dotenv'
 
 loadEnv({ quiet: true })
 
+// Deterministic build inputs for the mocked public suite. Without these, a run
+// in a checkout with no `.env` builds the app with an empty media base, so
+// media-URL assertions fail for reasons that have nothing to do with the code
+// under test. Values are public placeholders: the Supabase host is unroutable
+// and every request to it is intercepted in tests/e2e/support/publicSite.ts.
+// A developer's real `.env` still wins, because loadEnv() runs first.
+process.env.VITE_SUPABASE_URL ||= 'https://placeholder.supabase.co'
+process.env.VITE_SUPABASE_ANON_KEY ||= 'ci-placeholder-anon-key'
+process.env.VITE_MEDIA_BASE_URL ||= 'https://media.wedding.theporadas.com'
+process.env.VITE_SITE_URL ||= 'https://www.theporadas.com'
+
 export default defineConfig({
   testDir: './tests/e2e',
   fullyParallel: false,

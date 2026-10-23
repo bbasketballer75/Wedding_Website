@@ -2,6 +2,8 @@ import {
   expect,
   expectSectionScreenshot,
   gotoPublicPage,
+  MEDIA_VTT_FIXTURE,
+  mediaVttFixtureHeaders,
   pauseMedia,
   test,
   viewports,
@@ -52,16 +54,33 @@ test.describe('Film Page', () => {
 
     expect(trackSrc).toContain('media.wedding.theporadas.com/video/main.vtt')
 
-    const response = await page.request.get(trackSrc, {
-      headers: {
-        Origin: 'http://127.0.0.1:4174',
-        Range: 'bytes=0-0',
-      },
-    })
+    // The request below is answered by the deterministic MEDIA_VTT_FIXTURE in
+    // tests/e2e/support/publicSite.ts, never by the CDN. The cross-origin fetch
+    // resolving proves the FIXTURE's CORS header is coherent (a missing
+    // Access-Control-Allow-Origin would make the browser reject it); it is not
+    // evidence that the production CDN still sends CORS. ACAO itself is not
+    // readable from JS (it is not a CORS-safelisted response header), so the
+    // real contract is checked from the network layer, opt-in and read-only, in
+    // tests/e2e-live/media-cors-contract.spec.ts (E2E_LIVE_MEDIA_CORS=1).
+    const captions = await page.evaluate(async src => {
+      const response = await fetch(src, { headers: { Range: 'bytes=0-0' } })
+      return {
+        status: response.status,
+        contentType: response.headers.get('content-type'),
+        body: await response.text(),
+      }
+    }, trackSrc)
 
-    expect(response.status()).toBe(206)
-    expect(response.headers()['access-control-allow-origin']).toBe('http://127.0.0.1:4174')
-    expect(response.headers()['content-type']).toContain('text/vtt')
+    // Pin the fixture contract by name so a change to the stub cannot quietly
+    // weaken what this deterministic test claims to cover.
+    expect(mediaVttFixtureHeaders('https://www.theporadas.com')).toMatchObject({
+      'access-control-allow-origin': 'https://www.theporadas.com',
+      'content-type': MEDIA_VTT_FIXTURE.contentType,
+    })
+    expect(captions.status).toBe(MEDIA_VTT_FIXTURE.status)
+    expect(captions.contentType).toContain(MEDIA_VTT_FIXTURE.contentType)
+    expect(captions.body).toContain('WEBVTT')
+    expect(captions.body).toContain('[e2e captions stub]')
   })
 })
 

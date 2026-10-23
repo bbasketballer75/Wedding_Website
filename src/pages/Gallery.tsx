@@ -36,10 +36,17 @@ export default function Gallery() {
   const { addToast } = useToast()
   const [searchParams] = useSearchParams()
   const [lightboxIndex, setLightboxIndex] = useState<number | null>(null)
+  // `curatedPhotos.map(...)` must be memoised: useGalleryData keys its fetch
+  // callback on these arrays, so a fresh array on every render makes the fetch
+  // effect re-run on every render — an unbounded refetch loop (observed: ~290
+  // `/rest/v1/photos` calls in 3s) that also resets the search box on every
+  // completed fetch. The source data is a module-level constant, so one
+  // normalised array per mount is the stable identity the hook expects.
+  const normalizedCuratedPhotos = useMemo(() => curatedPhotos.map(normalizeGalleryPhoto), [])
   const { photos, isLoading, loadError, setPhotos } = useGalleryData(
     'Proposal',
-    curatedPhotos.map(normalizeGalleryPhoto),
-    curatedPhotos.map(normalizeGalleryPhoto)
+    normalizedCuratedPhotos,
+    normalizedCuratedPhotos
   )
   const {
     viewMode,
@@ -100,13 +107,18 @@ export default function Gallery() {
     fetchSharedPhoto()
   }, [searchParams])
 
+  // Sync the search box from `?q=` only when the query string itself changes.
+  // This used to live in the effect below, which also depends on `photos`; that
+  // made every completed gallery fetch clear whatever the visitor had typed.
+  const requestedQuery = searchParams.get('q') || ''
   useEffect(() => {
-    const requestedQuery = searchParams.get('q') || ''
+    setSearchQuery(requestedQuery)
+  }, [requestedQuery, setSearchQuery])
+
+  useEffect(() => {
     const requestedCollection = searchParams.get('collection') as CollectionTab | null
     const requestedPhotoId = searchParams.get('photo')
     const requestedShare = searchParams.get('share')
-
-    setSearchQuery(current => (current !== requestedQuery ? requestedQuery : current))
 
     if (requestedShare && photos.length > 0) {
       const ids = requestedShare.split(',').filter(Boolean)
@@ -147,7 +159,7 @@ export default function Gallery() {
         )
       }
     }
-    // eslint-disable-next-line react-hooks/exhaustive-deps -- setters from useGalleryToolbar / useGallerySearchFilters are stable; intentionally re-running on photo set changes only.
+    // eslint-disable-next-line react-hooks/exhaustive-deps -- setters from useGalleryToolbar are stable; intentionally re-running on photo set changes so ?share=/?collection= can resolve once photos arrive.
   }, [photos, searchParams])
 
   // Open the lightbox when ?photo= or ?shared= URL params are present.

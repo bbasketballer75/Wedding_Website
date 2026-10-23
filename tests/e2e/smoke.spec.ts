@@ -43,9 +43,9 @@ test.describe('Smoke Tests', () => {
     await expect(page.locator('body')).toBeVisible()
   })
 
-  test('@smoke people page loads', async ({ page }) => {
+  test('@smoke retired /people route serves the 404 page', async ({ page }) => {
     await gotoPublicPage(page, '/people')
-    await expect(page.locator('body')).toBeVisible()
+    await expect(page.getByRole('heading', { name: 'Page Not Found' })).toBeVisible()
   })
 
   test('@smoke guest-photos page loads', async ({ page }) => {
