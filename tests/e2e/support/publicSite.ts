@@ -31,6 +31,30 @@ const IMAGE_CONTENT_TYPES: Record<string, string> = {
   svg: 'image/svg+xml',
 }
 
+/**
+ * Deterministic stand-in for the production captions response.
+ *
+ * The public suite must never depend on the real CDN, so the browser is
+ * answered from this fixture. It is a CONTRACT STUB, not evidence about
+ * production: a green run here proves the app handles a 206 + text/vtt + CORS
+ * response, not that the CDN still sends those headers. The real contract is
+ * checked, opt-in and read-only, by
+ * `tests/e2e-live/media-cors-contract.spec.ts` (`E2E_LIVE_MEDIA_CORS=1`).
+ */
+export const MEDIA_VTT_FIXTURE = {
+  status: 206,
+  contentType: 'text/vtt',
+  body: 'WEBVTT\n\n00:00.000 --> 00:01.000\n[e2e captions stub]\n',
+} as const
+
+/** The CORS half of the fixture contract, stated in one place for both sides. */
+export function mediaVttFixtureHeaders(origin: string | undefined) {
+  return {
+    'access-control-allow-origin': origin ?? '*',
+    'content-type': MEDIA_VTT_FIXTURE.contentType,
+  }
+}
+
 type JsonValue =
   null | boolean | number | string | readonly JsonValue[] | { [key: string]: JsonValue }
 
@@ -82,12 +106,9 @@ export async function installPublicSiteMocks(page: Page) {
     // the partial-content + CORS contract the <track> element relies on.
     if (url.pathname.endsWith('/video/main.vtt')) {
       await route.fulfill({
-        status: 206,
-        headers: {
-          'access-control-allow-origin': requestOrigin ?? '*',
-          'content-type': 'text/vtt',
-        },
-        body: 'WEBVTT\n\n00:00.000 --> 00:01.000\n[e2e captions stub]\n',
+        status: MEDIA_VTT_FIXTURE.status,
+        headers: mediaVttFixtureHeaders(requestOrigin),
+        body: MEDIA_VTT_FIXTURE.body,
       })
       return
     }
