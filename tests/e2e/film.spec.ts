@@ -52,16 +52,25 @@ test.describe('Film Page', () => {
 
     expect(trackSrc).toContain('media.wedding.theporadas.com/video/main.vtt')
 
-    const response = await page.request.get(trackSrc, {
-      headers: {
-        Origin: 'http://127.0.0.1:4174',
-        Range: 'bytes=0-0',
-      },
-    })
+    // Fetch the track the way the browser does, so the request goes through the
+    // suite's route interception (tests/e2e/support/publicSite.ts answers it
+    // locally with a 206). The cross-origin fetch resolving at all is the CORS
+    // proof — a missing Access-Control-Allow-Origin makes the browser reject it —
+    // and the stub body proves the request never left the machine. ACAO itself
+    // is not readable from JS (it is not a CORS-safelisted response header).
+    const captions = await page.evaluate(async src => {
+      const response = await fetch(src, { headers: { Range: 'bytes=0-0' } })
+      return {
+        status: response.status,
+        contentType: response.headers.get('content-type'),
+        body: await response.text(),
+      }
+    }, trackSrc)
 
-    expect(response.status()).toBe(206)
-    expect(response.headers()['access-control-allow-origin']).toBe('http://127.0.0.1:4174')
-    expect(response.headers()['content-type']).toContain('text/vtt')
+    expect(captions.status).toBe(206)
+    expect(captions.contentType).toContain('text/vtt')
+    expect(captions.body).toContain('WEBVTT')
+    expect(captions.body).toContain('[e2e captions stub]')
   })
 })
 

@@ -1,5 +1,7 @@
 import AxeBuilder from '@axe-core/playwright'
 import { expect, type Locator, type Page, type Route, test as base } from '@playwright/test'
+import fs from 'node:fs'
+import { fileURLToPath } from 'node:url'
 import {
   approvedGuestUploads,
   galleryPhotos,
@@ -8,6 +10,26 @@ import {
   guestbookSubmitResponse,
   mockActivityLog,
 } from './mockData'
+
+/**
+ * Production media CDN origin (the value playwright.config.ts builds with).
+ * Artwork there is real photography; the suite replaces it with a fixed local
+ * asset so screenshots are pixel-stable and no third-party host is contacted.
+ */
+const MEDIA_HOST = 'media.wedding.theporadas.com'
+const MEDIA_IMAGE_STUB = fs.readFileSync(
+  fileURLToPath(
+    new URL('../../../public/images/engagement/PoradaProposal-29.webp', import.meta.url)
+  )
+)
+const IMAGE_CONTENT_TYPES: Record<string, string> = {
+  webp: 'image/webp',
+  png: 'image/png',
+  jpg: 'image/jpeg',
+  jpeg: 'image/jpeg',
+  avif: 'image/avif',
+  svg: 'image/svg+xml',
+}
 
 type JsonValue =
   null | boolean | number | string | readonly JsonValue[] | { [key: string]: JsonValue }
@@ -40,6 +62,56 @@ export async function installPublicSiteMocks(page: Page) {
   await page.route('**/*', async route => {
     const request = route.request()
     const url = new URL(request.url())
+    const requestOrigin = request.headers().origin
+
+    // CORS preflight for any mocked origin (Supabase REST/RPC, media CDN).
+    if (request.method() === 'OPTIONS') {
+      await route.fulfill({
+        status: 204,
+        headers: {
+          ...JSON_HEADERS,
+          'access-control-allow-origin': requestOrigin ?? '*',
+          'access-control-allow-methods': 'GET,POST,PATCH,PUT,DELETE,OPTIONS',
+        },
+      })
+      return
+    }
+
+    // Main film captions live on the media CDN in production. Fulfil them
+    // locally so the suite never reaches a third-party host, while preserving
+    // the partial-content + CORS contract the <track> element relies on.
+    if (url.pathname.endsWith('/video/main.vtt')) {
+      await route.fulfill({
+        status: 206,
+        headers: {
+          'access-control-allow-origin': requestOrigin ?? '*',
+          'content-type': 'text/vtt',
+        },
+        body: 'WEBVTT\n\n00:00.000 --> 00:01.000\n[e2e captions stub]\n',
+      })
+      return
+    }
+
+    // Media CDN images: serve a fixed local asset so visual baselines do not
+    // depend on a third-party host being reachable or fast. Video/audio bytes
+    // are read-only public media and pass through (the film baseline captures
+    // the local poster; the assertions around playback are unaffected).
+    if (url.hostname === MEDIA_HOST) {
+      const extension = url.pathname.split('.').pop()?.toLowerCase() ?? ''
+      const imageType = IMAGE_CONTENT_TYPES[extension]
+      if (imageType) {
+        await route.fulfill({
+          status: 200,
+          headers: {
+            'access-control-allow-origin': requestOrigin ?? '*',
+            'content-type': imageType,
+            'cache-control': 'no-store',
+          },
+          body: MEDIA_IMAGE_STUB,
+        })
+        return
+      }
+    }
 
     // Mock the Netlify pre-signed URL function (same origin as the app)
     if (url.pathname.includes('/guest-upload-url')) {
@@ -70,11 +142,6 @@ export async function installPublicSiteMocks(page: Page) {
 
     if (!url.hostname.includes('supabase')) {
       await route.continue()
-      return
-    }
-
-    if (request.method() === 'OPTIONS') {
-      await route.fulfill({ status: 200, headers: JSON_HEADERS })
       return
     }
 
@@ -158,6 +225,37 @@ export async function installPublicSiteMocks(page: Page) {
 export async function preparePublicPage(page: Page) {
   await page.addInitScript(() => {
     ;(window as any).__E2E__ = true
+    // The production bundle registers a PWA service worker (skipWaiting +
+    // clientsClaim + autoUpdate). On the first load it takes control and the
+    // registerSW autoUpdate handler reloads the tab. That reload lands a few
+    // hundred milliseconds after `load`, so it races every test: it has been
+    // observed destroying execution contexts mid-axe-run ("Execution context
+    // was destroyed, most likely because of a navigation"), dropping focus
+    // between Tab presses, and wiping typed input. Offline caching is not under
+    // test here and the suite already mocks the network, so registration is
+    // neutralised instead of raced.
+    try {
+      const noopRegistration = {
+        scope: '/',
+        installing: null,
+        waiting: null,
+        active: null,
+        update: async () => undefined,
+        unregister: async () => true,
+        addEventListener() {},
+        removeEventListener() {},
+      }
+      Object.defineProperty(navigator.serviceWorker, 'register', {
+        configurable: true,
+        value: async () => noopRegistration,
+      })
+      Object.defineProperty(navigator.serviceWorker, 'getRegistrations', {
+        configurable: true,
+        value: async () => [],
+      })
+    } catch {
+      // serviceWorker unavailable (non-secure origin) — nothing to suppress.
+    }
   })
   page.on('console', msg => {
     if (msg.type() === 'error') {

@@ -11,6 +11,13 @@ test.describe('Gallery Page', () => {
   test('renders the editorial control bar, supports search, and switches views', async ({
     page,
   }) => {
+    let photoFetches = 0
+    page.on('request', request => {
+      if (new URL(request.url()).pathname.includes('/rest/v1/photos')) {
+        photoFetches += 1
+      }
+    })
+
     await gotoPublicPage(page, '/gallery')
 
     await expect(page.getByTestId('gallery-control-bar')).toBeVisible()
@@ -24,6 +31,17 @@ test.describe('Gallery Page', () => {
 
     await page.getByRole('button', { name: 'Timeline' }).click()
     await expect(page.getByRole('heading', { name: 'Timeline view' })).toBeVisible()
+
+    // Regression guard: the page used to pass freshly-mapped curated-photo
+    // arrays into useGalleryData, whose fetch effect keys on the callback
+    // identity. That refetched /rest/v1/photos on every render (~290 calls in
+    // 3s) and cleared the search box after each fetch. A loaded gallery must
+    // settle at a single page fetch.
+    await page.waitForTimeout(1000)
+    expect(
+      photoFetches,
+      `gallery requested /rest/v1/photos ${photoFetches} times; expected a single page fetch`
+    ).toBeLessThanOrEqual(2)
   })
 
   test.skip('opens a lightbox from the mocked gallery feed', async ({ page }) => {
