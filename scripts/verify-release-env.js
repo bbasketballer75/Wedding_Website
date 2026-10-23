@@ -1,6 +1,14 @@
 import fs from 'node:fs'
 import path from 'node:path'
 import dotenv from 'dotenv'
+import {
+  SENTRY_UPLOAD_VARIABLES,
+  incompleteSentryConfigMessage,
+  inspectSentryUploadConfig,
+  isDeployBuild,
+  missingReleaseIdentityMessage,
+  normalizeEnvValue,
+} from './lib/sentry-upload-config.js'
 
 dotenv.config({ quiet: true })
 
@@ -81,7 +89,12 @@ const envExample = readFileIfPresent(envExamplePath)
 if (!envExample) {
   addFailure('.env.example is missing.')
 } else {
-  for (const variable of [...requiredPublicEnv, ...recommendedPublicEnv, ...optionalPublicEnv]) {
+  for (const variable of [
+    ...requiredPublicEnv,
+    ...recommendedPublicEnv,
+    ...optionalPublicEnv,
+    ...SENTRY_UPLOAD_VARIABLES,
+  ]) {
     if (envExample.includes(variable)) {
       addPass(`.env.example documents ${variable}.`)
     } else {
@@ -125,6 +138,25 @@ if (!process.env.VITE_APP_VERSION?.trim()) {
   )
 } else {
   addPass('VITE_APP_VERSION is configured.')
+}
+
+// Source-map upload configuration. The build refuses a partial set and refuses
+// a deploy build without a commit ref, but both of those surface inside
+// `npm run build`; checking here fails one gate earlier and keeps `verify:env`
+// from passing an environment the build is guaranteed to reject.
+const sentryUpload = inspectSentryUploadConfig(process.env)
+if (sentryUpload.partial) {
+  addFailure(incompleteSentryConfigMessage(sentryUpload.missing))
+} else if (sentryUpload.uploadEnabled) {
+  if (isDeployBuild(process.env) && !normalizeEnvValue(process.env.COMMIT_REF)) {
+    addFailure(missingReleaseIdentityMessage(process.env))
+  } else {
+    addPass('Sentry source-map upload credentials are configured (3 of 3).')
+  }
+} else {
+  addPass(
+    'Sentry source-map upload is disabled (no SENTRY_* credentials). No source maps will be published.'
+  )
 }
 
 for (const envFile of envFiles) {
