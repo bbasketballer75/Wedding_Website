@@ -34,9 +34,12 @@ const DEFAULT_SITE_URL = 'https://www.theporadas.com'
 // whitespace-only triple used to pass the guard and still enable the upload),
 // refuses a partial set instead of silently dropping to "no source maps", and
 // refuses to upload from a deploy build that has no COMMIT_REF (a constant
-// release cannot be matched to per-deploy artifacts).
+// release cannot be matched to per-deploy artifacts). The same resolver now
+// returns the trimmed credentials, and those (never raw process.env) are what
+// the upload plugin receives.
 const sentryBuild = resolveSentryBuildConfig(process.env, packageJson.version)
 const releaseVersion = sentryBuild.releaseVersion
+const sentryCredentials = sentryBuild.credentials
 
 // Source maps are only emitted when they can be uploaded and then deleted from
 // the published output. Without credentials we would either ship readable maps
@@ -289,9 +292,9 @@ export default defineConfig(({ mode }) => {
       // lets Sentry symbolicate even if the release label ever drifts.
       sentryUploadEnabled &&
         sentryVitePlugin({
-          org: process.env.SENTRY_ORG,
-          project: process.env.SENTRY_PROJECT,
-          authToken: process.env.SENTRY_AUTH_TOKEN,
+          org: sentryCredentials.org,
+          project: sentryCredentials.project,
+          authToken: sentryCredentials.authToken,
           telemetry: false,
           // Fail the build instead of warning. A deploy that silently ships
           // without symbolication is exactly the failure this configuration

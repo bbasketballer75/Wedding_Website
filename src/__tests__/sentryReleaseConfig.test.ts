@@ -10,6 +10,19 @@
  */
 import { describe, it, expect, afterEach, vi } from 'vitest'
 
+// Intercept the actual plugin factory so the tests assert what the upload
+// plugin RECEIVES, not merely that it was installed. The factory is stubbed;
+// no network, no upload, no credentials leave the process. The returned
+// plugin keeps a `sentry-` name so the installation assertions stay honest.
+const sentryPluginCalls = vi.hoisted(() => [] as Array<Record<string, unknown>>)
+
+vi.mock('@sentry/vite-plugin', () => ({
+  sentryVitePlugin: (options: Record<string, unknown>) => {
+    sentryPluginCalls.push(options)
+    return { name: 'sentry-vite-plugin' }
+  },
+}))
+
 // Every case here resolves the real vite.config.js, which drags in the whole
 // plugin graph (react compiler, tailwind, PWA, sentry). Under a full-suite run
 // that first dynamic import can take several seconds; the 5s default then fires
@@ -37,6 +50,8 @@ const CONFIG_KEYS = [
 
 async function resolveConfig(env: Record<string, string | undefined>): Promise<ResolvedConfig> {
   const saved = Object.fromEntries(CONFIG_KEYS.map(key => [key, process.env[key]]))
+
+  sentryPluginCalls.length = 0
 
   for (const key of CONFIG_KEYS) {
     if (env[key] === undefined) delete process.env[key]
@@ -248,6 +263,47 @@ describe('Sentry credential normalization (vite build)', () => {
 
     expect(config.build.sourcemap).toBe('hidden')
     expect(sentryPluginOf(config)).toBe(true)
+  })
+
+  it('passes trimmed credentials to the upload plugin, not the padded environment', async () => {
+    // The presence gate always trimmed; the plugin used to receive the raw
+    // process.env values, so `SENTRY_ORG=' org '` passed the "OK" gate and
+    // reached Sentry with the padding. Assert the contract at the boundary the
+    // plugin actually sees.
+    await resolveConfig({
+      SENTRY_AUTH_TOKEN: '  fixture-token-never-log  ',
+      SENTRY_ORG: '\tfriendly-city-t9 ',
+      SENTRY_PROJECT: ' theporadas-com\n',
+    })
+
+    expect(sentryPluginCalls).toHaveLength(1)
+    expect(sentryPluginCalls[0]).toMatchObject({
+      org: 'friendly-city-t9',
+      project: 'theporadas-com',
+      authToken: 'fixture-token-never-log',
+    })
+  })
+
+  it('never invokes the upload plugin when no credentials are configured', async () => {
+    const config = await resolveConfig({
+      SENTRY_AUTH_TOKEN: '   ',
+      SENTRY_ORG: '',
+      SENTRY_PROJECT: undefined,
+    })
+
+    expect(sentryPluginOf(config)).toBe(false)
+    expect(sentryPluginCalls).toHaveLength(0)
+  })
+
+  it('never invokes the upload plugin when the credential set is partial', async () => {
+    const failure = await failureOf({
+      SENTRY_AUTH_TOKEN: 'fixture-token-never-log',
+      SENTRY_ORG: 'friendly-city-t9',
+      SENTRY_PROJECT: undefined,
+    })
+
+    expect(failure).toBeInstanceOf(Error)
+    expect(sentryPluginCalls).toHaveLength(0)
   })
 })
 

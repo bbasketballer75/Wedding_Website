@@ -37,6 +37,22 @@ export function normalizeEnvValue(value) {
   return typeof value === 'string' ? value.trim() : ''
 }
 
+/**
+ * The three credentials as the uploader must receive them.
+ *
+ * Presence checks and the plugin used to normalize independently: the gate
+ * trimmed, the plugin got raw `process.env`, so a padded value passed the gate
+ * and reached Sentry with the padding. Returning the normalized values here
+ * makes one trimming step feed both.
+ */
+export function normalizeSentryCredentials(env = process.env) {
+  return {
+    authToken: normalizeEnvValue(env.SENTRY_AUTH_TOKEN),
+    org: normalizeEnvValue(env.SENTRY_ORG),
+    project: normalizeEnvValue(env.SENTRY_PROJECT),
+  }
+}
+
 /** True when the environment is a Netlify deploy rather than a local build. */
 export function isDeployBuild(env = process.env) {
   if (normalizeEnvValue(env.NETLIFY).toLowerCase() === 'true') return true
@@ -124,5 +140,10 @@ export function resolveSentryBuildConfig(env = process.env, packageVersion = '0.
     throw new Error(missingReleaseIdentityMessage(env))
   }
 
-  return { ...upload, ...release, deployBuild }
+  return {
+    ...upload,
+    ...release,
+    deployBuild,
+    credentials: normalizeSentryCredentials(env),
+  }
 }
