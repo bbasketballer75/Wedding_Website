@@ -313,10 +313,17 @@ describe('pr-review-claude.yml', () => {
       /ref:\s*refs\/pull\/\$\{\{\s*github\.event\.pull_request\.number \|\| inputs\.pr\s*\}\}\/head/
     )
     // Manual runs must supply the target; there is no "review whatever is
-    // checked out" default.
-    expect(workflow).toMatch(
-      /workflow_dispatch:\n\s+inputs:\n\s+pr:\n(?:\s+.*\n)*?\s+required: true/
-    )
+    // checked out" default. Parsed line by line rather than with one regex:
+    // a nested-quantifier pattern over the same lines is a backtracking hazard
+    // (CodeQL js/polynomial-redos flagged the first version of this assertion).
+    const lines = workflow.split(/\r?\n/)
+    const dispatchIndex = lines.findIndex(line => line.trim() === 'workflow_dispatch:')
+    expect(dispatchIndex, 'the workflow must still offer workflow_dispatch').toBeGreaterThan(-1)
+    const dispatch = blockAt(lines, dispatchIndex).join('\n')
+    expect(dispatch).toMatch(/^\s+inputs:$/m)
+    expect(dispatch).toMatch(/^\s+pr:$/m)
+    expect(dispatch).toMatch(/^\s+required: true$/m)
+    expect(dispatch).toMatch(/^\s+type: string$/m)
   })
 
   it('stages the diff for the model instead of widening its tool permissions', () => {
