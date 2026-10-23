@@ -107,9 +107,9 @@ export function GalleryControlPanel(props: GalleryControlPanelProps) {
 
         <div
           data-testid='gallery-filter-bar'
-          className='mt-4 grid gap-3 md:grid-cols-[minmax(0,1fr)_auto] md:items-center'
+          className='mt-4 grid min-w-0 gap-3 md:grid-cols-[minmax(0,1fr)_auto] md:items-center'
         >
-          <div className='relative'>
+          <div className='relative min-w-0'>
             <Search className='pointer-events-none absolute left-4 top-1/2 h-4 w-4 -translate-y-1/2 text-charcoal-400' />
             <Input
               type='text'
@@ -130,8 +130,8 @@ export function GalleryControlPanel(props: GalleryControlPanelProps) {
             )}
           </div>
 
-          <div className='flex items-center gap-2'>
-            <div className='inline-flex items-center gap-2 rounded-full border border-gold-200/70 bg-cream-50/90 p-1'>
+          <div className='flex min-w-0 flex-wrap items-center gap-2'>
+            <div className='inline-flex max-w-full flex-wrap items-center gap-1 rounded-full border border-gold-200/70 bg-cream-50/90 p-1 sm:gap-2'>
               {viewOptions.map(option => {
                 const Icon = option.icon
                 const isActive = viewMode === option.key
@@ -142,13 +142,13 @@ export function GalleryControlPanel(props: GalleryControlPanelProps) {
                     onClick={() => onViewModeChange(option.key)}
                     aria-pressed={isActive}
                     className={cn(
-                      'inline-flex items-center gap-2 rounded-full px-4 py-2 text-sm transition-all',
+                      'inline-flex items-center gap-2 whitespace-nowrap rounded-full px-3 py-2 text-sm transition-all sm:px-4',
                       isActive
                         ? 'bg-gold-500 text-white shadow-sm'
                         : 'text-charcoal-500 hover:bg-white hover:text-charcoal-700'
                     )}
                   >
-                    <Icon className='h-4 w-4' />
+                    <Icon className='h-4 w-4 shrink-0' />
                     {option.label}
                   </button>
                 )
@@ -160,7 +160,7 @@ export function GalleryControlPanel(props: GalleryControlPanelProps) {
               onClick={onToggleSelectMode}
               aria-pressed={selectMode}
               className={cn(
-                'inline-flex items-center gap-2 rounded-full border px-4 py-2 text-sm transition-all',
+                'inline-flex shrink-0 items-center gap-2 whitespace-nowrap rounded-full border px-3 py-2 text-sm transition-all sm:px-4',
                 selectMode
                   ? 'border-gold-400 bg-gold-500 text-white shadow-sm'
                   : 'border-gold-200/70 bg-cream-50/90 text-charcoal-500 hover:bg-white hover:text-charcoal-700'
