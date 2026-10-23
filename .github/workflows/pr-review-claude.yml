@@ -1,11 +1,26 @@
 name: PR Review (Claude)
 
-# Auto-review pull requests via Claude Code action. Posts inline review
-# comments with Claude findings. Advisory only (continue-on-error) so
-# PRs are not blocked on missing config or transient Claude errors.
+# Auto-review pull requests with the Claude Code action and post the review as
+# a PR comment. Advisory only (continue-on-error) so PRs are not blocked on
+# transient Claude errors.
 #
-# Setup: gh secret set CLAUDE_CODE_OAUTH_TOKEN (repo-level). Generate the
-# token at https://claude.ai/code -> Settings -> Tokens.
+# REQUIRED CREDENTIAL — HUMAN ACTION: the repository secret
+# CLAUDE_CODE_OAUTH_TOKEN. While it is absent this job fails on purpose with
+# an explicit `BLOCKED` annotation naming that secret — it never passes,
+# skips, or invents a review. Generate it at
+# https://claude.ai/code -> Settings -> Tokens, then
+# `gh secret set CLAUDE_CODE_OAUTH_TOKEN`.
+#
+# The Claude GitHub App is NOT required. `github_token` is passed below, so
+# the action authenticates with the workflow token instead of exchanging an
+# OIDC token for an App installation token — that exchange is what produced
+# `401 Unauthorized - Claude Code is not installed on this repository`.
+#
+# Known limitation: the tool list is read-only repository access
+# (Read,Grep,Glob) and an agent-mode run has no network fetch, so Claude sees
+# the checked-out PR head tree, not the rendered diff. Widening it (e.g.
+# adding `mcp__github__*` to `claude_args`) is a permissions decision for the
+# repo owner and is deliberately not taken here.
 
 on:
   pull_request:
@@ -23,27 +38,47 @@ jobs:
     name: Review with Claude
     runs-on: ubuntu-latest
     timeout-minutes: 10
-    # Advisory only — fails gracefully when secret is missing or Claude errors.
+    # Advisory only — a missing credential or a Claude error must not block
+    # merges (branch protection requires `Validate` only).
     continue-on-error: true
     permissions:
       contents: read
       pull-requests: write
-      id-token: write  # required for the Claude action's OIDC token fetch (fixes "Unable to get ACTIONS_ID_TOKEN_REQUEST_URL")
     steps:
       - name: Checkout PR head
         uses: actions/checkout@v7
         with:
           fetch-depth: 1
 
+      # Fail with the real reason instead of letting the action die inside a
+      # token exchange that cannot succeed. The job still FAILS; it just says
+      # what a human has to do and does not reach the action at all.
+      - name: Check Claude credential
+        id: credential
+        env:
+          CLAUDE_CODE_OAUTH_TOKEN: ${{ secrets.CLAUDE_CODE_OAUTH_TOKEN }}
+        run: |
+          if [ -z "${CLAUDE_CODE_OAUTH_TOKEN:-}" ]; then
+            echo "::error title=BLOCKED Claude review cannot run::Repository secret CLAUDE_CODE_OAUTH_TOKEN is not set, so this workflow has no Anthropic credential. Nothing in CI can create one: a human must run 'gh secret set CLAUDE_CODE_OAUTH_TOKEN' with a token from https://claude.ai/code -> Settings -> Tokens, or delete this workflow if the review is not wanted. The Claude GitHub App is not needed because github_token is passed."
+            exit 1
+          fi
+          echo "ready=true" >> "${GITHUB_OUTPUT}"
+
       - name: Run Claude review
         id: review
+        if: steps.credential.outputs.ready == 'true'
         uses: anthropics/claude-code-action@v1
         with:
+          # Workflow token: skips the OIDC -> Claude App token exchange that
+          # fails with "Claude Code is not installed on this repository".
+          github_token: ${{ secrets.GITHUB_TOKEN }}
           claude_code_oauth_token: ${{ secrets.CLAUDE_CODE_OAUTH_TOKEN }}
-          # Read-only: reviewer should never execute writes during a review.
-          allowed_tools: Read,Grep,Glob
-          # Write Claude final response here; the comment step reads it back.
-          output_file: claude-review-output.md
+          # Read-only reviewer. In v1, CLI flags belong in `claude_args`;
+          # `allowed_tools` / `output_file` are not inputs of this action and
+          # were being dropped with "Unexpected input(s)".
+          claude_args: |
+            --allowedTools Read,Grep,Glob
+            --json-schema '{"type":"object","properties":{"review_markdown":{"type":"string"}},"required":["review_markdown"]}'
           prompt: |
             You are reviewing a pull request to the Wedding_Website_Clean
             repository. Focus your review on:
@@ -56,10 +91,13 @@ jobs:
             4. Build hygiene: no console.log, no dead imports, no unused
                vars, no leaked local-only paths.
 
-            The PR description has the plan context. The diff is in
-            ${{ github.event.pull_request.diff_url }}.
+            The diff is available to humans at
+            ${{ github.event.pull_request.diff_url }}; the PR's files are in
+            the checkout. You have read-only tools only — do not claim to have
+            read anything you could not open.
 
-            Output a concise review (under 400 words):
+            Return a concise review (under 400 words) in the `review_markdown`
+            string field:
             - Looks good
             - Minor issues (be specific)
             - Blockers (be specific, point to file:line)
@@ -68,20 +106,23 @@ jobs:
             suggest. Keep tone direct, no fluff.
 
       - name: Post review as PR comment
-        if: steps.review.conclusion == 'success'
+        id: post
+        if: github.event.pull_request.number != '' && steps.review.outputs.structured_output != ''
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          STRUCTURED_OUTPUT: ${{ steps.review.outputs.structured_output }}
+          PR_NUMBER: ${{ github.event.pull_request.number }}
         run: |
-          if [ ! -f claude-review-output.md ]; then
-            echo "::notice::claude-review-output.md not produced, skipping comment"
-            exit 0
+          body=$(printf '%s' "${STRUCTURED_OUTPUT}" | jq -r '.review_markdown // empty')
+          if [ -z "${body}" ]; then
+            echo "::error::Claude returned no review_markdown field; nothing was posted."
+            exit 1
           fi
-          body=$(cat claude-review-output.md)
           {
             echo "## Claude review (automated)"
-            echo ""
-            echo "$body"
-            echo ""
+            echo
+            printf '%s\n' "${body}"
+            echo
             echo "<sub>Run #${{ github.run_number }} on ${{ github.event.pull_request.head.sha }}</sub>"
           } > /tmp/comment.md
-          gh pr comment "${{ github.event.pull_request.number }}" --body-file /tmp/comment.md
+          gh pr comment "${PR_NUMBER}" --body-file /tmp/comment.md
