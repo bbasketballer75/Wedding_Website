@@ -278,6 +278,28 @@ describe('pr-review-claude.yml', () => {
     expect(actionStep.join('\n')).toMatch(/if:.*steps\.credential\.outputs\.ready/)
   })
 
+  it('does not auto-run on pull_request while no credential can exist', () => {
+    // This repository has no Anthropic subscription, so no
+    // CLAUDE_CODE_OAUTH_TOKEN can be minted. An automatic trigger would fail
+    // on every PR with a red check nobody can clear, so the lane is manual
+    // dispatch only until a credential exists.
+    const lines = workflow.split(/\r?\n/)
+    const onIndex = lines.findIndex(line => line === 'on:')
+    expect(onIndex, 'the workflow must still declare its triggers').toBeGreaterThan(-1)
+    // Only the `on:` block itself: the rest of the file mentions pull_request
+    // in comments and in the checkout ref.
+    const triggers = blockAt(lines, onIndex)
+      .filter(line => !line.trimStart().startsWith('#'))
+      .join('\n')
+    expect(triggers).not.toMatch(/pull_request:/)
+    expect(triggers).toMatch(/workflow_dispatch:/)
+    // The manual dispatch must still name its target explicitly.
+    expect(triggers).toMatch(/inputs:/)
+    // The header must say how to restore automatic reviews, so nobody re-adds
+    // the trigger without the credential and gets the red check back.
+    expect(workflow).toMatch(/gh secret set CLAUDE_CODE_OAUTH_TOKEN/)
+  })
+
   it('never fakes a review when the credential is missing', () => {
     expect(workflow).not.toMatch(/if:\s*false/)
     expect(workflow).not.toMatch(/fallback review/i)

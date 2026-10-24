@@ -1,15 +1,22 @@
 name: PR Review (Claude)
 
-# Auto-review pull requests with the Claude Code action and post the review as
-# a PR comment. Advisory only (continue-on-error) so PRs are not blocked on
+# Review a pull request with the Claude Code action and post the review as a PR
+# comment. Advisory only (continue-on-error) so PRs are not blocked on
 # transient Claude errors.
 #
-# REQUIRED CREDENTIAL — HUMAN ACTION: the repository secret
-# CLAUDE_CODE_OAUTH_TOKEN. While it is absent this job fails on purpose with
-# an explicit `BLOCKED` annotation naming that secret — it never passes,
-# skips, or invents a review. Generate it at
-# https://claude.ai/code -> Settings -> Tokens, then
-# `gh secret set CLAUDE_CODE_OAUTH_TOKEN`.
+# MANUAL DISPATCH ONLY: no automatic pull_request trigger. This repository has
+# no Anthropic credential (no `CLAUDE_CODE_OAUTH_TOKEN` secret exists, and none
+# can be minted without an Anthropic subscription), so an automatic trigger
+# would only ever produce a permanent red check that nobody can clear. The
+# lane is dispatched by hand, and a dispatch WITHOUT a credential fails on
+# purpose with an explicit `BLOCKED` annotation naming that secret: it never
+# passes, skips, or invents a review.
+#
+# To restore automatic reviews, set the credential first. A token comes from
+# https://claude.ai/code -> Settings -> Tokens and requires an Anthropic
+# subscription, then `gh secret set CLAUDE_CODE_OAUTH_TOKEN`. Only then re-add
+# the `pull_request:` trigger below; restoring the trigger without the
+# credential would reintroduce the permanent red check.
 #
 # The Claude GitHub App is NOT required. `github_token` is passed below, so
 # the action authenticates with the workflow token instead of exchanging an
@@ -34,9 +41,6 @@ name: PR Review (Claude)
 # to treat them as data, and the review is only ever rendered as a comment.
 
 on:
-  pull_request:
-    types: [opened, synchronize, reopened]
-    branches: [main]
   workflow_dispatch:
     inputs:
       pr:
