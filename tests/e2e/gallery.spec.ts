@@ -38,6 +38,12 @@ test.describe('Gallery Page', () => {
     // 3s) and cleared the search box after each fetch. A loaded gallery must
     // settle at a single page fetch.
     await page.waitForTimeout(1000)
+    // Reassert after the view switch and settle, not only immediately after typing:
+    // a late refetch used to clear both the field and the active-search chip.
+    await expect(
+      page.getByPlaceholder('Search by caption, location, photographer, or tags')
+    ).toHaveValue('first look')
+    await expect(page.getByText('Search: "first look"')).toBeVisible()
     expect(
       photoFetches,
       `gallery requested /rest/v1/photos ${photoFetches} times; expected a single page fetch`
