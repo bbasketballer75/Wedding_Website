@@ -278,9 +278,9 @@ describe('pr-review-claude.yml', () => {
     expect(actionStep.join('\n')).toMatch(/if:.*steps\.credential\.outputs\.ready/)
   })
 
-  it('does not auto-run on pull_request while no credential can exist', () => {
-    // This repository has no Anthropic subscription, so no
-    // CLAUDE_CODE_OAUTH_TOKEN can be minted. An automatic trigger would fail
+  it('stays manual-dispatch only while Claude review is unprovisioned', () => {
+    // No Claude credential is provisioned after the subscription cancellation.
+    // An automatic trigger would fail
     // on every PR with a red check nobody can clear, so the lane is manual
     // dispatch only until a credential exists.
     const lines = workflow.split(/\r?\n/)
@@ -330,10 +330,8 @@ describe('pr-review-claude.yml', () => {
     const env = envKeys(target)
     expect(env.GH_TOKEN).toMatch(/secrets\.GITHUB_TOKEN/)
     expect(env.INPUT_PR).toMatch(/inputs\.pr/)
-    // The checkout must land on the PR head ref, never an unspecified main tree.
-    expect(workflow).toMatch(
-      /ref:\s*refs\/pull\/\$\{\{\s*github\.event\.pull_request\.number \|\| inputs\.pr\s*\}\}\/head/
-    )
+    // The reviewed source is the exact resolved SHA, not a moving PR ref or main.
+    expect(workflow).toMatch(/ref:\s*\$\{\{ steps\.target\.outputs\.head_sha \}\}/)
     // Manual runs must supply the target; there is no "review whatever is
     // checked out" default. Parsed line by line rather than with one regex:
     // a nested-quantifier pattern over the same lines is a backtracking hazard
@@ -346,6 +344,34 @@ describe('pr-review-claude.yml', () => {
     expect(dispatch).toMatch(/^\s+pr:$/m)
     expect(dispatch).toMatch(/^\s+required: true$/m)
     expect(dispatch).toMatch(/^\s+type: string$/m)
+  })
+
+  it('runs credentialed helpers only from the isolated trusted main checkout', () => {
+    const job = jobBlock(workflow, 'review').join('\n')
+    expect(job).toMatch(/^\s+id: trusted_helpers$/m)
+    const trusted = stepWithId(job, 'trusted_helpers').join('\n')
+    expect(trusted).toMatch(/uses: actions\/checkout@v7/)
+    expect(trusted).toMatch(/^\s+ref: main$/m)
+    expect(trusted).toMatch(/^\s+path: \.$/m)
+    expect(trusted).toMatch(/^\s+persist-credentials: false$/m)
+    for (const id of ['target', 'post']) {
+      const helper = stepWithId(job, id).join('\n')
+      expect(helper).toMatch(/GH_TOKEN: \$\{\{ secrets\.GITHUB_TOKEN \}\}/)
+      expect(helper).toMatch(/^\s+working-directory: \$\{\{ github\.workspace \}\}$/m)
+      expect(helper).toMatch(/^\s+run: node scripts\/ci\/[\w-]+\.mjs$/m)
+    }
+    expect(job.indexOf('id: trusted_helpers')).toBeLessThan(job.indexOf('id: target'))
+  })
+
+  it('keeps untrusted PR source separate and checks out its resolved immutable head', () => {
+    const job = jobBlock(workflow, 'review').join('\n')
+    expect(job).toMatch(/^\s+id: source$/m)
+    const source = stepWithId(job, 'source').join('\n')
+    expect(source).toMatch(/^\s+path: pr-source$/m)
+    expect(source).toMatch(/^\s+ref: \$\{\{ steps\.target\.outputs\.head_sha \}\}$/m)
+    expect(source).toMatch(/^\s+persist-credentials: false$/m)
+    expect(job.indexOf('id: target')).toBeLessThan(job.indexOf('id: source'))
+    expect(actionStep.join('\n')).toMatch(/pr-source/)
   })
 
   it('stages the diff for the model instead of widening its tool permissions', () => {
