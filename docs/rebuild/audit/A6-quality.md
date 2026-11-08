@@ -72,9 +72,10 @@ From `dist/` at the frozen commit (`node tools/baseline/capture.mjs`):
 - JS 1,610,085 B raw → **470.41 KiB gzip**; CSS 251,614 B → 33.50 KiB gzip; fonts 555,624 B
   (22 files = woff+woff2 pairs for 3 families). Entry graph: 1 script + 7 modulepreloads + 1
   stylesheet (`index.html`), no inline scripts.
-- The initial-load graph is heavy for an archive site: `vendor-react` 65.5 KiB gz + `index` 66.4 KiB gz
-  + `app-supabase` 58.8 KiB gz + `vendor-motion` 45.1 KiB gz are all on the preload path
-  (`bundle.initialPayload` in metrics.json). `framer-motion` is imported by 103 source modules
+- The initial-load graph is heavy for an archive site: 9 files / **277.88 KiB gzip** (284,549 B)
+  before first render, with `vendor-react` 65.5 KiB gz + `index` 66.4 KiB gz + `app-supabase`
+  58.8 KiB gz + `vendor-motion` 45.1 KiB gz all on the preload path
+  (`metrics.json → bundle.initialPayload`). `framer-motion` is imported by 103 source modules
   (`inventory.json → importGraph.topPackages`) and accounts for a dedicated 141 KB chunk.
 - Manual chunking (`vite.config.js:322-330`) only special-cases 6 vendor families + `app-supabase`;
   everything else falls to per-entry lazy chunks. There is **no bundle budget gate** in CI
@@ -121,10 +122,10 @@ From `dist/` at the frozen commit (`node tools/baseline/capture.mjs`):
   `react-masonry-css` (gallery uses `@tanstack/react-virtual`), both TensorFlow packages,
   `@vladmandic/human`, 3 of 6 `@fontsource` families, `@vitest/coverage-v8` (used via CLI),
   `@vitest/ui`, and `husky` (no `prepare` script installs hooks on a fresh clone).
-- **5 undeclared direct imports** rely on hoisting: `@radix-ui/react-slot` (used by
-  `src/components/ui/Button.tsx`), `workbox-window` (`src/utils/serviceWorker.ts`), `pg` and
-  `tus-js-client` (scripts), `@netlify/functions` (Netlify-provided). Any lockfile bump can break
-  these silently.
+- **6 undeclared direct imports** rely on hoisting: `@radix-ui/react-slot` (used by
+  `src/components/ui/Button.tsx`), `workbox-window` (`src/utils/serviceWorker.ts`), `playwright`
+  (`tools/parity/capture.mjs`; only `@playwright/test` is declared), `pg` and `tus-js-client`
+  (scripts), `@netlify/functions` (Netlify-provided). Any lockfile bump can break these silently.
 - **5 section mismatches**: `@aws-sdk/client-s3`, `@aws-sdk/s3-request-presigner`, `tailwindcss`,
   `@tailwindcss/vite` sit in `dependencies` but are Node/build-only; `exifr` sits in
   `devDependencies` but ships in the browser bundle (`PhotoLightbox.tsx`).
@@ -151,10 +152,10 @@ From `dist/` at the frozen commit (`node tools/baseline/capture.mjs`):
   instruments what the tests touch, so this is not even a file-level denominator.
 - **No coverage thresholds** exist (`vitest.config.js:19-23` has reporters only), and **CI never runs
   coverage** (`ci.yml` runs `npm run test:run`, not `test:coverage`) — coverage can rot invisibly.
-- The suite also pays a known environment tax: jsdom is created 42 times / 93.44 s (64% of tracked
-  time); Vitest's own output suggests `pool: 'vmThreads'` or `isolate: false` (measured in
-  `metrics.json → gates.unit.outputTail`). 12.20 s Vitest duration vs 13.1 s wall is acceptable now
-  but scales badly.
+- The suite also pays a known environment tax: jsdom creates one environment per test file (42
+  creations) and accounts for 62–66% of tracked time across captures; Vitest's own output suggests
+  `pool: 'vmThreads'` or `isolate: false` (measured in `metrics.json → gates.unit.outputTail`).
+  10.5–12.2 s Vitest duration vs 11.5–13.1 s wall is acceptable now but scales badly.
 - E2E is deliberately out of the PR gate ("10+ min and flaky on cross-browser matrix",
   `ci.yml:61-63`) — so the only browser-level coverage lives in nightly/manual workflows.
 
@@ -192,7 +193,8 @@ because the parity contract says "performance never regresses" and the legacy CI
 - Two TypeScript compilers are installed via npm aliases: `typescript@npm:@typescript/typescript6@6.0.2`
   (binary `tsc6`) and `@typescript/native@npm:typescript@7.0.2` (binary `tsc`, the default
   `npx tsc`). `ci.yml` type-checks with **both** (`tsc` and `tsc6` steps). Measured: `npx tsc
-  --noEmit` = 0 errors in 4.2 s; `npx tsc6 --noEmit` recorded in `metrics.json`.
+  --noEmit` = 0 errors (final 2.6 s; 2.6–8.0 s across contended captures); `npx tsc6 --noEmit` =
+  0 errors (final 15.5 s; 15.5–25.1 s across captures).
 - `tsconfig.json` uses `target: ES2020`, `allowJs`, `checkJs: false`, and includes `scripts/**` and
   `tests/**`; the JS configs (`vite.config.js`, `vitest.config.js`) sit outside the TS graph.
   Vite 8 warns that `vitest.config.js`'s `__dirname` breaks the future `configLoader: 'native'`

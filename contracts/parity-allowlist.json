@@ -1,3 +1,20 @@
 {
-  "entries": []
+  "entries": [
+    {
+      "route": "/",
+      "viewport": "desktop",
+      "theme": "dark",
+      "reason": "Wave 0 documented capture residual: repeated captures of the identical frozen build differ by <=9 changed pixels of 10,368,000 (sub-pixel phase of a fixed-position animated overlay). Reviewed by Lead; remove when window-based capture is replaced by an exact motion freeze.",
+      "expiresAtWave": 1,
+      "maxDiffPixelRatio": 0.00001
+    },
+    {
+      "route": "/film",
+      "viewport": "desktop",
+      "theme": "dark",
+      "reason": "Wave 0 documented capture residual: repeated captures of the identical frozen build differ by <=1041 changed pixels of 10,368,000 (video-player overlay spinner/pulse phase; the mocked CDN serves no video bytes). Reviewed by Lead; remove when the film player captures deterministically.",
+      "expiresAtWave": 1,
+      "maxDiffPixelRatio": 0.0002
+    }
+  ]
 }

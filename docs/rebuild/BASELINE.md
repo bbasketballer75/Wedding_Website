@@ -6,8 +6,9 @@ a command stated next to it; CI/checkpoints re-run the commands rather than trus
 - **Measured object:** the frozen legacy app at tag `legacy-freeze-2026-11-08`
   (`dd0cf48120801ef8ea621be90eed7fd1c2bf3664`, annotated tag object `ed9c818`) and its production
   `dist/` build (built 2026-11-08T05:39:20Z / 00:39 local).
-- **Captured:** 2026-11-08 (see `capturedAt` in `contracts/baseline/metrics.json`); workbench branch
-  `rebuild/greenfield`; workbench HEAD at capture is recorded there as `captureCommit`.
+- **Captured:** 2026-11-08T06:15:34Z (`capturedAt` in `contracts/baseline/metrics.json`); workbench
+  branch `rebuild/greenfield`; workbench HEAD at capture `891bfbe4f946a3ac9f8ccfc1a8a032616a9b3d39`
+  (`captureCommit` in metrics.json).
 - **Committed artefact:** [`contracts/baseline/metrics.json`](../../contracts/baseline/metrics.json)
   (validates against `baselineMetricsSchema` in `tools/lib/schemas.mjs`).
 - **Gitignored heavy artefacts** (regenerate; never commit):
@@ -88,7 +89,9 @@ Initial load graph from `dist/index.html` (`node tools/baseline/capture.mjs` →
 `bundle.initialPayload`): one entry script `/assets/index-B_ACu2o8.js` (66,416 B gz), seven
 `modulepreload`s (`rolldown-runtime`, `vendor-icons`, `vendor-react`, `vendor-motion`, `react`,
 `middleware`, `app-supabase`) and one stylesheet (`index-DYP6bYj0.css`, 33,978 B gz); no inline
-scripts. Exact combined initial-payload gzip is in `metrics.json` (`bundle.initialPayload`).
+scripts. Combined initial payload: **9 files / 1,083,977 B raw / 284,549 B gzip = 277.88 KiB** /
+241,828 B brotli, plus the 4,788 B HTML document. This is the cheapest possible first paint cost of
+the legacy app.
 
 ### Top 20 chunks by gzip
 
@@ -262,10 +265,11 @@ Command: `node tools/inventory/capture.mjs` (scans `src/**`, `scripts/**`, `tool
   `@tensorflow/tfjs-backend-wasm`, `@vladmandic/human` (both ML stacks unused), `react-masonry-css`
   (gallery uses `@tanstack/react-virtual` instead), `web-vitals`, `@vitest/coverage-v8`,
   `@vitest/ui`, `husky` (installed but no `prepare` script installs the hooks).
-- **Undeclared direct imports (5):** `@radix-ui/react-slot` (used by `src/components/ui/Button.tsx`),
-  `workbox-window` (`src/utils/serviceWorker.ts`), `@netlify/functions` (netlify functions; Netlify
-  provides it), `pg` and `tus-js-client` (scripts). These work only through hoisting; a dependency
-  bump can break them.
+- **Undeclared direct imports (6):** `@radix-ui/react-slot` (used by `src/components/ui/Button.tsx`),
+  `workbox-window` (`src/utils/serviceWorker.ts`), `playwright` (`tools/parity/capture.mjs`; only
+  `@playwright/test` is declared), `@netlify/functions` (netlify functions; Netlify provides it),
+  `pg` and `tus-js-client` (scripts). These work only through hoisting; a dependency bump can break
+  them.
 - **Misplaced sections (5):** `@aws-sdk/client-s3`, `@aws-sdk/s3-request-presigner`,
   `@tailwindcss/vite`, `tailwindcss` are `dependencies` but only reach Node-side tooling; `exifr`
   is a `devDependency` but is imported by `src/components/photo-viewer/PhotoLightbox.tsx` (browser
@@ -317,15 +321,20 @@ in the 113–149 s range under Lighthouse's simulated Slow-4G. Accessibility is 
 0.047. Treat these as *regression ceilings*: a rebuild that is slower than this is a regression,
 but these numbers are not a quality target.
 
-## Gates and timings (measured once each)
+## Gates and timings (measured once each, final capture)
 
 | Gate | Command | Result | Wall time |
 |---|---|---|---:|
-| Typecheck (TS7) | `npx tsc --noEmit` | 0 errors | 4.2 s |
-| Typecheck (TS6 compat) | `npx tsc6 --noEmit` | 0 errors | see `metrics.json → gates.typecheckLegacy` |
-| Lint | `npm run lint` | see note below | ~25 s |
-| Unit tests | `npm run test:run` | 42 files / **346 tests passed** (Vitest duration 12.20 s) | 13.1 s |
-| Coverage | `npx vitest run --coverage --coverage.reporter=json-summary --coverage.reporter=text-summary` | exit 0 | 19.6 s |
+| Typecheck (TS7) | `npx tsc --noEmit` | 0 errors | 2.6 s |
+| Typecheck (TS6 compat) | `npx tsc6 --noEmit` | 0 errors | 15.5 s |
+| Lint | `npm run lint` | **exit 0, 0 problems** | 22.9 s |
+| Unit tests | `npm run test:run` | 42 files / **346 tests passed** (Vitest duration 10.54 s) | 11.5 s |
+| Coverage | `npx vitest run --coverage --coverage.reporter=json-summary --coverage.reporter=text-summary` | exit 0 | 13.0 s |
+
+Wall-time variance warning: these commands were captured four times while other agents ran
+browser/Docker workloads; observed ranges were typecheck 2.6–8.0 s, tsc6 15.5–25.1 s, lint
+22.9–43.0 s, unit 11.5–22.0 s, coverage 13.0–26.6 s. The committed `metrics.json` holds the final
+(least-contended) capture. Coverage percentages were identical across every run.
 
 Coverage totals (V8 provider, jsdom; `coverage-summary.json` contains 128 files — 123 under `src/`,
 of which 115 have at least one covered line; Vitest only instruments files the tests import, so this
@@ -338,15 +347,14 @@ is not a share of the 337 src files):
 | Functions | 511 / 1,133 | 45.10% |
 | Branches | 916 / 2,420 | **37.85%** |
 
-Lint note: `npm run lint` (ESLint 9 flat config, whole repo) failed during capture with **2 errors,
-both in `tools/parity/config.mjs`** — a workbench file owned by `parity-eng`, not legacy code. The
-legacy-only scope is clean: `npx eslint src scripts tests` → exit 0, 0 problems (measured). The final
-`metrics.json` records the exact `npm run lint` result at capture time; re-run it after parity-eng's
-files are clean and the exit code should be 0 without any legacy change.
+Lint note: the committed capture ran `npm run lint` (ESLint 9 flat config, whole repo) → **exit 0,
+0 problems**. Earlier capture iterations transiently failed with 3 errors, all in another owner's
+`tools/parity/*.mjs` work-in-progress files; the legacy-only scope was already clean then
+(`npx eslint src scripts tests` → exit 0, 0 problems, measured). No legacy file was touched.
 
-Vitest output also flags a DX cost and a future-config break: jsdom is created 42 times (93.44 s,
-64% of tracked time — resolved by `pool: 'vmThreads'` or `isolate: false`), and `vitest.config.js`
-uses `__dirname`, which Vite's future `configLoader: 'native'` drops.
+Vitest output also flags a DX cost and a future-config break: the jsdom environment dominates test
+time (62–66% of tracked time across captures; 42 environment creations, one per test file), and
+`vitest.config.js` uses `__dirname`, which Vite's future `configLoader: 'native'` drops.
 
 ## End-to-end suite (documented, not measured)
 
