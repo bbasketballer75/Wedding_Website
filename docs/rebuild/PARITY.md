@@ -32,6 +32,7 @@ Defaults (CLI-overridable):
 |---|---|---|
 | `--max-diff-ratio` | `0.001` | max changed-pixel ratio per **slice**; the shot fails above it |
 | `--pixel-threshold` | `0.12` | per-pixel colour threshold on pixelmatch's normalised YIQ delta (`0.5053y² + 0.299i² + 0.1957q² > 35215·t²`) |
+| `--edge-tolerance` | `0` (exact) | optional **edge-raster tolerance**: a changed pixel also counts as matched when the other image has a pixel under the colour threshold within ±N px (Chebyshev neighbourhood). Opt-in per comparison; never a default |
 
 Rules:
 
@@ -45,6 +46,29 @@ Rules:
 - Everything is compared **per shot** (route × viewport × theme). There is no global budget that
   lets one bad route hide behind good ones.
 - Text/DOM drift cannot be tolerated at all: it has no allowlist field. It always fails the wave.
+
+### Edge-raster tolerance (`--edge-tolerance N`)
+
+Some GPU-composited effects rasterise at fractional (`.5px`) edges and can land on either side of
+the boundary between captures — `backdrop-filter` surfaces are the proven case. That produces
+single-scanline colour differences at edges even when geometry, computed styles and text are
+identical (the frozen legacy app reproduces the same magnitude against **itself**).
+
+`--edge-tolerance N` forgives exactly that: a mismatching pixel is considered matched when ANY
+pixel of the other image inside the ±N neighbourhood is under the same per-pixel colour threshold.
+`N = 1` is the documented mode; the CLI accepts integers `0..4`, and `0` (the default) is the exact
+per-pixel comparison every other gate, the self-check and all Wave-0/1 evidence used.
+
+What it **cannot** hide (proved by the selfcheck perturbations, which run *with* `--edge-tolerance 1`):
+
+- text/label/copy changes, colour or font changes — they still exceed the colour threshold;
+- moving or removing an element by more than one pixel, or any size/spacing change — the changed
+  pixels have no match within ±1 px;
+- text/DOM drift, HTTP-status drift, layout-size/slice-count mismatch — these fail independently of
+  the pixel tolerance.
+
+Usage is deliberately scoped: **only the mobile 404 shell comparison uses it** (see §6). Never make
+it a default, and never use a larger `N` to paper over a real layout shift.
 
 ## 3. Determinism rules
 
@@ -114,17 +138,25 @@ Rules:
    time- or random-driven decorative widget (marquee, live ticker). Each mask selector needs a
    route, a reason and a PARITY.md entry. Masks are recorded in `summary.json.determinism.masks`.
 
-### Wave 0 documented capture residuals (reviewed)
+### Allowlist state by wave (reviewed, current)
 
-| Shot | Measured residual (identical build, two captures) | Entry limit | Cause / owner action |
+**Current state (Wave 2): 2 entries**, both desktop/dark capture residuals of the *identical* frozen
+build (never product differences, never text/pixel drift between legacy and rebuild):
+`home` and `film`. Wave 2 deleted the two mobile 404 entries by adding `--edge-tolerance 1` to that
+comparison (see §2); the `film` entry was briefly deleted after one re-measurement showed 0 px, then
+restored when a later repeat reproduced 1,041 px — the residual is intermittent and must stay
+documented until the film player captures deterministically.
+
+| Shot | Wave-2 re-measured residual (identical build, two captures) | Entry limit | Cause / owner action |
 |---|---|---|---|
-| `home` · desktop · dark | ≤ 9 changed px of 10,368,000 (≈ 8.7e-7) | `0.00001` | sub-pixel phase of a fixed-position animated overlay; remove when window capture is replaced by an exact motion freeze |
-| `film` · desktop · dark | ≤ 1,041 changed px of 10,368,000 (≈ 1.0e-4) | `0.0002` | video-player overlay spinner/pulse phase (mocked CDN serves no video bytes); remove when the film player captures deterministically |
+| `home` · desktop · dark | 48 / 59 / 62 px of 10,368,000 across repeats (≤0.0006 %; historical max 63 px) | `0.00001`, `expiresAtWave: 2` | sub-pixel phase of a fixed-position animated overlay in the deterministic window capture; not a product difference. Remove when window capture is replaced by an exact motion freeze |
+| `film` · desktop · dark | **intermittent**: 0 px in one repeat, 1,041 px (0.0100 %) in another | `0.0002`, `expiresAtWave: 2` | video-player overlay spinner/pulse phase (mocked CDN serves no video bytes). MUST be re-reviewed at Wave 3: freeze the overlay animation in capture or remove with fresh evidence |
+| ~~`/*` · mobile · dark/light~~ | **0 changed px** with `--edge-tolerance 1` (was 11,011 px / 0.4181 % each) — both entries deleted | — | `backdrop-filter` raster phase at fractional edges; the tolerance mode covers it without weakening the exact default |
 
-Both are below `--max-diff-ratio` (0.001) so a wave comparison passes them; they are allowlisted
-so determinism evidence states the exception explicitly instead of claiming a strict 0. Every
-other priority route captures at **0 changed pixels**. Entries expire at wave 1: a later wave must
-re-review or fix them.
+These residuals are far below `--max-diff-ratio` (0.001), so a wave comparison passes them; they are
+allowlisted so determinism evidence states the exception explicitly instead of claiming a strict 0.
+Every other priority route should capture at **0 changed pixels**. Remaining entries expire at
+Wave 2: a later wave must re-review, fix, or renew them with fresh measured evidence.
 
 ## 5. Masks
 
@@ -205,9 +237,35 @@ node tools/parity/compare.mjs \
   --out tools/parity/output/w1-404-selfcheck
 ```
 
-Expected for all three: 4 shots, `0` changed pixels, `0` text diffs, exit code 0. Until the shell
-is declared ready by the Lead, do **not** run the legacy-vs-rebuild 5175 comparison; the two
-self-proof commands above are the Wave-1 gate.
+Expected for the self-proof commands: 4 shots, `0` changed pixels, `0` text diffs, exit code 0.
+
+### Wave 2 — edge-raster tolerance and the 404 gate (current)
+
+Wave 2's 404 comparison uses the opt-in edge-raster tolerance (default stays exact, §2):
+
+```bash
+# 404 shell parity with edge-raster tolerance (this is the only comparison that uses it)
+node tools/parity/compare.mjs \
+  --legacy-url http://127.0.0.1:4174 \
+  --rebuild-url http://127.0.0.1:4175 \
+  --routes not-found --matrix all --themes dark,light \
+  --wave 2 --edge-tolerance 1 \
+  --out tools/parity/output/w2-404
+```
+
+Measured on the Wave-2 build (`rebuild/dist` rebuilt before the run):
+
+| Shot | exact mode (no flag) | `--edge-tolerance 1` |
+|---|---|---|
+| not-found desktop dark | 0 / 6,500,640 px — pass | 0 / 6,500,640 px — pass |
+| not-found desktop light | 0 / 6,500,640 px — pass | 0 / 6,500,640 px — pass |
+| not-found mobile dark | 11,011 / 6,500,640 px = **0.4181 %** — fail | **0** — pass |
+| not-found mobile light | 11,011 / 6,500,640 px = **0.4181 %** — fail | **0** — pass |
+
+Final state: 4/4 pass, **0 allowed entries**, 0 text diffs, exit code 0 (`tools/parity/output/w2-404/`).
+The tolerance cannot hide real changes: `selfcheck.mjs` runs both perturbation checks **with
+`--edge-tolerance 1`** and they still fail the comparison (§9), and every other gate keeps the
+exact default.
 
 Outputs under `--out` (default `tools/parity/output`, gitignored):
 
@@ -263,8 +321,13 @@ report.html             # self-contained (images inlined), opens offline
    changed pixels** vs run #1 (PNG byte equality is reported as a diagnostic only — ancillary
    chunk/metadata differences must never fail the gate); allowlisted shots are reported with their
    measured residual;
-3. a deliberately perturbed copy of a captured window is **detected** by the pixel threshold;
-4. a page captured with an injected CSS change fails the ordinary compare (exit code 1).
+3. a deliberately perturbed copy of a captured window is **detected**, and this check runs with
+   `--edge-tolerance 1` on purpose — the tolerance cannot hide a real change;
+4. a page captured with an injected CSS change **fails** the ordinary compare (exit code 1), also
+   with `--edge-tolerance 1` enabled.
+
+Determinism checks (1 and 2) always use the default **exact** pixel comparison; only the two
+perturbation checks deliberately enable the edge tolerance to prove it stays sensitive.
 
 The run's verdict is written to `<out>/selfcheck.json`; the underlying compares each have their
 own `summary.json` + `report.html` under `<out>/run1`, `<out>/run2` and `<out>/perturbed-capture`.

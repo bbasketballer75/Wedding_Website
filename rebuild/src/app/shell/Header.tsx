@@ -58,6 +58,7 @@ function HeaderContent() {
   const [isVisible, setIsVisible] = useState(true)
   const [menuOpenPath, setMenuOpenPath] = useState<string | null>(null)
   const lastScrollYRef = useRef(0)
+  const menuButtonRef = useRef<HTMLButtonElement>(null)
   // Derived state instead of a close-on-navigation effect: the menu is open
   // only for the path it was opened on, which matches the frozen app's
   // "close mobile menu on route change" effect without a cascading render.
@@ -100,6 +101,20 @@ function HeaderContent() {
     return () => {
       document.body.style.overflow = ''
     }
+  }, [isMobileMenuOpen])
+
+  // Wave 2 a11y improvement beyond the frozen header: Escape dismisses the
+  // mobile menu and returns focus to its trigger. Behaviour-only change (no
+  // markup/CSS delta), gated by tests/e2e/shell-a11y.spec.ts.
+  useEffect(() => {
+    if (!isMobileMenuOpen) return
+    const handleKeyDown = (event: KeyboardEvent) => {
+      if (event.key !== 'Escape') return
+      setMenuOpenPath(null)
+      menuButtonRef.current?.focus()
+    }
+    document.addEventListener('keydown', handleKeyDown)
+    return () => document.removeEventListener('keydown', handleKeyDown)
   }, [isMobileMenuOpen])
 
   return (
@@ -147,6 +162,7 @@ function HeaderContent() {
 
             {/* Mobile hamburger button - hidden on desktop */}
             <button
+              ref={menuButtonRef}
               type='button'
               aria-label={isMobileMenuOpen ? 'Close menu' : 'Open menu'}
               aria-expanded={isMobileMenuOpen}

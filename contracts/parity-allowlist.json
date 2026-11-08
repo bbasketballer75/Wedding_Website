@@ -4,33 +4,17 @@
       "route": "/",
       "viewport": "desktop",
       "theme": "dark",
-      "reason": "Wave 0 documented capture residual: repeated captures of the identical frozen build differ by <=9 changed pixels of 10,368,000 (sub-pixel phase of a fixed-position animated overlay). Reviewed by Lead; remove when window-based capture is replaced by an exact motion freeze.",
-      "expiresAtWave": 1,
+      "reason": "Wave 0 documented capture residual, re-measured at Wave 2: repeated captures of the identical frozen build differ by <=63 changed pixels of 10,368,000 (<=0.0006%; re-measurements 48 px and 0 px). Sub-pixel phase of a fixed-position animated overlay in the deterministic window capture; not a product difference. Retained with expiry at Wave 2; remove when window capture is replaced by an exact motion freeze.",
+      "expiresAtWave": 2,
       "maxDiffPixelRatio": 0.00001
     },
     {
       "route": "/film",
       "viewport": "desktop",
       "theme": "dark",
-      "reason": "Wave 0 documented capture residual: repeated captures of the identical frozen build differ by <=1041 changed pixels of 10,368,000 (video-player overlay spinner/pulse phase; the mocked CDN serves no video bytes). Reviewed by Lead; remove when the film player captures deterministically.",
-      "expiresAtWave": 1,
+      "reason": "Wave 0 documented capture residual, re-measured at Wave 2: INTERMITTENT — one repeat capture of the identical frozen build measured 0 changed pixels, a later repeat measured 1041/10,368,000 (0.0100%). Video-player overlay spinner/pulse phase in the deterministic window capture (the mocked CDN serves no video bytes); not a product difference. MUST be re-reviewed at Wave 3: fix the film player capture (freeze the overlay animation) or remove with fresh evidence.",
+      "expiresAtWave": 2,
       "maxDiffPixelRatio": 0.0002
-    },
-    {
-      "route": "/*",
-      "viewport": "mobile",
-      "theme": "dark",
-      "reason": "Wave 1 404 shell: 11,011/2,633,280 px (0.42%) are single-scanline raster-phase differences at fractional (.5px) edges of backdrop-filter surfaces in the footer panel/cards. Probes: identical rects to 3 decimals and every computed style matches; injecting backdrop-filter:none yields 0 changed pixels; repeated captures of the frozen legacy app alone reproduce 8,366 changed px (vs 10,286 cross-side); desktop 404 is 0.000%; text parity 0 diffs. Not a product difference. Remove when the harness adds an edge-raster tolerance or the surfaces sit on integral edges.",
-      "expiresAtWave": 1,
-      "maxDiffPixelRatio": 0.005
-    },
-    {
-      "route": "/*",
-      "viewport": "mobile",
-      "theme": "light",
-      "reason": "Wave 1 404 shell: same backdrop-filter raster-phase residual as the mobile/dark entry (0.42% of pixels, single scanlines at fractional edges; geometry and computed styles identical; legacy-vs-legacy reproduces the same magnitude; desktop is 0.000%; text parity 0 diffs). Not a product difference; remove with the mobile/dark entry.",
-      "expiresAtWave": 1,
-      "maxDiffPixelRatio": 0.005
     }
   ]
 }

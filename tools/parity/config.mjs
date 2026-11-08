@@ -28,6 +28,13 @@ export const FALLBACK_FIXED_NOW = '2026-11-08T17:00:00.000Z'
 export const DEFAULT_TOLERANCE = {
   maxDiffRatio: 0.001,
   pixelThreshold: 0.12,
+  /**
+   * Exact per-pixel comparison by default. --edge-tolerance 1 additionally
+   * accepts a pixel when the other image matches within +/-1 px (edge-raster
+   * phase). It is opt-in per comparison and can never mask feature changes:
+   * see docs/rebuild/PARITY.md section 2.
+   */
+  edgeTolerance: 0,
 }
 
 /**
@@ -400,6 +407,7 @@ Options:
   --out <dir>              Output directory (default: tools/parity/output)
   --max-diff-ratio <n>     Maximum changed-pixel ratio per slice (default: 0.001)
   --pixel-threshold <n>    Per-pixel colour threshold, 0..1 (default: 0.12)
+  --edge-tolerance <n>     Accept a pixel matched within +/-n px neighbourhood; 0 = exact (default: 0)
   --wave <n>               Current rebuild wave; allowlist entries expire before it
   --allowlist <file>       Allowlist path (default: contracts/parity-allowlist.json)
   --json                   Print a machine-readable JSON summary to stdout
@@ -421,6 +429,7 @@ export function parseCompareArgs(argv) {
     outDir: DEFAULT_OUT_DIR,
     maxDiffRatio: DEFAULT_TOLERANCE.maxDiffRatio,
     pixelThreshold: DEFAULT_TOLERANCE.pixelThreshold,
+    edgeTolerance: DEFAULT_TOLERANCE.edgeTolerance,
     wave: 1,
     allowlistPath: ALLOWLIST_PATH,
     json: false,
@@ -472,6 +481,14 @@ export function parseCompareArgs(argv) {
           { min: 0, max: 1 }
         )
         break
+      case '--edge-tolerance': {
+        options.edgeTolerance = parseFiniteNumber(readValue('--edge-tolerance'), 'edge-tolerance', {
+          min: 0,
+          max: 4,
+        })
+        if (!Number.isInteger(options.edgeTolerance)) fail('--edge-tolerance must be an integer')
+        break
+      }
       case '--wave': {
         options.wave = parseFiniteNumber(readValue('--wave'), 'wave', { min: 1, max: 1000 })
         if (!Number.isInteger(options.wave)) fail('--wave must be an integer')

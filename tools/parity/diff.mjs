@@ -54,10 +54,59 @@ export function colourDelta(r1, g1, b1, r2, g2, b2) {
 }
 
 /**
- * Compare two decoded RGB images of identical size.
- * @returns {{changedPixels:number,totalPixels:number,ratio:number,maxChannelDelta:number,boundingBox:object|null}}
+ * Decide whether the pixel at (x, y) of the legacy image counts as changed.
+ *
+ * Exact mode (`edgeTolerance = 0`): the same-position rebuild pixel must be
+ * within the colour threshold.
+ *
+ * Edge-raster tolerance (`edgeTolerance >= 1`): a same-position mismatch is
+ * also forgiven when ANY rebuild pixel within the +/-N px Chebyshev
+ * neighbourhood is under the same colour threshold. N=1 forgives a one-pixel
+ * raster phase (e.g. `backdrop-filter` surfaces snapped to fractional edges)
+ * without hiding sub-2px feature changes: moved/removed/changed content still
+ * differs outside that neighbourhood. The neighbourhood is searched in the
+ * other image only — that is what a raster phase/shift looks like.
  */
-export function compareDecoded(legacy, rebuild, { pixelThreshold = 0.12 } = {}) {
+function pixelIsChanged(legacy, rebuild, width, height, x, y, maxDelta, edgeTolerance) {
+  const offset = (y * width + x) * 3
+  const r1 = legacy.data[offset]
+  const g1 = legacy.data[offset + 1]
+  const b1 = legacy.data[offset + 2]
+  const r2 = rebuild.data[offset]
+  const g2 = rebuild.data[offset + 1]
+  const b2 = rebuild.data[offset + 2]
+  if (r1 === r2 && g1 === g2 && b1 === b2) return { changed: false, maxChannelDelta: 0 }
+  const channelDelta = Math.max(Math.abs(r1 - r2), Math.abs(g1 - g2), Math.abs(b1 - b2))
+  if (colourDelta(r1, g1, b1, r2, g2, b2) <= maxDelta) {
+    return { changed: false, maxChannelDelta: channelDelta }
+  }
+  if (edgeTolerance <= 0) return { changed: true, maxChannelDelta: channelDelta }
+  const startY = Math.max(0, y - edgeTolerance)
+  const endY = Math.min(height - 1, y + edgeTolerance)
+  const startX = Math.max(0, x - edgeTolerance)
+  const endX = Math.min(width - 1, x + edgeTolerance)
+  for (let ny = startY; ny <= endY; ny += 1) {
+    for (let nx = startX; nx <= endX; nx += 1) {
+      if (nx === x && ny === y) continue
+      const neighbourOffset = (ny * width + nx) * 3
+      const nr = rebuild.data[neighbourOffset]
+      const ng = rebuild.data[neighbourOffset + 1]
+      const nb = rebuild.data[neighbourOffset + 2]
+      if (colourDelta(r1, g1, b1, nr, ng, nb) <= maxDelta) {
+        return { changed: false, maxChannelDelta: channelDelta }
+      }
+    }
+  }
+  return { changed: true, maxChannelDelta: channelDelta }
+}
+
+/**
+ * Compare two decoded RGB images of identical size.
+ * `edgeTolerance` defaults to 0 (exact per-pixel comparison); pass 1 for the
+ * documented edge-raster tolerance mode.
+ * @returns {{changedPixels:number,totalPixels:number,ratio:number,maxChannelDelta:number,boundingBox:object|null,edgeTolerance:number}}
+ */
+export function compareDecoded(legacy, rebuild, { pixelThreshold = 0.12, edgeTolerance = 0 } = {}) {
   if (legacy.width !== rebuild.width || legacy.height !== rebuild.height) {
     throw new HarnessError(
       `Image dimensions differ: legacy ${legacy.width}x${legacy.height} vs rebuild ${rebuild.width}x${rebuild.height}`
@@ -74,21 +123,12 @@ export function compareDecoded(legacy, rebuild, { pixelThreshold = 0.12 } = {}) 
   let maxX = -1
   let maxY = -1
   for (let pixel = 0; pixel < totalPixels; pixel += 1) {
-    const offset = pixel * 3
-    const r1 = legacy.data[offset]
-    const g1 = legacy.data[offset + 1]
-    const b1 = legacy.data[offset + 2]
-    const r2 = rebuild.data[offset]
-    const g2 = rebuild.data[offset + 1]
-    const b2 = rebuild.data[offset + 2]
-    if (r1 === r2 && g1 === g2 && b1 === b2) continue
-    const channelDelta = Math.max(Math.abs(r1 - r2), Math.abs(g1 - g2), Math.abs(b1 - b2))
-    if (channelDelta > maxChannelDelta) maxChannelDelta = channelDelta
-    const delta = colourDelta(r1, g1, b1, r2, g2, b2)
-    if (delta <= maxDelta) continue
-    changedPixels += 1
     const x = pixel % width
     const y = Math.floor(pixel / width)
+    const verdict = pixelIsChanged(legacy, rebuild, width, height, x, y, maxDelta, edgeTolerance)
+    if (verdict.maxChannelDelta > maxChannelDelta) maxChannelDelta = verdict.maxChannelDelta
+    if (!verdict.changed) continue
+    changedPixels += 1
     if (x < minX) minX = x
     if (y < minY) minY = y
     if (x > maxX) maxX = x
@@ -103,37 +143,28 @@ export function compareDecoded(legacy, rebuild, { pixelThreshold = 0.12 } = {}) 
       changedPixels > 0
         ? { x: minX, y: minY, width: maxX - minX + 1, height: maxY - minY + 1 }
         : null,
+    edgeTolerance,
   }
 }
 
 /** Write a diff PNG: unchanged pixels dimmed legacy, changed pixels magenta. */
-export function buildDiffRaw(legacy, rebuild, { pixelThreshold = 0.12 } = {}) {
+export function buildDiffRaw(legacy, rebuild, { pixelThreshold = 0.12, edgeTolerance = 0 } = {}) {
   const { data, width, height } = legacy
   const diff = Buffer.alloc(width * height * 3)
   const maxDelta = MAX_DELTA * pixelThreshold * pixelThreshold
   for (let pixel = 0; pixel < width * height; pixel += 1) {
     const offset = pixel * 3
-    const r1 = data[offset]
-    const g1 = data[offset + 1]
-    const b1 = data[offset + 2]
-    const r2 = rebuild.data[offset]
-    const g2 = rebuild.data[offset + 1]
-    const b2 = rebuild.data[offset + 2]
-    if (r1 === r2 && g1 === g2 && b1 === b2) {
-      diff[offset] = Math.round(r1 * 0.35)
-      diff[offset + 1] = Math.round(g1 * 0.35)
-      diff[offset + 2] = Math.round(b1 * 0.35)
-      continue
-    }
-    const changed = colourDelta(r1, g1, b1, r2, g2, b2) > maxDelta
-    if (changed) {
+    const x = pixel % width
+    const y = Math.floor(pixel / width)
+    const verdict = pixelIsChanged(legacy, rebuild, width, height, x, y, maxDelta, edgeTolerance)
+    if (verdict.changed) {
       diff[offset] = 255
       diff[offset + 1] = 0
       diff[offset + 2] = 255
     } else {
-      diff[offset] = Math.round(r1 * 0.35)
-      diff[offset + 1] = Math.round(g1 * 0.35)
-      diff[offset + 2] = Math.round(b1 * 0.35)
+      diff[offset] = Math.round(data[offset] * 0.35)
+      diff[offset + 1] = Math.round(data[offset + 1] * 0.35)
+      diff[offset + 2] = Math.round(data[offset + 2] * 0.35)
     }
   }
   return { data: diff, width, height }
@@ -156,6 +187,7 @@ export async function compareShotSlices({
   diffDir,
   key,
   pixelThreshold = 0.12,
+  edgeTolerance = 0,
 }) {
   const sliceResults = []
   let changedPixels = 0
@@ -213,8 +245,8 @@ export async function compareShotSlices({
       })
       continue
     }
-    const metrics = compareDecoded(legacy, rebuild, { pixelThreshold })
-    const diffRaw = buildDiffRaw(legacy, rebuild, { pixelThreshold })
+    const metrics = compareDecoded(legacy, rebuild, { pixelThreshold, edgeTolerance })
+    const diffRaw = buildDiffRaw(legacy, rebuild, { pixelThreshold, edgeTolerance })
     await writeRawPng(diffRaw, diffFile)
     changedPixels += metrics.changedPixels
     totalPixels += metrics.totalPixels
@@ -248,6 +280,7 @@ export async function compareShotSlices({
     totalPixels,
     ratio,
     maxChannelDelta,
+    edgeTolerance,
     sliceCountMismatch,
     sizeMismatch,
     sliceResults,
@@ -268,7 +301,11 @@ export async function compareShotSlices({
  * patch plus a border, and return the metrics of comparing the two. Proves the
  * diff threshold actually detects a known change.
  */
-export async function perturbPng(sourceFile, targetFile, { pixelThreshold = 0.12 } = {}) {
+export async function perturbPng(
+  sourceFile,
+  targetFile,
+  { pixelThreshold = 0.12, edgeTolerance = 0 } = {}
+) {
   const source = await decodePng(sourceFile)
   const data = Buffer.from(source.data)
   const paint = (x, y) => {
@@ -299,7 +336,7 @@ export async function perturbPng(sourceFile, targetFile, { pixelThreshold = 0.12
   }
   await writeRawPng({ data, width: source.width, height: source.height }, targetFile)
   const perturbed = await decodePng(targetFile)
-  const metrics = compareDecoded(source, perturbed, { pixelThreshold })
+  const metrics = compareDecoded(source, perturbed, { pixelThreshold, edgeTolerance })
   return { ...metrics, file: targetFile, ratioLabel: formatRatio(metrics.ratio) }
 }
 

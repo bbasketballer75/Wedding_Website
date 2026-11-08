@@ -111,4 +111,33 @@ describe('Header', () => {
       expect(screen.getAllByRole('link')).toHaveLength(6)
     })
   })
+
+  it('closes the mobile menu with Escape and returns focus to the trigger', async () => {
+    const user = userEvent.setup()
+    await renderHeader('/film')
+
+    const trigger = screen.getByRole('button', { name: 'Open menu' })
+    await user.click(trigger)
+    expect(screen.getByRole('button', { name: 'Close menu' })).toHaveAttribute(
+      'aria-expanded',
+      'true'
+    )
+
+    // Move focus into the overlay, then dismiss it with Escape.
+    const overlayLink = within(screen.getByRole('navigation')).getByRole('link', {
+      name: /Watch Film/,
+    })
+    overlayLink.focus()
+    expect(document.activeElement).toBe(overlayLink)
+
+    await user.keyboard('{Escape}')
+
+    const restoredTrigger = screen.getByRole('button', { name: 'Open menu' })
+    expect(restoredTrigger).toHaveAttribute('aria-expanded', 'false')
+    expect(document.activeElement).toBe(restoredTrigger)
+    expect(document.body.style.overflow).toBe('')
+    await waitFor(() => {
+      expect(screen.getAllByRole('link')).toHaveLength(6)
+    })
+  })
 })

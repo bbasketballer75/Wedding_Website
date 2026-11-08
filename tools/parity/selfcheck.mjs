@@ -281,13 +281,17 @@ async function runSelfcheck(options) {
     const targetFile = path.join(diffPerturbDir, 'perturbed.png')
     const metrics = await perturbPng(sourceFile, targetFile, {
       pixelThreshold: DEFAULT_TOLERANCE.pixelThreshold,
+      // Tolerance is enabled for the perturbation checks on purpose: a real
+      // change must still be detected with the edge-raster tolerance on.
+      // The determinism checks below stay in the default exact mode.
+      edgeTolerance: 1,
     })
     const detected =
       metrics.changedPixels > 0 && metrics.ratio > Math.max(DEFAULT_TOLERANCE.maxDiffRatio, 0.001)
     record(
       'perturbed-diff-detected',
       detected ? 'pass' : 'fail',
-      `changed ${metrics.changedPixels} px (${formatRatio(metrics.ratio)}) in ${path.basename(sourceFile)}`
+      `changed ${metrics.changedPixels} px (${formatRatio(metrics.ratio)}) in ${path.basename(sourceFile)} with --edge-tolerance 1`
     )
   }
 
@@ -303,6 +307,9 @@ async function runSelfcheck(options) {
       themes: firstShot.theme,
       outDir: perturbDir,
       report: true,
+      // A deliberate page change must be detected even with the edge-raster
+      // tolerance enabled (proves the tolerance cannot hide real changes).
+      edgeTolerance: 1,
       injectCss: { legacy: 'html{filter:hue-rotate(150deg) saturate(2.4) !important}' },
     })
     const detected =
@@ -312,8 +319,8 @@ async function runSelfcheck(options) {
     record(
       'perturbed-capture-detected',
       detected ? 'pass' : 'fail',
-      `injected CSS on ${firstShot.route}/${firstShot.viewport}/${firstShot.theme} → exit ${perturbed.exitCode}, ` +
-        `${perturbed.summary.totals.changedPixels} changed px`
+      `injected CSS on ${firstShot.route}/${firstShot.viewport}/${firstShot.theme} with --edge-tolerance 1 ` +
+        `→ exit ${perturbed.exitCode}, ${perturbed.summary.totals.changedPixels} changed px`
     )
   }
 

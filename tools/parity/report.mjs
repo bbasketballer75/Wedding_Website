@@ -209,7 +209,7 @@ function renderHeader(summary) {
       <tr><td>same instance</td><td>${summary.oracle?.sameInstance ? 'yes (self-check)' : 'no'}</td></tr>
       <tr><td>fixed clock</td><td>${escapeHtml(summary.determinism?.clock?.fixedNow ?? '')} — ${escapeHtml(summary.determinism?.clock?.strategy ?? '')}</td></tr>
       <tr><td>timezone / locale</td><td>${escapeHtml(summary.determinism?.timezoneId ?? '')} / ${escapeHtml(summary.determinism?.locale ?? '')}</td></tr>
-      <tr><td>tolerance</td><td>max diff ratio ${escapeHtml(String(summary.tolerance?.maxDiffRatio ?? ''))} · pixel threshold ${escapeHtml(String(summary.tolerance?.pixelThreshold ?? ''))}</td></tr>
+      <tr><td>tolerance</td><td>max diff ratio ${escapeHtml(String(summary.tolerance?.maxDiffRatio ?? ''))} · pixel threshold ${escapeHtml(String(summary.tolerance?.pixelThreshold ?? ''))} · edge tolerance ${escapeHtml(String(summary.tolerance?.edgeTolerance ?? 0))} (${escapeHtml(summary.tolerance?.edgeToleranceSemantics ?? 'exact per-pixel comparison (default)')})</td></tr>
       <tr><td>allowlist</td><td>${escapeHtml(summary.allowlist?.file ?? '')} — ${formatNumber(summary.allowlist?.entries)} entries at wave ${formatNumber(summary.allowlist?.wave)}</td></tr>
       <tr><td>fixtures</td><td>${escapeHtml(summary.determinism?.fixtures?.source ?? '')}</td></tr>
       <tr><td>toolchain</td><td>node ${escapeHtml(summary.toolchain?.node ?? '')} · playwright ${escapeHtml(

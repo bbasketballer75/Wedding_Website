@@ -1,65 +1,170 @@
-import { cva, type VariantProps } from 'class-variance-authority'
 import { Link } from '@tanstack/react-router'
-import type { ButtonHTMLAttributes, ReactNode } from 'react'
+import { forwardRef, type ButtonHTMLAttributes, type ReactNode } from 'react'
 import { cn } from '@/shared/lib/cn'
+import { buttonVariants, type ButtonVariants } from './buttonVariants'
 
 /**
- * Wave 1 primitive: only the variants the shell needs are ported, but the base
- * classes and primary/secondary styles match the frozen app exactly so the 404
- * buttons are pixel-identical. Wave 2 completes the variant/size set.
+ * Frozen loading markup: `src/components/ui/Button.tsx` lines 100-138/160-188.
+ * The spinner SVG, the sr-only "Loading, please wait" and the "Loading..."
+ * label are identical to the oracle.
  */
-const buttonVariants = cva(
-  'inline-flex max-w-full cursor-pointer items-center justify-center gap-2 whitespace-normal break-words text-center text-sm font-medium transition-all duration-200 active:scale-[0.97] disabled:pointer-events-none disabled:opacity-50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-gold-400/70 focus-visible:ring-offset-2',
-  {
-    variants: {
-      variant: {
-        primary: cn(
-          'rounded-full border border-gold-600/30 bg-gold-500 text-charcoal-900',
-          'shadow-[0_4px_14px_rgba(201,160,92,0.4)]',
-          'hover:bg-gold-600 hover:shadow-[0_8px_25px_rgba(201,160,92,0.5)]'
-        ),
-        secondary: cn(
-          'rounded-full border border-[color:var(--ui-border)] bg-transparent text-[color:var(--ui-accent-strong)]',
-          'hover:border-[color:var(--ui-accent)] hover:bg-[color:var(--ui-surface-elevated)]'
-        ),
-      },
-      size: {
-        sm: 'min-h-9 px-4 py-2 text-[11px] uppercase tracking-[0.15em] sm:text-xs',
-        md: 'min-h-11 px-5 py-3 text-[11px] uppercase tracking-[0.15em] sm:px-6 sm:text-xs',
-        lg: 'min-h-12 px-6 py-3 text-xs uppercase tracking-[0.14em] sm:min-h-14 sm:px-8 sm:text-sm sm:tracking-[0.15em]',
-      },
-    },
-    defaultVariants: {
-      variant: 'primary',
-      size: 'md',
-    },
-  }
-)
-
-type ButtonVariantProps = VariantProps<typeof buttonVariants>
-
-interface ButtonProps extends ButtonHTMLAttributes<HTMLButtonElement>, ButtonVariantProps {
-  children: ReactNode
-}
-
-export function Button({ className, variant, size, children, ...props }: ButtonProps) {
+function ButtonLoadingContent() {
   return (
-    <button className={cn(buttonVariants({ variant, size }), className)} {...props}>
-      {children}
-    </button>
+    <>
+      <span className='sr-only'>Loading, please wait</span>
+      <svg
+        className='animate-spin h-4 w-4'
+        xmlns='http://www.w3.org/2000/svg'
+        fill='none'
+        viewBox='0 0 24 24'
+        aria-hidden='true'
+      >
+        <circle
+          className='opacity-25'
+          cx='12'
+          cy='12'
+          r='10'
+          stroke='currentColor'
+          strokeWidth='4'
+        />
+        <path
+          className='opacity-75'
+          fill='currentColor'
+          d='M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z'
+        />
+      </svg>
+      <span>Loading...</span>
+    </>
   )
 }
 
-interface ButtonLinkProps extends ButtonVariantProps {
-  to: string
-  className?: string
-  children: ReactNode
+export interface ButtonProps extends ButtonHTMLAttributes<HTMLButtonElement>, ButtonVariants {
+  isLoading?: boolean
+  /**
+   * Router-aware link support. The frozen `Button` rendered
+   * `react-router-dom`'s `Link` when `to` was provided; the rebuild renders
+   * TanStack Router's `Link`. Query strings are passed through `search`
+   * (TanStack requirement) instead of embedding them in `to`.
+   */
+  to?: string
+  /** TanStack Router search params used with `to`. */
+  search?: Record<string, unknown>
+  /** Accessible label for icon-only buttons */
+  ariaLabel?: string
+  /** Whether the button controls an expanded section */
+  ariaExpanded?: boolean
+  /** ID of the element this button controls */
+  ariaControls?: string
+  /** Whether this is the current page (for nav buttons) */
+  ariaCurrent?: 'page' | 'step' | 'location' | 'date' | 'time' | true | false
 }
 
-export function ButtonLink({ to, className, variant, size, children }: ButtonLinkProps) {
+/**
+ * Frozen `Button` port (`src/components/ui/Button.tsx`).
+ *
+ * Deliberate deltas (documented in the Wave-2 task report):
+ * - `asChild` is not ported: it relies on `@radix-ui/react-slot`, which is a
+ *   phantom dependency in the frozen app (A2) and is not allowed here. The 10
+ *   frozen `asChild` call sites pass a router link as the child; `ButtonLink`
+ *   / `to` covers exactly that case.
+ * - `Link` comes from TanStack Router instead of react-router-dom.
+ */
+export const Button = forwardRef<HTMLButtonElement, ButtonProps>(
+  (
+    {
+      className,
+      variant,
+      size,
+      isLoading,
+      children,
+      disabled,
+      to,
+      search,
+      ariaLabel,
+      ariaExpanded,
+      ariaControls,
+      ariaCurrent,
+      ...props
+    },
+    ref
+  ) => {
+    // Frozen behavior: a `to` prop renders the router link and ignores button
+    // attributes other than label/current/busy (see the oracle's `to` branch).
+    if (to) {
+      return (
+        <Link
+          to={to}
+          search={search}
+          className={cn(buttonVariants({ variant, size, className }))}
+          aria-label={ariaLabel}
+          aria-current={ariaCurrent}
+          aria-busy={isLoading}
+        >
+          {isLoading ? <ButtonLoadingContent /> : children}
+        </Link>
+      )
+    }
+
+    return (
+      <button
+        className={cn(buttonVariants({ variant, size, className }))}
+        ref={ref}
+        disabled={disabled || isLoading}
+        aria-label={ariaLabel}
+        aria-expanded={ariaExpanded}
+        aria-controls={ariaControls}
+        aria-current={ariaCurrent}
+        aria-busy={isLoading}
+        aria-disabled={disabled || isLoading}
+        {...props}
+      >
+        {isLoading ? <ButtonLoadingContent /> : children}
+      </button>
+    )
+  }
+)
+
+Button.displayName = 'Button'
+
+export interface ButtonLinkProps extends ButtonVariants {
+  to: string
+  /** TanStack Router search params used with `to`. */
+  search?: Record<string, unknown>
+  className?: string
+  children: ReactNode
+  isLoading?: boolean
+  ariaLabel?: string
+  ariaCurrent?: ButtonProps['ariaCurrent']
+}
+
+/**
+ * Rebuild-only convenience wrapper kept from Wave 1 so the shell's
+ * `NotFoundPage` import keeps working unchanged. Renders the frozen `to`
+ * branch of `Button`.
+ */
+export function ButtonLink({
+  to,
+  search,
+  className,
+  variant,
+  size,
+  isLoading,
+  ariaLabel,
+  ariaCurrent,
+  children,
+}: ButtonLinkProps) {
   return (
-    <Link to={to} className={cn(buttonVariants({ variant, size }), className)}>
+    <Button
+      to={to}
+      search={search}
+      variant={variant}
+      size={size}
+      isLoading={isLoading}
+      ariaLabel={ariaLabel}
+      ariaCurrent={ariaCurrent}
+      className={className}
+    >
       {children}
-    </Link>
+    </Button>
   )
 }

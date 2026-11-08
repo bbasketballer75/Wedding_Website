@@ -56,6 +56,7 @@ function normalizeOptions(rawOptions = {}) {
     outDir: path.resolve(rawOptions.outDir ?? DEFAULT_OUT_DIR),
     maxDiffRatio: rawOptions.maxDiffRatio ?? DEFAULT_TOLERANCE.maxDiffRatio,
     pixelThreshold: rawOptions.pixelThreshold ?? DEFAULT_TOLERANCE.pixelThreshold,
+    edgeTolerance: rawOptions.edgeTolerance ?? DEFAULT_TOLERANCE.edgeTolerance,
     wave: rawOptions.wave ?? 1,
     allowlistPath: path.resolve(
       rawOptions.allowlistPath ?? path.join(ROOT, 'contracts', 'parity-allowlist.json')
@@ -177,6 +178,7 @@ async function buildShotResult({
       diffDir: dirs.diffShots,
       key,
       pixelThreshold: options.pixelThreshold,
+      edgeTolerance: options.edgeTolerance,
     })
   } catch (error) {
     result.status = 'error'
@@ -192,6 +194,7 @@ async function buildShotResult({
     totalPixels: pixelDiff.totalPixels,
     ratio: pixelDiff.ratio,
     maxChannelDelta: pixelDiff.maxChannelDelta,
+    edgeTolerance: pixelDiff.edgeTolerance ?? options.edgeTolerance,
     boundingBox: pixelDiff.boundingBox,
     sizeMismatch: pixelDiff.sizeMismatch,
     sliceCountMismatch: pixelDiff.sliceCountMismatch,
@@ -444,6 +447,11 @@ export async function runCompare(rawOptions) {
     tolerance: {
       maxDiffRatio: options.maxDiffRatio,
       pixelThreshold: options.pixelThreshold,
+      edgeTolerance: options.edgeTolerance,
+      edgeToleranceSemantics:
+        options.edgeTolerance > 0
+          ? 'changed pixel accepted when the other image matches within +/-N px under the same colour threshold; opt-in edge-raster phase tolerance'
+          : 'exact per-pixel comparison (default)',
       sizeMismatchAlwaysFails: true,
       textParityRequired: true,
     },

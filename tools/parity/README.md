@@ -31,6 +31,12 @@ node tools/parity/serve.mjs --dir rebuild/dist --port 4175
 
 Exit codes: `0` pass · `1` unexplained diff · `2` harness/config error.
 
+Tolerance defaults to **exact** per-pixel comparison. `--edge-tolerance 1` is an opt-in
+edge-raster tolerance (a changed pixel also counts as matched when the other image matches within
+±1 px under the same colour threshold); it is used only for the mobile 404 shell comparison because
+of `backdrop-filter` raster phase. Semantics, scope and proof that it cannot hide real changes:
+`docs/rebuild/PARITY.md` §2.
+
 ## Modules
 
 | File                 | Responsibility                                                                                                                                                                                                   |
