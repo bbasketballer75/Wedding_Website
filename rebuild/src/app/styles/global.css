@@ -1,0 +1,45 @@
+@import 'tailwindcss';
+
+/*
+ * Wave 1 shell styles.
+ *
+ * The frozen app's design tokens are ported here (W1-2) under the SAME CSS
+ * variable and Tailwind theme names it uses, because shell pixel parity depends
+ * on identical computed styles. Until the full port lands this file carries the
+ * minimum needed to render both themes.
+ */
+
+@theme {
+  --color-cream-50: #fbf8f1;
+  --color-charcoal-900: #17110d;
+}
+
+:root {
+  color-scheme: dark;
+}
+
+.dark-theme {
+  color-scheme: dark;
+  --ui-canvas: #090605;
+  --ui-text: #fff7eb;
+}
+
+.light-theme {
+  color-scheme: light;
+  --ui-canvas: #fbf8f1;
+  --ui-text: #17110d;
+}
+
+html,
+body,
+#root {
+  min-height: 100%;
+}
+
+body {
+  margin: 0;
+  background: var(--ui-canvas);
+  color: var(--ui-text);
+  font-family: 'Instrument Sans', system-ui, sans-serif;
+  -webkit-font-smoothing: antialiased;
+}

@@ -115,9 +115,17 @@ jobs:
         if: steps.scaffold.outputs.exists == 'true'
         run: npm run lint
 
-      - name: Typecheck
+      - name: Format check
+        if: steps.scaffold.outputs.exists == 'true'
+        run: npm run format:check
+
+      - name: Typecheck (TS 7)
         if: steps.scaffold.outputs.exists == 'true'
         run: npm run typecheck
+
+      - name: Typecheck (TS 6 compatibility, typescript-eslint peer)
+        if: steps.scaffold.outputs.exists == 'true'
+        run: npm run typecheck:ts6
 
       - name: Unit tests
         if: steps.scaffold.outputs.exists == 'true'
