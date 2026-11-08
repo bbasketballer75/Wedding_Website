@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest'
-import { pageTitle } from './RootLayout'
+import { pageTitle } from './pageTitle'
 
 describe('pageTitle', () => {
   it('maps every frozen public route to its shell announcement title', () => {

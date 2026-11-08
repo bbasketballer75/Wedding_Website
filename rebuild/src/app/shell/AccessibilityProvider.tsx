@@ -1,26 +1,11 @@
-import {
-  createContext,
-  useCallback,
-  useContext,
-  useMemo,
-  useRef,
-  useState,
-  type ReactNode,
-} from 'react'
-
-type Politeness = 'polite' | 'assertive'
-
-interface AccessibilityContextValue {
-  announce: (message: string, politeness?: Politeness) => void
-  message: string
-  politeness: Politeness
-}
-
-const AccessibilityContext = createContext<AccessibilityContextValue | null>(null)
+import { useCallback, useMemo, useRef, useState, type ReactNode } from 'react'
+import { AccessibilityContext, type Politeness } from './accessibility-context'
 
 /**
  * Screen-reader announcement surface. Wave 1 renders one polite live region;
  * later waves add the full keyboard-shortcut and focus-management contract.
+ * The context/hook live in `./accessibility-context` so this module only
+ * exports a component (react-refresh fast-refresh contract).
  */
 export function AccessibilityProvider({ children }: { children: ReactNode }) {
   const [message, setMessage] = useState('')
@@ -44,12 +29,4 @@ export function AccessibilityProvider({ children }: { children: ReactNode }) {
       </div>
     </AccessibilityContext.Provider>
   )
-}
-
-export function useAccessibility() {
-  const context = useContext(AccessibilityContext)
-  if (!context) {
-    throw new Error('useAccessibility must be used inside AccessibilityProvider')
-  }
-  return context
 }

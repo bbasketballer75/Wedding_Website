@@ -4,33 +4,10 @@ import { AccessibilityProvider } from './AccessibilityProvider'
 import { Footer } from './Footer'
 import { Header } from './Header'
 import { PageTransition } from './PageTransition'
+import { pageTitle } from './pageTitle'
 import { RouteErrorBoundary } from './RouteErrorBoundary'
 import { SkipLink } from './SkipLink'
 import { ThemeProvider } from './ThemeProvider'
-
-const PAGE_TITLES: Record<string, string> = {
-  '/': 'Home',
-  '/film': 'Wedding Film',
-  '/gallery': 'Photo Gallery',
-  '/upload': 'Share Memories',
-  '/guestbook': 'Guestbook',
-  '/guest-photos': 'Guest Memories',
-  '/activity': 'Activity',
-  '/admin/login': 'Admin Login',
-  '/admin': 'Admin Dashboard',
-  '/print': 'Memory Book',
-}
-
-/**
- * Page labels for the main landmark / route announcements. Mirrors the frozen
- * `getPageTitle` in `src/App.tsx`: the titles map is exact-path only, and only
- * guest albums get a prefix rule (so `/admin/albums` intentionally has no label
- * and falls back to "Page content", exactly like the frozen shell).
- */
-export function pageTitle(pathname: string): string | undefined {
-  if (pathname.startsWith('/guest/')) return 'Guest Album'
-  return PAGE_TITLES[pathname]
-}
 
 /**
  * Shell chrome rules mirrored from the frozen app (`src/App.tsx`):

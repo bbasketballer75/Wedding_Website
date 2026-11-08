@@ -1,7 +1,7 @@
 import { motion, useReducedMotion } from 'framer-motion'
 import { Moon, Sun } from 'lucide-react'
 import { cn } from '@/shared/lib/cn'
-import { useTheme } from './ThemeProvider'
+import { useTheme } from './theme-context'
 
 /**
  * Theme switch. Parity port of the frozen `src/components/theme/ThemeToggle.tsx`:

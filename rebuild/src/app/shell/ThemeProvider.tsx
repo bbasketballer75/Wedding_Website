@@ -1,25 +1,14 @@
-import {
-  createContext,
-  useCallback,
-  useContext,
-  useEffect,
-  useMemo,
-  useState,
-  type ReactNode,
-} from 'react'
-import { useAccessibility } from './AccessibilityProvider'
-import { applyTheme, DEFAULT_THEME, readStoredTheme, type ThemeMode } from './theme'
-
-interface ThemeContextValue {
-  theme: ThemeMode
-  setTheme: (theme: ThemeMode) => void
-  toggleTheme: () => void
-}
-
-const ThemeContext = createContext<ThemeContextValue | null>(null)
+import { useCallback, useEffect, useMemo, useState, type ReactNode } from 'react'
+import { useAccessibility } from './accessibility-context'
+import { applyTheme, readStoredTheme, type ThemeMode } from './theme'
+import { ThemeContext } from './theme-context'
 
 const displayName = (theme: ThemeMode) => (theme === 'dark' ? 'Dark' : 'Light')
 
+/**
+ * Theme state + DOM application. The context/hook live in `./theme-context` so
+ * this module only exports a component (react-refresh fast-refresh contract).
+ */
 export function ThemeProvider({ children }: { children: ReactNode }) {
   const [theme, setTheme] = useState<ThemeMode>(() => readStoredTheme(window.localStorage))
   const { announce } = useAccessibility()
@@ -45,11 +34,3 @@ export function ThemeProvider({ children }: { children: ReactNode }) {
 
   return <ThemeContext.Provider value={value}>{children}</ThemeContext.Provider>
 }
-
-export function useTheme(): ThemeContextValue {
-  const context = useContext(ThemeContext)
-  if (!context) throw new Error('useTheme must be used inside ThemeProvider')
-  return context
-}
-
-export { DEFAULT_THEME }
