@@ -49,6 +49,7 @@ jobs:
         uses: actions/checkout@v7
         with:
           fetch-depth: 0 # the legacy-freeze audit diffs against the tag
+          fetch-tags: true
 
       - name: Setup Node 22
         uses: actions/setup-node@v7

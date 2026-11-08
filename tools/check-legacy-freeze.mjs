@@ -79,8 +79,29 @@ if (!tagExists()) {
 
 const changes = []
 
-// Committed changes on the rebuild branch since the freeze point.
-const committed = git(['diff', '--name-status', `${FREEZE_TAG}..HEAD`])
+/**
+ * Compare against the merge base with the base branch, not simply "everything
+ * since the tag".
+ *
+ * main can legitimately move while the rebuild runs (dependabot, hotfixes). A
+ * `tag..HEAD` diff would then blame those upstream legacy changes on this
+ * branch and fail every PR. The three-dot form (`origin/main...HEAD`) diffs
+ * from the merge base, so only changes this branch actually introduced are
+ * audited. Fall back to the tag when there is no origin/main (offline copy).
+ */
+function resolveBaseRef() {
+  try {
+    git(['rev-parse', '--verify', '--quiet', 'origin/main'])
+    return 'origin/main'
+  } catch {
+    return FREEZE_TAG
+  }
+}
+
+const baseRef = resolveBaseRef()
+
+// Committed changes introduced by this branch.
+const committed = git(['diff', '--name-status', `${baseRef}...HEAD`])
   .split('\n')
   .filter(Boolean)
 
@@ -112,6 +133,7 @@ const allowed = changes.filter(change => isAllowed(change.path))
 const payload = {
   ok: violations.length === 0,
   freezeTag: FREEZE_TAG,
+  baseRef,
   changed: changes.length,
   allowed: allowed.map(change => `${change.status} ${change.path}`),
   violations: violations.map(change => `${change.status} ${change.path}`),
@@ -122,7 +144,7 @@ if (JSON_OUTPUT) {
   process.stdout.write(`${JSON.stringify(payload, null, 2)}\n`)
 } else if (violations.length === 0) {
   console.log(
-    `\n> Legacy freeze intact (${changes.length} allowlisted change(s) since ${FREEZE_TAG})`
+    `\n> Legacy freeze intact (${changes.length} allowlisted change(s), branch diff vs ${baseRef})`
   )
   for (const change of allowed) console.log(`  + ${change.status} ${change.path}`)
 } else {
