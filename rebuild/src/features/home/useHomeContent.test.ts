@@ -1,9 +1,22 @@
 import { renderHook } from '@testing-library/react'
-import { describe, expect, it } from 'vitest'
+import { describe, expect, it, vi } from 'vitest'
 import { useHomeContent } from './useHomeContent'
 
-describe('useHomeContent (TODO Wave 3 boundary)', () => {
-  it('returns the deterministic empty state until the data layer is wired', () => {
+const EMPTY_QUERY = {
+  data: undefined,
+  isLoading: false,
+  isError: false,
+  error: null,
+}
+
+vi.mock('@/shared/data/hooks', () => ({
+  useTopPhotos: () => EMPTY_QUERY,
+  useGuestbookMessages: () => EMPTY_QUERY,
+  useEditorialFeatures: () => EMPTY_QUERY,
+}))
+
+describe('useHomeContent (data-layer boundary)', () => {
+  it('maps an empty data layer to the frozen empty state', () => {
     const { result } = renderHook(() => useHomeContent())
 
     expect(result.current).toEqual({

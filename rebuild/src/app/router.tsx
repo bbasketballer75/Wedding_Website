@@ -3,8 +3,8 @@ import { lazy } from 'react'
 import { GuestbookPage } from '@/features/guestbook/GuestbookPage'
 import { validateGallerySearch } from '@/features/gallery/data'
 import { NotFoundPage } from '@/features/not-found/NotFoundPage'
-import { PlaceholderPage } from '@/features/placeholder/PlaceholderPage'
 import { activityApi } from './routes/activity-api'
+import { AdminLoginRoute, AdminRoute } from './routes/admin-route'
 import { guestbookApi } from './routes/guestbook-api'
 import { RootLayout } from './shell/RootLayout'
 
@@ -13,8 +13,12 @@ import { RootLayout } from './shell/RootLayout'
  * initial JS ≤180 KB gz). Each feature chunk loads on navigation; the shell and
  * 404 stay eager so the first paint never waits on data.
  */
-const HomePage = lazy(() => import('@/features/home').then(module => ({ default: module.HomePage })))
-const FilmPage = lazy(() => import('@/features/film').then(module => ({ default: module.FilmPage })))
+const HomePage = lazy(() =>
+  import('@/features/home').then(module => ({ default: module.HomePage }))
+)
+const FilmPage = lazy(() =>
+  import('@/features/film').then(module => ({ default: module.FilmPage }))
+)
 const GalleryPage = lazy(() =>
   import('@/features/gallery/GalleryPage').then(module => ({ default: module.GalleryPage }))
 )
@@ -101,19 +105,19 @@ const activityRoute = createRoute({
 const adminLoginRoute = createRoute({
   getParentRoute: () => rootRoute,
   path: '/admin/login',
-  component: () => <PlaceholderPage title='Admin Login' />,
+  component: AdminLoginRoute,
 })
 
 const adminRoute = createRoute({
   getParentRoute: () => rootRoute,
   path: '/admin',
-  component: () => <PlaceholderPage title='Admin Dashboard' />,
+  component: AdminRoute,
 })
 
 const adminSplatRoute = createRoute({
   getParentRoute: () => rootRoute,
   path: '/admin/$',
-  component: () => <PlaceholderPage title='Admin Dashboard' />,
+  component: AdminRoute,
 })
 
 const guestTokenRoute = createRoute({

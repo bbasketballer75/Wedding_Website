@@ -7,13 +7,27 @@
  */
 import { z } from 'zod'
 
+/**
+ * Blank values are treated as absent: the frozen app (and Netlify/CI env panels)
+ * routinely leave optional variables defined-but-empty, and an empty string must
+ * not fail URL validation.
+ */
+const blankToUndefined = (value: unknown) =>
+  typeof value === 'string' && value.trim() === '' ? undefined : value
+
+const optionalUrl = z.preprocess(blankToUndefined, z.string().url().optional())
+const optionalString = z.preprocess(blankToUndefined, z.string().min(1).optional())
+
 export const envSchema = z.object({
   VITE_SUPABASE_URL: z.string().url('VITE_SUPABASE_URL must be a valid URL'),
   VITE_SUPABASE_ANON_KEY: z.string().min(1, 'VITE_SUPABASE_ANON_KEY is required'),
-  VITE_SITE_URL: z.string().url().default('https://www.theporadas.com'),
-  VITE_MEDIA_BASE_URL: z.string().url().optional(),
-  VITE_SENTRY_DSN: z.string().url().optional(),
-  VITE_GA_ID: z.string().min(1).optional(),
+  VITE_SITE_URL: z.preprocess(
+    blankToUndefined,
+    z.string().url().default('https://www.theporadas.com')
+  ),
+  VITE_MEDIA_BASE_URL: optionalUrl,
+  VITE_SENTRY_DSN: optionalUrl,
+  VITE_GA_ID: optionalString,
 })
 
 export type AppEnv = z.infer<typeof envSchema>

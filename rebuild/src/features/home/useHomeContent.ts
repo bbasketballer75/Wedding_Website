@@ -8,11 +8,7 @@
  * `shared/data/hooks`; this module only shapes the view state.
  */
 import { useMemo } from 'react'
-import {
-  useEditorialFeatures,
-  useGuestbookMessages,
-  useTopPhotos,
-} from '@/shared/data/hooks'
+import { useEditorialFeatures, useGuestbookMessages, useTopPhotos } from '@/shared/data/hooks'
 
 export interface HomeEditorialFeature {
   title: string

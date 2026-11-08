@@ -12,6 +12,14 @@ export default defineConfig({
   test: {
     environment: 'jsdom',
     setupFiles: ['./tests/setup.ts'],
+    env: {
+      // Deterministic public env for tests; the media resolver test asserts the
+      // no-CDN same-origin behavior, so the CDN base must stay unset.
+      VITE_SUPABASE_URL: 'https://placeholder.supabase.co',
+      VITE_SUPABASE_ANON_KEY: 'ci-placeholder-anon-key',
+      VITE_SITE_URL: 'https://www.theporadas.com',
+      VITE_MEDIA_BASE_URL: '',
+    },
     include: ['src/**/*.test.{ts,tsx}', 'tests/unit/**/*.test.{ts,tsx}'],
     exclude: ['node_modules', 'dist', 'coverage'],
     coverage: {

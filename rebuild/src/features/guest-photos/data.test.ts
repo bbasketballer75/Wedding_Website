@@ -95,7 +95,7 @@ describe('useGuestPhotosData', () => {
     expect(result.current.uploads).toHaveLength(0)
 
     act(() => result.current.reload())
-    await waitFor(() => expect(result.current.error).toBeNull())
-    expect(result.current.uploads).toHaveLength(2)
+    await waitFor(() => expect(result.current.uploads).toHaveLength(2))
+    expect(result.current.error).toBeNull()
   })
 })

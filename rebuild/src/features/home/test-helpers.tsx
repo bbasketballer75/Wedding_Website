@@ -1,3 +1,4 @@
+import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
 import {
   createMemoryHistory,
   createRootRoute,
@@ -58,11 +59,19 @@ export function installMotionStubs() {
 }
 
 export async function renderHomeUi(ui: ReactNode, initialPath = '/') {
+  // Home's data sections read the typed data layer through TanStack Query
+  // (Wave 3 wiring). Tests mount a provider with retries disabled so static
+  // sections render deterministically; data sections stay in their empty state.
+  const queryClient = new QueryClient({
+    defaultOptions: { queries: { retry: false, staleTime: Infinity } },
+  })
   const rootRoute = createRootRoute({
     component: () => (
-      <AccessibilityProvider>
-        <ThemeProvider>{ui}</ThemeProvider>
-      </AccessibilityProvider>
+      <QueryClientProvider client={queryClient}>
+        <AccessibilityProvider>
+          <ThemeProvider>{ui}</ThemeProvider>
+        </AccessibilityProvider>
+      </QueryClientProvider>
     ),
   })
   const childRoutes = HOME_ROUTE_PATHS.map(path =>
