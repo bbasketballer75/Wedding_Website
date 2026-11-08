@@ -127,9 +127,9 @@ jobs:
         if: steps.scaffold.outputs.exists == 'true'
         run: npm run typecheck:ts6
 
-      - name: Unit tests
+      - name: Unit tests + coverage thresholds
         if: steps.scaffold.outputs.exists == 'true'
-        run: npm run test:run
+        run: npm run test:coverage
 
       - name: Build
         if: steps.scaffold.outputs.exists == 'true'
