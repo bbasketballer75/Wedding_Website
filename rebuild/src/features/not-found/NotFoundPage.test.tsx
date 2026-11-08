@@ -18,6 +18,13 @@ function renderNotFound() {
   return { router }
 }
 
+async function renderFrozenNotFound() {
+  const { router } = renderNotFound()
+  await router.load()
+  render(<RouterProvider router={router} />)
+  await screen.findByRole('heading', { level: 1, name: '404' })
+}
+
 describe('NotFoundPage', () => {
   it('renders the frozen copy and returns to the archive', async () => {
     const { router } = renderNotFound()
@@ -42,5 +49,25 @@ describe('NotFoundPage', () => {
     expect(document.querySelector('link[rel="canonical"]')?.getAttribute('href')).toBe(
       'https://www.theporadas.com/404'
     )
+    // Frozen NotFoundSEO uses DEFAULT_SOCIAL_IMAGE, not the index.html default.
+    expect(document.querySelector('meta[property="og:image"]')?.getAttribute('content')).toBe(
+      'https://www.theporadas.com/images/home/intro-video-poster.png'
+    )
+  })
+
+  it('keeps the frozen button order, decoration and heading levels', async () => {
+    await renderFrozenNotFound()
+
+    const buttons = screen.getAllByRole('button')
+    expect(buttons).toHaveLength(1)
+    expect(buttons[0]).toHaveTextContent('Go Back')
+
+    const links = screen.getAllByRole('link')
+    expect(links).toHaveLength(1)
+    expect(links[0]).toHaveTextContent('Back to Home')
+    expect(links[0]).toHaveAttribute('href', '/')
+
+    const dots = document.querySelectorAll('.bg-gold-400')
+    expect(dots).toHaveLength(3)
   })
 })

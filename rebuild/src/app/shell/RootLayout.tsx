@@ -21,21 +21,28 @@ const PAGE_TITLES: Record<string, string> = {
   '/print': 'Memory Book',
 }
 
-export function pageTitle(pathname: string): string {
+/**
+ * Page labels for the main landmark / route announcements. Mirrors the frozen
+ * `getPageTitle` in `src/App.tsx`: the titles map is exact-path only, and only
+ * guest albums get a prefix rule (so `/admin/albums` intentionally has no label
+ * and falls back to "Page content", exactly like the frozen shell).
+ */
+export function pageTitle(pathname: string): string | undefined {
   if (pathname.startsWith('/guest/')) return 'Guest Album'
-  if (pathname.startsWith('/admin')) return PAGE_TITLES['/admin'] ?? 'Admin Dashboard'
-  return PAGE_TITLES[pathname] ?? 'Page Not Found'
+  return PAGE_TITLES[pathname]
 }
 
 /**
  * Shell chrome rules mirrored from the frozen app (`src/App.tsx`):
- * header hidden on `/`, `/print` and admin; footer hidden on `/print` and admin.
+ * header hidden on `/`, `/print` and admin-login/admin children; footer hidden
+ * on `/print` and admin-login/admin children (`/admin` itself renders both in
+ * the frozen app, so it does here too).
  */
 export function RootLayout() {
   const pathname = useRouterState({ select: state => state.location.pathname })
   const isHome = pathname === '/'
   const isPrint = pathname === '/print'
-  const isAdmin = pathname === '/admin' || pathname.startsWith('/admin/')
+  const isAdmin = pathname === '/admin/login' || pathname.startsWith('/admin/')
 
   return (
     <AccessibilityProvider>
@@ -48,7 +55,7 @@ export function RootLayout() {
             <main
               id='main-content'
               role='main'
-              aria-label={pageTitle(pathname)}
+              aria-label={pageTitle(pathname) ?? 'Page content'}
               tabIndex={-1}
               className='outline-none'
             >

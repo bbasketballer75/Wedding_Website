@@ -7,7 +7,7 @@ import { useEffect } from 'react'
  */
 const SITE_NAME = "Austin & Jordyn's Wedding"
 const DEFAULT_SITE_URL = 'https://www.theporadas.com'
-const DEFAULT_SOCIAL_IMAGE = '/images/og-image.webp'
+const DEFAULT_SOCIAL_IMAGE = '/images/home/intro-video-poster.png'
 
 function upsertMeta(name: string, content: string, property = false): void {
   const selector = property ? `meta[property="${name}"]` : `meta[name="${name}"]`
@@ -50,7 +50,14 @@ export function usePageMeta({
     upsertMeta('robots', noIndex ? 'noindex, nofollow' : 'index, follow')
     upsertMeta('og:title', fullTitle, true)
     upsertMeta('og:description', description, true)
+    upsertMeta('og:type', 'website', true)
+    upsertMeta('og:url', fullCanonical ?? window.location.href, true)
     upsertMeta('og:image', fullImageUrl, true)
+    upsertMeta('og:image:width', '1200', true)
+    upsertMeta('og:image:height', '630', true)
+    upsertMeta('og:site_name', SITE_NAME, true)
+    upsertMeta('og:locale', 'en_US', true)
+    upsertMeta('twitter:card', 'summary_large_image')
     upsertMeta('twitter:title', fullTitle)
     upsertMeta('twitter:description', description)
     upsertMeta('twitter:image', fullImageUrl)

@@ -25,12 +25,12 @@ export default defineConfig({
         'src/vite-env.d.ts',
       ],
       thresholds: {
-        // Wave 1 scaffold floor. Ratchet to the QUALITY_BAR target (80/80/75/80)
-        // by Wave 3, when the data layer and feature tests exist.
-        lines: 50,
-        statements: 50,
-        functions: 40,
-        branches: 40,
+        // QUALITY_BAR floor (80/80/75/80). Wave 1 measured 88.8/88.8/79.8/91.4,
+        // so the real bar is enforced from the first wave onwards.
+        lines: 80,
+        statements: 80,
+        functions: 80,
+        branches: 75,
       },
     },
   },

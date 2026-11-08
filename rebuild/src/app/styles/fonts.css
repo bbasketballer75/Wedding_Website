@@ -1,0 +1,25 @@
+/*
+ * Web fonts.
+ *
+ * Ported verbatim from the frozen app's `src/index.css` lines 1-11 (git tag
+ * `legacy-freeze-2026-11-08`): the same three `@fontsource` families, the same
+ * latin subsets and the same weights the oracle loads. The @font-face rules
+ * declare the family names referenced by `--font-display` / `--font-body` /
+ * `--font-script` in `./tokens.css`, so the parity harness measures identical
+ * glyph metrics on both builds.
+ *
+ * Cormorant Garamond: 400 / 400i / 500 / 500i / 600 / 700
+ * Instrument Sans:    400 / 500 / 600 / 700
+ * Pinyon Script:      400
+ */
+@import '@fontsource/instrument-sans/latin-400.css';
+@import '@fontsource/instrument-sans/latin-500.css';
+@import '@fontsource/instrument-sans/latin-600.css';
+@import '@fontsource/instrument-sans/latin-700.css';
+@import '@fontsource/cormorant-garamond/latin-400.css';
+@import '@fontsource/cormorant-garamond/latin-400-italic.css';
+@import '@fontsource/cormorant-garamond/latin-500.css';
+@import '@fontsource/cormorant-garamond/latin-500-italic.css';
+@import '@fontsource/cormorant-garamond/latin-600.css';
+@import '@fontsource/cormorant-garamond/latin-700.css';
+@import '@fontsource/pinyon-script/latin.css';
