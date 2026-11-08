@@ -60,6 +60,9 @@ sweep · viewport-slice capture at deterministic scroll offsets. Full rationale 
 
 - **New route**: add it to `contracts/routes.json` (contracts-eng owns that file) with `parity`,
   `matrix` and `themes`; nothing else needed unless it needs `:token` (fixtures) or admin auth.
+- **Non-navigable contract path**: add a representative URL to `ROUTE_PATH_OVERRIDES` in
+  `config.mjs` (e.g. `not-found` → `/people`, the frozen SPA's retired route that renders the 404
+  shell). Overrides are recorded in `summary.json.contracts.routes.capturePathOverrides`.
 - **New fixture/endpoint**: extend `contracts/fixtures/*.json` and map it in
   `mocks/index.mjs` (`supabasePublicResponse` / `supabaseAdminResponse`).
 - **Time-driven widget**: prefer fixing determinism; if genuinely impossible, add a selector to

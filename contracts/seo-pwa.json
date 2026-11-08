@@ -7,7 +7,7 @@
       "description": "Join us in celebrating the wedding of Austin and Jordyn. View our story, photos, and share your memories.",
       "canonicalPath": "/",
       "ogImage": "https://www.theporadas.com/images/home/intro-video-poster.png",
-      "robots": "index,follow"
+      "robots": "index, follow"
     },
     {
       "id": "film",
@@ -15,7 +15,7 @@
       "description": "Watch the full wedding film for Austin and Jordyn, from getting ready through the last dance.",
       "canonicalPath": "/film",
       "ogImage": "https://www.theporadas.com/images/film/main-film-poster.png",
-      "robots": "index,follow"
+      "robots": "index, follow"
     },
     {
       "id": "gallery",
@@ -23,7 +23,7 @@
       "description": "Browse our wedding photos and share your own. A collection of memories from our special day.",
       "canonicalPath": "/gallery",
       "ogImage": "https://www.theporadas.com/images/home/intro-video-poster.png",
-      "robots": "index,follow"
+      "robots": "index, follow"
     },
     {
       "id": "guestbook",
@@ -31,7 +31,7 @@
       "description": "Leave a message for Austin and Jordyn. Share your favorite memories from our wedding day.",
       "canonicalPath": "/guestbook",
       "ogImage": "https://www.theporadas.com/images/home/intro-video-poster.png",
-      "robots": "index,follow"
+      "robots": "index, follow"
     },
     {
       "id": "upload",
@@ -39,7 +39,7 @@
       "description": "Share the wedding site, upload your photos and videos, and help Austin and Jordyn keep the day alive from every angle.",
       "canonicalPath": "/upload",
       "ogImage": "https://www.theporadas.com/images/home/intro-video-poster.png",
-      "robots": "index,follow"
+      "robots": "index, follow"
     },
     {
       "id": "guest-photos",
@@ -47,7 +47,7 @@
       "description": "Browse the photos and notes shared by family and friends from Austin and Jordyn Porada wedding celebrations.",
       "canonicalPath": "/guest-photos",
       "ogImage": "https://www.theporadas.com/images/home/intro-video-poster.png",
-      "robots": "index,follow"
+      "robots": "index, follow"
     },
     {
       "id": "print",
@@ -55,21 +55,21 @@
       "description": "Print a photo book or guestbook keepsake from Austin & Jordyn's wedding archive.",
       "canonicalPath": "/print",
       "ogImage": "https://www.theporadas.com/images/home/intro-video-poster.png",
-      "robots": "noindex,nofollow"
+      "robots": "noindex, nofollow"
     },
     {
       "id": "admin-login",
       "title": "Admin Login | Austin & Jordyn's Wedding",
       "description": "Secure admin access for the Austin and Jordyn wedding site.",
       "canonicalPath": "/admin/login",
-      "robots": "noindex,nofollow"
+      "robots": "noindex, nofollow"
     },
     {
       "id": "guest-token",
       "title": "<guest name>'s Album | Austin & Jordyn's Wedding",
       "description": "Explore the photo uploads, photo claims, and handwritten guestbook notes contributed by <guest name> to our wedding archive.",
       "canonicalPath": "/guest/:token",
-      "robots": "noindex,nofollow"
+      "robots": "noindex, nofollow"
     },
     {
       "id": "not-found",
@@ -77,7 +77,7 @@
       "description": "This page could not be found.",
       "canonicalPath": "/404",
       "ogImage": "https://www.theporadas.com/images/home/intro-video-poster.png",
-      "robots": "noindex,nofollow"
+      "robots": "noindex, nofollow"
     }
   ],
   "sitemap": [

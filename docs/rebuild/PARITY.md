@@ -165,6 +165,50 @@ node tools/parity/report.mjs --out tools/parity/output/wave-3
 Exit codes: `0` pass, `1` unexplained diff (or a failed self-check), `2` harness/config error
 (unreachable URL, invalid contract/allowlist, missing browser, capture exception).
 
+### Wave 1 — 404 shell parity (`/people`)
+
+`contracts/routes.json` declares the SPA catch-all as path `/*`, which is not a navigable URL.
+`tools/parity/config.mjs` therefore owns `ROUTE_PATH_OVERRIDES`: the `not-found` route id is
+captured at **`/people`**, the frozen app's retired face-recognition route. The SPA fallback serves
+the shared shell and the router renders the NotFound view (noindex, nofollow, canonical `/404`) —
+the same behaviour `tests/e2e/seo.spec.ts` and `smoke.spec.ts` assert. Overrides are applied by
+route id before `:token`/`*` substitution and are recorded in
+`summary.json.contracts.routes.capturePathOverrides`, so a summary always shows the URL actually
+captured. New non-navigable contract routes belong in that map — never hardcoded in `capture.mjs`.
+
+Wave 1's first parity target is that 404 shell. The rebuild build/serve steps (ports are
+Lead-owned; the frozen oracle stays on 4174, the greenfield preview is 5175):
+
+```bash
+# Greenfield build + static preview (Lead-owned port; do not replace the oracle on 4174)
+cd rebuild && npm install && npm run build && cd ..
+node tools/parity/serve.mjs --dir rebuild/dist --port 5175
+
+# 404 shell parity — contract route id "not-found" is captured at /people
+node tools/parity/compare.mjs \
+  --legacy-url http://127.0.0.1:4174 \
+  --rebuild-url http://127.0.0.1:5175 \
+  --routes not-found --matrix desktop,mobile --themes dark,light \
+  --out tools/parity/output/w1-404
+
+# Harness plumbing proof: two independent servers, same frozen build, 0 expected diff
+node tools/parity/serve.mjs --dir dist --port 4176
+node tools/parity/compare.mjs \
+  --legacy-url http://127.0.0.1:4174 --rebuild-url http://127.0.0.1:4176 \
+  --routes not-found --matrix desktop,mobile --themes dark,light \
+  --out tools/parity/output/w1-404-plumbing
+
+# Wiring self-proof (legacy vs legacy, oracle compared with itself)
+node tools/parity/compare.mjs \
+  --legacy-url http://127.0.0.1:4174 --rebuild-url http://127.0.0.1:4174 \
+  --routes not-found --matrix desktop,mobile --themes dark,light \
+  --out tools/parity/output/w1-404-selfcheck
+```
+
+Expected for all three: 4 shots, `0` changed pixels, `0` text diffs, exit code 0. Until the shell
+is declared ready by the Lead, do **not** run the legacy-vs-rebuild 5175 comparison; the two
+self-proof commands above are the Wave-1 gate.
+
 Outputs under `--out` (default `tools/parity/output`, gitignored):
 
 ```

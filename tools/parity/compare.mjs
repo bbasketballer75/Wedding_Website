@@ -15,6 +15,7 @@ import {
   announceWarnings,
   loadRoutesContract,
   loadUiContract,
+  capturePathOverrides,
   maskSelectorsFor,
   parseCompareArgs,
   probeUrl,
@@ -425,6 +426,7 @@ export async function runCompare(rawOptions) {
         source: routesContract.source,
         file: routesContract.file,
         count: routesContract.routes.length,
+        capturePathOverrides: capturePathOverrides(selection.routes),
       },
     },
     selection: {

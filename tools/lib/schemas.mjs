@@ -92,11 +92,11 @@ export const seoPwaContractSchema = z.object({
         canonicalPath: nonEmpty,
         ogImage: z.string().optional(),
         /**
-         * Rendered robots meta content. Present only where the frozen app sets
-         * it explicitly (SEOHead `noIndex`); an absent value means the static
-         * index.html default (`index, follow`) applies.
+         * Rendered robots meta content, verbatim from the frozen app's
+         * SEOHead (`noIndex ? 'noindex, nofollow' : 'index, follow'`).
+         * An absent value means the static index.html default applies.
          */
-        robots: z.enum(['index,follow', 'noindex,nofollow']).optional(),
+        robots: z.enum(['index, follow', 'noindex, nofollow']).optional(),
       })
     )
     .min(1),

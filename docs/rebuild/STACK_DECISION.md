@@ -1,8 +1,8 @@
 # Stack Decision — recommendation for owner approval
 
-**Status:** provisional (Wave 0 checkpoint). The detailed analysis, scoring, and evidence live in
-[audit/A7-stack-decision.md](./audit/A7-stack-decision.md); this page is the decision you are being
-asked to approve.
+**Status: APPROVED by the owner on 2026-11-08 — S1 (Vite + React 19 SPA).** Wave 1 (scaffold +
+shell) is in progress on `rebuild/greenfield` under [`plans/2026-11-08-wave-1-scaffold.md`](./plans/2026-11-08-wave-1-scaffold.md).
+The analysis, scoring, and evidence live in [audit/A7-stack-decision.md](./audit/A7-stack-decision.md).
 
 ## Recommendation
 

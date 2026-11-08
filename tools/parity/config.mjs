@@ -76,6 +76,26 @@ export const ROUTE_MASKS = {
   // 'home': ['.live-clock'],
 }
 
+/**
+ * Captured-URL overrides for contract route ids whose contract `path` is not a
+ * navigable URL.
+ *
+ * `contracts/routes.json` describes the SPA catch-all as `/*` (it is not a URL
+ * you can request, and it deliberately has no dedicated `/404` route). The
+ * harness therefore captures a *representative* unmatched URL instead:
+ *
+ *   not-found → /people
+ *
+ * `/people` is the frozen app's retired face-recognition route: the SPA fallback
+ * serves the shared shell and the router renders the NotFound view (noindex,
+ * nofollow, canonical /404) while tests/e2e/seo.spec.ts and smoke.spec.ts assert
+ * exactly that 404 behaviour. Any future non-navigable contract route id gets
+ * its representative URL here — never hardcoded inside capture.mjs.
+ */
+export const ROUTE_PATH_OVERRIDES = {
+  'not-found': '/people',
+}
+
 export const FALLBACK_UI = {
   themes: ['dark', 'light'],
   defaultTheme: 'dark',
@@ -231,8 +251,24 @@ export async function loadRoutesContract({ root = ROOT } = {}) {
   return { source: 'contracts/routes.json', file, warnings: [], routes }
 }
 
-/** Substitute dynamic segments in a contract route path. */
+/**
+ * Resolve the URL path a contract route is captured at.
+ *
+ * Precedence:
+ *  1. ROUTE_PATH_OVERRIDES[route.id] — representative URL for a non-navigable
+ *     contract path (e.g. `not-found` → `/people`);
+ *  2. the contract path itself, with `:token` and `*` substituted.
+ */
 export function resolveRoutePath(route, { guestToken } = {}) {
+  const override = ROUTE_PATH_OVERRIDES[route.id]
+  if (override) {
+    let overridden = override
+    if (overridden.includes(':token')) {
+      if (!guestToken) fail(`route "${route.id}" needs a guest token fixture but none is available`)
+      overridden = overridden.replace(':token', encodeURIComponent(guestToken))
+    }
+    return overridden
+  }
   let routePath = route.path
   if (routePath.includes(':token')) {
     if (!guestToken) fail(`route "${route.id}" needs a guest token fixture but none is available`)
@@ -240,6 +276,16 @@ export function resolveRoutePath(route, { guestToken } = {}) {
   }
   if (routePath.includes('*')) routePath = routePath.replace('*', '__parity-missing__')
   return routePath
+}
+
+/** Report which selected routes use a capture-path override (goes in summary.json). */
+export function capturePathOverrides(routes) {
+  const applied = {}
+  for (const route of routes) {
+    const override = ROUTE_PATH_OVERRIDES[route.id]
+    if (override) applied[route.id] = { contractPath: route.path, capturePath: override }
+  }
+  return applied
 }
 
 function resolveViewports(ui, matrix) {
