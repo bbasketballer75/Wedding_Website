@@ -1,4 +1,4 @@
-import { Link } from '@tanstack/react-router'
+import { Link, type LinkProps } from '@tanstack/react-router'
 import { forwardRef, type ButtonHTMLAttributes, type ReactNode } from 'react'
 import { cn } from '@/shared/lib/cn'
 import { buttonVariants, type ButtonVariants } from './buttonVariants'
@@ -91,10 +91,13 @@ export const Button = forwardRef<HTMLButtonElement, ButtonProps>(
     // Frozen behavior: a `to` prop renders the router link and ignores button
     // attributes other than label/current/busy (see the oracle's `to` branch).
     if (to) {
+      // The public Button API accepts arbitrary paths/query objects (the frozen
+      // app did too). Route-level safety comes from the typed router call sites;
+      // this boundary casts once instead of leaking TanStack Link generics.
+      const linkTarget = { to, search } as unknown as LinkProps
       return (
         <Link
-          to={to}
-          search={search}
+          {...linkTarget}
           className={cn(buttonVariants({ variant, size, className }))}
           aria-label={ariaLabel}
           aria-current={ariaCurrent}

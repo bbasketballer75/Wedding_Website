@@ -1,4 +1,6 @@
 import { Outlet, useRouterState } from '@tanstack/react-router'
+import { Suspense } from 'react'
+import { PageLoader } from '@/shared/ui/PageLoader'
 import { QueryProvider } from '../providers/QueryProvider'
 import { AccessibilityProvider } from './AccessibilityProvider'
 import { Footer } from './Footer'
@@ -38,7 +40,9 @@ export function RootLayout() {
             >
               <RouteErrorBoundary>
                 <PageTransition>
-                  <Outlet />
+                  <Suspense fallback={<PageLoader />}>
+                    <Outlet />
+                  </Suspense>
                 </PageTransition>
               </RouteErrorBoundary>
             </main>
