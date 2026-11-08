@@ -29,7 +29,36 @@ export default [
       'netlify/**',
       '.minimax/**',
       '.claude/**',
+      // Refactor workbench: generated contracts, the greenfield app (own lint
+      // config once scaffolded), and harness output are not legacy lint targets.
+      'rebuild/**',
+      'contracts/**',
+      'tools/parity/output/**',
     ],
+  },
+  // Refactor workbench tooling (plain Node ESM at tools/**/*.mjs).
+  //
+  // These scripts are not part of the shipped app but they ARE linted so they
+  // stay consistent with the repo's style rules. They run in Node and their
+  // page.evaluate() callbacks reference browser globals, so both global sets
+  // are declared here.
+  {
+    files: ['tools/**/*.mjs'],
+    ...js.configs.recommended,
+    languageOptions: {
+      ecmaVersion: 'latest',
+      sourceType: 'module',
+      globals: { ...globals.node, ...globals.browser },
+    },
+    rules: {
+      ...prettierConfig.rules,
+      'no-unused-vars': ['error', { argsIgnorePattern: '^_', varsIgnorePattern: '^_' }],
+      'prefer-const': 'error',
+      'no-var': 'error',
+      'object-shorthand': 'error',
+      'prefer-arrow-callback': 'error',
+      'prefer-template': 'error',
+    },
   },
   // JavaScript/JSX files
   {

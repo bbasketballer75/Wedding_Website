@@ -17,6 +17,13 @@ dist/stats.html
 # Archived generated planning exports
 docs/archive/planning-systems-2025
 
+# Refactor workbench generated artifacts (regenerate with npm run workbench:*)
+contracts/schema/
+contracts/baseline/
+contracts/content/rendered/
+tools/parity/output/
+rebuild/
+
 # Logs
 *.log
 npm-debug.log*

@@ -1,0 +1,219 @@
+name: Rebuild Workbench
+
+# Independent of the legacy PR CI gate (.github/workflows/ci.yml), which stays
+# untouched and remains the required main-branch check. This workflow gates the
+# greenfield workbench: contracts, tooling, baseline/parity artifacts, and (once
+# the stack gate is approved and rebuild/ exists) the new app itself.
+
+on:
+  pull_request:
+    branches: [main, rebuild/greenfield]
+    paths:
+      - 'contracts/**'
+      - 'tools/**'
+      - 'docs/rebuild/**'
+      - 'rebuild/**'
+      - '.github/workflows/rebuild.yml'
+  push:
+    branches: [rebuild/greenfield]
+  schedule:
+    # Nightly parity run against the frozen oracle (both sides built in the same
+    # job on the same OS). Off by default until the harness lands; the job
+    # tolerates a missing harness so the schedule does not page anyone early.
+    - cron: '17 7 * * *'
+  workflow_dispatch:
+    inputs:
+      parity:
+        description: 'Run the parity comparison job'
+        type: boolean
+        default: false
+
+concurrency:
+  group: rebuild-workbench-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  workbench:
+    name: Workbench (contracts, lint, format)
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    permissions:
+      contents: read
+    env:
+      VITE_SUPABASE_URL: https://placeholder.supabase.co
+      VITE_SUPABASE_ANON_KEY: ci-placeholder-anon-key
+      VITE_SITE_URL: https://www.theporadas.com
+      FREEZE_TAG: legacy-freeze-2026-11-08
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v7
+        with:
+          fetch-depth: 0 # the legacy-freeze audit diffs against the tag
+
+      - name: Setup Node 22
+        uses: actions/setup-node@v7
+        with:
+          node-version: '22'
+          cache: 'npm'
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Legacy gate (unchanged baseline)
+        run: |
+          npm run lint
+          npm run format:check
+          npx tsc --noEmit
+
+      - name: Contracts
+        run: npm run workbench:verify
+
+      - name: Legacy freeze intact
+        run: node tools/check-legacy-freeze.mjs
+
+  rebuild:
+    name: Greenfield app (lint, typecheck, test, build)
+    # hashFiles() is not available in job-level conditions. The job always
+    # starts and every real step is gated on the scaffold check below, so a
+    # missing rebuild/ is a green "not scaffolded yet" run, not a failure.
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    permissions:
+      contents: read
+    defaults:
+      run:
+        working-directory: rebuild
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v7
+
+      - name: Detect greenfield scaffold
+        id: scaffold
+        working-directory: .
+        run: |
+          if [ -f rebuild/package.json ]; then
+            echo "exists=true" >> "$GITHUB_OUTPUT"
+          else
+            echo "exists=false" >> "$GITHUB_OUTPUT"
+            echo "rebuild/ is not scaffolded yet (stack gate pending) — skipping."
+          fi
+
+      - name: Setup Node 22
+        if: steps.scaffold.outputs.exists == 'true'
+        uses: actions/setup-node@v7
+        with:
+          node-version: '22'
+          cache: npm
+          cache-dependency-path: rebuild/package-lock.json
+
+      - name: Install dependencies
+        if: steps.scaffold.outputs.exists == 'true'
+        run: npm ci
+
+      - name: Lint
+        if: steps.scaffold.outputs.exists == 'true'
+        run: npm run lint
+
+      - name: Typecheck
+        if: steps.scaffold.outputs.exists == 'true'
+        run: npm run typecheck
+
+      - name: Unit tests
+        if: steps.scaffold.outputs.exists == 'true'
+        run: npm run test:run
+
+      - name: Build
+        if: steps.scaffold.outputs.exists == 'true'
+        run: npm run build
+
+  parity:
+    name: Parity (legacy vs rebuild)
+    # Heavy (~10 min, two production builds). Runs nightly, on manual dispatch,
+    # or when the PR carries the `run-parity` label.
+    if: >
+      github.event_name == 'schedule' ||
+      github.event_name == 'workflow_dispatch' ||
+      contains(github.event.pull_request.labels.*.name, 'run-parity')
+    runs-on: ubuntu-latest
+    timeout-minutes: 45
+    permissions:
+      contents: read
+    env:
+      VITE_SUPABASE_URL: https://placeholder.supabase.co
+      VITE_SUPABASE_ANON_KEY: ci-placeholder-anon-key
+      VITE_MEDIA_BASE_URL: https://media.wedding.theporadas.com
+      VITE_SITE_URL: https://www.theporadas.com
+      FREEZE_TAG: legacy-freeze-2026-11-08
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v7
+        with:
+          fetch-depth: 0
+
+      - name: Setup Node 22
+        uses: actions/setup-node@v7
+        with:
+          node-version: '22'
+          cache: 'npm'
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Install Playwright Chromium
+        run: npx playwright install --with-deps chromium
+
+      - name: Guard — harness must exist before servers start
+        id: harness
+        run: |
+          if [ -f tools/parity/compare.mjs ]; then
+            echo "ready=true" >> "$GITHUB_OUTPUT"
+          else
+            echo "ready=false" >> "$GITHUB_OUTPUT"
+            echo "Parity harness not generated yet — skipping comparison."
+          fi
+
+      - name: Build frozen legacy app
+        if: steps.harness.outputs.ready == 'true'
+        run: npm run build
+
+      - name: Serve legacy preview
+        if: steps.harness.outputs.ready == 'true'
+        run: |
+          npx serve -s dist -l 4174 &
+          npx wait-on http://127.0.0.1:4174 --timeout 120000
+
+      - name: Build greenfield app
+        if: steps.harness.outputs.ready == 'true' && hashFiles('rebuild/package.json') != ''
+        working-directory: rebuild
+        run: npm ci && npm run build
+
+      - name: Serve greenfield preview
+        if: steps.harness.outputs.ready == 'true' && hashFiles('rebuild/package.json') != ''
+        run: |
+          npx serve -s rebuild/dist -l 4175 &
+          npx wait-on http://127.0.0.1:4175 --timeout 120000
+
+      - name: Compare legacy vs rebuild
+        if: steps.harness.outputs.ready == 'true' && hashFiles('rebuild/package.json') != ''
+        run: |
+          node tools/parity/compare.mjs \
+            --legacy-url http://127.0.0.1:4174 \
+            --rebuild-url http://127.0.0.1:4175 \
+            --routes all --all \
+            --out tools/parity/output/ci
+
+      - name: Upload parity report
+        if: always() && steps.harness.outputs.ready == 'true'
+        uses: actions/upload-artifact@v7
+        with:
+          name: parity-report
+          path: tools/parity/output/
+          if-no-files-found: ignore
+
+      - name: Upload contracts
+        if: always()
+        uses: actions/upload-artifact@v7
+        with:
+          name: contracts
+          path: contracts/
+          if-no-files-found: ignore

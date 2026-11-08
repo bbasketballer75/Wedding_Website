@@ -131,6 +131,20 @@ coverage/
 .cache/
 tmp/
 
+# ── Refactor workbench (2026 greenfield rebuild) ──
+# Local agent memory + durable harness instance ids are machine state, not source.
+.dsh-project-memory/
+.harness/reins/*/.agent-instance-id
+# Generated parity/baseline artifacts (large; regenerate with npm run parity:* / baseline:capture).
+contracts/baseline/
+tools/parity/output/
+tools/extract-content/.cache/
+# The greenfield app is scaffolded after the stack gate; never commit its install/build output.
+rebuild/node_modules/
+rebuild/dist/
+rebuild/playwright-report/
+rebuild/test-results/
+
 # Deno lockfile: build artifact, not a source of truth for this repo.
 # The only Deno consumer is netlify/edge-functions/gallery-share.ts, whose sole
 # import is a type-only import from https://edge.netlify.com (erased at build),
