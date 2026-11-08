@@ -4,6 +4,7 @@ import { GuestbookPage } from '@/features/guestbook/GuestbookPage'
 import { validateGallerySearch } from '@/features/gallery/data'
 import { NotFoundPage } from '@/features/not-found/NotFoundPage'
 import { PlaceholderPage } from '@/features/placeholder/PlaceholderPage'
+import { activityApi } from './routes/activity-api'
 import { guestbookApi } from './routes/guestbook-api'
 import { RootLayout } from './shell/RootLayout'
 
@@ -19,6 +20,18 @@ const GalleryPage = lazy(() =>
 )
 const PrintPage = lazy(() =>
   import('@/features/print/PrintPage').then(module => ({ default: module.PrintPage }))
+)
+const UploadPage = lazy(() =>
+  import('@/features/upload/UploadPage').then(module => ({ default: module.UploadPage }))
+)
+const GuestPhotosPage = lazy(() =>
+  import('@/features/guest-photos').then(module => ({ default: module.GuestPhotosPage }))
+)
+const GuestSharePage = lazy(() =>
+  import('@/features/guest-share').then(module => ({ default: module.GuestSharePage }))
+)
+const ActivityPage = lazy(() =>
+  import('@/features/activity').then(module => ({ default: module.ActivityPage }))
 )
 
 /**
@@ -57,7 +70,7 @@ const galleryRoute = createRoute({
 const uploadRoute = createRoute({
   getParentRoute: () => rootRoute,
   path: '/upload',
-  component: () => <PlaceholderPage title='Share Memories' />,
+  component: UploadPage,
 })
 
 const guestbookRoute = createRoute({
@@ -74,13 +87,15 @@ const guestbookRoute = createRoute({
 const guestPhotosRoute = createRoute({
   getParentRoute: () => rootRoute,
   path: '/guest-photos',
-  component: () => <PlaceholderPage title='Guest Memories' />,
+  component: GuestPhotosPage,
 })
 
 const activityRoute = createRoute({
   getParentRoute: () => rootRoute,
   path: '/activity',
-  component: () => <PlaceholderPage title='Activity' />,
+  component: function ActivityRoute() {
+    return <ActivityPage api={activityApi} />
+  },
 })
 
 const adminLoginRoute = createRoute({
@@ -104,7 +119,10 @@ const adminSplatRoute = createRoute({
 const guestTokenRoute = createRoute({
   getParentRoute: () => rootRoute,
   path: '/guest/$token',
-  component: () => <PlaceholderPage title='Guest Album' />,
+  component: function GuestTokenRoute() {
+    const { token } = guestTokenRoute.useParams()
+    return <GuestSharePage token={token} />
+  },
 })
 
 const printRoute = createRoute({

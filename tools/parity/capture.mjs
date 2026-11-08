@@ -172,13 +172,20 @@ function themeApplied(page) {
 }
 
 const TEXT_EXTRACTION = () => {
+  // The two sides are served from different origins (:4174 vs :4175) and pages
+  // legitimately write absolute URLs from `location.origin`. Normalise the
+  // capture origin so text parity compares content, not ports.
+  const origin = location.origin
+  const normalise = value => (value ? value.split(origin).join('<ORIGIN>') : value)
   const meta = {}
   for (const tag of document.querySelectorAll('meta[name], meta[property]')) {
     const key = tag.getAttribute('name') ?? tag.getAttribute('property')
     if (!key || key in meta) continue
-    meta[key] = (tag.getAttribute('content') ?? '').trim()
+    meta[key] = normalise((tag.getAttribute('content') ?? '').trim())
   }
-  const canonical = document.querySelector('link[rel="canonical"]')?.getAttribute('href') ?? ''
+  const canonical = normalise(
+    document.querySelector('link[rel="canonical"]')?.getAttribute('href') ?? ''
+  )
   const headings = [...document.querySelectorAll('h1,h2,h3,h4,h5,h6')]
     .map(heading => ({
       level: Number(heading.tagName.slice(1)),
@@ -187,13 +194,13 @@ const TEXT_EXTRACTION = () => {
     .filter(heading => heading.text.length > 0)
   const links = [...document.querySelectorAll('a[href]')]
     .map(link => ({
-      href: link.getAttribute('href') ?? '',
+      href: normalise(link.getAttribute('href') ?? ''),
       text: (link.textContent ?? '').replace(/\s+/g, ' ').trim(),
       ariaLabel: link.getAttribute('aria-label') ?? '',
     }))
     .filter(link => link.href.length > 0)
   const images = [...document.querySelectorAll('img')].map(image => ({
-    src: image.getAttribute('src') ?? '',
+    src: normalise(image.getAttribute('src') ?? ''),
     alt: image.getAttribute('alt') ?? '',
     loading: image.getAttribute('loading') ?? '',
   }))

@@ -79,8 +79,9 @@ export const CAPTURE = {
  * instead. Each entry must explain itself in docs/rebuild/PARITY.md.
  */
 export const ROUTE_MASKS = {
-  // Example (kept empty on purpose):
-  // 'home': ['.live-clock'],
+  // Empty on purpose: Home's residual is a page-wide raster phase (see the
+  // documented allowlist entries), not a discrete time-driven widget, so a mask
+  // would hide real content without measuring anything.
 }
 
 /**

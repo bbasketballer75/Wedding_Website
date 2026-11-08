@@ -70,6 +70,11 @@ export function usePageMeta({
         document.head.appendChild(canonicalLink)
       }
       canonicalLink.href = fullCanonical
+    } else {
+      // The frozen SEOHead removes the canonical tag when a route passes none
+      // (e.g. guest-share), so the static index.html canonical must not leak
+      // into those routes.
+      document.querySelector<HTMLLinkElement>('link[rel="canonical"]')?.remove()
     }
   }, [description, fullCanonical, fullImageUrl, fullTitle, noIndex])
 }

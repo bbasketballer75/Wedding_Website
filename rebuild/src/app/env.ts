@@ -30,3 +30,23 @@ export function readEnv(source: Record<string, string | boolean | undefined>): A
 
   return result.data
 }
+
+/**
+ * Read the build-time environment.
+ *
+ * Each property is accessed statically on `import.meta.env` so Vite's build
+ * replaces it with the literal value. Spreading `import.meta.env` does NOT work
+ * in a production build: unprefixed values are not present on the replaced
+ * object, so the schema would see `undefined`. This is the single runtime entry
+ * point for env validation (Wave 3 client + future consumers).
+ */
+export function readAppEnv(): AppEnv {
+  return readEnv({
+    VITE_SUPABASE_URL: import.meta.env.VITE_SUPABASE_URL,
+    VITE_SUPABASE_ANON_KEY: import.meta.env.VITE_SUPABASE_ANON_KEY,
+    VITE_SITE_URL: import.meta.env.VITE_SITE_URL,
+    VITE_MEDIA_BASE_URL: import.meta.env.VITE_MEDIA_BASE_URL,
+    VITE_SENTRY_DSN: import.meta.env.VITE_SENTRY_DSN,
+    VITE_GA_ID: import.meta.env.VITE_GA_ID,
+  })
+}

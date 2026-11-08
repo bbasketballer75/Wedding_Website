@@ -11,7 +11,7 @@
  *   appear in client code (QUALITY_BAR / docs/archival/SECURITY.md).
  */
 import { createClient, type SupabaseClient } from '@supabase/supabase-js'
-import { readEnv, type AppEnv } from '@/app/env'
+import { readAppEnv, type AppEnv } from '@/app/env'
 import type { Database } from './database.types'
 
 /** The app-wide client type: one place to change if the schema grows. */
@@ -48,8 +48,9 @@ let cachedClient: TypedSupabaseClient | null = null
  */
 export function getSupabaseClient(): TypedSupabaseClient {
   if (!cachedClient) {
-    const envSource: Record<string, string | boolean | undefined> = { ...import.meta.env }
-    cachedClient = createDataClient(readEnv(envSource))
+    // `readAppEnv` accesses each VITE_* key statically so production builds get
+    // the literal values (spreading `import.meta.env` does not survive a build).
+    cachedClient = createDataClient(readAppEnv())
   }
   return cachedClient
 }
