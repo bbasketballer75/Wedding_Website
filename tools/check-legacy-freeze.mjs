@@ -10,6 +10,11 @@
  * Allowed exact paths:
  *   package.json  package-lock.json  eslint.config.js  .prettierignore
  *   .gitignore    AGENTS.md
+ * Plus one documented exception (2026-11-08):
+ *   supabase/migrations/20260624000000_fix_guestbook_rpc_drop_type.sql
+ *   — a hand-reconstructed migration that was missing four semicolons and made
+ *   `supabase db reset` fail; a syntax-only repair (no SQL semantics changed).
+ *   Migrations never enter the client bundle, so the parity oracle is unaffected.
  * Allowed new paths (prefixes):
  *   contracts/  docs/rebuild/  tools/  rebuild/
  *   .github/workflows/rebuild.yml
@@ -32,6 +37,10 @@ const ALLOWED_EXACT = new Set([
   '.prettierignore',
   '.gitignore',
   'AGENTS.md',
+  // Documented narrow exception — see the usage header. Syntax-only repair of a
+  // migration that could not parse; remove this entry if the migration is ever
+  // squashed/rewritten at cutover.
+  'supabase/migrations/20260624000000_fix_guestbook_rpc_drop_type.sql',
 ])
 
 const ALLOWED_PREFIXES = ['contracts/', 'docs/rebuild/', 'tools/', 'rebuild/']

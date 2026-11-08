@@ -19,6 +19,7 @@ Reviewed at every wave checkpoint. Add risks; never silently delete them — clo
 | R13 | Open question blocks Wave 1 (stack) or cutover (media end-state) | Medium | Medium | A7 recommendation ready at checkpoint; owner decides; no scaffold before approval | Lead | Open |
 | R14 | Node/npm drift (local Node 26 / npm 11.19 vs CI+Netlify Node 22 / npm 11.11) | Medium | Low | Tools are plain ESM compatible with Node 22+; CI runs the pinned versions; align in Wave 1 | Lead | Open |
 | R15 | Local Supabase port collision with another running project (`supabase_db_resell-os` owns 54321) | High | Medium | Sandbox workdir with `project_id=theporadas-workbench` and ports shifted +1000; never stop the other project's containers; document the setup in A3 | backend-eng | Mitigated by design |
+| R16 | Repo migration set does not reproduce the schema: `20260624000000_fix_guestbook_rpc_drop_type.sql` was hand-reconstructed with four missing semicolons, so `supabase db reset` failed at 30/31 | Certain | High | Found 2026-11-08; Lead applied a syntax-only repair (4 semicolons) under a documented freeze exception; backend-eng re-runs both resets from repo state. Reconcile prod migration history at cutover | Lead | Fixed, verification pending |
 
 ## Closed / accepted
 
