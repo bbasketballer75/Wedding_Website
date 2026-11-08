@@ -65,6 +65,14 @@ export const uiContractSchema = z.object({
   defaultTheme: themeName,
   reducedMotion: z.literal('reduce'),
   deviceScaleFactor: z.number().positive(),
+  /**
+   * The single deterministic instant (ISO 8601, UTC) every rendered-copy and
+   * parity capture freezes the page clock to. Layouts that render "time since"
+   * copy (the home anniversary countdown, the footer year) are only comparable
+   * across runs if every harness uses one shared value; consumers must read it
+   * from here instead of hardcoding their own.
+   */
+  fixedNow: z.string().optional(),
   viewports: z.object({
     desktop: viewportSchema,
     mobile: viewportSchema,
@@ -83,6 +91,12 @@ export const seoPwaContractSchema = z.object({
         description: nonEmpty,
         canonicalPath: nonEmpty,
         ogImage: z.string().optional(),
+        /**
+         * Rendered robots meta content. Present only where the frozen app sets
+         * it explicitly (SEOHead `noIndex`); an absent value means the static
+         * index.html default (`index, follow`) applies.
+         */
+        robots: z.enum(['index,follow', 'noindex,nofollow']).optional(),
       })
     )
     .min(1),
