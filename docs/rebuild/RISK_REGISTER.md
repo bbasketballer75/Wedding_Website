@@ -18,6 +18,7 @@ Reviewed at every wave checkpoint. Add risks; never silently delete them — clo
 | R12 | Time overrun (greenfield is large; estimate 3–6 weeks of agent work) | High | Medium | Wave checkpoints, each wave independently shippable, legacy stays live until cutover | Lead | Open |
 | R13 | Open question blocks Wave 1 (stack) or cutover (media end-state) | Medium | Medium | A7 recommendation ready at checkpoint; owner decides; no scaffold before approval | Lead | Open |
 | R14 | Node/npm drift (local Node 26 / npm 11.19 vs CI+Netlify Node 22 / npm 11.11) | Medium | Low | Tools are plain ESM compatible with Node 22+; CI runs the pinned versions; align in Wave 1 | Lead | Open |
+| R15 | Local Supabase port collision with another running project (`supabase_db_resell-os` owns 54321) | High | Medium | Sandbox workdir with `project_id=theporadas-workbench` and ports shifted +1000; never stop the other project's containers; document the setup in A3 | backend-eng | Mitigated by design |
 
 ## Closed / accepted
 

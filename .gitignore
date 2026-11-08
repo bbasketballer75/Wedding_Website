@@ -136,7 +136,10 @@ tmp/
 .dsh-project-memory/
 .harness/reins/*/.agent-instance-id
 # Generated parity/baseline artifacts (large; regenerate with npm run parity:* / baseline:capture).
-contracts/baseline/
+# Keep the directory walkable so the single committed summary file can be re-included;
+# a bare `contracts/baseline/` ignore would make the negation below impossible.
+contracts/baseline/*
+!contracts/baseline/metrics.json
 tools/parity/output/
 tools/extract-content/.cache/
 # The greenfield app is scaffolded after the stack gate; never commit its install/build output.
