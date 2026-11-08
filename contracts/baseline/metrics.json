@@ -1,0 +1,1528 @@
+{
+  "capturedAt": "2026-11-08T06:08:16.439Z",
+  "commit": "dd0cf48120801ef8ea621be90eed7fd1c2bf3664",
+  "freezeTag": "legacy-freeze-2026-11-08",
+  "captureCommit": "e95ea245d60d1413954a0b9c74fa7ca66e4a0c39",
+  "gates": {
+    "typecheck": {
+      "id": "typecheck",
+      "command": "npx tsc --noEmit",
+      "exitCode": 0,
+      "timedOut": false,
+      "wallMs": 3428,
+      "errors": 0,
+      "clean": true,
+      "outputTail": [
+        ""
+      ]
+    },
+    "typecheckLegacy": {
+      "id": "typecheckLegacy",
+      "command": "npx tsc6 --noEmit",
+      "exitCode": 0,
+      "timedOut": false,
+      "wallMs": 22818,
+      "errors": 0,
+      "clean": true,
+      "outputTail": [
+        ""
+      ]
+    },
+    "lint": {
+      "id": "lint",
+      "command": "npm run lint",
+      "exitCode": 1,
+      "timedOut": false,
+      "wallMs": 27095,
+      "problems": 3,
+      "clean": false,
+      "outputTail": [
+        "",
+        "C:\\Users\\bbask\\Coding_Projects\\Wedding_Website_Clean\\tools\\parity\\compare.mjs",
+        "  341:9  error  Unexpected string concatenation  prefer-template",
+        "",
+        "C:\\Users\\bbask\\Coding_Projects\\Wedding_Website_Clean\\tools\\parity\\config.mjs",
+        "  452:31  error  'root' is assigned a value but never used. Allowed unused args must match /^_/u  no-unused-vars",
+        "",
+        "C:\\Users\\bbask\\Coding_Projects\\Wedding_Website_Clean\\tools\\parity\\diff.mjs",
+        "  158:7  error  'sliceCountMismatch' is never reassigned. Use 'const' instead  prefer-const",
+        "",
+        "✖ 3 problems (3 errors, 0 warnings)",
+        "  2 errors and 0 warnings potentially fixable with the `--fix` option."
+      ]
+    },
+    "unit": {
+      "id": "unit",
+      "command": "npm run test:run",
+      "exitCode": 0,
+      "timedOut": false,
+      "wallMs": 15016,
+      "testFiles": 42,
+      "tests": 346,
+      "failedTests": null,
+      "durationText": "13.90s (environment 65%, tests 17%, setup 13%, import 3%, worker 1%, transform 1%)",
+      "clean": true,
+      "outputTail": [
+        "      Tests  346 passed (346)",
+        "   Start at  01:08:02",
+        "   Duration  13.90s (environment 65%, tests 17%, setup 13%, import 3%, worker 1%, transform 1%)",
+        "",
+        "Environment  jsdom was created 42 times · 105.84s total, 65% of tracked time",
+        "             create it once per worker with pool: 'vmThreads' (keeps per-file isolation) or isolate: false (shares it across files)",
+        "             learn more: https://vitest.dev/guide/improving-performance#test-environments",
+        "",
+        "",
+        "(!) Your Vite config uses features that are unsupported by `configLoader: 'native'`, which is planned to become the default in a future major version of Vite:",
+        "  - `__dirname` (vitest.config.js:27:25). Use `import.meta.dirname` instead",
+        "Set `VITE_CONFIG_NATIVE_IGNORE_WARNING=true` to suppress this warning."
+      ]
+    }
+  },
+  "bundle": {
+    "source": {
+      "distPath": "dist",
+      "distBuiltAt": "2026-11-08T05:39:20.129Z",
+      "measuredBy": "node tools/baseline/capture.mjs",
+      "commit": "dd0cf48120801ef8ea621be90eed7fd1c2bf3664",
+      "freezeTag": "legacy-freeze-2026-11-08",
+      "captureHeadCommit": "e95ea245d60d1413954a0b9c74fa7ca66e4a0c39",
+      "build": {
+        "source": "Lead-provided build log for the frozen commit (metrics-eng did not run npm run build)",
+        "totalWallSeconds": 20.2,
+        "viteBuildSeconds": 12.02,
+        "viteBuildCommand": "vite build",
+        "postbuildSteps": [
+          "scripts/prune-local-media.js",
+          "scripts/copy-public-images.js",
+          "scripts/generate-sitemap.js",
+          "scripts/prune-sourcemaps.js"
+        ],
+        "nodeVersion": "v26.8.1",
+        "platform": "win32",
+        "note": "20.2 s total = vite build 12.02 s + postbuild prune/copy/sitemap/sourcemap steps. Measured while unrelated workloads and other agents were active on the same machine."
+      },
+      "compression": "gzipSync(buffer, { level: 9 }) and brotliCompressSync(buffer) (zlib library default quality) computed over the raw emitted files; no build-time compressed variants exist in dist/."
+    },
+    "dist": {
+      "files": 640,
+      "bytes": 148717076,
+      "appFiles": 98,
+      "appBytes": 2649253,
+      "categories": [
+        {
+          "category": "copied-public-images",
+          "files": 542,
+          "bytes": 146067823
+        },
+        {
+          "category": "js",
+          "files": 46,
+          "bytes": 1610085
+        },
+        {
+          "category": "fonts",
+          "files": 22,
+          "bytes": 555624
+        },
+        {
+          "category": "css",
+          "files": 2,
+          "bytes": 251614
+        },
+        {
+          "category": "pwa-icons",
+          "files": 12,
+          "bytes": 197473
+        },
+        {
+          "category": "app-static",
+          "files": 13,
+          "bytes": 25649
+        },
+        {
+          "category": "html",
+          "files": 2,
+          "bytes": 8755
+        },
+        {
+          "category": "captions",
+          "files": 1,
+          "bytes": 53
+        }
+      ]
+    },
+    "javascript": {
+      "files": 46,
+      "bytes": 1610085,
+      "gzipBytes": 481696,
+      "brotliBytes": 416744
+    },
+    "css": {
+      "files": 2,
+      "bytes": 251614,
+      "gzipBytes": 34301,
+      "brotliBytes": 25499
+    },
+    "fonts": {
+      "files": 22,
+      "bytes": 555624
+    },
+    "entry": {
+      "html": "dist/index.html",
+      "scripts": [
+        "/assets/index-B_ACu2o8.js"
+      ],
+      "modulePreloads": [
+        "/assets/rolldown-runtime-BofVGku5.js",
+        "/assets/vendor-icons-Df_mJc13.js",
+        "/assets/vendor-react-BGKYjtwS.js",
+        "/assets/vendor-motion-oF9liMxR.js",
+        "/assets/react-DyM2PYHr.js",
+        "/assets/middleware-JoZqVoXI.js",
+        "/assets/app-supabase-tZC6I57X.js"
+      ],
+      "preloads": [],
+      "stylesheets": [
+        "/assets/index-DYP6bYj0.css"
+      ],
+      "inlineScriptCount": 0,
+      "entryScript": "/assets/index-B_ACu2o8.js",
+      "entryStylesheet": "/assets/index-DYP6bYj0.css"
+    },
+    "initialPayload": {
+      "definition": "entry <script> + <link rel=\"modulepreload\"> + entry stylesheet from dist/index.html (the JS/CSS a first route needs before it can render); HTML transfer is reported separately",
+      "htmlBytes": 4788,
+      "files": 9,
+      "assets": [
+        {
+          "file": "assets/index-B_ACu2o8.js",
+          "kind": "js",
+          "bytes": 205154,
+          "gzipBytes": 66416,
+          "brotliBytes": 57549
+        },
+        {
+          "file": "assets/rolldown-runtime-BofVGku5.js",
+          "kind": "js",
+          "bytes": 1147,
+          "gzipBytes": 632,
+          "brotliBytes": 538
+        },
+        {
+          "file": "assets/vendor-icons-Df_mJc13.js",
+          "kind": "js",
+          "bytes": 33546,
+          "gzipBytes": 11567,
+          "brotliBytes": 9889
+        },
+        {
+          "file": "assets/vendor-react-BGKYjtwS.js",
+          "kind": "js",
+          "bytes": 210337,
+          "gzipBytes": 65484,
+          "brotliBytes": 56295
+        },
+        {
+          "file": "assets/vendor-motion-oF9liMxR.js",
+          "kind": "js",
+          "bytes": 141017,
+          "gzipBytes": 45115,
+          "brotliBytes": 40106
+        },
+        {
+          "file": "assets/react-DyM2PYHr.js",
+          "kind": "js",
+          "bytes": 715,
+          "gzipBytes": 434,
+          "brotliBytes": 376
+        },
+        {
+          "file": "assets/middleware-JoZqVoXI.js",
+          "kind": "js",
+          "bytes": 4899,
+          "gzipBytes": 2121,
+          "brotliBytes": 1927
+        },
+        {
+          "file": "assets/app-supabase-tZC6I57X.js",
+          "kind": "js",
+          "bytes": 236252,
+          "gzipBytes": 58802,
+          "brotliBytes": 49890
+        },
+        {
+          "file": "assets/index-DYP6bYj0.css",
+          "kind": "css",
+          "bytes": 250910,
+          "gzipBytes": 33978,
+          "brotliBytes": 25258
+        }
+      ],
+      "bytes": 1083977,
+      "gzipBytes": 284549,
+      "brotliBytes": 241828
+    },
+    "chunks": {
+      "total": 48,
+      "top20ByGzip": [
+        {
+          "file": "assets/index-B_ACu2o8.js",
+          "kind": "js",
+          "bytes": 205154,
+          "gzipBytes": 66416,
+          "brotliBytes": 57549
+        },
+        {
+          "file": "assets/vendor-react-BGKYjtwS.js",
+          "kind": "js",
+          "bytes": 210337,
+          "gzipBytes": 65484,
+          "brotliBytes": 56295
+        },
+        {
+          "file": "assets/app-supabase-tZC6I57X.js",
+          "kind": "js",
+          "bytes": 236252,
+          "gzipBytes": 58802,
+          "brotliBytes": 49890
+        },
+        {
+          "file": "assets/Gallery-DHy_wuF4.js",
+          "kind": "js",
+          "bytes": 182603,
+          "gzipBytes": 51698,
+          "brotliBytes": 44938
+        },
+        {
+          "file": "assets/vendor-motion-oF9liMxR.js",
+          "kind": "js",
+          "bytes": 141017,
+          "gzipBytes": 45115,
+          "brotliBytes": 40106
+        },
+        {
+          "file": "assets/Admin-DzQmlTIj.js",
+          "kind": "js",
+          "bytes": 122081,
+          "gzipBytes": 34581,
+          "brotliBytes": 29830
+        },
+        {
+          "file": "assets/PhotoLightbox-DMewTB0W.js",
+          "kind": "js",
+          "bytes": 103444,
+          "gzipBytes": 34545,
+          "brotliBytes": 29569
+        },
+        {
+          "file": "assets/index-DYP6bYj0.css",
+          "kind": "css",
+          "bytes": 250910,
+          "gzipBytes": 33978,
+          "brotliBytes": 25258
+        },
+        {
+          "file": "assets/Film-BE4Os7uW.js",
+          "kind": "js",
+          "bytes": 62678,
+          "gzipBytes": 16481,
+          "brotliBytes": 14064
+        },
+        {
+          "file": "assets/Home-CyiiJlAK.js",
+          "kind": "js",
+          "bytes": 60778,
+          "gzipBytes": 14842,
+          "brotliBytes": 12731
+        },
+        {
+          "file": "assets/Upload-Dz0gK5aI.js",
+          "kind": "js",
+          "bytes": 55621,
+          "gzipBytes": 13707,
+          "brotliBytes": 11945
+        },
+        {
+          "file": "assets/vendor-icons-Df_mJc13.js",
+          "kind": "js",
+          "bytes": 33546,
+          "gzipBytes": 11567,
+          "brotliBytes": 9889
+        },
+        {
+          "file": "assets/Guestbook-BfzZDM2Z.js",
+          "kind": "js",
+          "bytes": 24666,
+          "gzipBytes": 7437,
+          "brotliBytes": 6512
+        },
+        {
+          "file": "workbox-835c8c05.js",
+          "kind": "js",
+          "bytes": 21863,
+          "gzipBytes": 7425,
+          "brotliBytes": 6732
+        },
+        {
+          "file": "assets/Activity-xj1R_XZE.js",
+          "kind": "js",
+          "bytes": 15582,
+          "gzipBytes": 5459,
+          "brotliBytes": 4905
+        },
+        {
+          "file": "assets/GuestShare-DLU1ADxY.js",
+          "kind": "js",
+          "bytes": 13847,
+          "gzipBytes": 4299,
+          "brotliBytes": 3739
+        },
+        {
+          "file": "assets/FeaturedContentManager-Cvlh0LF6.js",
+          "kind": "js",
+          "bytes": 11872,
+          "gzipBytes": 3522,
+          "brotliBytes": 3055
+        },
+        {
+          "file": "assets/ClaimsModeration-9z0w6s0j.js",
+          "kind": "js",
+          "bytes": 11079,
+          "gzipBytes": 3421,
+          "brotliBytes": 2973
+        },
+        {
+          "file": "assets/Print-DNtVlyRy.js",
+          "kind": "js",
+          "bytes": 8573,
+          "gzipBytes": 2713,
+          "brotliBytes": 2422
+        },
+        {
+          "file": "assets/GuestPhotos-DXrejCwN.js",
+          "kind": "js",
+          "bytes": 6948,
+          "gzipBytes": 2460,
+          "brotliBytes": 2155
+        }
+      ],
+      "all": [
+        {
+          "file": "assets/index-B_ACu2o8.js",
+          "kind": "js",
+          "bytes": 205154,
+          "gzipBytes": 66416,
+          "brotliBytes": 57549
+        },
+        {
+          "file": "assets/vendor-react-BGKYjtwS.js",
+          "kind": "js",
+          "bytes": 210337,
+          "gzipBytes": 65484,
+          "brotliBytes": 56295
+        },
+        {
+          "file": "assets/app-supabase-tZC6I57X.js",
+          "kind": "js",
+          "bytes": 236252,
+          "gzipBytes": 58802,
+          "brotliBytes": 49890
+        },
+        {
+          "file": "assets/Gallery-DHy_wuF4.js",
+          "kind": "js",
+          "bytes": 182603,
+          "gzipBytes": 51698,
+          "brotliBytes": 44938
+        },
+        {
+          "file": "assets/vendor-motion-oF9liMxR.js",
+          "kind": "js",
+          "bytes": 141017,
+          "gzipBytes": 45115,
+          "brotliBytes": 40106
+        },
+        {
+          "file": "assets/Admin-DzQmlTIj.js",
+          "kind": "js",
+          "bytes": 122081,
+          "gzipBytes": 34581,
+          "brotliBytes": 29830
+        },
+        {
+          "file": "assets/PhotoLightbox-DMewTB0W.js",
+          "kind": "js",
+          "bytes": 103444,
+          "gzipBytes": 34545,
+          "brotliBytes": 29569
+        },
+        {
+          "file": "assets/index-DYP6bYj0.css",
+          "kind": "css",
+          "bytes": 250910,
+          "gzipBytes": 33978,
+          "brotliBytes": 25258
+        },
+        {
+          "file": "assets/Film-BE4Os7uW.js",
+          "kind": "js",
+          "bytes": 62678,
+          "gzipBytes": 16481,
+          "brotliBytes": 14064
+        },
+        {
+          "file": "assets/Home-CyiiJlAK.js",
+          "kind": "js",
+          "bytes": 60778,
+          "gzipBytes": 14842,
+          "brotliBytes": 12731
+        },
+        {
+          "file": "assets/Upload-Dz0gK5aI.js",
+          "kind": "js",
+          "bytes": 55621,
+          "gzipBytes": 13707,
+          "brotliBytes": 11945
+        },
+        {
+          "file": "assets/vendor-icons-Df_mJc13.js",
+          "kind": "js",
+          "bytes": 33546,
+          "gzipBytes": 11567,
+          "brotliBytes": 9889
+        },
+        {
+          "file": "assets/Guestbook-BfzZDM2Z.js",
+          "kind": "js",
+          "bytes": 24666,
+          "gzipBytes": 7437,
+          "brotliBytes": 6512
+        },
+        {
+          "file": "workbox-835c8c05.js",
+          "kind": "js",
+          "bytes": 21863,
+          "gzipBytes": 7425,
+          "brotliBytes": 6732
+        },
+        {
+          "file": "assets/Activity-xj1R_XZE.js",
+          "kind": "js",
+          "bytes": 15582,
+          "gzipBytes": 5459,
+          "brotliBytes": 4905
+        },
+        {
+          "file": "assets/GuestShare-DLU1ADxY.js",
+          "kind": "js",
+          "bytes": 13847,
+          "gzipBytes": 4299,
+          "brotliBytes": 3739
+        },
+        {
+          "file": "assets/FeaturedContentManager-Cvlh0LF6.js",
+          "kind": "js",
+          "bytes": 11872,
+          "gzipBytes": 3522,
+          "brotliBytes": 3055
+        },
+        {
+          "file": "assets/ClaimsModeration-9z0w6s0j.js",
+          "kind": "js",
+          "bytes": 11079,
+          "gzipBytes": 3421,
+          "brotliBytes": 2973
+        },
+        {
+          "file": "assets/Print-DNtVlyRy.js",
+          "kind": "js",
+          "bytes": 8573,
+          "gzipBytes": 2713,
+          "brotliBytes": 2422
+        },
+        {
+          "file": "assets/GuestPhotos-DXrejCwN.js",
+          "kind": "js",
+          "bytes": 6948,
+          "gzipBytes": 2460,
+          "brotliBytes": 2155
+        },
+        {
+          "file": "assets/AdminLogin-qOnYLvZg.js",
+          "kind": "js",
+          "bytes": 7106,
+          "gzipBytes": 2418,
+          "brotliBytes": 2085
+        },
+        {
+          "file": "assets/Dashboard-C1OKDfYO.js",
+          "kind": "js",
+          "bytes": 7960,
+          "gzipBytes": 2386,
+          "brotliBytes": 2058
+        },
+        {
+          "file": "assets/workbox-window.prod.es5-BLTxx3vi.js",
+          "kind": "js",
+          "bytes": 5686,
+          "gzipBytes": 2221,
+          "brotliBytes": 1961
+        },
+        {
+          "file": "assets/middleware-JoZqVoXI.js",
+          "kind": "js",
+          "bytes": 4899,
+          "gzipBytes": 2121,
+          "brotliBytes": 1927
+        },
+        {
+          "file": "assets/GuestbookModeration-suoVkbud.js",
+          "kind": "js",
+          "bytes": 5347,
+          "gzipBytes": 2059,
+          "brotliBytes": 1777
+        },
+        {
+          "file": "assets/SEOHead-Br6_hZcd.js",
+          "kind": "js",
+          "bytes": 5328,
+          "gzipBytes": 2033,
+          "brotliBytes": 1703
+        },
+        {
+          "file": "sw.js",
+          "kind": "js",
+          "bytes": 4863,
+          "gzipBytes": 1995,
+          "brotliBytes": 1658
+        },
+        {
+          "file": "assets/Button-B9MbBZYo.js",
+          "kind": "js",
+          "bytes": 4483,
+          "gzipBytes": 1725,
+          "brotliBytes": 1529
+        },
+        {
+          "file": "assets/Analytics-BfFEngJF.js",
+          "kind": "js",
+          "bytes": 4653,
+          "gzipBytes": 1629,
+          "brotliBytes": 1388
+        },
+        {
+          "file": "assets/AuditLogView-hqPMq6n5.js",
+          "kind": "js",
+          "bytes": 4040,
+          "gzipBytes": 1431,
+          "brotliBytes": 1224
+        },
+        {
+          "file": "assets/Settings-GXQUW-uk.js",
+          "kind": "js",
+          "bytes": 4631,
+          "gzipBytes": 1404,
+          "brotliBytes": 1084
+        },
+        {
+          "file": "assets/vendor-radix-B04bMTKd.js",
+          "kind": "js",
+          "bytes": 2980,
+          "gzipBytes": 1330,
+          "brotliBytes": 1213
+        },
+        {
+          "file": "assets/shared-B2DNySIT.js",
+          "kind": "js",
+          "bytes": 3466,
+          "gzipBytes": 1163,
+          "brotliBytes": 1028
+        },
+        {
+          "file": "assets/PhotoModeration-Y5OdaqFf.js",
+          "kind": "js",
+          "bytes": 2190,
+          "gzipBytes": 975,
+          "brotliBytes": 820
+        },
+        {
+          "file": "assets/weddingParty-D2Nq_oGk.js",
+          "kind": "js",
+          "bytes": 3127,
+          "gzipBytes": 843,
+          "brotliBytes": 777
+        },
+        {
+          "file": "assets/NotFound-GKCilU2r.js",
+          "kind": "js",
+          "bytes": 1816,
+          "gzipBytes": 785,
+          "brotliBytes": 693
+        },
+        {
+          "file": "assets/Avatar-BD_A6J2i.js",
+          "kind": "js",
+          "bytes": 1152,
+          "gzipBytes": 720,
+          "brotliBytes": 629
+        },
+        {
+          "file": "assets/Textarea-Ds-JGOdM.js",
+          "kind": "js",
+          "bytes": 1172,
+          "gzipBytes": 654,
+          "brotliBytes": 586
+        },
+        {
+          "file": "assets/Input-DoywoUls.js",
+          "kind": "js",
+          "bytes": 1153,
+          "gzipBytes": 648,
+          "brotliBytes": 588
+        },
+        {
+          "file": "assets/rolldown-runtime-BofVGku5.js",
+          "kind": "js",
+          "bytes": 1147,
+          "gzipBytes": 632,
+          "brotliBytes": 538
+        },
+        {
+          "file": "assets/Skeleton-C7ApFTZw.js",
+          "kind": "js",
+          "bytes": 1480,
+          "gzipBytes": 553,
+          "brotliBytes": 480
+        },
+        {
+          "file": "assets/react-DyM2PYHr.js",
+          "kind": "js",
+          "bytes": 715,
+          "gzipBytes": 434,
+          "brotliBytes": 376
+        },
+        {
+          "file": "assets/storage-BUOoYGq-.js",
+          "kind": "js",
+          "bytes": 1038,
+          "gzipBytes": 395,
+          "brotliBytes": 350
+        },
+        {
+          "file": "assets/videoProgress-CL6IQlNK.js",
+          "kind": "js",
+          "bytes": 598,
+          "gzipBytes": 332,
+          "brotliBytes": 278
+        },
+        {
+          "file": "assets/Print-BDi5nzB5.css",
+          "kind": "css",
+          "bytes": 704,
+          "gzipBytes": 323,
+          "brotliBytes": 241
+        },
+        {
+          "file": "assets/Label-DbR-835t.js",
+          "kind": "js",
+          "bytes": 408,
+          "gzipBytes": 298,
+          "brotliBytes": 250
+        },
+        {
+          "file": "assets/SocialPlatformIcon-B5h9Y1Dt.js",
+          "kind": "js",
+          "bytes": 346,
+          "gzipBytes": 276,
+          "brotliBytes": 226
+        },
+        {
+          "file": "assets/media-DvmgtN1j.js",
+          "kind": "js",
+          "bytes": 360,
+          "gzipBytes": 262,
+          "brotliBytes": 219
+        }
+      ],
+      "allFilesSortedByGzip": [
+        "assets/index-B_ACu2o8.js",
+        "assets/vendor-react-BGKYjtwS.js",
+        "assets/app-supabase-tZC6I57X.js",
+        "assets/Gallery-DHy_wuF4.js",
+        "assets/vendor-motion-oF9liMxR.js",
+        "assets/Admin-DzQmlTIj.js",
+        "assets/PhotoLightbox-DMewTB0W.js",
+        "assets/index-DYP6bYj0.css",
+        "assets/Film-BE4Os7uW.js",
+        "assets/Home-CyiiJlAK.js",
+        "assets/Upload-Dz0gK5aI.js",
+        "assets/vendor-icons-Df_mJc13.js",
+        "assets/Guestbook-BfzZDM2Z.js",
+        "workbox-835c8c05.js",
+        "assets/Activity-xj1R_XZE.js",
+        "assets/GuestShare-DLU1ADxY.js",
+        "assets/FeaturedContentManager-Cvlh0LF6.js",
+        "assets/ClaimsModeration-9z0w6s0j.js",
+        "assets/Print-DNtVlyRy.js",
+        "assets/GuestPhotos-DXrejCwN.js",
+        "assets/AdminLogin-qOnYLvZg.js",
+        "assets/Dashboard-C1OKDfYO.js",
+        "assets/workbox-window.prod.es5-BLTxx3vi.js",
+        "assets/middleware-JoZqVoXI.js",
+        "assets/GuestbookModeration-suoVkbud.js",
+        "assets/SEOHead-Br6_hZcd.js",
+        "sw.js",
+        "assets/Button-B9MbBZYo.js",
+        "assets/Analytics-BfFEngJF.js",
+        "assets/AuditLogView-hqPMq6n5.js",
+        "assets/Settings-GXQUW-uk.js",
+        "assets/vendor-radix-B04bMTKd.js",
+        "assets/shared-B2DNySIT.js",
+        "assets/PhotoModeration-Y5OdaqFf.js",
+        "assets/weddingParty-D2Nq_oGk.js",
+        "assets/NotFound-GKCilU2r.js",
+        "assets/Avatar-BD_A6J2i.js",
+        "assets/Textarea-Ds-JGOdM.js",
+        "assets/Input-DoywoUls.js",
+        "assets/rolldown-runtime-BofVGku5.js",
+        "assets/Skeleton-C7ApFTZw.js",
+        "assets/react-DyM2PYHr.js",
+        "assets/storage-BUOoYGq-.js",
+        "assets/videoProgress-CL6IQlNK.js",
+        "assets/Print-BDi5nzB5.css",
+        "assets/Label-DbR-835t.js",
+        "assets/SocialPlatformIcon-B5h9Y1Dt.js",
+        "assets/media-DvmgtN1j.js"
+      ]
+    },
+    "pwa": {
+      "precache": {
+        "entries": 63,
+        "uniqueUrls": 62,
+        "totalBytes": 2003781,
+        "totalKiB": 1956.82,
+        "missing": [],
+        "largestPrecached": [
+          {
+            "url": "assets/index-DYP6bYj0.css",
+            "bytes": 250910
+          },
+          {
+            "url": "assets/app-supabase-tZC6I57X.js",
+            "bytes": 236252
+          },
+          {
+            "url": "assets/vendor-react-BGKYjtwS.js",
+            "bytes": 210337
+          },
+          {
+            "url": "assets/index-B_ACu2o8.js",
+            "bytes": 205154
+          },
+          {
+            "url": "assets/Gallery-DHy_wuF4.js",
+            "bytes": 182603
+          },
+          {
+            "url": "assets/vendor-motion-oF9liMxR.js",
+            "bytes": 141017
+          },
+          {
+            "url": "assets/Admin-DzQmlTIj.js",
+            "bytes": 122081
+          },
+          {
+            "url": "assets/PhotoLightbox-DMewTB0W.js",
+            "bytes": 103444
+          },
+          {
+            "url": "assets/Film-BE4Os7uW.js",
+            "bytes": 62678
+          },
+          {
+            "url": "assets/Home-CyiiJlAK.js",
+            "bytes": 60778
+          }
+        ],
+        "duplicates": 1,
+        "groups": {
+          "js": 1583359,
+          "css": 251614,
+          "html": 8755,
+          "icons": 140614,
+          "images": 17403,
+          "other": 2036
+        },
+        "jsCssHtmlBytes": 1843728,
+        "jsCssHtmlKiB": 1800.52,
+        "leadReported": {
+          "source": "Lead-provided build log",
+          "entries": 63,
+          "totalKiB": 1800.52,
+          "definition": "emitted JS+CSS+HTML payload only (excludes the includeAssets image precache)"
+        },
+        "matchesLeadReport": {
+          "entries": true,
+          "jsCssHtmlKiB": true
+        }
+      },
+      "leadReported": {
+        "entries": 63,
+        "totalKiB": 1800.52
+      },
+      "note": "Precache manifest parsed from dist/sw.js; byte totals resolve each precached URL in dist/."
+    }
+  },
+  "lighthouse": {
+    "capturedAt": "2026-11-08T05:57:33.603Z",
+    "siteUrl": "https://www.theporadas.com",
+    "lighthouseVersion": "13.5.0",
+    "method": {
+      "runsPerCell": 2,
+      "categories": [
+        "performance",
+        "accessibility",
+        "best-practices",
+        "seo"
+      ],
+      "formFactors": [
+        "mobile",
+        "desktop"
+      ],
+      "routes": [
+        "/",
+        "/gallery",
+        "/film"
+      ],
+      "selection": "best performance score per page/profile (ties: lower LCP, lower TBT, earlier run)",
+      "rawReports": "contracts/baseline/lighthouse/<page>-<profile>-run<n>.json",
+      "defaultSettings": "mobile uses Lighthouse defaults (Moto G emulation, simulated 4G, 4x CPU); desktop uses the official desktop-config preset"
+    },
+    "environment": {
+      "platform": "win32",
+      "arch": "x64",
+      "nodeVersion": "v26.8.1",
+      "cpuCount": 16,
+      "cpuModel": "AMD Ryzen 7 3700X 8-Core Processor             ",
+      "totalMemoryBytes": 34271723520,
+      "freeMemoryBytes": 5411758080,
+      "note": "Captured on a contended developer machine with other agents (browser captures, Docker/Supabase) and unrelated workloads active; see docs/rebuild/BASELINE.md measurement conditions."
+    },
+    "pages": [
+      {
+        "page": "/",
+        "profile": "mobile",
+        "url": "https://www.theporadas.com/",
+        "runs": [
+          "home-mobile-run1",
+          "home-mobile-run2"
+        ],
+        "successfulRuns": 2,
+        "selectedRun": "home-mobile-run2",
+        "scores": {
+          "performance": 0.7,
+          "accessibility": 0.96,
+          "best-practices": 1,
+          "seo": 1
+        },
+        "metrics": {
+          "firstContentfulPaintMs": 3208,
+          "largestContentfulPaintMs": 7257,
+          "totalBlockingTimeMs": 0,
+          "cumulativeLayoutShift": 0,
+          "speedIndexMs": 3208,
+          "timeToInteractiveMs": 7425,
+          "totalByteWeight": 14491303,
+          "requestCount": 101
+        }
+      },
+      {
+        "page": "/",
+        "profile": "desktop",
+        "url": "https://www.theporadas.com/",
+        "runs": [
+          "home-desktop-run1",
+          "home-desktop-run2"
+        ],
+        "successfulRuns": 2,
+        "selectedRun": "home-desktop-run2",
+        "scores": {
+          "performance": 0.93,
+          "accessibility": 1,
+          "best-practices": null,
+          "seo": 1
+        },
+        "metrics": {
+          "firstContentfulPaintMs": 650,
+          "largestContentfulPaintMs": 1611,
+          "totalBlockingTimeMs": 28,
+          "cumulativeLayoutShift": 0,
+          "speedIndexMs": 1032,
+          "timeToInteractiveMs": 1625,
+          "totalByteWeight": 14485337,
+          "requestCount": 53
+        }
+      },
+      {
+        "page": "/gallery",
+        "profile": "mobile",
+        "url": "https://www.theporadas.com/gallery",
+        "runs": [
+          "gallery-mobile-run1",
+          "gallery-mobile-run2"
+        ],
+        "successfulRuns": 2,
+        "selectedRun": "gallery-mobile-run1",
+        "scores": {
+          "performance": 0.59,
+          "accessibility": 0.95,
+          "best-practices": 1,
+          "seo": 1
+        },
+        "metrics": {
+          "firstContentfulPaintMs": 3265,
+          "largestContentfulPaintMs": 138126,
+          "totalBlockingTimeMs": 388,
+          "cumulativeLayoutShift": 0.0001473480281904127,
+          "speedIndexMs": 3265,
+          "timeToInteractiveMs": 138126,
+          "totalByteWeight": 32683985,
+          "requestCount": 175
+        }
+      },
+      {
+        "page": "/gallery",
+        "profile": "desktop",
+        "url": "https://www.theporadas.com/gallery",
+        "runs": [
+          "gallery-desktop-run1",
+          "gallery-desktop-run2"
+        ],
+        "successfulRuns": 1,
+        "selectedRun": "gallery-desktop-run2",
+        "scores": {
+          "performance": 0.71,
+          "accessibility": 0.95,
+          "best-practices": 1,
+          "seo": 1
+        },
+        "metrics": {
+          "firstContentfulPaintMs": 797,
+          "largestContentfulPaintMs": 28480,
+          "totalBlockingTimeMs": 145,
+          "cumulativeLayoutShift": 0.04746402640973227,
+          "speedIndexMs": 955,
+          "timeToInteractiveMs": 28599,
+          "totalByteWeight": 38008263,
+          "requestCount": 132
+        }
+      },
+      {
+        "page": "/film",
+        "profile": "mobile",
+        "url": "https://www.theporadas.com/film",
+        "runs": [
+          "film-mobile-run1",
+          "film-mobile-run2"
+        ],
+        "successfulRuns": 2,
+        "selectedRun": "film-mobile-run2",
+        "scores": {
+          "performance": 0.37,
+          "accessibility": 1,
+          "best-practices": 1,
+          "seo": 1
+        },
+        "metrics": {
+          "firstContentfulPaintMs": 3209,
+          "largestContentfulPaintMs": 113121,
+          "totalBlockingTimeMs": 7736,
+          "cumulativeLayoutShift": 0,
+          "speedIndexMs": 4135,
+          "timeToInteractiveMs": 126857,
+          "totalByteWeight": 320181009,
+          "requestCount": 163
+        }
+      },
+      {
+        "page": "/film",
+        "profile": "desktop",
+        "url": "https://www.theporadas.com/film",
+        "runs": [
+          "film-desktop-run1",
+          "film-desktop-run2"
+        ],
+        "successfulRuns": 2,
+        "selectedRun": "film-desktop-run1",
+        "scores": {
+          "performance": 0.67,
+          "accessibility": 0.96,
+          "best-practices": null,
+          "seo": 1
+        },
+        "metrics": {
+          "firstContentfulPaintMs": 699,
+          "largestContentfulPaintMs": 1240,
+          "totalBlockingTimeMs": 1019,
+          "cumulativeLayoutShift": 0,
+          "speedIndexMs": 1247,
+          "timeToInteractiveMs": 2853,
+          "totalByteWeight": 372167453,
+          "requestCount": 95
+        }
+      }
+    ],
+    "runs": [
+      {
+        "id": "home-mobile-run1",
+        "page": "/",
+        "profile": "mobile",
+        "ok": true,
+        "scorePerformance": 0.67,
+        "scoreAccessibility": 0.96,
+        "scoreBestPractices": 1,
+        "scoreSeo": 1,
+        "lcpMs": 7240,
+        "tbtMs": 189,
+        "cls": 0,
+        "totalByteWeight": 14491454,
+        "requestCount": 101,
+        "error": null
+      },
+      {
+        "id": "home-mobile-run2",
+        "page": "/",
+        "profile": "mobile",
+        "ok": true,
+        "scorePerformance": 0.7,
+        "scoreAccessibility": 0.96,
+        "scoreBestPractices": 1,
+        "scoreSeo": 1,
+        "lcpMs": 7257,
+        "tbtMs": 0,
+        "cls": 0,
+        "totalByteWeight": 14491303,
+        "requestCount": 101,
+        "error": null
+      },
+      {
+        "id": "home-desktop-run1",
+        "page": "/",
+        "profile": "desktop",
+        "ok": true,
+        "scorePerformance": 0.93,
+        "scoreAccessibility": 0.92,
+        "scoreBestPractices": null,
+        "scoreSeo": 1,
+        "lcpMs": 1646,
+        "tbtMs": 8,
+        "cls": 0,
+        "totalByteWeight": 14485594,
+        "requestCount": 53,
+        "error": null
+      },
+      {
+        "id": "home-desktop-run2",
+        "page": "/",
+        "profile": "desktop",
+        "ok": true,
+        "scorePerformance": 0.93,
+        "scoreAccessibility": 1,
+        "scoreBestPractices": null,
+        "scoreSeo": 1,
+        "lcpMs": 1611,
+        "tbtMs": 28,
+        "cls": 0,
+        "totalByteWeight": 14485337,
+        "requestCount": 53,
+        "error": null
+      },
+      {
+        "id": "gallery-mobile-run1",
+        "page": "/gallery",
+        "profile": "mobile",
+        "ok": true,
+        "scorePerformance": 0.59,
+        "scoreAccessibility": 0.95,
+        "scoreBestPractices": 1,
+        "scoreSeo": 1,
+        "lcpMs": 138126,
+        "tbtMs": 388,
+        "cls": 0.0001473480281904127,
+        "totalByteWeight": 32683985,
+        "requestCount": 175,
+        "error": null
+      },
+      {
+        "id": "gallery-mobile-run2",
+        "page": "/gallery",
+        "profile": "mobile",
+        "ok": true,
+        "scorePerformance": 0.49,
+        "scoreAccessibility": 0.95,
+        "scoreBestPractices": 1,
+        "scoreSeo": 1,
+        "lcpMs": 148809,
+        "tbtMs": 830,
+        "cls": 0,
+        "totalByteWeight": 32453299,
+        "requestCount": 168,
+        "error": null
+      },
+      {
+        "id": "gallery-desktop-run1",
+        "page": "/gallery",
+        "profile": "desktop",
+        "ok": false,
+        "scorePerformance": null,
+        "scoreAccessibility": null,
+        "scoreBestPractices": null,
+        "scoreSeo": null,
+        "error": "Protocol error (Runtime.evaluate): Protocol error (Runtime.evaluate): Execution context was destroyed."
+      },
+      {
+        "id": "gallery-desktop-run2",
+        "page": "/gallery",
+        "profile": "desktop",
+        "ok": true,
+        "scorePerformance": 0.71,
+        "scoreAccessibility": 0.95,
+        "scoreBestPractices": 1,
+        "scoreSeo": 1,
+        "lcpMs": 28480,
+        "tbtMs": 145,
+        "cls": 0.04746402640973227,
+        "totalByteWeight": 38008263,
+        "requestCount": 132,
+        "error": null
+      },
+      {
+        "id": "film-mobile-run1",
+        "page": "/film",
+        "profile": "mobile",
+        "ok": true,
+        "scorePerformance": 0.37,
+        "scoreAccessibility": 1,
+        "scoreBestPractices": 0.96,
+        "scoreSeo": 1,
+        "lcpMs": 116698,
+        "tbtMs": 6131,
+        "cls": 0,
+        "totalByteWeight": 329965335,
+        "requestCount": 164,
+        "error": null
+      },
+      {
+        "id": "film-mobile-run2",
+        "page": "/film",
+        "profile": "mobile",
+        "ok": true,
+        "scorePerformance": 0.37,
+        "scoreAccessibility": 1,
+        "scoreBestPractices": 1,
+        "scoreSeo": 1,
+        "lcpMs": 113121,
+        "tbtMs": 7736,
+        "cls": 0,
+        "totalByteWeight": 320181009,
+        "requestCount": 163,
+        "error": null
+      },
+      {
+        "id": "film-desktop-run1",
+        "page": "/film",
+        "profile": "desktop",
+        "ok": true,
+        "scorePerformance": 0.67,
+        "scoreAccessibility": 0.96,
+        "scoreBestPractices": null,
+        "scoreSeo": 1,
+        "lcpMs": 1240,
+        "tbtMs": 1019,
+        "cls": 0,
+        "totalByteWeight": 372167453,
+        "requestCount": 95,
+        "error": null
+      },
+      {
+        "id": "film-desktop-run2",
+        "page": "/film",
+        "profile": "desktop",
+        "ok": true,
+        "scorePerformance": 0.48,
+        "scoreAccessibility": 0.96,
+        "scoreBestPractices": 1,
+        "scoreSeo": 1,
+        "lcpMs": 18741,
+        "tbtMs": 695,
+        "cls": 0,
+        "totalByteWeight": 162209122,
+        "requestCount": 153,
+        "error": null
+      }
+    ],
+    "failures": [
+      {
+        "id": "gallery-desktop-run1",
+        "error": "Protocol error (Runtime.evaluate): Protocol error (Runtime.evaluate): Execution context was destroyed."
+      }
+    ]
+  },
+  "coverage": {
+    "command": "npx vitest run --coverage --coverage.reporter=json-summary --coverage.reporter=text-summary",
+    "exitCode": 0,
+    "timedOut": false,
+    "wallMs": 20799,
+    "passed": true,
+    "coverageSummaryPath": "coverage/coverage-summary.json",
+    "totals": {
+      "statements": {
+        "total": 3865,
+        "covered": 1928,
+        "skipped": 0,
+        "pct": 49.88
+      },
+      "branches": {
+        "total": 2420,
+        "covered": 916,
+        "skipped": 0,
+        "pct": 37.85
+      },
+      "functions": {
+        "total": 1133,
+        "covered": 511,
+        "skipped": 0,
+        "pct": 45.1
+      },
+      "lines": {
+        "total": 3510,
+        "covered": 1817,
+        "skipped": 0,
+        "pct": 51.76
+      }
+    },
+    "coveredFiles": 128,
+    "testRun": {
+      "testFiles": 42,
+      "tests": 346,
+      "failed": null,
+      "durationText": "18.97s (environment 64%, tests 15%, setup 13%, import 4%, worker 3%, transform 1%)",
+      "statementsPctFromTextSummary": 49.88
+    },
+    "outputTail": [
+      "RUN  v5.0.5 C:/Users/bbask/Coding_Projects/Wedding_Website_Clean",
+      "      Coverage enabled with v8",
+      "",
+      "",
+      " Test Files  42 passed (42)",
+      "      Tests  346 passed (346)",
+      "   Start at  01:06:48",
+      "   Duration  18.97s (environment 64%, tests 15%, setup 13%, import 4%, worker 3%, transform 1%)",
+      "",
+      "Environment  jsdom was created 42 times · 140.43s total, 64% of tracked time",
+      "             create it once per worker with pool: 'vmThreads' (keeps per-file isolation) or isolate: false (shares it across files)",
+      "             learn more: https://vitest.dev/guide/improving-performance#test-environments",
+      "",
+      " % Coverage report from v8",
+      "",
+      "=============================== Coverage summary ===============================",
+      "Statements   : 49.88% ( 1928/3865 )",
+      "Branches     : 37.85% ( 916/2420 )",
+      "Functions    : 45.1% ( 511/1133 )",
+      "Lines        : 51.76% ( 1817/3510 )",
+      "================================================================================",
+      "",
+      "(!) Your Vite config uses features that are unsupported by `configLoader: 'native'`, which is planned to become the default in a future major version of Vite:",
+      "  - `__dirname` (vitest.config.js:27:25). Use `import.meta.dirname` instead",
+      "Set `VITE_CONFIG_NATIVE_IGNORE_WARNING=true` to suppress this warning."
+    ]
+  },
+  "timings": {
+    "build": {
+      "source": "Lead-provided build log for the frozen commit (metrics-eng did not run npm run build)",
+      "totalWallSeconds": 20.2,
+      "viteBuildSeconds": 12.02,
+      "viteBuildCommand": "vite build",
+      "postbuildSteps": [
+        "scripts/prune-local-media.js",
+        "scripts/copy-public-images.js",
+        "scripts/generate-sitemap.js",
+        "scripts/prune-sourcemaps.js"
+      ],
+      "nodeVersion": "v26.8.1",
+      "platform": "win32",
+      "note": "20.2 s total = vite build 12.02 s + postbuild prune/copy/sitemap/sourcemap steps. Measured while unrelated workloads and other agents were active on the same machine.",
+      "totalWallMs": 20200,
+      "viteBuildMs": 12020
+    },
+    "typecheck": {
+      "wallMs": 3428
+    },
+    "typecheckLegacy": {
+      "wallMs": 22818
+    },
+    "lint": {
+      "wallMs": 27095
+    },
+    "unit": {
+      "wallMs": 15016
+    },
+    "coverage": {
+      "wallMs": 20799,
+      "command": "npx vitest run --coverage --coverage.reporter=json-summary --coverage.reporter=text-summary"
+    },
+    "e2e": {
+      "status": "documented-not-measured",
+      "command": "npm run test:e2e (full) / npm run test:e2e:public (gated subset)",
+      "reason": "WP-6 explicitly forbids running the e2e suite (serialized heavy command, Lead-owned). The duration below is quoted from the committed suite description, not measured.",
+      "evidence": [
+        ".github/workflows/ci.yml:61-63 — \"full e2e suite takes 10+ min and is flaky on cross-browser matrix at PR-time\"",
+        "playwright.config.ts:19-26 — fullyParallel:false, workers: process.env.CI ? 1 : 3, retries: 0, timeout 60 s",
+        "playwright.config.ts:48-53 — webServer runs `npm run build && npm run preview` with 180 s startup timeout",
+        "package.json:63-64 — test:e2e:public gates 10 spec files; test:e2e:admin gates 5; tests/e2e contains 18 specs"
+      ],
+      "documentedFullSuite": "10+ minutes (single CI worker, 18 spec files)",
+      "documentedGatedSubset": "not stated; same suite minus admin/visual specs (10 spec files)"
+    }
+  },
+  "inventory": {
+    "generatedBy": "node tools/inventory/capture.mjs",
+    "src": {
+      "rawWalk": {
+        "files": 353,
+        "lines": 54131,
+        "nonBlankLines": 48835
+      },
+      "typescript": {
+        "files": 337,
+        "lines": 51877,
+        "nonBlankLines": 46867
+      },
+      "productionTypeScript": {
+        "files": 298,
+        "lines": 46603,
+        "nonBlankLines": 42311
+      },
+      "tests": {
+        "files": 42,
+        "lines": 5633,
+        "nonBlankLines": 4865
+      },
+      "stylesheets": {
+        "files": 6,
+        "lines": 1412,
+        "nonBlankLines": 1220
+      }
+    },
+    "routes": 12,
+    "lazyComponents": 12,
+    "importGraph": {
+      "modules": 348,
+      "internalEdges": 654,
+      "unresolvedCount": 0,
+      "externalReferenceCount": 4
+    },
+    "deadCode": {
+      "likelyDeadFiles": 57,
+      "likelyDeadLines": 7735,
+      "testOnlyFiles": 6,
+      "testOnlyLines": 735,
+      "strayFiles": 2
+    },
+    "barrels": {
+      "total": 12,
+      "used": 3,
+      "unused": 9
+    },
+    "duplicates": {
+      "sameBasenameGroups": 4,
+      "duplicateExportSymbols": 124,
+      "families": [
+        {
+          "id": "gallery-header-duplicate",
+          "files": 2,
+          "lines": 162,
+          "crossImports": 0
+        },
+        {
+          "id": "flat-utils-vs-utils-dir",
+          "files": 24,
+          "lines": 3476,
+          "crossImports": 5
+        },
+        {
+          "id": "design-system-vs-tokens-vs-themes",
+          "files": 4,
+          "lines": 791,
+          "crossImports": 1
+        },
+        {
+          "id": "composables-vs-hooks",
+          "files": 26,
+          "lines": 2455,
+          "crossImports": 16
+        },
+        {
+          "id": "context-vs-providers",
+          "files": 4,
+          "lines": 203,
+          "crossImports": 1
+        }
+      ]
+    },
+    "dependencies": {
+      "declared": {
+        "dependencies": 40,
+        "devDependencies": 51,
+        "total": 91
+      },
+      "classification": {
+        "browser-bundle": 26,
+        "node-only": 39,
+        "test-only": 4,
+        "types-only": 5,
+        "unused": 17
+      },
+      "unused": [
+        "@fontsource/allura",
+        "@fontsource/inter",
+        "@fontsource/outfit",
+        "@radix-ui/react-dialog",
+        "@radix-ui/react-dropdown-menu",
+        "@radix-ui/react-tabs",
+        "@radix-ui/react-toast",
+        "@radix-ui/react-tooltip",
+        "@sentry/browser",
+        "@tensorflow/tfjs",
+        "@tensorflow/tfjs-backend-wasm",
+        "@vitest/coverage-v8",
+        "@vitest/ui",
+        "@vladmandic/human",
+        "husky",
+        "react-masonry-css",
+        "web-vitals"
+      ],
+      "undeclaredDirectUsage": [
+        "@netlify/functions",
+        "@radix-ui/react-slot",
+        "pg",
+        "playwright",
+        "tus-js-client",
+        "workbox-window"
+      ]
+    }
+  },
+  "provenance": {
+    "generatedBy": "node tools/baseline/capture.mjs",
+    "buildMeasuredBy": "Lead (npm run build is Lead-owned); wall time copied from the build log",
+    "lighthouse": "live public site (https://www.theporadas.com), read-only GETs, 2 runs per page/profile, better-of-two selected; machine contended by other agents/workloads",
+    "coverage": "npx vitest run --coverage --coverage.reporter=json-summary --coverage.reporter=text-summary",
+    "gates": [
+      "npx tsc --noEmit",
+      "npx tsc6 --noEmit",
+      "npm run lint",
+      "npm run test:run"
+    ],
+    "note": "Timings are wall time on a contended developer machine; they are relative baselines, not clean-machine absolutes. Every number is reproducible from the command recorded next to it."
+  }
+}

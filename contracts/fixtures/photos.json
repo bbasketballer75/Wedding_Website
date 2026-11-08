@@ -1,0 +1,115 @@
+[
+  {
+    "id": "photo-1",
+    "url": "/images/engagement/PoradaProposal-29.webp",
+    "thumbnail": "/images/engagement/PoradaProposal-29.webp",
+    "caption": "First look on the lawn",
+    "category": "Getting Ready",
+    "album": "Engagement",
+    "location": "The Lodge Lawn",
+    "date": "2025-05-10T14:00:00.000Z",
+    "likes": 24,
+    "photographer": "Emma Photography",
+    "is_professional": true,
+    "tags": ["first look", "lawn", "portrait"],
+    "faces": [
+      { "id": "face-1", "name": "Austin Porada", "x": 38, "y": 42, "box": { "width": 18 } },
+      { "id": "face-2", "name": "Jordyn Porada", "x": 62, "y": 40, "box": { "width": 17 } }
+    ],
+    "created_at": "2025-05-10T14:00:00.000Z"
+  },
+  {
+    "id": "photo-2",
+    "url": "/images/engagement/PoradaProposal-11.webp",
+    "thumbnail": "/images/engagement/PoradaProposal-11.webp",
+    "caption": "Walking toward the ceremony garden",
+    "category": "Ceremony",
+    "album": "Wedding Day",
+    "location": "Ceremony Garden",
+    "date": "2025-05-10T15:30:00.000Z",
+    "likes": 58,
+    "photographer": "Emma Photography",
+    "is_professional": true,
+    "tags": ["ceremony", "aisle", "garden"],
+    "faces": [
+      { "id": "face-3", "name": "Jordyn Porada", "x": 51, "y": 43, "box": { "width": 20 } }
+    ],
+    "created_at": "2025-05-10T15:30:00.000Z"
+  },
+  {
+    "id": "photo-3",
+    "url": "/images/engagement/PoradaProposal-150.webp",
+    "thumbnail": "/images/engagement/PoradaProposal-150.webp",
+    "caption": "Quiet vows before the applause",
+    "category": "Ceremony",
+    "album": "Wedding Day",
+    "location": "Ceremony Garden",
+    "date": "2025-05-10T15:45:00.000Z",
+    "likes": 42,
+    "photographer": "Emma Photography",
+    "is_professional": true,
+    "tags": ["vows", "ceremony", "emotional"],
+    "faces": [
+      { "id": "face-4", "name": "Austin Porada", "x": 35, "y": 41, "box": { "width": 19 } },
+      { "id": "face-5", "name": "Jordyn Porada", "x": 65, "y": 40, "box": { "width": 18 } }
+    ],
+    "created_at": "2025-05-10T15:45:00.000Z"
+  },
+  {
+    "id": "photo-4",
+    "url": "/images/engagement/PoradaProposal-181.webp",
+    "thumbnail": "/images/engagement/PoradaProposal-181.webp",
+    "caption": "The first kiss",
+    "category": "Portraits",
+    "album": "Wedding Day",
+    "location": "Ceremony Garden",
+    "date": "2025-05-10T16:00:00.000Z",
+    "likes": 89,
+    "photographer": "Emma Photography",
+    "is_professional": true,
+    "tags": ["portrait", "first kiss", "garden"],
+    "faces": [
+      { "id": "face-6", "name": "Austin Porada", "x": 44, "y": 45, "box": { "width": 21 } },
+      { "id": "face-7", "name": "Jordyn Porada", "x": 56, "y": 45, "box": { "width": 20 } }
+    ],
+    "created_at": "2025-05-10T16:00:00.000Z"
+  },
+  {
+    "id": "photo-5",
+    "url": "/images/engagement/PoradaProposal-255.webp",
+    "thumbnail": "/images/engagement/PoradaProposal-255.webp",
+    "caption": "A table full of laughter",
+    "category": "Reception",
+    "album": "Wedding Day",
+    "location": "Reception Hall",
+    "date": "2025-05-10T18:30:00.000Z",
+    "likes": 36,
+    "photographer": "Emma Photography",
+    "is_professional": true,
+    "tags": ["family", "reception", "candids"],
+    "faces": [
+      { "id": "face-8", "name": "Christine Pringle", "x": 32, "y": 51, "box": { "width": 16 } },
+      { "id": "face-9", "name": "Jerame Porada", "x": 69, "y": 49, "box": { "width": 17 } }
+    ],
+    "created_at": "2025-05-10T18:30:00.000Z"
+  },
+  {
+    "id": "photo-6",
+    "url": "/images/engagement/PoradaProposal-277.webp",
+    "thumbnail": "/images/engagement/PoradaProposal-277.webp",
+    "caption": "First dance under the lights",
+    "category": "Dancing",
+    "album": "Wedding Day",
+    "location": "Reception Hall",
+    "date": "2025-05-10T19:00:00.000Z",
+    "likes": 67,
+    "photographer": "Emma Photography",
+    "is_professional": true,
+    "tags": ["first dance", "lights", "dance floor"],
+    "faces": [
+      { "id": "face-10", "name": "Austin Porada", "x": 40, "y": 45, "box": { "width": 20 } },
+      { "id": "face-11", "name": "Jordyn Porada", "x": 61, "y": 45, "box": { "width": 19 } }
+    ],
+    "created_at": "2025-05-10T19:00:00.000Z"
+  }
+]

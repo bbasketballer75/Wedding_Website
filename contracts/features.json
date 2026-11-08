@@ -1,0 +1,867 @@
+{
+  "features": [
+    {
+      "id": "home.hero",
+      "routes": ["/"],
+      "legacyFiles": ["src/pages/Home.tsx", "src/components/layout/publicNav.ts"],
+      "dataSources": ["content:wedding.json"],
+      "invariants": [
+        "The home route renders its own bespoke in-hero A&J navigation instead of the shared Header, with links to /film, /gallery, /guestbook, /upload and /print plus the theme toggle.",
+        "The hero uses the poster image /images/home/intro-video-poster.png only — no local <video> element, no broken media source.",
+        "\"Enter archive\" scrolls to #welcome-panel; hero nav links route into the public experience."
+      ],
+      "checks": [
+        { "type": "parity", "ref": "home" },
+        { "type": "text", "ref": "contracts/content/rendered/home.json" },
+        { "type": "e2e", "ref": "tests/e2e/home.spec.ts" }
+      ],
+      "risk": "medium"
+    },
+    {
+      "id": "home.story-timeline",
+      "routes": ["/"],
+      "legacyFiles": [
+        "src/pages/Home.tsx",
+        "src/components/timeline/LoveTimeline.tsx",
+        "src/components/timeline/ImageCarousel.tsx",
+        "src/components/timeline/LocationMap.tsx",
+        "src/components/timeline/TimelineIcon.tsx",
+        "src/components/timeline/BridalShowerLink.tsx"
+      ],
+      "dataSources": [
+        "src/components/timeline/LoveTimeline.tsx (hard-coded copy — the live story)",
+        "content:story.json (archival only: its consumers EngagementSection/StoryTimeline are unmounted)",
+        "content:timeline.json (archival only: its consumer StoryTimeline is unmounted)"
+      ],
+      "invariants": [
+        "9 hard-coded milestone cards render in order Summer 2017 -> May 10 2025, including the Halloween-styled proposal card with its 8-photo carousel, per-card Read more/less expansion at 120 characters, the scroll-progress rail with heart marker and the closing film CTA card with the saved-progress resume label.",
+        "The live story copy lives in LoveTimeline.tsx; src/data/engagement.ts + src/data/timeline.ts are NOT rendered by any mounted component, so the rebuild must not present them as live content.",
+        "Home renders the shared Footer (but not the shared Header)."
+      ],
+      "checks": [
+        { "type": "text", "ref": "contracts/content/rendered/home.json" },
+        { "type": "e2e", "ref": "tests/e2e/home.spec.ts" },
+        { "type": "contract", "ref": "contracts/content/timeline.json" }
+      ],
+      "risk": "high"
+    },
+    {
+      "id": "home.anniversary-countdown",
+      "routes": ["/"],
+      "legacyFiles": [
+        "src/components/sections/AnniversaryCountdown.tsx",
+        "src/config/weddingConfig.ts"
+      ],
+      "dataSources": ["content:wedding.json", "ui.json.fixedNow (capture clock)"],
+      "invariants": [
+        "The countdown derives from the single WEDDING_DATE (2025-05-10T17:00:00-05:00): elapsed years/days after the date, a day/hour/minute/second countdown inside the 30-day pre-anniversary window, and the ordinal anniversary label.",
+        "Time-dependent copy is compared only under ui.json.fixedNow so text parity is stable across captures and machines."
+      ],
+      "checks": [
+        { "type": "text", "ref": "contracts/content/rendered/home.json" },
+        { "type": "contract", "ref": "contracts/ui.json" }
+      ],
+      "risk": "low"
+    },
+    {
+      "id": "home.editorial-features",
+      "routes": ["/"],
+      "legacyFiles": [
+        "src/components/sections/MomentOfTheWeekSection.tsx",
+        "src/components/sections/StandoutUploadSection.tsx",
+        "src/components/sections/FeaturedNoteSection.tsx",
+        "src/components/sections/GuestHighlightReel.tsx"
+      ],
+      "dataSources": [
+        "supabase:site_editorial_features",
+        "supabase:guest_uploads (approved)",
+        "supabase:guestbook_messages",
+        "contracts/fixtures/editorial.json",
+        "contracts/fixtures/guestUploads.json"
+      ],
+      "invariants": [
+        "The four editorial slot keys stay stable: home_moment_of_the_week, home_newest_standout_upload, home_featured_guestbook_note, film_featured_guest_video.",
+        "Inactive/absent slots render nothing (not an error); a DB error renders an accessible role=status banner naming the slot.",
+        "The guest highlight reel shows the top-6 photos by likes plus the 10 newest guestbook notes, rotates quotes with dot navigation and self-hides when both sources are empty."
+      ],
+      "checks": [
+        { "type": "parity", "ref": "home" },
+        { "type": "contract", "ref": "contracts/fixtures/editorial.json" },
+        { "type": "contract", "ref": "contracts/fixtures/guestUploads.json" }
+      ],
+      "risk": "medium"
+    },
+    {
+      "id": "film.playback",
+      "routes": ["/film"],
+      "legacyFiles": [
+        "src/pages/Film.tsx",
+        "src/components/video/VideoPlayer.tsx",
+        "src/utils/videoProgress.ts",
+        "src/data/film.ts"
+      ],
+      "dataSources": ["content:film.json", "media:/video/main.mp4", "media:/video/main.vtt"],
+      "invariants": [
+        "The main film plays from /video/main.mp4 with poster /images/film/main-film-poster.png, preload=metadata, captions <track> /video/main.vtt with an aria-pressed toggle, and runtime label 45:53.",
+        "Player controls keep chapter menu + progress-bar chapter markers, 10 s skip, volume, fullscreen and cast when available; progress is saved under video-progress-main-film and the resume CTA (?resume=1) reads it.",
+        "Captions load from the configured media host and fail gracefully (non-WEBVTT response rejects) without breaking playback."
+      ],
+      "checks": [
+        { "type": "parity", "ref": "film" },
+        { "type": "text", "ref": "contracts/content/rendered/film.json" },
+        { "type": "e2e", "ref": "tests/e2e/film.spec.ts" },
+        { "type": "unit", "ref": "src/components/video/VideoPlayer.test.tsx" }
+      ],
+      "risk": "high"
+    },
+    {
+      "id": "film.chapters",
+      "routes": ["/film"],
+      "legacyFiles": ["src/pages/Film.tsx", "src/data/film.ts"],
+      "dataSources": ["content:film.json", "media:/video/main-film-chapters.vtt"],
+      "invariants": [
+        "All ten chapter labels and timestamps remain: Start, Bachelor+ette, \"Who Is It\", Wedding Party, Our Vows, The Ceremony, The Reception, First Dance, Bloopers, The Party.",
+        "Chapter moment slugs (start, bachelor-ette, who-is-it, wedding-party, our-vows, the-ceremony, the-reception, first-dance, bloopers, the-party) stay stable because they are deep-link targets (?moment=<slug>).",
+        "When the chapters VTT is missing or returns HTML, the frozen fallback chapters are used — never an empty chapter list."
+      ],
+      "checks": [
+        { "type": "contract", "ref": "contracts/content/film.json" },
+        { "type": "e2e", "ref": "tests/e2e/film.spec.ts" }
+      ],
+      "risk": "medium"
+    },
+    {
+      "id": "film.family-films",
+      "routes": ["/film"],
+      "legacyFiles": ["src/pages/Film.tsx", "src/pages/film/ParentDance.tsx", "src/data/film.ts"],
+      "dataSources": ["content:film.json"],
+      "invariants": [
+        "All four parent-dance films survive with ids, labels, descriptions, durations, thumbnails, video sources, VTT captions and four preview-frame timestamps: mom, melony, christine, jerame.",
+        "A family film deep link (?clip=<id>) opens the matching modal player and clears the param on close.",
+        "Thumbnails and captions resolve through the configured media host."
+      ],
+      "checks": [
+        { "type": "contract", "ref": "contracts/content/film.json" },
+        { "type": "text", "ref": "contracts/content/rendered/film.json" },
+        { "type": "e2e", "ref": "tests/e2e/film.spec.ts" }
+      ],
+      "risk": "medium"
+    },
+    {
+      "id": "film.guest-clips",
+      "routes": ["/film"],
+      "legacyFiles": [
+        "src/pages/Film.tsx",
+        "src/data/memoryTrails.ts",
+        "src/pages/admin/FeaturedContentManager.tsx"
+      ],
+      "dataSources": [
+        "supabase:guest_uploads",
+        "supabase:site_editorial_features (film_featured_guest_video)",
+        "content:memory-trails.json"
+      ],
+      "invariants": [
+        "Only approved guest uploads with video_urls appear in the film highlights; archive_only rows are excluded unless featured; at most 6 clips render.",
+        "Each clip keeps its badge and memory-trail label (memoryTrails.ts), and memory-trail links (/film?moment=..., /film?clip=..., /gallery?collection=...) keep resolving.",
+        "The film_featured_guest_video editorial slot can promote one guest video above the rest."
+      ],
+      "checks": [
+        { "type": "contract", "ref": "contracts/content/memory-trails.json" },
+        { "type": "contract", "ref": "contracts/fixtures/guestUploads.json" },
+        { "type": "contract", "ref": "contracts/fixtures/editorial.json" }
+      ],
+      "risk": "medium"
+    },
+    {
+      "id": "film.family-tree",
+      "routes": ["/film"],
+      "legacyFiles": [
+        "src/components/family-tree/FamilyTree.tsx",
+        "src/components/sections/wedding-party/PersonCard.tsx",
+        "src/components/sections/wedding-party/PartyMemberModal.tsx",
+        "src/data/weddingParty.ts"
+      ],
+      "dataSources": ["content:party.json"],
+      "invariants": [
+        "The family-and-friends tree keeps both sides (bride's family, groom's family, bridesmaids, groomsmen) and shows first names up front.",
+        "Every card opens the member modal with full name, role, portrait and description/fun fact where present; mirror-image flags are preserved.",
+        "All 20 party members from partyData remain reachable with their portraits."
+      ],
+      "checks": [
+        { "type": "contract", "ref": "contracts/content/party.json" },
+        { "type": "text", "ref": "contracts/content/rendered/film.json" }
+      ],
+      "risk": "medium"
+    },
+    {
+      "id": "gallery.browse",
+      "routes": ["/gallery"],
+      "legacyFiles": [
+        "src/pages/Gallery.tsx",
+        "src/hooks/useGalleryData.ts",
+        "src/components/gallery/GalleryGrid.tsx",
+        "src/components/gallery/VirtualizedPhotoGrid.tsx",
+        "src/components/gallery/constants.ts",
+        "src/components/gallery/data.ts",
+        "src/data/curated-photos.ts"
+      ],
+      "dataSources": [
+        "supabase:photos",
+        "content:curated-photos.json",
+        "contracts/fixtures/photos.json"
+      ],
+      "invariants": [
+        "Exactly four collection tabs with this ?collection= vocabulary: Proposal | Bach+ette | Wedding Photos | Guest Photos (src/components/gallery/constants.ts:26); DB album aliases (Engagement, Wedding Day, Guest Uploads) are mapped to tabs and are NOT URL values.",
+        "The 35 curated photos always render even when Supabase fails; API rows are merged with de-duplication by id/url/thumbnail and likes/comments hydrated from RPCs.",
+        "Three view modes (masonry | grid | timeline) with aria-pressed state, per-tab counts and cover images, and infinite scroll ordered by album_sort_order then created_at (page sizes 12/18, scroll container resets on filter/view change)."
+      ],
+      "checks": [
+        { "type": "parity", "ref": "gallery" },
+        { "type": "text", "ref": "contracts/content/rendered/gallery.json" },
+        { "type": "e2e", "ref": "tests/e2e/gallery.spec.ts" },
+        { "type": "e2e", "ref": "tests/e2e/gallery-visual.spec.ts" }
+      ],
+      "risk": "high"
+    },
+    {
+      "id": "gallery.search-views",
+      "routes": ["/gallery"],
+      "legacyFiles": [
+        "src/hooks/useGallerySearchFilters.ts",
+        "src/components/gallery/GalleryControlPanel.tsx",
+        "src/components/gallery/GalleryHeader.tsx"
+      ],
+      "dataSources": ["content:curated-photos.json"],
+      "invariants": [
+        "Search covers caption, location, photographer, collection, source, face names and tags, and ?q=<query> pre-fills it.",
+        "All 9 gallery controls remain usable at 320 px and 390 px in both themes; view-mode buttons and collection chips expose aria-pressed state.",
+        "Filters compose (collection + query + view) and reset predictably; the empty-result state is deliberate."
+      ],
+      "checks": [
+        { "type": "unit", "ref": "src/components/gallery/GalleryControlPanel.test.tsx" },
+        { "type": "e2e", "ref": "tests/e2e/gallery.spec.ts" }
+      ],
+      "risk": "medium"
+    },
+    {
+      "id": "gallery.lightbox-viewer",
+      "routes": ["/gallery"],
+      "legacyFiles": [
+        "src/components/photo-viewer/PhotoLightbox.tsx",
+        "src/components/photo-viewer/PrintModal.tsx",
+        "src/components/photo-viewer/useVerifiedNames.ts",
+        "src/stores/galleryStore.ts"
+      ],
+      "dataSources": [
+        "supabase:photos",
+        "supabase:media_review_faces",
+        "contracts/fixtures/photos.json"
+      ],
+      "invariants": [
+        "The lightbox is a portal dialog (role=dialog, aria-modal) with focus trap + restore; Esc closes and left/right arrows navigate; ?photo=<id> and ?shared=<id> open the matching photo.",
+        "Photo details keep pinch/double-tap zoom 1-3x, face hotspots with verified-name badge, EXIF panel, likes, comments (author persisted in wedding-gallery-comment-author), download, share (?shared=) and the print modal with vendor cards."
+      ],
+      "checks": [
+        { "type": "parity", "ref": "gallery" },
+        { "type": "e2e", "ref": "tests/e2e/v3-guest-experience.spec.ts" }
+      ],
+      "risk": "medium"
+    },
+    {
+      "id": "gallery.engagement",
+      "routes": ["/gallery"],
+      "legacyFiles": ["src/lib/supabase/photos.ts", "src/hooks/useGalleryEngagement.ts"],
+      "dataSources": [
+        "rpc:get_photo_like_statuses",
+        "rpc:get_photo_engagement_summary_v1",
+        "rpc:toggle_photo_like_v2",
+        "rpc:create_photo_comment_v1",
+        "rpc:get_recent_photo_comments_v1",
+        "rpc:hide_photo_comment_v1",
+        "rpc:delete_photo_comment_v1"
+      ],
+      "invariants": [
+        "Like counts and per-visitor like state come from the RPCs and update optimistically without losing the server count.",
+        "Comment author, content and relative timestamp formatting are preserved; comment counts stay in sync and comment writes stay behind the RPCs/RLS.",
+        "Per-browser engagement identity stays stable (getPhotoEngagementSessionId)."
+      ],
+      "checks": [
+        { "type": "contract", "ref": "contracts/fixtures/photos.json" },
+        { "type": "text", "ref": "contracts/content/rendered/gallery.json" }
+      ],
+      "risk": "medium"
+    },
+    {
+      "id": "gallery.downloads-share",
+      "routes": ["/gallery"],
+      "legacyFiles": [
+        "src/components/gallery/GallerySelectionActionsBar.tsx",
+        "src/components/gallery/DownloadQueuePanel.tsx",
+        "src/components/gallery/ProgressModal.tsx",
+        "src/components/share/ShareModal.tsx",
+        "src/hooks/useGalleryDownloads.ts",
+        "src/stores/downloadStore.ts",
+        "src/utils/download.ts",
+        "netlify/functions/download-pack.ts"
+      ],
+      "dataSources": ["contracts/fixtures/photos.json", "content:seo-pwa.json"],
+      "invariants": [
+        "Selection is capped at 50 (with a toast); <=20 photos zip client-side, 21-50 POST to /.netlify/functions/download-pack; the queue persists in sessionStorage and shows progress states.",
+        "Original-file downloads return the original bytes (download_url || url), not thumbnails.",
+        "?share=<comma-separated ids> preselects and queues those photos and drives the gallery SEO/edge-OG image; the copy-link button shares that URL."
+      ],
+      "checks": [
+        { "type": "unit", "ref": "src/stores/downloadStore.test.ts" },
+        { "type": "unit", "ref": "src/components/share/ShareModal.test.tsx" },
+        { "type": "e2e", "ref": "tests/e2e/v3-guest-experience.spec.ts" },
+        { "type": "contract", "ref": "contracts/seo-pwa.json" }
+      ],
+      "risk": "medium"
+    },
+    {
+      "id": "gallery.photo-claims",
+      "routes": ["/gallery", "/upload"],
+      "legacyFiles": [
+        "src/components/gallery/ClaimModal.tsx",
+        "src/stores/claimStore.ts",
+        "src/pages/upload/UploadHero.tsx",
+        "src/lib/supabase/claims.ts"
+      ],
+      "dataSources": [
+        "supabase:photo_claims",
+        "supabase:guest_identities",
+        "contracts/fixtures/claims.json"
+      ],
+      "invariants": [
+        "The claims wizard keeps its 4 steps: identity -> 6-digit code -> photo selection -> submitted; it is reachable from the /upload \"Claim My Photos\" CTA and submits photo_claims rows that start pending.",
+        "Claim verification in the frozen app is CLIENT-SIDE ONLY (A4 §6 finding S1); the rebuild must not present it as server-verified without an explicit owner decision.",
+        "Claim status transitions (pending -> approved/rejected, rejection reason) match the admin claims moderation queue, and guest identity emails are never rendered publicly."
+      ],
+      "checks": [
+        { "type": "unit", "ref": "src/stores/claimStore.test.ts" },
+        { "type": "contract", "ref": "contracts/fixtures/claims.json" }
+      ],
+      "risk": "high"
+    },
+    {
+      "id": "gallery.album-organizer",
+      "routes": ["/admin/*"],
+      "legacyFiles": [
+        "src/components/admin/AlbumOrganizer.tsx",
+        "src/components/admin/useAlbumOrganizer.ts"
+      ],
+      "dataSources": ["rpc:save_album_organization_v2", "supabase:photos"],
+      "invariants": [
+        "Drag and keyboard reorder both work; photos can move between the 4 albums, bulk-move after an anchor / to top / to bottom, and delete with undo.",
+        "Only dirty diffs are saved through save_album_organization_v2; photo ids and URLs never change.",
+        "Search disables dragging so filtered views cannot silently reorder the archive."
+      ],
+      "checks": [{ "type": "unit", "ref": "src/components/admin/useAlbumOrganizer.test.ts" }],
+      "risk": "medium"
+    },
+    {
+      "id": "upload.guest-upload",
+      "routes": ["/upload"],
+      "legacyFiles": [
+        "src/pages/Upload.tsx",
+        "src/pages/upload/useUploadQueue.ts",
+        "src/pages/upload/useGuestUploadSubmit.ts",
+        "src/pages/upload/UploadHero.tsx",
+        "netlify/functions/guest-upload-url.ts"
+      ],
+      "dataSources": ["supabase:guest_uploads", "contracts/fixtures/guestUploads.json"],
+      "invariants": [
+        "Drag/drop or picker accepts images/video only with a 500 MB per-file cap; duplicate fingerprints are skipped and a stored queue shows a resume notice; images are compressed client-side.",
+        "Upload uses the pre-signed guest-upload-url function + R2 PUT with XHR progress and per-file retry; failure copy stays distinct for slot-unavailable / R2 PUT / timeout / size errors and hasErrors surfaces \"Needs retry\".",
+        "Submit is blocked until name+email are valid, inserts are retried 3x, and the success panel shows the share-token link; every row lands as status pending (moderation queue) and never publishes itself."
+      ],
+      "checks": [
+        { "type": "parity", "ref": "upload" },
+        { "type": "text", "ref": "contracts/content/rendered/upload.json" },
+        { "type": "e2e", "ref": "tests/e2e/upload.spec.ts" },
+        { "type": "unit", "ref": "src/pages/Upload.test.tsx" }
+      ],
+      "risk": "high"
+    },
+    {
+      "id": "guestbook.read",
+      "routes": ["/guestbook"],
+      "legacyFiles": [
+        "src/pages/guestbook/useGuestbookFeed.ts",
+        "src/pages/guestbook/constants.ts"
+      ],
+      "dataSources": [
+        "rpc:get_guestbook_messages_with_comments",
+        "supabase:guestbook_messages",
+        "contracts/fixtures/guestbook.json"
+      ],
+      "invariants": [
+        "Messages render newest-first with nested comments and reaction counts; search covers name+content and \"Read more notes\" paginates by 8.",
+        "?message=<id> scrolls to + highlights the message and expands pages; a deep-linked message hidden by search clears the search instead of hiding.",
+        "Empty and error states are deliberate and accessible."
+      ],
+      "checks": [
+        { "type": "parity", "ref": "guestbook" },
+        { "type": "text", "ref": "contracts/content/rendered/guestbook.json" },
+        { "type": "e2e", "ref": "tests/e2e/guestbook.spec.ts" },
+        { "type": "unit", "ref": "src/pages/Guestbook.search.test.ts" }
+      ],
+      "risk": "high"
+    },
+    {
+      "id": "guestbook.write",
+      "routes": ["/guestbook"],
+      "legacyFiles": ["src/pages/guestbook/useGuestbookComposer.ts", "src/config/constants.ts"],
+      "dataSources": [
+        "rpc:submit_guestbook_message_with_rate_limit",
+        "contracts/fixtures/guestbook.json"
+      ],
+      "invariants": [
+        "Validation stays name 2-50 chars / message 10-500 chars; the honeypot field silently succeeds for bots.",
+        "Client limiter is 3/min and the server RPC enforces 3 per minute with a graceful fallback insert; the optimistic prepend is reconciled and the form resets after 2.2 s.",
+        "Submissions are sanitized and never publish without moderation; no write bypasses the RPC/RLS."
+      ],
+      "checks": [
+        { "type": "e2e", "ref": "tests/e2e/guestbook.spec.ts" },
+        { "type": "unit", "ref": "src/pages/Guestbook.test.tsx" }
+      ],
+      "risk": "high"
+    },
+    {
+      "id": "guestbook.engagement",
+      "routes": ["/guestbook"],
+      "legacyFiles": [
+        "src/pages/guestbook/useGuestbookReactions.ts",
+        "src/pages/guestbook/useGuestbookReplies.ts",
+        "src/pages/guestbook/constants.ts"
+      ],
+      "dataSources": ["supabase:guestbook_messages", "supabase:guestbook_comments"],
+      "invariants": [
+        "All four reaction types survive: love, clap, laugh, wow; a per-browser fingerprint in localStorage prevents double-reacting.",
+        "Reactions increment/decrement optimistically with rollback on a failed PATCH; replies prepend optimistically and insert into guestbook_comments, keeping optimistic state on failure.",
+        "Reaction labels/icons stay stable so the reply/reaction UI does not silently change meaning."
+      ],
+      "checks": [
+        { "type": "e2e", "ref": "tests/e2e/guestbook.spec.ts" },
+        { "type": "contract", "ref": "contracts/fixtures/guestbook.json" }
+      ],
+      "risk": "medium"
+    },
+    {
+      "id": "guest-photos.approved-only",
+      "routes": ["/guest-photos"],
+      "legacyFiles": ["src/pages/GuestPhotos.tsx"],
+      "dataSources": [
+        "supabase:guest_uploads (status = approved)",
+        "contracts/fixtures/guestUploads.json"
+      ],
+      "invariants": [
+        "Only approved guest uploads appear; pending/rejected rows are never listed publicly and guest emails are never rendered.",
+        "The page keeps upload counts, 6 featured thumbnails, and per-guest cards with name/date/photo count/message plus explicit empty and error states."
+      ],
+      "checks": [
+        { "type": "parity", "ref": "guest-photos" },
+        { "type": "text", "ref": "contracts/content/rendered/guest-photos.json" },
+        { "type": "e2e", "ref": "tests/e2e/smoke.spec.ts" }
+      ],
+      "risk": "medium"
+    },
+    {
+      "id": "activity.feed",
+      "routes": ["/activity"],
+      "legacyFiles": [
+        "src/pages/Activity.tsx",
+        "src/components/activity/ActivityFeed.tsx",
+        "src/components/activity/ActivityCard.tsx",
+        "src/components/activity/ActivityFilters.tsx",
+        "src/hooks/useActivityRealtime.ts",
+        "src/stores/activityFeedStore.ts"
+      ],
+      "dataSources": ["supabase:activity_log", "contracts/fixtures/activity.json"],
+      "invariants": [
+        "Every activity type renders its card with display name, preview and source link; filters keep All/Photos/Guestbook plus the moment type map.",
+        "Realtime INSERTs prepend via the new-activity banner; infinite scroll loads at the bottom and the empty state is deliberate.",
+        "Realtime subscription is disabled when window.__E2E__ is set so captures/tests are deterministic. Metadata is inherited/stale on this route (known defect, captured in rendered snapshots)."
+      ],
+      "checks": [
+        { "type": "text", "ref": "contracts/content/rendered/activity.json" },
+        { "type": "e2e", "ref": "tests/e2e/v3-guest-experience.spec.ts" },
+        { "type": "contract", "ref": "contracts/fixtures/activity.json" }
+      ],
+      "risk": "low"
+    },
+    {
+      "id": "guest.share-album",
+      "routes": ["/guest/:token"],
+      "legacyFiles": ["src/pages/GuestShare.tsx", "src/lib/supabase/claims.ts"],
+      "dataSources": [
+        "supabase:guest_share_tokens",
+        "supabase:guest_identities",
+        "supabase:guest_uploads",
+        "supabase:photo_claims",
+        "supabase:guestbook_messages",
+        "contracts/fixtures/guestTokens.json"
+      ],
+      "invariants": [
+        "The token resolves a guest email and then that guest's uploads, guestbook notes and approved claimed photos; photos are de-duplicated across sources and stats counts are shown with a tab switch.",
+        "Title is dynamic (`<guest name>'s Album`), noindex, with a copy-link button (execCommand fallback) and lightbox like/comment; the page links back to /gallery.",
+        "An invalid/expired token shows the deliberate fallback state — never another guest's data and never an unhandled error."
+      ],
+      "checks": [
+        { "type": "parity", "ref": "guest-token" },
+        { "type": "text", "ref": "contracts/content/rendered/guest-token.json" },
+        { "type": "e2e", "ref": "tests/e2e/v3-guest-experience.spec.ts" },
+        { "type": "contract", "ref": "contracts/fixtures/guestTokens.json" }
+      ],
+      "risk": "high"
+    },
+    {
+      "id": "print.memory-book",
+      "routes": ["/print"],
+      "legacyFiles": [
+        "src/pages/Print.tsx",
+        "src/pages/print.css",
+        "src/components/photo-viewer/PrintModal.tsx"
+      ],
+      "dataSources": ["supabase:photos", "supabase:guestbook_messages", "content:story.json"],
+      "invariants": [
+        "Album toggles load on demand; the max-photos-per-album slider (6-200) plus numeric input (1-500) and the guestbook include toggle keep their behaviour; print is disabled when nothing is selected.",
+        "Print CSS hides header/footer/control panel, forces a white page background, sets letter-portrait @page margins and starts each album on a new page; browser Save-as-PDF remains the export path.",
+        "The route stays noindex with canonical /print and renders without the public Header/Footer/OfflineIndicator."
+      ],
+      "checks": [
+        { "type": "parity", "ref": "print" },
+        { "type": "text", "ref": "contracts/content/rendered/print.json" },
+        { "type": "unit", "ref": "src/pages/Print.slider.test.ts" }
+      ],
+      "risk": "medium"
+    },
+    {
+      "id": "admin.auth",
+      "routes": ["/admin/login", "/admin/*"],
+      "legacyFiles": [
+        "src/pages/AdminLogin.tsx",
+        "src/pages/Admin.tsx",
+        "src/stores/authStore.ts",
+        "src/providers/AuthProvider.tsx",
+        "src/lib/supabase.ts"
+      ],
+      "dataSources": [
+        "supabase:auth",
+        "localStorage:sb-<projectRef>-auth-token",
+        "contracts/fixtures/adminSession.json"
+      ],
+      "invariants": [
+        "isAdmin is derived from app_metadata.role === 'admin' (never user metadata); the client check is UI-only and RLS stays authoritative.",
+        "Unauthenticated /admin and /admin/* redirect to /admin/login preserving the intended destination; authenticated visits to /admin/login redirect to /admin; a signed-in non-admin sees upgrade instructions instead of admin data.",
+        "Session persists in the Supabase localStorage key shape sb-<projectRef>-auth-token, refreshes, and is cleared by sign-out; admin pages are private and never indexable."
+      ],
+      "checks": [
+        { "type": "parity", "ref": "admin-login" },
+        { "type": "text", "ref": "contracts/content/rendered/admin-login.json" },
+        { "type": "e2e", "ref": "tests/e2e/admin-auth.spec.ts" },
+        { "type": "contract", "ref": "contracts/fixtures/adminSession.json" }
+      ],
+      "risk": "high"
+    },
+    {
+      "id": "admin.dashboard",
+      "routes": ["/admin/*"],
+      "legacyFiles": [
+        "src/pages/admin/Dashboard.tsx",
+        "src/pages/admin/AdminLayout.tsx",
+        "src/pages/admin/utils.ts"
+      ],
+      "dataSources": ["supabase:photos", "supabase:guest_uploads", "supabase:guestbook_messages"],
+      "invariants": [
+        "Dashboard counts (photos, pending uploads, guestbook messages, approved uploads) come from head+count probes and never load full rows.",
+        "The 10 admin child routes stay reachable from the dashboard/sidebar: /admin, /admin/photos, /admin/albums, /admin/review, /admin/claims, /admin/guestbook, /admin/featured, /admin/audit, /admin/analytics, /admin/settings.",
+        "Admin chrome keeps the desktop sidebar + mobile nav and exposes the signed-in admin email."
+      ],
+      "checks": [
+        { "type": "e2e", "ref": "tests/e2e/admin-shell.spec.ts" },
+        { "type": "contract", "ref": "contracts/fixtures/adminSession.json" }
+      ],
+      "risk": "medium"
+    },
+    {
+      "id": "admin.moderation",
+      "routes": ["/admin/*"],
+      "legacyFiles": [
+        "src/pages/admin/PhotoModeration.tsx",
+        "src/pages/admin/GuestbookModeration.tsx",
+        "src/pages/admin/ClaimsModeration.tsx",
+        "src/components/admin/GuestUploadModerationList.tsx",
+        "src/components/admin/BulkActionToolbar.tsx",
+        "src/components/admin/ModerationConfirmDialog.tsx",
+        "src/lib/supabase/guestUploads.ts",
+        "src/lib/supabase/moderation.ts",
+        "src/lib/supabase/claims.ts"
+      ],
+      "dataSources": [
+        "supabase:guest_uploads",
+        "supabase:guestbook_messages",
+        "supabase:photo_claims",
+        "supabase:moderation_audit_log"
+      ],
+      "invariants": [
+        "Admins can approve/reject/move-to-pending guest uploads, delete guestbook messages, and approve/reject claims with a required rejection reason; destructive actions are confirmed.",
+        "Every state change writes an audit entry with actor (userId, email, name), from/to status and summary; bulk actions log per item.",
+        "Moderation queues show guest names without leaking credentials; RLS still enforces access server-side."
+      ],
+      "checks": [
+        { "type": "e2e", "ref": "tests/e2e/admin-workflows.spec.ts" },
+        { "type": "e2e", "ref": "tests/e2e/guestbook-upload-flow.spec.ts" },
+        { "type": "contract", "ref": "contracts/fixtures/claims.json" },
+        { "type": "contract", "ref": "contracts/fixtures/adminSession.json" }
+      ],
+      "risk": "high"
+    },
+    {
+      "id": "admin.editorial",
+      "routes": ["/admin/*"],
+      "legacyFiles": ["src/pages/admin/FeaturedContentManager.tsx"],
+      "dataSources": [
+        "supabase:site_editorial_features",
+        "supabase:site_editorial_feature_history",
+        "contracts/fixtures/editorial.json"
+      ],
+      "invariants": [
+        "All four slots are editable via the per-slot form (active, title, summary, badge, CTA, URL, source type); the active slot loads its row by slot key.",
+        "Saving upserts the slot and appends a history entry; deactivating a slot hides it on the public home/film surfaces.",
+        "Slot keys never change because they are the public→admin contract."
+      ],
+      "checks": [
+        { "type": "e2e", "ref": "tests/e2e/admin-workflows.spec.ts" },
+        { "type": "contract", "ref": "contracts/fixtures/editorial.json" }
+      ],
+      "risk": "medium"
+    },
+    {
+      "id": "admin.audit-analytics-settings",
+      "routes": ["/admin/*"],
+      "legacyFiles": [
+        "src/pages/admin/AuditLogView.tsx",
+        "src/pages/admin/Analytics.tsx",
+        "src/pages/admin/Settings.tsx"
+      ],
+      "dataSources": [
+        "supabase:moderation_audit_log",
+        "rpc:fetch_moderation_audit",
+        "supabase:guest_uploads",
+        "supabase:guestbook_messages",
+        "supabase:photos"
+      ],
+      "invariants": [
+        "The audit log shows actor, action, entity, summary and timestamp for every moderation mutation (append-only from the UI).",
+        "Analytics aggregates stay read-only and label their sources; the Settings screen stays explicitly read-only operations notes (it must not pretend to persist settings the site does not store).",
+        "No secret, token or full email is rendered in these admin views beyond the signed-in admin's own email."
+      ],
+      "checks": [
+        { "type": "e2e", "ref": "tests/e2e/admin-visuals.spec.ts" },
+        { "type": "contract", "ref": "contracts/fixtures/adminSession.json" }
+      ],
+      "risk": "medium"
+    },
+    {
+      "id": "platform.seo",
+      "routes": [
+        "/",
+        "/film",
+        "/gallery",
+        "/guestbook",
+        "/upload",
+        "/guest-photos",
+        "/print",
+        "/admin/login",
+        "/guest/:token",
+        "/*"
+      ],
+      "legacyFiles": [
+        "src/components/seo/SEOHead.tsx",
+        "src/components/seo/StructuredData.tsx",
+        "netlify/edge-functions/gallery-share.ts",
+        "netlify.toml",
+        "index.html"
+      ],
+      "dataSources": ["content:seo-pwa.json"],
+      "invariants": [
+        "Per-route title/description/robots/canonical/OG/Twitter/JSON-LD match contracts/seo-pwa.json; the title pattern `<page> | Austin & Jordyn's Wedding` is preserved and noindex applies on /print, /admin/login, /guest/:token and the 404.",
+        "Structured data survives: WebSite+Event on home, VideoObject on film, ImageGallery on gallery, exactly one script tagged data-seo-structured-data.",
+        "The Netlify edge OG for /gallery?share=<id> still rewrites og:title/description/image and twitter equivalents from the photo row, falling through untouched on every failure. KNOWN DEFECT: /activity and all /admin/* pages set no metadata (inherited/stale); the rebuild must add per-route metadata rather than preserve the defect."
+      ],
+      "checks": [
+        { "type": "e2e", "ref": "tests/e2e/seo.spec.ts" },
+        { "type": "contract", "ref": "contracts/seo-pwa.json" }
+      ],
+      "risk": "high"
+    },
+    {
+      "id": "platform.pwa",
+      "routes": ["/"],
+      "legacyFiles": [
+        "vite.config.js",
+        "public/offline.html",
+        "src/main.tsx",
+        "src/utils/serviceWorker.ts",
+        "src/components/ui/PWAInstallPrompt.tsx"
+      ],
+      "dataSources": ["content:seo-pwa.json"],
+      "invariants": [
+        "Manifest keeps name/short_name/display/start_url/theme/background/lang from seo-pwa.json plus 8 icons (maskable any) and 2 shortcuts (Gallery, Guest Book); the app registers an autoUpdate service worker with skipWaiting + clientsClaim and settles within <=2 document loads (no reload loop).",
+        "Service worker caching contract: CacheFirst for /media/_thumbs/* (max 500) and other /media/* (max 300), cacheable only status 200 (opaque status 0 excluded), 30-day expiry; legacy v1 caches purged on boot.",
+        "offline.html stays precached and the install prompt remains available; the app shell is usable offline for previously visited routes."
+      ],
+      "checks": [
+        { "type": "e2e", "ref": "tests/e2e/pwa-registration.spec.ts" },
+        { "type": "contract", "ref": "contracts/seo-pwa.json" }
+      ],
+      "risk": "medium"
+    },
+    {
+      "id": "platform.headers-csp",
+      "routes": ["/"],
+      "legacyFiles": ["public/_headers", "netlify.toml"],
+      "dataSources": ["content:seo-pwa.json"],
+      "invariants": [
+        "Security headers stay: X-Frame-Options DENY, X-Content-Type-Options nosniff, Referrer-Policy strict-origin-when-cross-origin, Permissions-Policy, HSTS, and the exact CSP allowlists (Supabase, Netlify, media host, R2, GA, Sentry ingest).",
+        "Cache headers stay: immutable /assets/*, no-store for /sw.js, /registerSW.js, /manifest.webmanifest, /robots.txt, /sitemap.xml.",
+        "Deployment routing stays: wedding.theporadas.com -> www 301 redirect and the SPA catch-all fallback to /index.html (200)."
+      ],
+      "checks": [{ "type": "contract", "ref": "contracts/seo-pwa.json" }],
+      "risk": "medium"
+    },
+    {
+      "id": "platform.routing-404",
+      "routes": ["/*", "/"],
+      "legacyFiles": [
+        "src/App.tsx",
+        "src/pages/NotFound.tsx",
+        "src/components/error/ErrorBoundary.tsx"
+      ],
+      "dataSources": ["content:routes.json"],
+      "invariants": [
+        "Any unmatched path (including the retired /people URL) renders the shared-shell 404 with noindex, nofollow and canonical /404; it never redirects or resurrects a page.",
+        "The 404 page keeps Header/Footer except on admin and print routes; the sitemap never lists a path that resolves to the catch-all.",
+        "The /people ghost is an explicit decision: legacy scripts/generate-sitemap.js emitted it, but the face-recognition People page was retired and /people must stay a noindex 404."
+      ],
+      "checks": [
+        { "type": "parity", "ref": "not-found" },
+        { "type": "text", "ref": "contracts/content/rendered/not-found.json" },
+        { "type": "e2e", "ref": "tests/e2e/smoke.spec.ts" },
+        { "type": "e2e", "ref": "tests/e2e/seo.spec.ts" }
+      ],
+      "risk": "medium"
+    },
+    {
+      "id": "platform.media-paths",
+      "routes": ["/", "/film", "/gallery", "/upload", "/guestbook", "/guest-photos", "/print"],
+      "legacyFiles": [
+        "src/utils/media.ts",
+        "src/data/film.ts",
+        "src/data/music.ts",
+        "src/workers/media-rewrite/index.ts"
+      ],
+      "dataSources": ["content:MEDIA_MANIFEST.json", "content:music.json"],
+      "invariants": [
+        "Every media path in contracts/content/MEDIA_MANIFEST.json resolves and original downloads still return original bytes; thumbnails/renditions/captions/posters are all represented.",
+        "Only /video/, /background_audio/ and /media/ are offloaded through VITE_MEDIA_BASE_URL (NOT /images/); path segments such as 'Bach+ette' and spaces in track filenames are preserved. The media worker keeps its CORS allowlist, Range/If-None-Match support, immutable cache headers and legacy->curated filename map.",
+        "No media bytes are copied into the greenfield repo; contracts reference paths only. Archival note: mainPlaylist/halloweenTrack are extracted for the archive, but BackgroundMusic has no importer — no music is mounted in the frozen app, so the rebuild needs an explicit owner decision before mounting it."
+      ],
+      "checks": [
+        { "type": "contract", "ref": "contracts/content/MEDIA_MANIFEST.json" },
+        { "type": "contract", "ref": "contracts/content/music.json" }
+      ],
+      "risk": "high"
+    },
+    {
+      "id": "platform.analytics-sentry",
+      "routes": ["/"],
+      "legacyFiles": [
+        "src/services/AnalyticsService.ts",
+        "src/services/ErrorLoggingService.ts",
+        "src/main.tsx",
+        "vite.config.js",
+        "public/_headers"
+      ],
+      "dataSources": ["env:VITE_GA_ID", "env:VITE_SENTRY_DSN", "build:__APP_VERSION__"],
+      "invariants": [
+        "GA4 gtag loads only when VITE_GA_ID is present, with anonymize_ip, and a manual page_view per route carries path+title; with no ID nothing is injected.",
+        "Sentry initializes only when VITE_SENTRY_DSN is present, uses the deploy commit as release, strips PII in beforeSend, and source maps are uploaded then deleted from the published output.",
+        "CSP connect-src keeps the Sentry ingest host and GA endpoints allowlisted; analytics/error tracking never blocks render or leaks guest PII."
+      ],
+      "checks": [
+        { "type": "unit", "ref": "src/services/ErrorLoggingService.test.ts" },
+        { "type": "contract", "ref": "contracts/seo-pwa.json" }
+      ],
+      "risk": "medium"
+    },
+    {
+      "id": "platform.accessibility",
+      "routes": [
+        "/",
+        "/film",
+        "/gallery",
+        "/upload",
+        "/guestbook",
+        "/guest-photos",
+        "/activity",
+        "/guest/:token",
+        "/print",
+        "/admin/*",
+        "/*"
+      ],
+      "legacyFiles": [
+        "src/App.tsx",
+        "src/components/accessibility/SkipLink.tsx",
+        "src/components/accessibility/KeyboardShortcutsModal.tsx",
+        "src/accessibility/AccessibilityProvider.tsx",
+        "src/accessibility/keyboardShortcuts.ts"
+      ],
+      "dataSources": ["content:ui.json"],
+      "invariants": [
+        "The skip link is the first Tab stop and focuses #main-content; there is exactly one main landmark with an aria-label that follows the route; route changes are announced politely.",
+        "Keyboard shortcuts survive: ? opens the shortcuts modal, Ctrl+K focuses search, Ctrl+T toggles theme, gallery arrows/Esc/L; modals trap focus and restore it to the trigger.",
+        "No critical axe violations on public or admin routes; reduced motion is honored where the frozen app honors it (not globally — e2e forces reducedMotion for every capture)."
+      ],
+      "checks": [
+        { "type": "e2e", "ref": "tests/e2e/a11y.spec.ts" },
+        { "type": "e2e", "ref": "tests/e2e/admin-a11y.spec.ts" }
+      ],
+      "risk": "high"
+    },
+    {
+      "id": "platform.theming",
+      "routes": [
+        "/",
+        "/film",
+        "/gallery",
+        "/upload",
+        "/guestbook",
+        "/guest-photos",
+        "/activity",
+        "/admin/*",
+        "/admin/login",
+        "/guest/:token",
+        "/*"
+      ],
+      "legacyFiles": [
+        "src/themes/index.ts",
+        "src/components/theme/ThemeController.tsx",
+        "src/components/theme/ThemeToggle.tsx",
+        "src/stores/uiStore.ts"
+      ],
+      "dataSources": ["content:ui.json"],
+      "invariants": [
+        "Both dark and light themes exist; the ui store persists currentTheme and ThemeController drives html[data-theme] + CSS variables. dark is the user-preference default (ui.json defaultTheme) — a starting preference, not a hard invariant.",
+        "The toggle and Ctrl+T switch themes; theme choice survives reload and does not change visible copy.",
+        "Parity/text comparisons run in both themes per contracts/ui.json, and the 9 gallery controls stay usable at 320/390 px in both."
+      ],
+      "checks": [
+        { "type": "e2e", "ref": "tests/e2e/smoke.spec.ts" },
+        { "type": "contract", "ref": "contracts/ui.json" }
+      ],
+      "risk": "medium"
+    }
+  ]
+}

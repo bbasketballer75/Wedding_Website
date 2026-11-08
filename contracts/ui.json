@@ -1,0 +1,22 @@
+{
+  "themes": ["dark", "light"],
+  "defaultTheme": "dark",
+  "reducedMotion": "reduce",
+  "deviceScaleFactor": 1,
+  "fixedNow": "2026-11-08T17:00:00.000Z",
+  "viewports": {
+    "desktop": { "width": 1440, "height": 900 },
+    "mobile": { "width": 390, "height": 844 }
+  },
+  "fonts": [
+    "Cormorant Garamond (@fontsource/cormorant-garamond, weights 400/400i/500/500i/600/700, display)",
+    "Instrument Sans (@fontsource/instrument-sans, weights 400/500/600/700, body)",
+    "Pinyon Script (@fontsource/pinyon-script, weight 400, script)"
+  ],
+  "breakpoints": {
+    "mobile": 768,
+    "tablet": 1024,
+    "desktop": 1280,
+    "wide": 1536
+  }
+}

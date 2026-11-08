@@ -1,0 +1,153 @@
+{
+  "siteUrl": "https://www.theporadas.com",
+  "routes": [
+    {
+      "id": "home",
+      "title": "Home | Austin & Jordyn's Wedding",
+      "description": "Join us in celebrating the wedding of Austin and Jordyn. View our story, photos, and share your memories.",
+      "canonicalPath": "/",
+      "ogImage": "https://www.theporadas.com/images/home/intro-video-poster.png",
+      "robots": "index,follow"
+    },
+    {
+      "id": "film",
+      "title": "Wedding Film | Austin & Jordyn's Wedding",
+      "description": "Watch the full wedding film for Austin and Jordyn, from getting ready through the last dance.",
+      "canonicalPath": "/film",
+      "ogImage": "https://www.theporadas.com/images/film/main-film-poster.png",
+      "robots": "index,follow"
+    },
+    {
+      "id": "gallery",
+      "title": "Photo Gallery | Austin & Jordyn's Wedding",
+      "description": "Browse our wedding photos and share your own. A collection of memories from our special day.",
+      "canonicalPath": "/gallery",
+      "ogImage": "https://www.theporadas.com/images/home/intro-video-poster.png",
+      "robots": "index,follow"
+    },
+    {
+      "id": "guestbook",
+      "title": "Guestbook | Austin & Jordyn's Wedding",
+      "description": "Leave a message for Austin and Jordyn. Share your favorite memories from our wedding day.",
+      "canonicalPath": "/guestbook",
+      "ogImage": "https://www.theporadas.com/images/home/intro-video-poster.png",
+      "robots": "index,follow"
+    },
+    {
+      "id": "upload",
+      "title": "Share Memories | Austin & Jordyn's Wedding",
+      "description": "Share the wedding site, upload your photos and videos, and help Austin and Jordyn keep the day alive from every angle.",
+      "canonicalPath": "/upload",
+      "ogImage": "https://www.theporadas.com/images/home/intro-video-poster.png",
+      "robots": "index,follow"
+    },
+    {
+      "id": "guest-photos",
+      "title": "Guest Photos | Austin & Jordyn's Wedding",
+      "description": "Browse the photos and notes shared by family and friends from Austin and Jordyn Porada wedding celebrations.",
+      "canonicalPath": "/guest-photos",
+      "ogImage": "https://www.theporadas.com/images/home/intro-video-poster.png",
+      "robots": "index,follow"
+    },
+    {
+      "id": "print",
+      "title": "Memory Book | Austin & Jordyn's Wedding",
+      "description": "Print a photo book or guestbook keepsake from Austin & Jordyn's wedding archive.",
+      "canonicalPath": "/print",
+      "ogImage": "https://www.theporadas.com/images/home/intro-video-poster.png",
+      "robots": "noindex,nofollow"
+    },
+    {
+      "id": "admin-login",
+      "title": "Admin Login | Austin & Jordyn's Wedding",
+      "description": "Secure admin access for the Austin and Jordyn wedding site.",
+      "canonicalPath": "/admin/login",
+      "robots": "noindex,nofollow"
+    },
+    {
+      "id": "guest-token",
+      "title": "<guest name>'s Album | Austin & Jordyn's Wedding",
+      "description": "Explore the photo uploads, photo claims, and handwritten guestbook notes contributed by <guest name> to our wedding archive.",
+      "canonicalPath": "/guest/:token",
+      "robots": "noindex,nofollow"
+    },
+    {
+      "id": "not-found",
+      "title": "Page Not Found | Austin & Jordyn's Wedding",
+      "description": "This page could not be found.",
+      "canonicalPath": "/404",
+      "ogImage": "https://www.theporadas.com/images/home/intro-video-poster.png",
+      "robots": "noindex,nofollow"
+    }
+  ],
+  "sitemap": [
+    { "path": "/", "changefreq": "weekly", "priority": 1.0 },
+    { "path": "/film", "changefreq": "monthly", "priority": 0.9 },
+    { "path": "/gallery", "changefreq": "monthly", "priority": 0.8 },
+    { "path": "/guestbook", "changefreq": "weekly", "priority": 0.8 },
+    { "path": "/guest-photos", "changefreq": "weekly", "priority": 0.7 },
+    { "path": "/upload", "changefreq": "weekly", "priority": 0.7 }
+  ],
+  "manifest": {
+    "name": "Austin & Jordyn | Wedding Archive",
+    "short_name": "A&J Archive",
+    "display": "standalone",
+    "start_url": "/",
+    "theme_color": "#d4af37",
+    "background_color": "#08080a",
+    "lang": "en"
+  },
+  "headers": [
+    {
+      "pattern": "/*",
+      "headers": {
+        "X-Frame-Options": "DENY",
+        "X-Content-Type-Options": "nosniff",
+        "Referrer-Policy": "strict-origin-when-cross-origin",
+        "Permissions-Policy": "camera=(), microphone=(), geolocation=()",
+        "Strict-Transport-Security": "max-age=31536000; includeSubDomains",
+        "Content-Security-Policy": "default-src 'self'; script-src 'self' 'unsafe-inline' https://www.googletagmanager.com; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src 'self' https://fonts.gstatic.com; img-src 'self' data: blob: https: https://www.google-analytics.com; connect-src 'self' https://*.supabase.co https://*.netlify.app https://media.wedding.theporadas.com https://*.r2.dev https://www.googletagmanager.com https://www.google-analytics.com https://o4511356027011072.ingest.us.sentry.io; media-src 'self' data: blob: https:; frame-src 'self' https://www.youtube.com;",
+        "Content-Security-Policy-Report-Only": "default-src 'self'; script-src 'self' 'unsafe-inline' https://www.googletagmanager.com; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src 'self' https://fonts.gstatic.com; img-src 'self' data: blob: https: https://www.google-analytics.com; connect-src 'self' https://*.supabase.co https://*.netlify.app https://media.wedding.theporadas.com https://*.r2.dev https://www.googletagmanager.com https://www.google-analytics.com https://o4511356027011072.ingest.us.sentry.io; media-src 'self' data: blob: https:; frame-src 'self' https://www.youtube.com;"
+      }
+    },
+    {
+      "pattern": "/assets/*",
+      "headers": { "Cache-Control": "public, max-age=31536000, immutable" }
+    },
+    {
+      "pattern": "/sw.js",
+      "headers": { "Cache-Control": "no-cache, no-store, must-revalidate" }
+    },
+    {
+      "pattern": "/registerSW.js",
+      "headers": { "Cache-Control": "no-cache, no-store, must-revalidate" }
+    },
+    {
+      "pattern": "/manifest.webmanifest",
+      "headers": {
+        "Cache-Control": "no-cache, no-store, must-revalidate",
+        "Content-Type": "application/manifest+json"
+      }
+    },
+    {
+      "pattern": "/robots.txt",
+      "headers": { "Cache-Control": "no-cache, no-store, must-revalidate" }
+    },
+    {
+      "pattern": "/sitemap.xml",
+      "headers": { "Cache-Control": "no-cache, no-store, must-revalidate" }
+    }
+  ],
+  "edgeOg": {
+    "path": "/gallery",
+    "queryParam": "share",
+    "rewrites": [
+      "og:title -> \"${caption} | Porada Wedding Gallery\" (fallback: \"A wedding photo | Porada Wedding Gallery\")",
+      "og:description -> \"A photo from Austin & Jordyn's wedding\"",
+      "og:image -> the shared photo's url",
+      "twitter:title -> same as og:title",
+      "twitter:description -> same as og:description",
+      "twitter:image -> same as og:image"
+    ]
+  }
+}

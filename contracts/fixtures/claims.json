@@ -1,0 +1,58 @@
+{
+  "pending": [
+    {
+      "id": "claim-pending-1",
+      "status": "pending",
+      "claim_type": "face",
+      "created_at": "2025-05-12T10:00:00.000Z",
+      "face_id": "face-1",
+      "guest_identities": {
+        "id": "identity-jane",
+        "display_name": "Jane Miller",
+        "email": "jane@example.com"
+      },
+      "photos": {
+        "id": "photo-1",
+        "url": "/images/engagement/PoradaProposal-29.webp",
+        "thumbnail": "/images/engagement/PoradaProposal-29.webp"
+      }
+    }
+  ],
+  "approved": [
+    {
+      "id": "claim-approved-1",
+      "status": "approved",
+      "claim_type": "photo",
+      "created_at": "2025-05-11T12:00:00.000Z",
+      "guest_identities": {
+        "id": "identity-bob",
+        "display_name": "Bob Baker",
+        "email": "bob@example.com"
+      },
+      "photos": {
+        "id": "photo-2",
+        "url": "/images/engagement/PoradaProposal-11.webp",
+        "thumbnail": "/images/engagement/PoradaProposal-11.webp"
+      }
+    }
+  ],
+  "rejected": [
+    {
+      "id": "claim-rejected-1",
+      "status": "rejected",
+      "claim_type": "face",
+      "created_at": "2025-05-10T14:00:00.000Z",
+      "rejection_reason": "Face belongs to another guest",
+      "guest_identities": {
+        "id": "identity-charlie",
+        "display_name": "Charlie Carter",
+        "email": "charlie@example.com"
+      },
+      "photos": {
+        "id": "photo-3",
+        "url": "/images/engagement/PoradaProposal-150.webp",
+        "thumbnail": "/images/engagement/PoradaProposal-150.webp"
+      }
+    }
+  ]
+}

@@ -1,0 +1,74 @@
+{
+  "messages": [
+    {
+      "id": "message-1",
+      "name": "Sarah Mitchell",
+      "email": "sarah@example.com",
+      "content": "Your vows made the whole room disappear for a second. It felt like all of us were holding our breath with you.",
+      "media_url": null,
+      "reactions": { "love": 12, "clap": 4 },
+      "created_at": "2025-05-12T18:00:00.000Z",
+      "comments": [
+        {
+          "id": "comment-1",
+          "author": "Austin",
+          "content": "This is exactly how it felt. Thank you for being there.",
+          "created_at": "2025-05-12T20:30:00.000Z"
+        }
+      ]
+    },
+    {
+      "id": "message-2",
+      "name": "Mike Chen",
+      "email": "mike@example.com",
+      "content": "The dance floor was wild in the best way possible.",
+      "media_url": null,
+      "reactions": { "fire": 8 },
+      "created_at": "2025-05-13T18:00:00.000Z",
+      "comments": []
+    },
+    {
+      "id": "message-3",
+      "name": "Aunt Patricia",
+      "email": "patricia@example.com",
+      "content": "We sent a quick video hello from our table right after the toasts.",
+      "media_url": null,
+      "reactions": { "love": 9 },
+      "created_at": "2025-05-14T18:00:00.000Z",
+      "comments": []
+    }
+  ],
+  "adminMessages": [
+    {
+      "id": "gb-msg-1",
+      "name": "Sarah Mitchell",
+      "email": "sarah@example.com",
+      "content": "Your vows made the whole room disappear for a second.",
+      "media_url": null,
+      "reactions": { "love": 12, "clap": 4 },
+      "created_at": "2025-05-12T18:00:00.000Z",
+      "comments": []
+    },
+    {
+      "id": "gb-msg-2",
+      "name": "Mike Chen",
+      "email": "mike@example.com",
+      "content": "The dance floor was wild in the best way possible.",
+      "media_url": null,
+      "reactions": { "fire": 8 },
+      "created_at": "2025-05-13T18:00:00.000Z",
+      "comments": []
+    },
+    {
+      "id": "gb-msg-3",
+      "name": "Aunt Patricia",
+      "email": "patricia@example.com",
+      "content": "We sent a quick video hello from our table right after the toasts.",
+      "media_url": null,
+      "reactions": { "love": 9 },
+      "created_at": "2025-05-14T18:00:00.000Z",
+      "comments": []
+    }
+  ],
+  "submitResponse": { "success": true, "message_id": "message-new", "error_message": "" }
+}

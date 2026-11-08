@@ -1,0 +1,193 @@
+{
+  "id": "gallery",
+  "route": "/gallery",
+  "capturedFrom": "legacy-freeze-2026-11-08",
+  "fixedNow": "2026-11-08T17:00:00.000Z",
+  "capture": {
+    "baseUrl": "http://127.0.0.1:4174",
+    "build": "production build of legacy-freeze-2026-11-08",
+    "reducedMotion": "reduce",
+    "deviceScaleFactor": 1,
+    "colorScheme": "light",
+    "timezone": "America/New_York",
+    "locale": "en-US",
+    "serviceWorkers": "blocked",
+    "mocks": "contracts/fixtures/*.json"
+  },
+  "snapshots": {
+    "desktop": {
+      "viewport": { "width": 1440, "height": 900 },
+      "title": "Photo Gallery | Austin & Jordyn's Wedding",
+      "lang": "en",
+      "theme": "dark",
+      "meta": {
+        "description": "Browse our wedding photos and share your own. A collection of memories from our special day.",
+        "robots": "index, follow",
+        "canonical": "https://www.theporadas.com/gallery",
+        "ogTitle": "Photo Gallery | Austin & Jordyn's Wedding",
+        "ogDescription": "Browse our wedding photos and share your own. A collection of memories from our special day.",
+        "ogImage": "https://www.theporadas.com/images/home/intro-video-poster.png",
+        "twitterTitle": "Photo Gallery | Austin & Jordyn's Wedding",
+        "twitterImage": "https://www.theporadas.com/images/home/intro-video-poster.png",
+        "structuredDataCount": 1
+      },
+      "headings": [
+        { "level": 1, "text": "Browse the archive" },
+        { "level": 2, "text": "Proposal" }
+      ],
+      "navLinks": [
+        { "text": "A&J", "href": "/" },
+        { "text": "WATCH FILM", "href": "/film" },
+        { "text": "GALLERY", "href": "/gallery" },
+        { "text": "GUESTBOOK", "href": "/guestbook" },
+        { "text": "SHARE", "href": "/upload" },
+        { "text": "MEMORY BOOK", "href": "/print" },
+        {
+          "text": "Watch the film Revisit the ceremony, speeches, and the whole dance floor arc.",
+          "href": "/film"
+        },
+        {
+          "text": "Browse the gallery Portraits, candids, and every little detail we never want to forget.",
+          "href": "/gallery"
+        },
+        {
+          "text": "Leave a note A quiet last stop for one message, blessing, or little memory from the day.",
+          "href": "/guestbook"
+        },
+        {
+          "text": "Memory Book Print a keepsake photo book or guestbook — save as PDF from any browser.",
+          "href": "/print"
+        }
+      ],
+      "images": [
+        "/images/engagement/PoradaProposal-310.webp",
+        "/images/engagement/PoradaProposal-375.webp",
+        "/images/engagement/PoradaProposal-4.webp",
+        "/images/engagement/PoradaProposal-6.webp",
+        "/images/engagement/PoradaProposal-28.webp",
+        "/images/engagement/PoradaProposal-31.webp",
+        "/images/engagement/PoradaProposal-36.webp",
+        "/images/engagement/PoradaProposal-40.webp",
+        "/images/engagement/PoradaProposal-58.webp",
+        "/images/engagement/PoradaProposal-62.webp",
+        "/images/engagement/PoradaProposal-67.webp",
+        "/images/engagement/PoradaProposal-75.webp"
+      ],
+      "mainText": [
+        "GALLERY",
+        "Browse the archive",
+        "Start with the album you want, then use search or people browsing only when you need it.",
+        "30 visible",
+        "Proposal",
+        "30 photos",
+        "Bach+ette",
+        "0 photos",
+        "Wedding Photos",
+        "5 photos",
+        "Guest Photos",
+        "0 photos",
+        "Masonry",
+        "Grid",
+        "Timeline",
+        "Select",
+        "Check Your Upload Status",
+        "Enter the email address you used when uploading to see your status.",
+        "LOOK UP",
+        "Proposal",
+        "LOAD MORE"
+      ]
+    },
+    "mobile": {
+      "viewport": { "width": 390, "height": 844 },
+      "title": "Photo Gallery | Austin & Jordyn's Wedding",
+      "lang": "en",
+      "theme": "dark",
+      "meta": {
+        "description": "Browse our wedding photos and share your own. A collection of memories from our special day.",
+        "robots": "index, follow",
+        "canonical": "https://www.theporadas.com/gallery",
+        "ogTitle": "Photo Gallery | Austin & Jordyn's Wedding",
+        "ogDescription": "Browse our wedding photos and share your own. A collection of memories from our special day.",
+        "ogImage": "https://www.theporadas.com/images/home/intro-video-poster.png",
+        "twitterTitle": "Photo Gallery | Austin & Jordyn's Wedding",
+        "twitterImage": "https://www.theporadas.com/images/home/intro-video-poster.png",
+        "structuredDataCount": 1
+      },
+      "headings": [
+        { "level": 1, "text": "Browse the archive" },
+        { "level": 2, "text": "Proposal" }
+      ],
+      "navLinks": [
+        { "text": "A&J", "href": "/" },
+        { "text": "FilmWatch Film", "href": "/film" },
+        { "text": "PhotosGallery", "href": "/gallery" },
+        { "text": "GuestsGuestbook", "href": "/guestbook" },
+        { "text": "ShareShare", "href": "/upload" },
+        { "text": "PrintMemory Book", "href": "/print" },
+        { "text": "Watch the film", "href": "/film" },
+        { "text": "Browse the gallery", "href": "/gallery" },
+        { "text": "Leave a note", "href": "/guestbook" },
+        { "text": "Memory Book", "href": "/print" },
+        { "text": "WATCH FILM", "href": "/film" },
+        { "text": "GALLERY", "href": "/gallery" },
+        { "text": "GUESTBOOK", "href": "/guestbook" },
+        { "text": "SHARE", "href": "/upload" },
+        { "text": "MEMORY BOOK", "href": "/print" }
+      ],
+      "images": [
+        "/images/engagement/PoradaProposal-310.webp",
+        "/images/engagement/PoradaProposal-375.webp",
+        "/images/engagement/PoradaProposal-4.webp",
+        "/images/engagement/PoradaProposal-6.webp",
+        "/images/engagement/PoradaProposal-28.webp",
+        "/images/engagement/PoradaProposal-31.webp",
+        "/images/engagement/PoradaProposal-36.webp",
+        "/images/engagement/PoradaProposal-40.webp",
+        "/images/engagement/PoradaProposal-58.webp",
+        "/images/engagement/PoradaProposal-62.webp",
+        "/images/engagement/PoradaProposal-67.webp",
+        "/images/engagement/PoradaProposal-75.webp",
+        "/images/engagement/PoradaProposal-78.webp",
+        "/images/engagement/PoradaProposal-146.webp",
+        "/images/engagement/PoradaProposal-156.webp",
+        "/images/engagement/PoradaProposal-198.webp",
+        "/images/engagement/PoradaProposal-259.webp",
+        "/images/engagement/PoradaProposal-262.webp",
+        "/images/engagement/PoradaProposal-268.webp",
+        "/images/engagement/PoradaProposal-273.webp",
+        "/images/engagement/PoradaProposal-286.webp",
+        "/images/engagement/PoradaProposal-309.webp",
+        "/images/engagement/PoradaProposal-316.webp",
+        "/images/engagement/PoradaProposal-318.webp",
+        "/images/engagement/PoradaProposal-320.webp",
+        "/images/engagement/PoradaProposal-359.webp",
+        "/images/engagement/PoradaProposal-421.webp",
+        "/images/engagement/PoradaProposal-458.webp",
+        "/images/engagement/PoradaProposal-482.webp",
+        "/images/engagement/PoradaProposal-29.webp"
+      ],
+      "mainText": [
+        "GALLERY",
+        "Browse the archive",
+        "Start with the album you want, then use search or people browsing only when you need it.",
+        "30 visible",
+        "Proposal",
+        "30 photos",
+        "Bach+ette",
+        "0 photos",
+        "Wedding Photos",
+        "5 photos",
+        "Guest Photos",
+        "0 photos",
+        "Masonry",
+        "Grid",
+        "Timeline",
+        "Select",
+        "Check Your Upload Status",
+        "Enter the email address you used when uploading to see your status.",
+        "LOOK UP",
+        "Proposal"
+      ]
+    }
+  }
+}

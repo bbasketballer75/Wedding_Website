@@ -38,6 +38,23 @@ cross-references (features → routes, sitemap → routes, themes → ui, allowl
 hand-edit a file into a shape the schema does not accept: change the schema deliberately and say
 why in the PR/commit.
 
+## Field notes (2026-11-08)
+
+- **`seo-pwa.json` → `routes[].robots`** (optional): records the rendered robots meta where the
+  frozen app sets it explicitly (`SEOHead` `noIndex`). It exists so noindex on `/print`,
+  `/admin/login`, `/guest/:token` and the catch-all 404 is a reviewed contract fact rather than
+  folklore. Absent = the static `index.html` default (`index, follow`).
+- **`ui.json.fixedNow`** (optional): the single deterministic capture instant
+  (`2026-11-08T17:00:00.000Z`, 12:00 America/New_York) shared by the rendered-copy generator and
+  the parity harness. Time-dependent copy (home anniversary countdown, footer year) is only
+  comparable when every harness freezes this one value — read it from here, never hardcode a
+  second instant.
+- **`parity-allowlist.json` is owned and governed by parity-eng.** Every entry needs a reason and
+  an `expiresAtWave` (verify-contracts rejects anything beyond the roadmap), and the route must be
+  declared in `routes.json`; remove entries when their wave has passed.
+- **`fixtures/adminSession.json` is pinned, not live:** `session.expires_at` derives from
+  `ui.json.fixedNow` so the committed fixture is deterministic (see `fixtures/README.md`).
+
 ## Regeneration
 
 All generated artifacts are deterministic. Re-running a generator on an unchanged frozen app must

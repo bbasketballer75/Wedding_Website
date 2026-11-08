@@ -1,0 +1,297 @@
+{
+  "id": "admin",
+  "route": "/admin",
+  "capturedFrom": "legacy-freeze-2026-11-08",
+  "fixedNow": "2026-11-08T17:00:00.000Z",
+  "capture": {
+    "baseUrl": "http://127.0.0.1:4174",
+    "build": "production build of legacy-freeze-2026-11-08",
+    "reducedMotion": "reduce",
+    "deviceScaleFactor": 1,
+    "colorScheme": "light",
+    "timezone": "America/New_York",
+    "locale": "en-US",
+    "serviceWorkers": "blocked",
+    "mocks": "contracts/fixtures/*.json"
+  },
+  "snapshots": {
+    "desktop": {
+      "viewport": { "width": 1440, "height": 900 },
+      "title": "Austin & Jordyn | Wedding Archive",
+      "lang": "en",
+      "theme": "dark",
+      "meta": {
+        "description": "A permanent digital archive of our wedding day. Relive our story, browse the films, and view the galleries.",
+        "robots": "index, follow",
+        "canonical": "https://www.theporadas.com/",
+        "ogTitle": "Austin & Jordyn | Wedding Archive",
+        "ogDescription": "A permanent digital archive of our wedding day. Relive our story, browse the films, and view the galleries.",
+        "ogImage": "https://www.theporadas.com/images/og-image.webp",
+        "twitterTitle": null,
+        "twitterImage": null,
+        "structuredDataCount": 0
+      },
+      "headings": [{ "level": 2, "text": "A faster weekly view of what needs attention." }],
+      "navLinks": [
+        { "text": "A&J", "href": "/" },
+        { "text": "WATCH FILM", "href": "/film" },
+        { "text": "GALLERY", "href": "/gallery" },
+        { "text": "GUESTBOOK", "href": "/guestbook" },
+        { "text": "SHARE", "href": "/upload" },
+        { "text": "MEMORY BOOK", "href": "/print" },
+        { "text": "A&JAdmin", "href": "/" },
+        { "text": "Dashboard See what needs attention next.", "href": "/admin" },
+        {
+          "text": "Photos Moderate uploads, publish photos, and run guest tagging.",
+          "href": "/admin/photos"
+        },
+        {
+          "text": "Albums Arrange the live order inside each public album.",
+          "href": "/admin/albums"
+        },
+        {
+          "text": "People Review Work through face review and named people.",
+          "href": "/admin/review"
+        },
+        {
+          "text": "Photo Claims Review and approve photo ownership and face tag claims.",
+          "href": "/admin/claims"
+        },
+        { "text": "Guestbook Moderate text messages.", "href": "/admin/guestbook" },
+        {
+          "text": "Featured Set what appears in the homepage and film page spotlight sections.",
+          "href": "/admin/featured"
+        },
+        {
+          "text": "Audit Trail See who changed moderation state and when.",
+          "href": "/admin/audit"
+        },
+        {
+          "text": "Analytics Track verified database activity inside the app.",
+          "href": "/admin/analytics"
+        },
+        {
+          "text": "Settings Reference the live setup and operating notes.",
+          "href": "/admin/settings"
+        },
+        {
+          "text": "Watch the film Revisit the ceremony, speeches, and the whole dance floor arc.",
+          "href": "/film"
+        },
+        {
+          "text": "Browse the gallery Portraits, candids, and every little detail we never want to forget.",
+          "href": "/gallery"
+        },
+        {
+          "text": "Leave a note A quiet last stop for one message, blessing, or little memory from the day.",
+          "href": "/guestbook"
+        },
+        {
+          "text": "Memory Book Print a keepsake photo book or guestbook — save as PDF from any browser.",
+          "href": "/print"
+        }
+      ],
+      "images": [],
+      "mainText": [
+        "A&JAdmin",
+        "A calmer workspace for moderation, people review, and site upkeep.",
+        "Signed in as admin@test.wedding",
+        "SIGN OUT",
+        "WORKSPACE MAP",
+        "Open the tool that matches the work in front of you.",
+        "RUN THE DAY-TO-DAY",
+        "Dashboard",
+        "See what needs attention next.",
+        "Photos",
+        "Moderate uploads, publish photos, and run guest tagging.",
+        "Albums",
+        "Arrange the live order inside each public album.",
+        "People Review",
+        "Work through face review and named people.",
+        "Photo Claims",
+        "Review and approve photo ownership and face tag claims.",
+        "Guestbook",
+        "Moderate text messages.",
+        "SHAPE THE PUBLIC SITE",
+        "Featured",
+        "Set what appears in the homepage and film page spotlight sections.",
+        "Audit Trail",
+        "See who changed moderation state and when.",
+        "Analytics",
+        "Track verified database activity inside the app.",
+        "Settings",
+        "Reference the live setup and operating notes.",
+        "AUSTIN + JORDYN CONTROL ROOM",
+        "A faster weekly view of what needs attention.",
+        "Use this like a briefing, not a landing page: check the current state, then jump straight into the next workflow.",
+        "PHOTOS",
+        "ALBUMS",
+        "PEOPLE REVIEW",
+        "GUESTBOOK",
+        "AUDIT",
+        "PENDING UPLOADS",
+        "0",
+        "Queue is clear.",
+        "PEOPLE REVIEW",
+        "0",
+        "No active batch.",
+        "GUEST TAGGING SYNC",
+        "No guest sync yet",
+        "Last metadata sync back into Gallery.",
+        "APPROVED UPLOADS",
+        "0",
+        "Ready to browse or face-tag later.",
+        "Live gallery photos",
+        "0",
+        "Pending review",
+        "0",
+        "Guestbook entries",
+        "0",
+        "Approved uploads",
+        "0",
+        "RECOMMENDED RHYTHM",
+        "Three steps, in order",
+        "1",
+        "Photos",
+        "Clear /admin/photos first.",
+        "2",
+        "People",
+        "Tighten names in /admin/review.",
+        "3",
+        "Guestbook",
+        "Clean up messages only when needed.",
+        "SCOPE",
+        "What belongs here",
+        "Admin is for moderation, people review, and verified site data. Traffic and error dashboards still live in Google Analytics and Sentry.",
+        "OPERATING NOTES"
+      ]
+    },
+    "mobile": {
+      "viewport": { "width": 390, "height": 844 },
+      "title": "Austin & Jordyn | Wedding Archive",
+      "lang": "en",
+      "theme": "dark",
+      "meta": {
+        "description": "A permanent digital archive of our wedding day. Relive our story, browse the films, and view the galleries.",
+        "robots": "index, follow",
+        "canonical": "https://www.theporadas.com/",
+        "ogTitle": "Austin & Jordyn | Wedding Archive",
+        "ogDescription": "A permanent digital archive of our wedding day. Relive our story, browse the films, and view the galleries.",
+        "ogImage": "https://www.theporadas.com/images/og-image.webp",
+        "twitterTitle": null,
+        "twitterImage": null,
+        "structuredDataCount": 0
+      },
+      "headings": [{ "level": 2, "text": "A faster weekly view of what needs attention." }],
+      "navLinks": [
+        { "text": "A&J", "href": "/" },
+        { "text": "FilmWatch Film", "href": "/film" },
+        { "text": "PhotosGallery", "href": "/gallery" },
+        { "text": "GuestsGuestbook", "href": "/guestbook" },
+        { "text": "ShareShare", "href": "/upload" },
+        { "text": "PrintMemory Book", "href": "/print" },
+        { "text": "A&JAdmin", "href": "/" },
+        { "text": "DashboardSee what needs attention next.", "href": "/admin" },
+        {
+          "text": "PhotosModerate uploads, publish photos, and run guest tagging.",
+          "href": "/admin/photos"
+        },
+        {
+          "text": "AlbumsArrange the live order inside each public album.",
+          "href": "/admin/albums"
+        },
+        {
+          "text": "People ReviewWork through face review and named people.",
+          "href": "/admin/review"
+        },
+        {
+          "text": "Photo ClaimsReview and approve photo ownership and face tag claims.",
+          "href": "/admin/claims"
+        },
+        { "text": "GuestbookModerate text messages.", "href": "/admin/guestbook" },
+        {
+          "text": "FeaturedSet what appears in the homepage and film page spotlight sections.",
+          "href": "/admin/featured"
+        },
+        { "text": "Audit TrailSee who changed moderation state and when.", "href": "/admin/audit" },
+        {
+          "text": "AnalyticsTrack verified database activity inside the app.",
+          "href": "/admin/analytics"
+        },
+        {
+          "text": "SettingsReference the live setup and operating notes.",
+          "href": "/admin/settings"
+        },
+        { "text": "Watch the film", "href": "/film" },
+        { "text": "Browse the gallery", "href": "/gallery" },
+        { "text": "Leave a note", "href": "/guestbook" },
+        { "text": "Memory Book", "href": "/print" },
+        { "text": "WATCH FILM", "href": "/film" },
+        { "text": "GALLERY", "href": "/gallery" },
+        { "text": "GUESTBOOK", "href": "/guestbook" },
+        { "text": "SHARE", "href": "/upload" },
+        { "text": "MEMORY BOOK", "href": "/print" }
+      ],
+      "images": [],
+      "mainText": [
+        "A&JAdmin",
+        "A calmer workspace for moderation, people review, and site upkeep.",
+        "Signed in as admin@test.wedding",
+        "SIGN OUT",
+        "DASHBOARD",
+        "PHOTOS",
+        "ALBUMS",
+        "PEOPLE REVIEW",
+        "PHOTO CLAIMS",
+        "GUESTBOOK",
+        "FEATURED",
+        "AUDIT TRAIL",
+        "ANALYTICS",
+        "SETTINGS",
+        "AUSTIN + JORDYN CONTROL ROOM",
+        "A faster weekly view of what needs attention.",
+        "Use this like a briefing, not a landing page: check the current state, then jump straight into the next workflow.",
+        "PHOTOS",
+        "ALBUMS",
+        "PEOPLE REVIEW",
+        "GUESTBOOK",
+        "AUDIT",
+        "PENDING UPLOADS",
+        "0",
+        "Queue is clear.",
+        "PEOPLE REVIEW",
+        "0",
+        "No active batch.",
+        "GUEST TAGGING SYNC",
+        "No guest sync yet",
+        "Last metadata sync back into Gallery.",
+        "APPROVED UPLOADS",
+        "0",
+        "Ready to browse or face-tag later.",
+        "Live gallery photos",
+        "0",
+        "Pending review",
+        "0",
+        "Guestbook entries",
+        "0",
+        "Approved uploads",
+        "0",
+        "RECOMMENDED RHYTHM",
+        "Three steps, in order",
+        "1",
+        "Photos",
+        "Clear /admin/photos first.",
+        "2",
+        "People",
+        "Tighten names in /admin/review.",
+        "3",
+        "Guestbook",
+        "Clean up messages only when needed.",
+        "SCOPE",
+        "What belongs here",
+        "Admin is for moderation, people review, and verified site data. Traffic and error dashboards still live in Google Analytics and Sentry.",
+        "OPERATING NOTES"
+      ]
+    }
+  }
+}

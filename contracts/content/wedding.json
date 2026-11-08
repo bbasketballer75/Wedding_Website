@@ -1,0 +1,10 @@
+{
+  "siteTitle": "Austin & Jordyn's Wedding",
+  "couple": {
+    "person1": { "name": "Austin", "initial": "A" },
+    "person2": { "name": "Jordyn", "initial": "J" }
+  },
+  "weddingDate": "2025-05-10T17:00:00-05:00",
+  "weddingDateUtc": "2025-05-10T22:00:00.000Z",
+  "heroPoster": "/images/home/intro-video-poster.png"
+}

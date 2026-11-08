@@ -39,16 +39,37 @@ phone, accessible, beautiful, and cheap to host.
 
 ## Feature parity matrix (owned by audit A4, proven by waves)
 
+The frozen app is the source of truth for what is **live**. Audit A4 found several complete but
+unmounted features; they are not parity obligations (see “Not part of parity” below).
+
 | Area | Must survive | Proof |
 |---|---|---|
-| Home | engagement story, timeline, quiz, featured content, guest map, music | parity + text |
-| Film | chaptered player, captions, progress, family films, quotes | parity + e2e |
-| Gallery | albums, masonry/virtualization, lightbox, filters/search/sort, people/faces, map, likes/comments, batch download, share links, claims, guest photos | parity + e2e + perf |
-| Uploads | guest upload flow (R2 presign, progress, retry, approval status) | e2e + contract |
-| Guestbook | read, submit, moderation, rate limit | e2e + contract |
-| Admin | auth/session, dashboard, moderation queues, album organizer, featured content, audit log, analytics, claims | parity + e2e + security review |
+| Home | hero nav + scroll, engagement story timeline, anniversary countdown, guest highlight reel, 3 editorial slots | parity + text |
+| Film | chaptered player, captions, progress/resume, family films, guest video highlights | parity + e2e |
+| Gallery | 4 collections (`Proposal`, `Bach+ette`, `Wedding Photos`, `Guest Photos`), masonry/grid/timeline views, lightbox, search, people/faces, likes/comments, batch download (≤50, split at 20), share links, claims, guest photos, upload-status lookup | parity + e2e + perf |
+| Uploads | guest upload flow (R2 presign, progress, retry, approval status), guest share tokens | e2e + contract |
+| Guestbook | read, submit, moderation, rate limit, reactions, replies, deep links | e2e + contract |
+| Admin | auth/session, dashboard, upload moderation, album organizer, people review, claims moderation, guestbook moderation, featured content, audit log, analytics, settings | parity + e2e + security review |
 | Print | memory-book route and print styles | parity (print media) |
-| Platform | SEO/OG, PWA/offline, CSP/headers, analytics, Sentry, 404 | contract tests |
+| Platform | SEO/OG (per-route metadata + edge OG), PWA/offline, CSP/headers, analytics, Sentry, 404, activity feed/realtime | contract tests |
+
+### Not part of parity (dead in the frozen app, confirmed by A4)
+
+`BackgroundMusic` (no music plays today), `LoveQuiz`, gallery `MapView`, gallery `SortDropdown`,
+gallery `TimelineView` (the live gallery has masonry/grid/timeline views but not this module),
+`PhotoGrid`/`MasonryGrid`, `VideoSection`, `StoryTimeline`, `EngagementSection`,
+`WeddingPartySection`, `CustomCursor`, `HalloweenEngagement`, `components/search/Search.tsx`, the
+`galleryService`, and the duplicate `components/gallery/components/GalleryHeader.tsx`.
+
+They may be deleted with the legacy app. Restoring any of them is a **new feature request**, not a
+parity requirement — see `audit/A4-product.md` §9 for the owner decisions (music, quiz, map, sort).
+
+### Guarantees that are deliberately *not* inherited
+
+The rebuild replaces these defects rather than reproducing them, subject to the cutover window:
+client-only claim “verification” (`123456`), upload-status lookup by arbitrary email, guestbook
+reaction clobbering, stale SEO metadata on `/activity` and `/admin/*`, and the missing
+`/images/og-image.webp`. They are tracked as R17–R21 in the risk register.
 
 ## What may change
 

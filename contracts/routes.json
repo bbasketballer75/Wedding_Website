@@ -1,0 +1,165 @@
+{
+  "generatedFrom": [
+    "src/App.tsx",
+    "src/components/layout/publicNav.ts",
+    "src/components/seo/SEOHead.tsx",
+    "src/pages/Gallery.tsx",
+    "src/pages/Film.tsx",
+    "netlify.toml",
+    "tests/e2e/seo.spec.ts",
+    "scripts/generate-sitemap.js"
+  ],
+  "routes": [
+    {
+      "id": "home",
+      "path": "/",
+      "kind": "public",
+      "auth": "none",
+      "query": [],
+      "parity": 1,
+      "matrix": ["desktop", "mobile"],
+      "themes": ["dark", "light"],
+      "fixtures": ["guestUploads.json", "editorial.json"],
+      "notes": "Landing page: bespoke in-hero A&J navigation (no shared Header) with links to /film, /gallery, /guestbook, /upload and /print, hero poster image only (no local video element), \"Enter archive\" scroll into #welcome-panel, anniversary countdown, the live love timeline (LoveTimeline.tsx: 9 hard-coded milestone cards Summer 2017 -> May 10 2025, Halloween proposal card with 8-photo carousel, scroll-progress rail, closing film CTA), guest highlight reel (top-6 photos by likes + 10 newest guestbook notes), and the editorial slots (home_moment_of_the_week, home_newest_standout_upload, home_featured_guestbook_note). The live story copy is LoveTimeline's own hard-coded copy; src/data/engagement.ts + src/data/timeline.ts feed only the unmounted EngagementSection/StoryTimeline components and are NOT rendered. The shared Footer renders here; the shared Header does not."
+    },
+    {
+      "id": "film",
+      "path": "/film",
+      "kind": "public",
+      "auth": "none",
+      "query": ["moment", "clip", "resume"],
+      "parity": 1,
+      "matrix": ["desktop", "mobile"],
+      "themes": ["dark", "light"],
+      "fixtures": ["guestUploads.json", "editorial.json"],
+      "notes": "Chaptered main film player (runtime label 45:53, chapters fallback in contracts/content/film.json, live chapters from /video/main-film-chapters.vtt), four parent-dance family films with captions, family-and-friends tree (src/components/family-tree/FamilyTree.tsx), approved guest video clips (only guest_uploads with video_urls; archive_only excluded unless featured; max 6, with memory-trail label/badge), plus film quotes and watch-path exports that are DEAD (filmQuotes/filmWatchPaths are imported only by the unmounted src/components/search/Search.tsx and are not rendered behavior). Deep links: ?moment=<chapter-slug> (e.g. the-ceremony), ?clip=<family-film-id> (mom|melony|christine|jerame), ?resume=1 resumes saved playback. Media over the configured media host; captions VTT over the same host."
+    },
+    {
+      "id": "gallery",
+      "path": "/gallery",
+      "kind": "public",
+      "auth": "none",
+      "query": ["collection", "photo", "q", "share", "shared"],
+      "parity": 1,
+      "matrix": ["desktop", "mobile"],
+      "themes": ["dark", "light"],
+      "fixtures": ["photos.json", "guestUploads.json", "claims.json"],
+      "notes": "Primary photo archive: 35 curated engagement photos merged with published photos rows, exactly four collection tabs whose ?collection= URL vocabulary is Proposal | Bach+ette | Wedding Photos | Guest Photos (src/components/gallery/constants.ts:26; the DB album aliases Engagement/Wedding Day/Guest Uploads are mapped to tabs, they are NOT URL values), three view modes (masonry | grid | timeline via VirtualizedPhotoGrid + GalleryGrid), search, infinite scroll, lightbox with likes/comments/download queue/share, batch download (<=50 selected; client ZIP <=20, Netlify download-pack for 21-50), guest upload lookup, and guest photo claims. Map view / sort dropdown / TimelineView / PhotoGrid / MasonryGrid are DEAD components (no live importer) and are not rendered. Query params: ?collection=<CollectionTab>, ?q=<search>, ?photo=<photo-id> (open lightbox), ?shared=<photo-id> (fetch that photo row then lightbox), ?share=<comma-separated photo ids> (preselect for download; also the Netlify edge OG share target)."
+    },
+    {
+      "id": "upload",
+      "path": "/upload",
+      "kind": "public",
+      "auth": "none",
+      "query": [],
+      "parity": 1,
+      "matrix": ["desktop", "mobile"],
+      "themes": ["dark", "light"],
+      "fixtures": ["guestUploads.json"],
+      "notes": "Guest memory upload: drag/drop or picker (images/video only, 500 MB per-file cap), duplicate fingerprint skipping, resume notice for a stored queue, client-side image compression, pre-signed upload via the Netlify guest-upload-url function to R2 with XHR progress + per-file retry, submit blocked until name+email, insert retried 3x, then a guest_uploads row with status pending lands in the admin moderation queue. Also hosts the \"Claim My Photos\" CTA that opens the 4-step client-side claims wizard (identity -> 6-digit code -> photo selection -> submitted; verification is client-side only today). No account required; rate limiting and RLS protect the write path."
+    },
+    {
+      "id": "guestbook",
+      "path": "/guestbook",
+      "kind": "public",
+      "auth": "none",
+      "query": ["message"],
+      "parity": 1,
+      "matrix": ["desktop", "mobile"],
+      "themes": ["dark", "light"],
+      "fixtures": ["guestbook.json"],
+      "notes": "Public guestbook: moderated messages newest-first with nested comments and reactions (love/clap/laugh/wow), search over name+content, \"Read more notes\" pagination by 8, ?message=<id> scrolls to + highlights and expands pages. The composer validates name 2-50 / message 10-500 chars, has a honeypot that silently succeeds, a client 3/min limiter, the server RPC submit_guestbook_message_with_rate_limit with a graceful fallback insert, optimistic prepend and a form reset after 2.2 s. Replies insert into guestbook_comments optimistically; failed PATCH rolls reactions back."
+    },
+    {
+      "id": "guest-photos",
+      "path": "/guest-photos",
+      "kind": "public",
+      "auth": "none",
+      "query": [],
+      "parity": 1,
+      "matrix": ["desktop", "mobile"],
+      "themes": ["dark", "light"],
+      "fixtures": ["guestUploads.json"],
+      "notes": "Guest Memories contact sheet: approved guest uploads only (status = approved), upload counts, 6 featured thumbnails, per-guest cards with name/date/photo count/message, explicit empty and error states. Guest emails are never rendered."
+    },
+    {
+      "id": "activity",
+      "path": "/activity",
+      "kind": "public",
+      "auth": "none",
+      "query": [],
+      "parity": 3,
+      "matrix": ["desktop", "mobile"],
+      "themes": ["dark", "light"],
+      "fixtures": ["activity.json"],
+      "notes": "Public activity feed over /rest/v1/activity_log with type filters (All/Photos/Guestbook + moment type map), cards linking back to the source photo/message, a new-activity banner for realtime INSERTs, infinite scroll and an empty state. Realtime subscription is disabled when window.__E2E__ is set (src/hooks/useActivityRealtime.ts). KNOWN DEFECT (A4 §5): this route mounts no SEOHead, so the page keeps the previous route's metadata — on a direct load it keeps the static index.html title/description/canonical and the rendered snapshot records exactly that stale/inherited state."
+    },
+    {
+      "id": "admin-login",
+      "path": "/admin/login",
+      "kind": "admin",
+      "auth": "none",
+      "query": [],
+      "parity": 2,
+      "matrix": ["desktop", "mobile"],
+      "themes": ["dark", "light"],
+      "fixtures": ["adminSession.json"],
+      "notes": "Admin sign-in (email/password via Supabase Auth). noindex, nofollow canonical /admin/login. An authenticated visitor is redirected to /admin. Rendered without the public Header/Footer (admin chrome)."
+    },
+    {
+      "id": "admin",
+      "path": "/admin/*",
+      "kind": "admin",
+      "auth": "admin",
+      "query": [],
+      "parity": 2,
+      "matrix": ["desktop", "mobile"],
+      "themes": ["dark", "light"],
+      "fixtures": [
+        "adminSession.json",
+        "photos.json",
+        "guestbook.json",
+        "guestUploads.json",
+        "editorial.json",
+        "claims.json"
+      ],
+      "notes": "Protected moderation portal behind Supabase Auth + RLS (isAdmin checks app_metadata.role === 'admin'; the client check is UI-only, RLS is authoritative). Child routes (src/pages/admin/utils.ts): /admin (dashboard counts), /admin/photos (guest upload moderation + gallery moderation), /admin/albums (album organizer: drag + keyboard reorder, move between the 4 albums, bulk move, delete with undo, save dirty diffs only), /admin/review (people/media review), /admin/claims, /admin/guestbook, /admin/featured (four editorial slots), /admin/audit, /admin/analytics, /admin/settings (read-only operations notes). Unauthenticated visits redirect to /admin/login with the intended destination in router state; a signed-in non-admin sees upgrade instructions. KNOWN DEFECT (A4 §5): no admin page mounts SEOHead, so metadata is inherited/stale from the previous route (static index.html values on direct load) — every admin page is private and must never be indexable."
+    },
+    {
+      "id": "guest-token",
+      "path": "/guest/:token",
+      "kind": "guest",
+      "auth": "guest-token",
+      "query": [],
+      "parity": 2,
+      "matrix": ["desktop", "mobile"],
+      "themes": ["dark", "light"],
+      "fixtures": ["guestTokens.json", "photos.json", "guestbook.json"],
+      "notes": "Personal guest album reached from a share link: the token resolves an email via /rest/v1/guest_share_tokens?token=eq.<token>, then that guest's uploads, approved photo claims and guestbook notes render in the showcase with stats counts, tab switching, a copy-link button (execCommand fallback) and lightbox likes/comments. Photos are de-duplicated across sources (src/lib/supabase/claims.ts). Dynamic title `<guest name>'s Album`, noindex. Invalid/unknown token renders the invalid-token fallback state (see v3-guest-experience.spec.ts)."
+    },
+    {
+      "id": "print",
+      "path": "/print",
+      "kind": "print",
+      "auth": "none",
+      "query": [],
+      "parity": 2,
+      "matrix": ["desktop", "mobile"],
+      "themes": ["light"],
+      "fixtures": ["photos.json", "guestbook.json"],
+      "notes": "Memory Book: print/PDF keepsake built from per-album photo toggles (albums load on demand), a max-photos-per-album slider (6-200) plus numeric input (1-500), a guestbook include toggle, and print disabled when nothing is selected. src/pages/print.css hides header/footer/control panel, forces white page background, sets letter-portrait @page margins and starts each album on a new page. Header, Footer and OfflineIndicator are suppressed by src/App.tsx (isPrintRoute). noindex, canonical /print. The page forces a cream/light surface for print, so parity covers the light theme."
+    },
+    {
+      "id": "not-found",
+      "path": "/*",
+      "kind": "error",
+      "auth": "none",
+      "query": [],
+      "parity": 3,
+      "matrix": ["desktop", "mobile"],
+      "themes": ["dark", "light"],
+      "fixtures": [],
+      "notes": "SPA catch-all: any unmatched path renders NotFound (noindex, nofollow, canonical /404) while keeping the shared Header and Footer. Explicit decisions: (1) /people is NOT a route — the face-recognition People page was retired and fully removed; tests/e2e/seo.spec.ts and smoke.spec.ts assert that /people serves the noindex 404, so it is intentionally covered by this catch-all only. (2) Legacy scripts/generate-sitemap.js still lists /people as a ghost; the greenfield sitemap contract in seo-pwa.json drops it, because publishing a 404 in the sitemap is an SEO defect. (3) There is no dedicated /404 URL route; canonical /404 is metadata only, and routeIsKnown treats it as the catch-all because this contract declares path /*."
+    }
+  ]
+}

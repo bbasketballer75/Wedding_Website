@@ -1,0 +1,152 @@
+{
+  "id": "guest-photos",
+  "route": "/guest-photos",
+  "capturedFrom": "legacy-freeze-2026-11-08",
+  "fixedNow": "2026-11-08T17:00:00.000Z",
+  "capture": {
+    "baseUrl": "http://127.0.0.1:4174",
+    "build": "production build of legacy-freeze-2026-11-08",
+    "reducedMotion": "reduce",
+    "deviceScaleFactor": 1,
+    "colorScheme": "light",
+    "timezone": "America/New_York",
+    "locale": "en-US",
+    "serviceWorkers": "blocked",
+    "mocks": "contracts/fixtures/*.json"
+  },
+  "snapshots": {
+    "desktop": {
+      "viewport": { "width": 1440, "height": 900 },
+      "title": "Guest Photos | Austin & Jordyn's Wedding",
+      "lang": "en",
+      "theme": "dark",
+      "meta": {
+        "description": "Browse the photos and notes shared by family and friends from Austin and Jordyn Porada wedding celebrations.",
+        "robots": "index, follow",
+        "canonical": "https://www.theporadas.com/guest-photos",
+        "ogTitle": "Guest Photos | Austin & Jordyn's Wedding",
+        "ogDescription": "Browse the photos and notes shared by family and friends from Austin and Jordyn Porada wedding celebrations.",
+        "ogImage": "https://www.theporadas.com/images/home/intro-video-poster.png",
+        "twitterTitle": "Guest Photos | Austin & Jordyn's Wedding",
+        "twitterImage": "https://www.theporadas.com/images/home/intro-video-poster.png",
+        "structuredDataCount": 0
+      },
+      "headings": [
+        { "level": 1, "text": "A contact sheet of the night as everyone saw it" },
+        { "level": 2, "text": "Jamie Rivera" },
+        { "level": 2, "text": "Morgan Lee" }
+      ],
+      "navLinks": [
+        { "text": "A&J", "href": "/" },
+        { "text": "WATCH FILM", "href": "/film" },
+        { "text": "GALLERY", "href": "/gallery" },
+        { "text": "GUESTBOOK", "href": "/guestbook" },
+        { "text": "SHARE", "href": "/upload" },
+        { "text": "MEMORY BOOK", "href": "/print" },
+        {
+          "text": "Watch the film Revisit the ceremony, speeches, and the whole dance floor arc.",
+          "href": "/film"
+        },
+        {
+          "text": "Browse the gallery Portraits, candids, and every little detail we never want to forget.",
+          "href": "/gallery"
+        },
+        {
+          "text": "Leave a note A quiet last stop for one message, blessing, or little memory from the day.",
+          "href": "/guestbook"
+        },
+        {
+          "text": "Memory Book Print a keepsake photo book or guestbook — save as PDF from any browser.",
+          "href": "/print"
+        }
+      ],
+      "images": [
+        "/images/engagement/PoradaProposal-29.webp",
+        "/images/engagement/PoradaProposal-11.webp",
+        "/images/engagement/PoradaProposal-150.webp",
+        "/images/engagement/PoradaProposal-181.webp"
+      ],
+      "mainText": [
+        "GUEST MEMORIES",
+        "A contact sheet of the night as everyone saw it",
+        "Candid tables, quick notes, blurry dance-floor joy, and the small details only guests could catch.",
+        "2",
+        "APPROVED UPLOADS",
+        "4",
+        "GUEST PHOTOS",
+        "Share yours",
+        "Jamie Rivera",
+        "MAY 11, 2025",
+        "3 photos",
+        "So glad we were there — what a beautiful day!",
+        "Morgan Lee",
+        "MAY 11, 2025",
+        "1 photo",
+        "Caught some candid moments from our table."
+      ]
+    },
+    "mobile": {
+      "viewport": { "width": 390, "height": 844 },
+      "title": "Guest Photos | Austin & Jordyn's Wedding",
+      "lang": "en",
+      "theme": "dark",
+      "meta": {
+        "description": "Browse the photos and notes shared by family and friends from Austin and Jordyn Porada wedding celebrations.",
+        "robots": "index, follow",
+        "canonical": "https://www.theporadas.com/guest-photos",
+        "ogTitle": "Guest Photos | Austin & Jordyn's Wedding",
+        "ogDescription": "Browse the photos and notes shared by family and friends from Austin and Jordyn Porada wedding celebrations.",
+        "ogImage": "https://www.theporadas.com/images/home/intro-video-poster.png",
+        "twitterTitle": "Guest Photos | Austin & Jordyn's Wedding",
+        "twitterImage": "https://www.theporadas.com/images/home/intro-video-poster.png",
+        "structuredDataCount": 0
+      },
+      "headings": [
+        { "level": 1, "text": "A contact sheet of the night as everyone saw it" },
+        { "level": 2, "text": "Jamie Rivera" },
+        { "level": 2, "text": "Morgan Lee" }
+      ],
+      "navLinks": [
+        { "text": "A&J", "href": "/" },
+        { "text": "FilmWatch Film", "href": "/film" },
+        { "text": "PhotosGallery", "href": "/gallery" },
+        { "text": "GuestsGuestbook", "href": "/guestbook" },
+        { "text": "ShareShare", "href": "/upload" },
+        { "text": "PrintMemory Book", "href": "/print" },
+        { "text": "Watch the film", "href": "/film" },
+        { "text": "Browse the gallery", "href": "/gallery" },
+        { "text": "Leave a note", "href": "/guestbook" },
+        { "text": "Memory Book", "href": "/print" },
+        { "text": "WATCH FILM", "href": "/film" },
+        { "text": "GALLERY", "href": "/gallery" },
+        { "text": "GUESTBOOK", "href": "/guestbook" },
+        { "text": "SHARE", "href": "/upload" },
+        { "text": "MEMORY BOOK", "href": "/print" }
+      ],
+      "images": [
+        "/images/engagement/PoradaProposal-29.webp",
+        "/images/engagement/PoradaProposal-11.webp",
+        "/images/engagement/PoradaProposal-150.webp",
+        "/images/engagement/PoradaProposal-181.webp"
+      ],
+      "mainText": [
+        "GUEST MEMORIES",
+        "A contact sheet of the night as everyone saw it",
+        "Candid tables, quick notes, blurry dance-floor joy, and the small details only guests could catch.",
+        "2",
+        "APPROVED UPLOADS",
+        "4",
+        "GUEST PHOTOS",
+        "Share yours",
+        "Jamie Rivera",
+        "MAY 11, 2025",
+        "3 photos",
+        "So glad we were there — what a beautiful day!",
+        "Morgan Lee",
+        "MAY 11, 2025",
+        "1 photo",
+        "Caught some candid moments from our table."
+      ]
+    }
+  }
+}
