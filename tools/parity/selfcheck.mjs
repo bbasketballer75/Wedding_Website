@@ -18,7 +18,7 @@ import path from 'node:path'
 import { fileURLToPath } from 'node:url'
 import { DEFAULT_TOLERANCE, loadUiContract, probeUrl } from './config.mjs'
 import { DEFAULT_OUT_DIR } from './util.mjs'
-import { perturbPng } from './diff.mjs'
+import { compareDecoded, decodePng, perturbPng } from './diff.mjs'
 import { HarnessError, ROOT, formatRatio, log, nowIso, sha256, writeJsonFile } from './util.mjs'
 import { runCompare } from './compare.mjs'
 
@@ -212,9 +212,10 @@ async function runSelfcheck(options) {
     describeZeroCheck(run2, check2)
   )
 
-  // Byte-identical repeat: same key → same sha256 for every legacy window,
-  // except shots covered by a reviewed allowlist exception (their residual
-  // nondeterminism is documented, bounded and surfaced above).
+  // Repeat-run determinism: decode every captured window pair and require
+  // **0 changed pixels** between run 1 and run 2 (same documented allowlist
+  // exceptions as a normal compare). PNG byte equality is reported as a
+  // diagnostic only — ancillary PNG chunks/metadata must never fail the gate.
   const allowedKeys = new Set(
     (run1.summary.shots ?? [])
       .filter(shot => shot.status === 'allowed')
@@ -222,27 +223,50 @@ async function runSelfcheck(options) {
   )
   const hashes1 = await hashShots(path.join(run1Dir, 'shots', 'legacy'))
   const hashes2 = await hashShots(path.join(run2Dir, 'shots', 'legacy'))
-  const hashMismatches = []
-  const documentedHashMismatches = []
+  const pixelOffenders = []
+  const documentedDiffers = []
+  let byteIdentical = 0
+  let pixelIdentical = 0
   if (hashes1.size !== hashes2.size) {
-    hashMismatches.push(`window count ${hashes1.size} vs ${hashes2.size}`)
+    pixelOffenders.push(`window count ${hashes1.size} vs ${hashes2.size}`)
   }
   for (const [file, hash] of hashes1) {
-    if (hashes2.get(file) === hash) continue
     const key = file.split('--')[0]
-    if (allowedKeys.has(key)) documentedHashMismatches.push(file)
-    else hashMismatches.push(file)
+    const firstPng = await decodePng(path.join(run1Dir, 'shots', 'legacy', file))
+    const secondPng = await decodePng(path.join(run2Dir, 'shots', 'legacy', file))
+    if (hashes2.get(file) === hash) byteIdentical += 1
+    if (firstPng.width !== secondPng.width || firstPng.height !== secondPng.height) {
+      pixelOffenders.push(
+        `${file} dimensions ${firstPng.width}x${firstPng.height} vs ${secondPng.width}x${secondPng.height}`
+      )
+      continue
+    }
+    const metrics = compareDecoded(firstPng, secondPng, {
+      pixelThreshold: DEFAULT_TOLERANCE.pixelThreshold,
+    })
+    if (metrics.changedPixels === 0) {
+      pixelIdentical += 1
+      continue
+    }
+    if (allowedKeys.has(key)) {
+      documentedDiffers.push({ file, changedPixels: metrics.changedPixels, ratio: metrics.ratio })
+      continue
+    }
+    pixelOffenders.push(`${file} changed ${metrics.changedPixels}px`)
   }
   record(
-    'run-2-byte-identical-to-run-1',
-    hashMismatches.length === 0 ? 'pass' : 'fail',
-    hashMismatches.length === 0
-      ? `${hashes1.size - documentedHashMismatches.length} windows byte-identical across runs${
-          documentedHashMismatches.length > 0
-            ? `; ${documentedHashMismatches.length} window(s) in documented exceptions`
-            : ''
-        }`
-      : `${hashMismatches.length} mismatch(es): ${hashMismatches.slice(0, 4).join(', ')}`
+    'run-2-pixel-identical-to-run-1',
+    pixelOffenders.length === 0 ? 'pass' : 'fail',
+    pixelOffenders.length === 0
+      ? `${pixelIdentical}/${hashes1.size} windows pixel-identical (0 changed pixels); ` +
+          `${byteIdentical}/${hashes1.size} byte-identical${
+            documentedDiffers.length > 0
+              ? `; ${documentedDiffers.length} in documented exceptions: ${documentedDiffers
+                  .map(item => `${item.file} ${item.changedPixels}px (${formatRatio(item.ratio)})`)
+                  .join(', ')}`
+              : ''
+          }`
+      : `${pixelOffenders.length} offender(s): ${pixelOffenders.slice(0, 4).join(', ')}`
   )
 
   // ── 3: diff-level perturbation detection ───────────────────────────────

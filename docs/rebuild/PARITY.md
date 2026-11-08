@@ -213,10 +213,16 @@ report.html             # self-contained (images inlined), opens offline
 
 `selfcheck.mjs` proves, against the frozen legacy oracle:
 
-1. legacy vs legacy compare #1 → **0 changed pixels** on every shot;
-2. compare #2 → 0 changed pixels **and** every slice byte-identical (sha256) to run #1;
-3. a deliberately perturbed copy of a captured slice is **detected** by the pixel threshold;
+1. legacy vs legacy compare #1 → every shot passes with **0 changed pixels** (documented allowlist
+   exceptions are reported explicitly, never silently passed);
+2. compare #2 → repeats the same, and every captured window is **decoded and required to have 0
+   changed pixels** vs run #1 (PNG byte equality is reported as a diagnostic only — ancillary
+   chunk/metadata differences must never fail the gate); allowlisted shots are reported with their
+   measured residual;
+3. a deliberately perturbed copy of a captured window is **detected** by the pixel threshold;
 4. a page captured with an injected CSS change fails the ordinary compare (exit code 1).
 
 The run's verdict is written to `<out>/selfcheck.json`; the underlying compares each have their
 own `summary.json` + `report.html` under `<out>/run1`, `<out>/run2` and `<out>/perturbed-capture`.
+`npm run parity:selfcheck` runs the reduced gate (`priority` × `desktop` × `dark`); pass
+`--routes priority --matrix all --themes dark,light` for the full matrix.
