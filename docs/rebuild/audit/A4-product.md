@@ -259,26 +259,31 @@ is precached via `includeAssets` (`vite.config.js:222-230`).
 ## 8. Cross-check against `contracts/` (drift found 2026-11-08)
 
 Read-only review of `contracts/routes.json`, `contracts/features.json`, `contracts/ui.json`,
-`contracts/content/*.json` (contracts-eng's parallel work; do not edit them from this task).
+`contracts/seo-pwa.json`, `contracts/content/*.json` (contracts-eng's parallel work; do not edit them
+from this task). Re-checked at hand-off after contracts-eng landed updates.
 
-- `routes.json` gallery note says collections are "Proposal, Engagement, Bach+ette, Wedding Day,
-  Guest Uploads"; the frozen tab union is `Proposal | Bach+ette | Wedding Photos | Guest Photos`
-  (`src/components/gallery/constants.ts:26`). Two of those five are never valid `?collection=` values.
-- `routes.json` film note mentions "film quotes and watch-path CTAs"; in the frozen app
-  `filmQuotes`/`filmWatchPaths` are only imported by the dead `src/components/search/Search.tsx`
-  (`src/data/film.ts:106-196`) and are not rendered.
-- `features.json` `home.hero` lists `src/components/sections/VideoSection.tsx` as a legacy file; it has
-  no importer (dead). `home.story-timeline` lists `StoryTimeline.tsx` / `EngagementSection.tsx` /
-  `src/data/timeline.ts`, none of which render; the live story is `LoveTimeline.tsx`'s own copy.
-- Missing from `routes.json`: `/activity`, `/admin/*` children, `/guest/:token`, `/print` were checked
-  present in part; confirm each has `query: []` where applicable and that `/activity` +
-  `/admin/*` metadata behaviour (stale metadata) is captured somewhere, since it is a known defect.
-- `features.json` has no feature rows yet for: claims wizard, guest-share album, guest photos page,
-  print/memory book, PWA/offline, SEO/OG edge behaviour, analytics/Sentry, a11y shell, admin
-  dashboard/audit/analytics/settings, album organizer semantics. These are in this A4 matrix; A4 should
-  be the source when filling them in.
-- `ui.json` fixes `defaultTheme: "dark"`; verify against `src/stores/uiStore.ts:46` (`defaultThemeName`
-  from `@/themes`) before treating it as an invariant.
+- Fixed during this audit: `routes.json` now lists all 12 routes (incl. `/activity`, `/admin/*` child
+  map, `/guest/:token`, `/print`), states the exact four-tab `?collection=` vocabulary
+  (`Proposal | Bach+ette | Wedding Photos | Guest Photos`) and marks map/sort/`TimelineView`/
+  `PhotoGrid`/`MasonryGrid` dead. `contracts/content/rendered/` now exists with 6 priority-route
+  snapshots; `contracts/media/INVENTORY.json` and `contracts/seo-pwa.json` now exist.
+- **Still open — invariant conflict:** `features.json` `film.quotes-watch-paths` asserts "All four
+  film quotes … survive" and "the five watch paths … keep labels, descriptions and gallery CTA
+  targets". In the frozen app they are rendered nowhere (`filmQuotes`/`filmWatchPaths` are imported
+  only by the unmounted `src/components/search/Search.tsx`, `src/data/film.ts:106-196`), and
+  `routes.json` now correctly calls them dead. Re-scope that feature to archived-data or add a visible
+  surface (owner Q).
+- **Still open — dead source modules in feature rows:** `home.hero` lists dead
+  `src/components/sections/VideoSection.tsx`; `home.story-timeline` lists dead `StoryTimeline.tsx` /
+  `EngagementSection.tsx` / `src/data/timeline.ts`. The rendered copy is captured correctly in
+  `rendered/home.json`, but the structured `timeline.json`/`story.json` should be labelled
+  `rendered: false` so the rebuild does not promote never-rendered copy into parity.
+- **Still open — behaviours not represented in `features.json`:** the client-only claim wizard (and
+  its `123456` bypass), the public email-based upload-status lookup, stale metadata on `/activity`
+  and `/admin/*`, and the guestbook reaction last-write-wins model. All four are risk-bearing and
+  should be captured as invariants or explicit owner decisions (see §9 and A5).
+- `ui.json` fixes `defaultTheme: "dark"`; verify against `src/stores/uiStore.ts:46`
+  (`defaultThemeName` from `@/themes`) before treating it as an invariant.
 
 ## 9. Open questions for the owner
 

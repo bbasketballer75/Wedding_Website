@@ -173,14 +173,23 @@ people), `curated-photos.json` (35 entries), `film.json` (runtime, 10 chapters +
 films, quotes, watch paths, moment targets), `music.json` (10 tracks + halloween), `memory-trails.json`
 (5), `story.json` (engagement story + 35 photos), `timeline.json` (8 milestones),
 `MEDIA_MANIFEST.json` (83 entries: 61 image / 11 audio / 5 video / 6 VTT, all `existsLocally: true`).
+Re-checked at hand-off: `contracts/content/rendered/` now exists with 6 priority-route snapshots
+(home, film, gallery, guestbook, upload, guest-photos), and `contracts/media/INVENTORY.json` now
+records bucket contracts plus byte/tracked provenance for local media (its byte counts match §2
+exactly). The items below that are still open have been re-verified against those artifacts.
 
 Must-not-miss list for contracts-eng (each item is either not captured, or captured from a dead source):
 
-1. **Rendered timeline ≠ `timeline.json`.** `timeline.json` was extracted from the unrendered
-   `src/data/timeline.ts`. The rendered Home timeline is `LoveTimeline.tsx:35-161` (9 events, its own
-   wording, locations, and media configs). Capture it as rendered text or replace `timeline.json`.
-2. **Rendered proposal story ≠ `story.json`.** `story.json` captures unrendered `engagement.ts`. The
-   rendered proposal copy lives in `LoveTimeline.tsx`'s `HalloweenCard` (`:413-432`).
+1. **Structured timeline JSON comes from a dead module.** `timeline.json` was extracted from the
+   unrendered `src/data/timeline.ts`. The rendered Home timeline is `LoveTimeline.tsx:35-161` (9
+   events, its own wording, locations, media configs) and is now captured in
+   `contracts/content/rendered/home.json` (verified: it contains the rendered LoveTimeline phrasing
+   and not the `timeline.ts` phrasing). Mark `timeline.json`'s source as `rendered: false`; do not
+   use it as a text-parity target.
+2. **Structured story JSON is likewise from a dead module.** `story.json` captures unrendered
+   `engagement.ts`; the rendered proposal copy lives in `LoveTimeline.tsx`'s `HalloweenCard`
+   (`:413-432`) and is now captured in `rendered/home.json` (verified: "Frankenstein" copy present).
+   Same labelling rule as item 1.
 3. **MEDIA_MANIFEST has zero `/media/**` entries.** Missing 22 `/media/timeline/*` files (18 of them
    referenced by `mediaFiles` at `LoveTimeline.tsx:165-190`), the 4 `COLLECTION_COVERS` `_thumbs`
    paths (`src/components/gallery/constants.ts:88-95`), `/captions/empty.vtt`, `/images/og-image.webp`
@@ -199,18 +208,20 @@ Must-not-miss list for contracts-eng (each item is either not captured, or captu
 7. **`src/data/timeline.ts`, `src/data/engagement.ts`, `src/data/gallery.ts`,
    `src/data/weddingParty.ts`'s `WeddingPartySection` consumers, `src/assets/*`** are all
    dead-or-data-only; label them in contracts as `sourceModule` + `rendered: false`.
-8. **Copy hotspots not yet in contracts:** every string in `GuestShare.tsx`, `PhotoLightbox.tsx`,
-   `ClaimModal.tsx`/`claimStore.ts`, upload queue/success copy, guestbook hero/composer/empty-state
-   copy, admin dashboard/settings/featured/claims copy, `AdminLogin` role instructions, and the 404
-   page copy — these need `contracts/content/rendered/<route>.json` captures, not paraphrases.
-   `contracts/content/rendered/` did not exist at audit time.
+8. **Copy hotspots not yet in contracts:** rendered snapshots now cover the 6 priority routes, but
+   every string in `GuestShare.tsx`, `PhotoLightbox.tsx`, `ClaimModal.tsx`/`claimStore.ts`, upload
+   queue/success copy, guestbook hero/composer/empty-state copy, admin dashboard/settings/featured/
+   claims copy, `AdminLogin` role instructions, activity/print/404 pages, and error+retry+rate-limit
+   strings still needs `contracts/content/rendered/<route>.json` captures, not paraphrases.
 9. **PWA/manifest strings** (`vite.config.js:156-188`: name, short_name, description, 2 shortcuts) and
    **`index.html` static meta** (`:14-48`) are content too; they are not in any content JSON yet.
 10. **`/people` SEO copy** (`PeopleSEO`, `SEOHead.tsx:292-307`) is dead copy for a retired route —
     archive it, don't migrate it.
-11. `MEDIA_MANIFEST` should record byte sizes and `tracked|gitignored|remote-only` provenance; today
-    it has only `existsLocally` + `referencedBy`, so the no-media-loss check cannot distinguish a
-    gitignored-but-present file from a missing one.
+11. `MEDIA_MANIFEST` still needs byte sizes and `tracked|gitignored|remote-only` provenance per entry
+    (today it has only `existsLocally` + `referencedBy`, so the no-media-loss check cannot
+    distinguish a gitignored-but-present file from a missing one). `contracts/media/INVENTORY.json`
+    now holds the directory-level bytes/provenance — link the two so the manifest is the checklist
+    and the inventory is the source of truth for where bytes live.
 12. Existing `wedding.json` `weddingDateUtc: 2025-05-10T22:00:00.000Z` inherits the `-05:00` offset
     bug (should be `-04:00` → 19:00Z or 15:30 per JSON-LD); flag before it becomes the rebuild's
     canonical instant.
