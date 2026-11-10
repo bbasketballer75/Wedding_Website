@@ -7,7 +7,12 @@
  * handlers the page already owns. When closed the viewer renders nothing, so
  * the frozen DOM/copy are unchanged.
  */
-import { PhotoLightbox } from '@/features/photo-viewer'
+import { Suspense, lazy } from 'react'
+
+// Loaded on first open only; keeps the guest-share route chunk small.
+const PhotoLightbox = lazy(() =>
+  import('@/features/photo-viewer').then(module => ({ default: module.PhotoLightbox }))
+)
 import type { GuestShareLightboxSlotProps } from './types'
 
 export function GuestShareLightboxSlot({
@@ -19,13 +24,15 @@ export function GuestShareLightboxSlot({
   verifiedNames,
 }: GuestShareLightboxSlotProps) {
   return (
-    <PhotoLightbox
-      photos={photos}
-      isOpen={isOpen}
-      initialIndex={initialIndex}
-      onClose={onClose}
-      {...(engagement ? { engagement } : {})}
-      {...(verifiedNames ? { verifiedNames } : {})}
-    />
+    <Suspense fallback={null}>
+      <PhotoLightbox
+        photos={photos}
+        isOpen={isOpen}
+        initialIndex={initialIndex}
+        onClose={onClose}
+        {...(engagement ? { engagement } : {})}
+        {...(verifiedNames ? { verifiedNames } : {})}
+      />
+    </Suspense>
   )
 }

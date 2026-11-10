@@ -1,9 +1,11 @@
-import { useEffect, useRef } from 'react'
-import {
-  PhotoLightbox,
-  type PhotoViewerEngagement,
-  type ViewerPhoto,
-} from '@/features/photo-viewer'
+import { Suspense, lazy, useEffect, useRef } from 'react'
+import type { PhotoViewerEngagement, ViewerPhoto } from '@/features/photo-viewer'
+
+// The viewer is a heavy modal (faces, comments, print/share); keep it out of the
+// gallery route chunk so /gallery stays inside the 120 KiB per-route budget.
+const PhotoLightbox = lazy(() =>
+  import('@/features/photo-viewer').then(module => ({ default: module.PhotoLightbox }))
+)
 
 export interface GalleryLightboxSlotProps {
   /** Photo id requested through `?photo=` (or the resolved `?shared=` row). */
@@ -51,13 +53,15 @@ export function GalleryLightboxSlot({
   }, [onOpen, requestedPhotoId])
 
   return (
-    <PhotoLightbox
-      photos={photos}
-      isOpen={isOpen}
-      initialIndex={initialIndex}
-      onClose={onClose ?? (() => undefined)}
-      {...(engagement ? { engagement } : {})}
-      {...(verifiedNames ? { verifiedNames } : {})}
-    />
+    <Suspense fallback={null}>
+      <PhotoLightbox
+        photos={photos}
+        isOpen={isOpen}
+        initialIndex={initialIndex}
+        onClose={onClose ?? (() => undefined)}
+        {...(engagement ? { engagement } : {})}
+        {...(verifiedNames ? { verifiedNames } : {})}
+      />
+    </Suspense>
   )
 }

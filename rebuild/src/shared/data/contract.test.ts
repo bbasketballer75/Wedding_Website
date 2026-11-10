@@ -6,15 +6,15 @@
  *
  *   # 1. start the local sandbox (Wave 0 recipe)
  *   cd .. && npx supabase --workdir tmp/supabase-sandbox start && cd rebuild
- *   # 2. export the sandbox REST URL + anon key printed by `supabase status -o env`
- *   export VITE_SUPABASE_URL=http://127.0.0.1:55321
- *   export VITE_SUPABASE_ANON_KEY=<ANON_KEY>
- *   export SUPABASE_CONTRACT_TEST=1
- *   # 3. run only this file
- *   npx vitest run src/shared/data/contract.test.ts
+ *   # 2. point at the sandbox REST URL + anon key from `supabase status -o env`
+ *   #    (use these, NOT VITE_SUPABASE_*: vitest.config.ts sets deterministic
+ *   #    VITE_* test env values and `test.env` overrides the shell environment)
+ *   export SUPABASE_CONTRACT_URL=http://127.0.0.1:55321
+ *   export SUPABASE_CONTRACT_ANON_KEY=<ANON_KEY>
+ *   # 3. run only this file through the wrapper
+ *   npm run test:contract
  *
- * The Lead wires `npm run test:contract` to that command in W3-3 (package.json is
- * outside this wave's scope). This file is READ-ONLY against the local DB except
+ * This file is READ-ONLY against the local DB except
  * for one documented, expected-to-fail RPC probe (baseline defect R17) which
  * fails before writing anything.
  *

@@ -1,5 +1,5 @@
 import { Outlet, useRouterState } from '@tanstack/react-router'
-import { Suspense, useEffect, useRef, useState } from 'react'
+import { Suspense, useCallback, useEffect, useState } from 'react'
 import { PageLoader } from '@/shared/ui/PageLoader'
 import { QueryProvider } from '../providers/QueryProvider'
 import { AccessibilityProvider } from './AccessibilityProvider'
@@ -23,42 +23,48 @@ import { ThemeProvider } from './ThemeProvider'
  * arrived (measured CLS 0.64, source `footer`). Mounting it below real content
  * removes the shift; a 1.5 s fallback guarantees the footer still appears if a
  * route errors or never loads.
+ *
+ * The ready flag lives at MODULE scope, not component state: the shell can be
+ * remounted during router hydration normalization, and a state-only latch would
+ * reset to false and hide an already-painted footer (measured as a late CLS
+ * shift on uncompressed delivery). The module latch is per page load, so any
+ * remount renders the footer visible immediately.
  */
+let footerReadyForPageLoad = false
+
+/**
+ * Mounts only after the route inside the Suspense boundary has actually rendered
+ * (a marker child resolves with the same boundary). Revealing the footer on
+ * route-commit — instead of on a height heuristic — is what keeps the footer out
+ * of the first frame: the 70vh Suspense fallback is taller than any height
+ * threshold a heuristic would use, so measuring heights revealed the footer
+ * before content and produced a shift when content arrived.
+ */
+function RouteReady({ onReady }: { onReady: () => void }) {
+  useEffect(() => {
+    // Deferred a frame so the marker never setState synchronously inside an
+    // effect (React lint / cascading-render hygiene).
+    const frame = window.requestAnimationFrame(onReady)
+    return () => window.cancelAnimationFrame(frame)
+  }, [onReady])
+
+  return null
+}
+
 export function RootLayout() {
   const pathname = useRouterState({ select: state => state.location.pathname })
   const isHome = pathname === '/'
   const isPrint = pathname === '/print'
   const isAdmin = pathname === '/admin/login' || pathname.startsWith('/admin/')
-  const mainRef = useRef<HTMLElement | null>(null)
-  const [contentReady, setContentReady] = useState(false)
+  const [contentReady, setContentReady] = useState(footerReadyForPageLoad)
 
-  useEffect(() => {
+  const markReady = useCallback(() => {
     // One-way latch: once revealed, the footer never hides again (hiding it after
     // paint is itself a layout shift). A later route mount keeps the footer
     // mounted below the content, so nothing above it moves.
-    if (contentReady) return
-    const element = mainRef.current
-    const markReady = () => setContentReady(true)
-    const timer = window.setTimeout(markReady, 1500)
-    if (!element) return () => window.clearTimeout(timer)
-
-    const check = () => {
-      if (element.scrollHeight > 400) markReady()
-    }
-    // Deferred one frame so the initial measurement never setState synchronously
-    // inside the effect (React lint + cascading-render hygiene).
-    const frame = window.requestAnimationFrame(check)
-    let observer: ResizeObserver | null = null
-    if (typeof ResizeObserver !== 'undefined') {
-      observer = new ResizeObserver(check)
-      observer.observe(element)
-    }
-    return () => {
-      window.cancelAnimationFrame(frame)
-      window.clearTimeout(timer)
-      observer?.disconnect()
-    }
-  }, [contentReady])
+    footerReadyForPageLoad = true
+    setContentReady(true)
+  }, [])
 
   return (
     <AccessibilityProvider>
@@ -70,7 +76,6 @@ export function RootLayout() {
 
             <main
               id='main-content'
-              ref={mainRef}
               role='main'
               aria-label={pageTitle(pathname) ?? 'Page content'}
               tabIndex={-1}
@@ -86,6 +91,7 @@ export function RootLayout() {
                     }
                   >
                     <Outlet />
+                    {!contentReady && <RouteReady onReady={markReady} />}
                   </Suspense>
                 </PageTransition>
               </RouteErrorBoundary>

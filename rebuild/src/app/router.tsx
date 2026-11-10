@@ -1,8 +1,6 @@
 import { createRootRoute, createRoute, createRouter } from '@tanstack/react-router'
 import { lazy } from 'react'
 import { NotFoundPage } from '@/features/not-found/NotFoundPage'
-import { guestPhotosApi } from './routes/guest-photos-api'
-import { guestShareApi } from './routes/guest-share-api'
 import { RootLayout } from './shell/RootLayout'
 
 /**
@@ -29,8 +27,8 @@ const UploadPage = lazy(() =>
 const GuestbookRoute = lazy(() =>
   import('./routes/guestbook-route').then(module => ({ default: module.GuestbookRoute }))
 )
-const GuestPhotosPage = lazy(() =>
-  import('@/features/guest-photos').then(module => ({ default: module.GuestPhotosPage }))
+const GuestPhotosRoute = lazy(() =>
+  import('./routes/guest-photos-route').then(module => ({ default: module.GuestPhotosRoute }))
 )
 const ActivityRoute = lazy(() =>
   import('./routes/activity-route').then(module => ({ default: module.ActivityRoute }))
@@ -41,8 +39,8 @@ const AdminLoginPageRoute = lazy(() =>
 const AdminPageRoute = lazy(() =>
   import('./routes/admin-routes').then(module => ({ default: module.AdminPageRoute }))
 )
-const GuestSharePage = lazy(() =>
-  import('@/features/guest-share').then(module => ({ default: module.GuestSharePage }))
+const GuestShareRoute = lazy(() =>
+  import('./routes/guest-share-route').then(module => ({ default: module.GuestShareRoute }))
 )
 const PrintPage = lazy(() =>
   import('@/features/print/PrintPage').then(module => ({ default: module.PrintPage }))
@@ -95,9 +93,7 @@ const guestbookRoute = createRoute({
 const guestPhotosRoute = createRoute({
   getParentRoute: () => rootRoute,
   path: '/guest-photos',
-  component: function GuestPhotosRoute() {
-    return <GuestPhotosPage api={guestPhotosApi} />
-  },
+  component: GuestPhotosRoute,
 })
 
 const activityRoute = createRoute({
@@ -129,7 +125,7 @@ const guestTokenRoute = createRoute({
   path: '/guest/$token',
   component: function GuestTokenRoute() {
     const { token } = guestTokenRoute.useParams()
-    return <GuestSharePage token={token} api={guestShareApi} />
+    return <GuestShareRoute token={token} />
   },
 })
 

@@ -46,6 +46,8 @@ node tools/perf/run.mjs --url http://127.0.0.1:4174 --label legacy   # other sid
 # Options: --routes /,/gallery,/film  --viewports mobile,desktop (or 390,1440)
 #          --runs 3  --warmup 1  --json  --no-mocks  --timeout 90000
 #          --baseline <previous-report.json>   (before/after delta table)
+#          --settle <ms>                       (extra post-load quiet window, default 500;
+#                                               use e.g. 8000 to catch late CLS shifts)
 #          --allow-dist-drift                  (record even if dist changed mid-run)
 #          --out <file>  --markdown-out <file>  --label <name>
 ```

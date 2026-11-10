@@ -1,0 +1,143 @@
+{
+  "schemaVersion": 1,
+  "kind": "runtime-budget",
+  "generatedAt": "2026-11-10T01:20:53.956Z",
+  "label": "tmp_dist-prod_gzip",
+  "target": {
+    "mode": "internal-static",
+    "url": "http://127.0.0.1:59986",
+    "compression": "gzip",
+    "dist": "tmp/dist-prod",
+    "fingerprintBefore": {
+      "indexHtmlSha256": "470a0627bdabc6533e22d96b96957954561dafb9a0e8b09b46c4500c2813e698",
+      "assetFiles": 86
+    },
+    "fingerprintAfter": {
+      "indexHtmlSha256": "470a0627bdabc6533e22d96b96957954561dafb9a0e8b09b46c4500c2813e698",
+      "assetFiles": 86
+    },
+    "consistency": "stable"
+  },
+  "url": "http://127.0.0.1:59986",
+  "mockNetwork": "mocked (supabase empty JSON, image stub, media aborted)",
+  "networkProfile": {
+    "name": "slow-4g",
+    "latencyMs": 150,
+    "downloadThroughputBytesPerSecond": 209715,
+    "uploadThroughputBytesPerSecond": 96000,
+    "connectionType": "cellular4g"
+  },
+  "cpuThrottleRate": 4,
+  "settling": {
+    "quietWindowMs": 8000,
+    "networkIdleTimeoutMs": 8000
+  },
+  "toolchain": {
+    "node": "v26.8.1",
+    "playwright": "1.65.0",
+    "chromium": "158.0.8127.18"
+  },
+  "budgets": {
+    "lcpMs": 2000,
+    "cls": 0.05
+  },
+  "routes": ["/"],
+  "viewports": [
+    {
+      "id": "mobile",
+      "width": 390,
+      "height": 844
+    }
+  ],
+  "warmupRuns": 0,
+  "runs": 1,
+  "cells": [
+    {
+      "route": "/",
+      "viewport": "mobile",
+      "viewportPixels": {
+        "width": 390,
+        "height": 844
+      },
+      "runs": [
+        {
+          "lcpMs": 1756,
+          "lcpElement": "style",
+          "lcpSize": 199101,
+          "cls": 0,
+          "shiftCount": 0,
+          "clsShiftSources": [],
+          "fcpMs": 1756,
+          "ttfbMs": 157.80000001192093,
+          "dclMs": 2173.9000000059605,
+          "loadMs": 2177.100000023842,
+          "longTasks": 9,
+          "longTaskMs": 1270,
+          "transferBytes": {
+            "script": 293555,
+            "css": 28101,
+            "font": 62520,
+            "image": 370,
+            "media": 0,
+            "data": 0,
+            "other": 0,
+            "total": 386923
+          },
+          "requestCount": 51,
+          "httpStatus": 200,
+          "consoleErrors": [],
+          "requestFailures": [],
+          "mocks": {
+            "realAssets": 30,
+            "supabase": 3,
+            "images": 19,
+            "blocked": 0
+          },
+          "finalUrl": "http://127.0.0.1:59986/",
+          "ok": true,
+          "invalidReason": null
+        }
+      ],
+      "warmupRuns": [],
+      "median": {
+        "lcpMs": 1756,
+        "cls": 0,
+        "fcpMs": 1756,
+        "ttfbMs": 157.80000001192093,
+        "dclMs": 2173.9000000059605,
+        "loadMs": 2177.100000023842,
+        "longTasks": 9,
+        "longTaskMs": 1270,
+        "requestCount": 51,
+        "transferBytes": {
+          "script": 293555,
+          "css": 28101,
+          "font": 62520,
+          "image": 370,
+          "media": 0,
+          "data": 0,
+          "other": 0,
+          "total": 386923
+        },
+        "lcpElement": "style",
+        "clsSources": [],
+        "httpStatus": 200,
+        "consoleErrors": 0,
+        "requestFailures": 0
+      },
+      "budget": {
+        "ok": true,
+        "violations": []
+      },
+      "validRuns": 1,
+      "invalidRuns": []
+    }
+  ],
+  "summary": {
+    "violations": [],
+    "cells": 1,
+    "failingCells": 0,
+    "invalidRuns": 0,
+    "distChangedDuringRun": false
+  }
+}

@@ -53,9 +53,10 @@ describe('GalleryLightboxSlot', () => {
     expect(onOpen).not.toHaveBeenCalled()
   })
 
-  it('renders the frozen portal dialog at the requested index when open', () => {
+  it('renders the frozen portal dialog at the requested index when open', async () => {
     renderSlot({ isOpen: true, initialIndex: 1, onClose: vi.fn() })
-    const dialog = screen.getByRole('dialog')
+    // The viewer is lazy-loaded on first open (kept out of the gallery route chunk).
+    const dialog = await screen.findByRole('dialog')
     expect(dialog).toHaveAttribute('aria-modal', 'true')
     expect(screen.getByText('Photo viewer — Ceremony')).toBeInTheDocument()
     expect(screen.getByText('2 / 2')).toBeInTheDocument()
@@ -64,6 +65,7 @@ describe('GalleryLightboxSlot', () => {
   it('closes through the viewer contract (Esc -> onClose)', async () => {
     const onClose = vi.fn()
     renderSlot({ isOpen: true, onClose })
+    await screen.findByRole('dialog')
 
     fireEvent.keyDown(document, { key: 'Escape' })
     await waitFor(() => expect(onClose).toHaveBeenCalledTimes(1))

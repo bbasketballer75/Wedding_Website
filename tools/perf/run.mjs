@@ -334,7 +334,7 @@ async function measureOnce({ browser, baseUrl, routePath, viewport, options }) {
         await new Promise(resolve => requestAnimationFrame(() => requestAnimationFrame(resolve)))
       })
       .catch(() => undefined)
-    await sleep(SETTLE_QUIET_MS)
+    await sleep(options.settleMs)
 
     const raw = await page.evaluate(perfCollectScript)
     const record = toRunRecord(raw, {
@@ -718,6 +718,7 @@ function parseArgs(argv) {
     timeoutMs: DEFAULT_TIMEOUT_MS,
     out: path.join(defaultOutDir, 'latest.json'),
     markdownOut: null,
+    settleMs: SETTLE_QUIET_MS,
     baseline: null,
     allowDistDrift: false,
     label: null,
@@ -793,6 +794,14 @@ function parseArgs(argv) {
       case '--baseline':
         options.baseline = path.resolve(readValue(argument))
         break
+      case '--settle': {
+        const settleMs = Number(readValue(argument))
+        if (!Number.isFinite(settleMs) || settleMs < 0) {
+          throw new HarnessError('--settle must be milliseconds >= 0')
+        }
+        options.settleMs = settleMs
+        break
+      }
       case '--allow-dist-drift':
         options.allowDistDrift = true
         break
@@ -952,7 +961,7 @@ async function main(argv) {
         : 'live network',
       networkProfile: NETWORK_PROFILE,
       cpuThrottleRate: CPU_THROTTLE_RATE,
-      settling: { quietWindowMs: SETTLE_QUIET_MS, networkIdleTimeoutMs: SETTLE_TIMEOUT_MS },
+      settling: { quietWindowMs: options.settleMs, networkIdleTimeoutMs: SETTLE_TIMEOUT_MS },
       toolchain: {
         node: process.version,
         playwright: playwright.version,
