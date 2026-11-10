@@ -141,6 +141,7 @@ tmp/
 contracts/baseline/*
 !contracts/baseline/metrics.json
 tools/parity/output/
+tools/perf/output/
 tools/extract-content/.cache/
 # The greenfield app is scaffolded after the stack gate; never commit its install/build output.
 rebuild/node_modules/

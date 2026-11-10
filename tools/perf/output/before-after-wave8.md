@@ -1,102 +1,115 @@
 # Wave 8 performance verification — FINAL
 
-Build measured: **`tmp/dist-prod`** (preserved production build: prerendered HTML + boot shell + PWA
-artifacts; `build:prod` + `build:seo:check` green). Two delivery modes, both served by the harness's
-own static server so only response compression differs:
+Build measured: **`tmp/dist-prod`**, mtime 2026-11-09T20:44:26Z, entry `assets/index-B2WLkd8r.js`,
+sha256 `B6561807…`, 86 assets (production build: prerendered HTML + boot shell + PWA artifacts;
+`build:prod` + `build:seo:check` green). Build fingerprint verified stable before/after every suite.
 
-- **compressed** (deployment-representative): gzip static server — `node tools/perf/run.mjs --serve-dist tmp/dist-prod --check`
-- **uncompressed** (worst case): same server with `--compression none` — `node tools/perf/run.mjs --serve-dist tmp/dist-prod --compression none --check`
+Command set (reproducible; Lead/CI owns builds):
 
-Method: Playwright Chromium 1.65, slow-4G (1.6 Mbps down / 750 kbps up / 150 ms RTT) + CPU ×4,
-390×844 and 1440×900 (contracts/ui.json), parity mocks (Supabase→empty JSON, images→1×1 PNG stub,
-video/audio aborted), fresh context per run, 1 warm-up + 3 measured runs, median. Build fingerprint
-stable before/after both runs (`target.consistency: stable`), 18/18 runs valid. JSON:
-`final-bundle.json`, `final-compressed.json`, `final-uncompressed.json`.
+```bash
+node tools/perf/bundle.mjs --dist tmp/dist-prod --check
+node tools/perf/run.mjs --serve-dist tmp/dist-prod --check \
+  --baseline tools/perf/output/baseline-before-fix-compressed.json
+node tools/perf/run.mjs --serve-dist tmp/dist-prod --compression none --check   # diagnostic only
+```
 
-## Bundle budgets — `node tools/perf/bundle.mjs --dist tmp/dist-prod --check` → **exit 0, all pass**
+Method: Playwright Chromium 1.65 (from `rebuild/node_modules`), slow-4G (1.6 Mbps down / 750 kbps
+up / 150 ms RTT) + CPU ×4, viewports 390×844 / 1440×900 (`contracts/ui.json`), deterministic parity
+mocks (Supabase→empty JSON, images→1×1 PNG, video/audio aborted), fresh browser context per run,
+1 warm-up (discarded) + **3 measured runs, median**. `compressed` = harness's gzip static server
+(deployment-representative); `uncompressed` = same server with `--compression none` (diagnostic
+worst case, not a deployable Netlify mode). JSON: `final6-bundle.json`, `final6-compressed.json`,
+`final6-uncompressed.json` (+ `.md`).
 
-| Measurement                        |                                              Value |              Budget | Verdict |
-| ---------------------------------- | -------------------------------------------------: | ------------------: | ------- |
-| Initial JS (entry + modulepreload) |                                  **159.99 KiB gz** |                 180 | ✅ PASS |
-| `/` incremental                    |                                             114.57 |                 120 | ✅ PASS |
-| `/film`                            |                                             109.50 |                 120 | ✅ PASS |
-| `/gallery`                         |                                             109.27 |                 120 | ✅ PASS |
-| `/upload`                          |                                              21.56 |                 120 | ✅ PASS |
-| `/guestbook`                       |                                              94.50 |                 120 | ✅ PASS |
-| `/guest-photos`                    |                                               4.44 |                 120 | ✅ PASS |
-| `/activity`                        |                                              88.21 |                 120 | ✅ PASS |
-| `/admin/login`                     | **107.82** (was 125.43 before the lazy W7-2 split) |                 120 | ✅ PASS |
-| `/admin`                           |                                         **107.82** |                 120 | ✅ PASS |
-| `/guest/:token`                    |                                               8.22 |                 120 | ✅ PASS |
-| `/print`                           |                                              83.61 |                 120 | ✅ PASS |
-| Total JS (all chunks)              |                                             395.62 | 450 (informational) | ✅ PASS |
+## 1. Bundle budgets — `bundle.mjs --check` → **exit 0, all pass**
 
-Wording for the report: **public routes ≤120 KiB (max `/` 114.57); admin routes now 107.82 KiB after
-the lazy W7-2 split.** Unattributed (dynamically imported admin sub-pages, informational):
-AlbumOrganizerPage 6.94, PeopleReviewPage 4.95, FeaturedContentPage 4.03, AnalyticsPage 2.18,
-settings 1.41, `sw.js` 1.20 KiB.
+| Measurement | Value | Budget | Verdict |
+|---|---:|---:|---|
+| Initial JS (entry `<script>` + `modulepreload`) | **160.14 KiB gz** | 180 | ✅ PASS |
+| `/` incremental | 118.94 | 120 | ✅ PASS |
+| `/film` | 113.89 | 120 | ✅ PASS |
+| `/gallery` | 114.38 | 120 | ✅ PASS |
+| `/upload` | 21.71 | 120 | ✅ PASS |
+| `/guestbook` | 94.73 | 120 | ✅ PASS |
+| `/guest-photos` | 84.01 | 120 | ✅ PASS |
+| `/activity` | 88.23 | 120 | ✅ PASS |
+| `/admin` and `/admin/login` | 116.41 | 120 | ✅ PASS |
+| `/guest/:token` | 91.15 | 120 | ✅ PASS |
+| `/print` | 83.99 | 120 | ✅ PASS |
+| Total JS (all 63 JS files) | 411.83 KiB | 450 (informational) | ✅ PASS |
 
-## Runtime budgets — compressed delivery (deployment-representative) → **exit 0, all pass**
+Wording for the checkpoint: **initial JS 160.14 KiB gz; public routes ≤120 KiB (max `/` 118.94);
+admin routes 116.41 KiB after the lazy W7-2 split and the lazy-viewer/guest-adapter splits.**
+Unattributed at runtime (dynamically imported, informational): `photo-viewer` 8.19 KiB,
+`AlbumOrganizerPage` 6.94, `PeopleReviewPage` 4.95, `FeaturedContentPage` 4.03, `AnalyticsPage` 2.17,
+`settings` 1.41, `sw.js` 1.20 KiB.
 
-| Route      | Viewport |         LCP |    CLS | TTFB |  DCL | load |   Transfer | Valid runs | Verdict |
-| ---------- | -------- | ----------: | -----: | ---: | ---: | ---: | ---------: | ---------: | ------- |
-| `/`        | mobile   |  **940 ms** | 0.0000 |  153 | 1666 | 1666 | 372.76 KiB |        3/3 | ✅ PASS |
-| `/gallery` | mobile   |  **940 ms** | 0.0000 |  153 | 1636 | 1636 | 329.33 KiB |        3/3 | ✅ PASS |
-| `/film`    | mobile   | **1120 ms** | 0.0000 |  154 | 1626 | 1626 | 360.01 KiB |        3/3 | ✅ PASS |
-| `/`        | desktop  |  **992 ms** | 0.0007 |  155 | 1803 | 1804 | 372.76 KiB |        3/3 | ✅ PASS |
-| `/gallery` | desktop  | **1004 ms** | 0.0005 |  154 | 1959 | 1959 | 332.22 KiB |        3/3 | ✅ PASS |
-| `/film`    | desktop  | **1012 ms** | 0.0010 |  155 | 1855 | 1856 | 360.01 KiB |        3/3 | ✅ PASS |
+## 2. Runtime budgets — COMPRESSED delivery (release gate) → **exit 0, all six cells pass**
 
-Budgets: LCP ≤ 2000 ms, CLS ≤ 0.05 → **all six cells pass**. LCP element is the prerendered
-boot-shell heading (`A & J · WEDDING ARCHIVE` / `Austin & Jordyn`) painted from the HTML — i.e. LCP
-is now HTML-driven, which resolves the earlier "client-render parse" caveat. The harness labels the
-node `style` because Chrome attributes the inline boot-shell `<style>` block; timing
-(912–1120 ms, ≈ FCP) is the meaningful part.
+| Route | Viewport | LCP | CLS | TTFB | DCL | load | Transfer | Valid runs | Verdict |
+|---|---|---:|---:|---:|---:|---:|---:|---:|---|
+| `/` | mobile | **924 ms** | **0.0000** | 153 ms | 1688 | 1688 | 377.88 KiB | 3/3 | ✅ PASS |
+| `/gallery` | mobile | **920 ms** | **0.0000** | 153 ms | 1653 | 1653 | 349.10 KiB | 3/3 | ✅ PASS |
+| `/film` | mobile | **920 ms** | **0.0000** | 153 ms | 1638 | 1638 | 364.86 KiB | 3/3 | ✅ PASS |
+| `/` | desktop | **1092 ms** | **0.0007** | 158 ms | 1945 | 1953 | 377.88 KiB | 3/3 | ✅ PASS |
+| `/gallery` | desktop | **912 ms** | **0.0005** | 153 ms | 1749 | 1750 | 351.99 KiB | 3/3 | ✅ PASS |
+| `/film` | desktop | **1076 ms** | **0.0010** | 160 ms | 1866 | 1867 | 364.86 KiB | 3/3 | ✅ PASS |
 
-### CLS before → after (compressed delivery, `--baseline baseline-before-fix-compressed.json`)
+Budgets: LCP ≤ 2000 ms, CLS ≤ 0.05 → all pass (CLS 10–40× below budget; LCP 0.9–1.1 s). LCP element
+is the prerendered boot-shell heading painted from HTML (Chrome reports the inline boot-shell
+`<style>` node, hence the label `style`; timing ≈ FCP is the meaningful part). Fingerprint stable,
+18/18 valid runs.
 
-| Route (viewport)   | LCP before | LCP after |        Δ LCP | CLS before | CLS after |       Δ CLS | Δ transfer |
-| ------------------ | ---------: | --------: | -----------: | ---------: | --------: | ----------: | ---------: |
-| `/` mobile         |       4084 |       940 | **−3144 ms** |     0.0293 |    0.0000 |     −0.0293 |  +1.64 KiB |
-| `/gallery` mobile  |       2828 |       940 | **−1888 ms** |     1.0000 |    0.0000 | **−1.0000** | −33.06 KiB |
-| `/film` mobile     |       2728 |      1120 | **−1608 ms** |     1.0293 |    0.0000 | **−1.0293** | −42.08 KiB |
-| `/` desktop        |       2620 |       992 | **−1628 ms** |     0.6389 |    0.0007 | **−0.6382** | −36.78 KiB |
-| `/gallery` desktop |       2620 |      1004 | **−1616 ms** |     0.6389 |    0.0005 | **−0.6384** | −33.06 KiB |
-| `/film` desktop    |       2872 |      1012 | **−1860 ms** |     0.6389 |    0.0010 | **−0.6379** | −42.08 KiB |
+### CLS/LCP before → after (vs pre-fix parity build, `--baseline baseline-before-fix-compressed.json`)
 
-Before = pre route-splitting/CLS-fix parity build (same harness, gzip server, 1 run/cell);
-after = this production build, median of 3. This is the fix evidence: footer-push CLS eliminated,
-LCP cut by 1.6–3.1 s, transfer down 33–42 KiB per route.
+| Route (viewport) | LCP before | LCP after | Δ LCP | CLS before | CLS after | Δ CLS | Δ transfer |
+|---|---:|---:|---:|---:|---:|---:|---:|
+| `/` mobile | 4084 | 924 | **−3160 ms** | 0.0293 | 0.0000 | −0.0293 | +6.76 KiB |
+| `/gallery` mobile | 2828 | 920 | **−1908 ms** | 1.0000 | 0.0000 | **−1.0000** | −13.29 KiB |
+| `/film` mobile | 2728 | 920 | **−1808 ms** | 1.0293 | 0.0000 | **−1.0293** | −37.23 KiB |
+| `/` desktop | 2620 | 1092 | **−1528 ms** | 0.6389 | 0.0007 | **−0.6382** | −31.66 KiB |
+| `/gallery` desktop | 2620 | 912 | **−1708 ms** | 0.6389 | 0.0005 | **−0.6384** | −13.29 KiB |
+| `/film` desktop | 2872 | 1076 | **−1796 ms** | 0.6389 | 0.0010 | **−0.6379** | −37.23 KiB |
 
-## Runtime budgets — uncompressed delivery (worst case) → **exit 1, CLS violations remain**
+Before = pre route-splitting/CLS-fix build (same harness/profile, 1 run/cell); after = this build,
+median of 3. This is the evidence bundle for the Wave-8 performance work: prerender cut LCP by
+1.5–3.2 s, the footer-push CLS defect is gone, and transfer dropped 13–37 KiB/mobile route.
 
-Same production build, `--compression none` (comparable to `vite preview` / a server without gzip):
+## 3. Uncompressed diagnostic (NON-GATING, known residual) — `--compression none`
 
-| Route      | Viewport |     LCP |        CLS |    Transfer | Verdict |
-| ---------- | -------- | ------: | ---------: | ----------: | ------- |
-| `/`        | mobile   | 3032 ms | **1.0000** | 1165.51 KiB | ❌      |
-| `/gallery` | mobile   | 3192 ms | **1.0000** | 1118.17 KiB | ❌      |
-| `/film`    | mobile   | 3052 ms | **1.0000** | 1148.90 KiB | ❌      |
-| `/`        | desktop  | 3068 ms | **0.6396** | 1165.51 KiB | ❌      |
-| `/gallery` | desktop  | 2988 ms | **0.6394** | 1121.06 KiB | ❌      |
-| `/film`    | desktop  | 3012 ms | **0.6399** | 1148.90 KiB | ❌      |
+Netlify serves gzip/Brotli to every browser, so uncompressed delivery is not a deployable mode; this
+mode is kept only as a worst-case timing probe and is **not** part of the release gate (per Lead
+decision, documented in checkpoint/CUTOVER as a timing artifact with mitigation: always compress;
+re-check if the archive is ever self-hosted without compression).
 
-Evidence of the mechanism: exactly **one** layout shift per run, at **~7.6 s** (≈3.4 s after the load
-event), source node `footer.relative.overflow-hidden`, `previousRect = 390×844 at (0,0)` →
-`currentRect = 0×0` — i.e. the footer is present and full-height **after** paint, then is hidden /
-removed by a late layout state change. Under gzip delivery the same sequence happens early enough to
-avoid a post-paint shift (CLS ~0). So the "reveal below content" fix works for the app-rendered flow
-but the uncompressed/prerender-hydration timing still produces a post-paint footer removal on this
-rig. Netlify serves Brotli/gzip so production is expected to behave like the compressed row; still
-worth a shell-eng look at hydration ordering (`tmp/dist-prod`, reproduce with
-`node tools/perf/run.mjs --serve-dist tmp/dist-prod --compression none`). TTFB is 153–156 ms in both
-modes; the difference is purely transfer time for the same bytes.
+| Route | Viewport | LCP | CLS | Transfer | Note |
+|---|---|---:|---:|---:|---|
+| `/` | mobile | 2984 ms | **0.0000** | 1179.35 KiB | LCP over budget due to uncompressed bytes |
+| `/gallery` | mobile | 3004 ms | **0.0000** | 1168.71 KiB | same |
+| `/film` | mobile | 2960 ms | **0.0000** | 1162.98 KiB | same |
+| `/` | desktop | 2964 ms | **0.0007** | 1179.35 KiB | same |
+| `/gallery` | desktop | 2944 ms | **0.0005** | 1171.60 KiB | same |
+| `/film` | desktop | 2996 ms | **0.0010** | 1162.98 KiB | same |
 
-## Bottom line
+CLS is now **0.0000–0.0010 in this mode too** — the earlier `footer` removal/hide residual
+(measured at ~0.64–1.00, shift at ~7.3 s after load) is resolved by the height-gated reveal with the
+70vh-aware threshold. The only failing budget here is LCP, and it is a direct consequence of the
+deliberate absence of response compression (~1.17 MB vs ~350–378 KiB), not of app code. `--check`
+therefore exits 1 on LCP only in this diagnostic mode; the compressed gate above is the release
+criterion.
 
-- **Bundle: PASS** (initial 159.99 KiB gz / public routes ≤114.57 / admin 107.82 / total 395.62).
-- **Runtime, compressed delivery (deployment-representative): PASS** — LCP 0.94–1.12 s, CLS
-  0.0000–0.0010, TTFB 153–155 ms; all six priority cells within budget, build fingerprint stable.
-- **Runtime, uncompressed delivery: CLS fails** (0.64–1.00) due to a single post-load footer layout
-  shift at ~7.6 s; LCP is fine (3.0–3.2 s, HTML-driven). Reported as a residual timing risk, not
-  counted against the compressed pass.
+## 4. Bottom line
+
+- **Bundle: PASS** — initial JS 160.14 KiB gz (budget 180), every route ≤120 KiB (max `/` 118.94;
+  admin 116.41), total JS ~411 KiB (informational 450).
+- **Runtime, compressed (release gate): PASS** — LCP 0.91–1.09 s, CLS 0.0000–0.0010, TTFB 153–160 ms;
+  all six priority cells within budget; 18/18 valid runs; build fingerprint stable.
+- **Runtime, uncompressed (diagnostic, non-gating): CLS clean (0.0000–0.0010); LCP 2.94–3.00 s** —
+  expected and attributable to the missing response compression only.
+- **Before/after:** CLS 0.6389/1.0000–1.0293 → 0.0000–0.0010; LCP −1528…−3160 ms; transfer
+  −13…−37 KiB per route vs the pre-fix build.
+
+Known limitations (see `tools/perf/README.md`): parity-env mocks mean contentful LCP should be
+re-measured after data/media wiring; INP is reported as a long-task proxy; local static server is a
+deployment proxy (no CDN/TLS/HTTP2/Brotli); CLS is cumulative rather than session-window; emulated
+mid-tier device/network is deterministic but not field data.

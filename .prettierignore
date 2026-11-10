@@ -55,3 +55,6 @@ database/migrations/*.sql
 .github/CODEOWNERS
 # Dependabot config (YAML but with custom schema; prettier reformats incorrectly)
 .github/dependabot.yml
+
+# Generated performance artifacts (JSON/markdown reports; regenerate with node tools/perf/run.mjs)
+tools/perf/output/
