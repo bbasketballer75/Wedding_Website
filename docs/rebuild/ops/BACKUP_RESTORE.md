@@ -28,6 +28,10 @@ Everything here is derived from repo artifacts; owner-only operations are marked
 git rev-parse HEAD && git rev-parse 'legacy-freeze-2026-11-08^{commit}'
 node tools/check-legacy-freeze.mjs "Legacy freeze intact"
 node tools/verify-contracts.mjs       # contracts valid
+# read-only data/media gates (same pair CI runs; see DATA_CUTOVER.md §9.4)
+node tools/cutover/check-data.mjs --ignore-known    # 0 unknown mismatches, 31 migrations
+node tools/cutover/check-migrations.mjs             # chain + greenfield dependency map consistent
+# the production data-volume checklist to fill at T-0 is DATA_CUTOVER.md §8 (D-11 owner handoff)
 
 # 1) Database: full logical dump (schema + data), custom format, no owner/privileges
 pg_dump "$PROD_DB_URL" --format=custom --no-owner --no-privileges --file=prod-pre-cutover.dump
@@ -98,7 +102,8 @@ parity gate; a restore is not "verified" until the app renders from it.
 - **Post-cutover:** owner chooses periodic logical backups (monthly is the proposed default) plus an
   on-demand backup after each large media batch; provider plan-level backups/retention are **not
   visible from the repo → `UNVERIFIED`**. Verify: Supabase dashboard → Database → Backups and the
-  contract tier; record the retention window in `CUTOVER.md` OD-12.
+  contract tier; record the retention window in `CUTOVER.md` OD-12. The owner-side data-volume/R2
+  handoff is `DATA_CUTOVER.md` §8 (D-11).
 - **Retention:** keep the pre-cutover dump and the frozen legacy deploy/R2 state for at least the
   full rollback window; exact retention is owner policy (OD-10). Media contract requires originals to
   keep returning original bytes indefinitely (`contracts/media/CONTRACT.md:1-5`).

@@ -1,0 +1,4 @@
+
+> theporadas-rebuild@0.0.0 typecheck:ts6
+> tsc6 --noEmit
+

@@ -32,13 +32,22 @@ describe('GuestVideoHighlightsSection', () => {
     expect(container).toBeEmptyDOMElement()
   })
 
-  it('shows six skeletons while loading', () => {
+  it('self-hides while loading with no clips yet (frozen section gate)', () => {
     const { container } = render(
       <GuestVideoHighlightsSection clips={[]} isLoading onOpen={vi.fn()} />
     )
 
+    expect(container).toBeEmptyDOMElement()
+  })
+
+  it('shows six skeletons only when data is present and the cards are still loading', () => {
+    const { container } = render(
+      <GuestVideoHighlightsSection clips={[clip()]} isLoading onOpen={vi.fn()} />
+    )
+
     // Six CardSkeleton roots (each renders several inner skeleton bars).
     expect(container.querySelectorAll('.bg-cream-100')).toHaveLength(6)
+    expect(screen.queryByText('Right after the toasts')).not.toBeInTheDocument()
   })
 
   it('renders the frozen heading, trail chips and clip cards', () => {

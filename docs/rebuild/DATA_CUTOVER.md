@@ -686,3 +686,30 @@ checkpoint evidence and CI once the Lead wires it into the rebuild workflow. Ver
 two consecutive `--json` runs hash identically — `check-data --json --ignore-known`
 `D6F1D2721DEBE4988B0EB3CDCAEF4D72C7F39707C527CC55852493BBAE8D41C2`, `check-migrations --json`
 `1217BEBB5BFECE2B378BF19BBA5BF07C8F44E4B85A8A2B8B1BB22BAC96570E8D` (SHA-256).
+
+## 12. How to execute at cutover (runbook index)
+
+> Added by W9-6 (2026-11-09) after Wave 8 landed. This is an **index**, not duplicated detail: each step
+> links to the authoritative document. Nothing here is executed by an agent; every production mutation
+> needs the owner authorisation recorded in `CUTOVER.md` §6 (A1 DNS, A2 migration, A3 data writes, …).
+
+Execution order (owner-approved window; Phase numbering from §5):
+
+| Phase | Action | Command / artifact | Authoritative detail |
+|---|---|---|---|
+| 0 | **Window starts; writes frozen** (no maintenance flag exists) | owner action; freeze anon INSERTs + upload function (or accepted pause) | `ops/DEPLOY.md` §5 step 2; `audit/A3-data.md:463-471` |
+| 0 | **Read-only production reconciliation + data-volume capture** | per-table counts/checksums; `pg_get_functiondef`; policies vs `contracts/schema/*` | §5 Phase 0, §8 checklist, §9.1 queries |
+| 0 | **Read-only gate** | `node tools/cutover/check-data.mjs --ignore-known` and `node tools/cutover/check-migrations.mjs` (both 0 mismatches today) | §9.4; CI already runs this pair |
+| 0 | **Backup** | dump + checksum + restore drill result; R2/Storage manifests | `ops/BACKUP_RESTORE.md` §2–§3 (RTO recorded) |
+| 1 | **Baseline additive migrations** (or reviewed 1:1 squash) | additive only, nothing dropped/renamed | §5 Phase 1; `check-migrations` failsafe plan |
+| 2 | **Cutover migrations**: D-01 R17 repair, then decided D-02 RLS bundle (S1–S7) | new forward migrations; `node tools/cutover/check-migrations.mjs --expect-r17-fixed` must flip 1 → 0 | §5 Phase 2, §7 D-01/D-02 |
+| 3 | **Backfill + validation** | §9.1 queries, row-count/checksum comparison, media URL sweep (§9.3) | §5 Phase 3, §9 |
+| 4 | **App switch** | promote prod build + DNS (owner A1) | `ops/DEPLOY.md` §5; `CUTOVER.md` §6 |
+| 4 | **Post-switch verification** | deployed smoke (`ops/DEPLOY.md` §6), backup restore queries (`ops/BACKUP_RESTORE.md` §4), parity matrix re-run | `CUTOVER.md` §5 G1/G6 |
+| 5 | **Cleanup (only after the rollback window)** | destructive statements are **not** additive: 2 top-level destructive statements + 13 supersession drops in history | §5 Phase 5; `check-migrations` output |
+| R | **Rollback if a gate fails** | deploy revert; restore dump; R2 no-op | `ops/ROLLBACK.md` §1–§6 |
+
+Gating decisions before Phase 2: **D-01** and **D-02** (§7) and the owner decisions in
+`CUTOVER.md` §4–§5. Records to capture in the cutover checkpoint: checker outputs + SHA-256 hashes
+(Appendix B), backup checksum, restore RTO, deploy IDs, matrix verdict, authorisation record.
+

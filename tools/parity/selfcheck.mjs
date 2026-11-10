@@ -19,6 +19,7 @@ import { fileURLToPath } from 'node:url'
 import { DEFAULT_TOLERANCE, loadUiContract, probeUrl } from './config.mjs'
 import { DEFAULT_OUT_DIR } from './util.mjs'
 import { compareDecoded, decodePng, perturbPng } from './diff.mjs'
+import { evaluateAllowlist, loadAllowlist } from './allowlist.mjs'
 import { HarnessError, ROOT, formatRatio, log, nowIso, sha256, writeJsonFile } from './util.mjs'
 import { runCompare } from './compare.mjs'
 
@@ -126,7 +127,7 @@ function describeZeroCheck(run, check) {
   return parts.join(' · ')
 }
 
-function captureZeroCheck(run) {
+function captureZeroCheck(run, { allowlist = null, wave = 1 } = {}) {
   const offenders = []
   const documented = []
   for (const shot of run.summary.shots ?? []) {
@@ -138,9 +139,19 @@ function captureZeroCheck(run) {
     }
     if (textStatus !== 'pass') offenders.push({ key: shot.key, textStatus })
     if (changed === 0) continue
+    // A reviewed allowlist entry documents a bounded capture residual — apply it
+    // whether or not this particular run happened to be exactly 0.
+    const limit = documentedPixelLimit({ allowlist, shot, wave })
+    if (limit !== null && (shot.pixelDiff?.ratio ?? 0) <= limit) {
+      documented.push({
+        key: shot.key,
+        changedPixels: changed,
+        ratio: shot.pixelDiff?.ratio ?? null,
+        reason: shot.allowlist?.entry?.reason ?? null,
+      })
+      continue
+    }
     if (shot.status === 'allowed') {
-      // Reviewed expiring allowlist entry: a documented capture residual, not a
-      // silent pass. Surfaced in the check detail either way.
       documented.push({
         key: shot.key,
         changedPixels: changed,
@@ -152,6 +163,23 @@ function captureZeroCheck(run) {
     offenders.push({ key: shot.key, changedPixels: changed })
   }
   return { offenders, documented }
+}
+
+/**
+ * Reviewed allowlist limit for one shot (route id/path + viewport + theme at the
+ * current wave), or null when the shot has no active documented exception.
+ */
+function documentedPixelLimit({ allowlist, shot, wave }) {
+  if (!allowlist) return null
+  const evaluation = evaluateAllowlist({
+    allowlist,
+    route: { id: shot.route, path: shot.routePath ?? shot.path ?? '' },
+    viewport: shot.viewport,
+    theme: shot.theme,
+    ratio: 0,
+    wave,
+  })
+  return evaluation.entry?.maxDiffPixelRatio ?? null
 }
 
 async function runSelfcheck(options) {
@@ -168,6 +196,10 @@ async function runSelfcheck(options) {
   log.step(`oracle reachable: ${options.url} (HTTP ${probe.status})`)
   const ui = await loadUiContract()
   log.step(`fixed clock from ${ui.source}: ${ui.fixedNow}`)
+  // Reviewed allowlist entries define the documented capture residuals: a
+  // residual is "documented" when the shot matches an active entry, regardless
+  // of whether this particular repeat happened to be exactly 0 px.
+  const allowlist = await loadAllowlist(path.join(ROOT, 'contracts', 'parity-allowlist.json'))
 
   const baseOptions = {
     legacyUrl: options.url,
@@ -195,7 +227,7 @@ async function runSelfcheck(options) {
     `=== run 1: legacy vs legacy (${options.routes} × ${options.matrix} × ${options.themes}) ===`
   )
   const run1 = await runCompare({ ...baseOptions, outDir: run1Dir })
-  const check1 = captureZeroCheck(run1)
+  const check1 = captureZeroCheck(run1, { allowlist, wave: baseOptions.wave })
   record(
     'run-1-legacy-vs-legacy',
     run1.exitCode === 0 && check1.offenders.length === 0 ? 'pass' : 'fail',
@@ -205,7 +237,7 @@ async function runSelfcheck(options) {
   log.out('')
   log.out('=== run 2: legacy vs legacy (repeat) ===')
   const run2 = await runCompare({ ...baseOptions, outDir: run2Dir })
-  const check2 = captureZeroCheck(run2)
+  const check2 = captureZeroCheck(run2, { allowlist, wave: baseOptions.wave })
   record(
     'run-2-legacy-vs-legacy',
     run2.exitCode === 0 && check2.offenders.length === 0 ? 'pass' : 'fail',
@@ -248,7 +280,11 @@ async function runSelfcheck(options) {
       pixelIdentical += 1
       continue
     }
-    if (allowedKeys.has(key)) {
+    const shotMeta = (run1.summary.shots ?? []).find(shot => shot.key === key)
+    const limit = shotMeta
+      ? documentedPixelLimit({ allowlist, shot: shotMeta, wave: baseOptions.wave })
+      : null
+    if (allowedKeys.has(key) || (limit !== null && metrics.ratio <= limit)) {
       documentedDiffers.push({ file, changedPixels: metrics.changedPixels, ratio: metrics.ratio })
       continue
     }

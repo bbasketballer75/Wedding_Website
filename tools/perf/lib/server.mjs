@@ -125,10 +125,18 @@ export async function startStaticServer({
       }
       let file = target
       if (!(await fileIfReadable(file))) {
-        file = path.join(rootDir, 'index.html')
-        if (!(await fileIfReadable(file))) {
-          response.writeHead(404).end('Not found')
-          return
+        // Prerendered production builds emit one index.html per route directory
+        // (e.g. `dist/gallery/index.html`). Serve that before the SPA root fallback,
+        // otherwise a directory request would be measured against the wrong HTML.
+        const directoryIndex = path.join(target, 'index.html')
+        if (await fileIfReadable(directoryIndex)) {
+          file = directoryIndex
+        } else {
+          file = path.join(rootDir, 'index.html')
+          if (!(await fileIfReadable(file))) {
+            response.writeHead(404).end('Not found')
+            return
+          }
         }
       }
       const entry = await load(file)

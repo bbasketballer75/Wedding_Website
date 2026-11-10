@@ -30,12 +30,15 @@ export function RootLayout() {
   const isPrint = pathname === '/print'
   const isAdmin = pathname === '/admin/login' || pathname.startsWith('/admin/')
   const mainRef = useRef<HTMLElement | null>(null)
-  const [readyPath, setReadyPath] = useState<string | null>(null)
-  const contentReady = readyPath === pathname
+  const [contentReady, setContentReady] = useState(false)
 
   useEffect(() => {
+    // One-way latch: once revealed, the footer never hides again (hiding it after
+    // paint is itself a layout shift). A later route mount keeps the footer
+    // mounted below the content, so nothing above it moves.
+    if (contentReady) return
     const element = mainRef.current
-    const markReady = () => setReadyPath(pathname)
+    const markReady = () => setContentReady(true)
     const timer = window.setTimeout(markReady, 1500)
     if (!element) return () => window.clearTimeout(timer)
 
@@ -55,7 +58,7 @@ export function RootLayout() {
       window.clearTimeout(timer)
       observer?.disconnect()
     }
-  }, [pathname])
+  }, [contentReady])
 
   return (
     <AccessibilityProvider>

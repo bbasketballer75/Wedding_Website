@@ -210,6 +210,24 @@ describe('GalleryPage', () => {
     expect(await screen.findByTestId('gallery-lightbox-request')).toHaveTextContent('photo-1')
   })
 
+  it('opens the real PhotoLightbox for a grid click and closes on Escape (focus restored)', async () => {
+    const user = userEvent.setup()
+    render(<GalleryPage />)
+
+    expect(screen.queryByRole('dialog')).not.toBeInTheDocument()
+    const firstPhotoButton = photoButtons()[0]
+    expect(firstPhotoButton).toBeDefined()
+    await user.click(firstPhotoButton as HTMLElement)
+
+    const dialog = await screen.findByRole('dialog')
+    expect(dialog).toHaveAttribute('aria-modal', 'true')
+    expect(screen.getByText('1 / 35')).toBeInTheDocument()
+
+    await user.keyboard('{Escape}')
+    await waitFor(() => expect(screen.queryByRole('dialog')).not.toBeInTheDocument())
+    await waitFor(() => expect(firstPhotoButton).toHaveFocus())
+  })
+
   it('keeps the curated photos visible when the live fetch fails', () => {
     render(
       <GalleryPage

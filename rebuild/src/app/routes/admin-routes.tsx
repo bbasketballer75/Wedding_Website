@@ -5,11 +5,11 @@
  * heaviest feature tree, so it must never be part of the public entry chunk.
  */
 import { AdminApp, AdminLoginPage } from '@/features/admin'
+import { createSupabaseAdminApi } from './admin-api'
 import { useAuth } from '@/shared/data/auth'
 import { useMemo } from 'react'
 import { Suspense, lazy, type ComponentType } from 'react'
 import {
-  createInMemoryAdminApi,
   createSnapshotAuthClient,
   type AdminAuthSnapshot,
   type AdminPageOverrides,
@@ -110,7 +110,7 @@ function useAdminRuntime(): AdminRuntime {
     })
   }, [auth])
 
-  const api = useMemo(() => createInMemoryAdminApi(), [])
+  const api = useMemo(() => createSupabaseAdminApi(), [])
 
   return useMemo(() => ({ auth: authClient, api }), [api, authClient])
 }

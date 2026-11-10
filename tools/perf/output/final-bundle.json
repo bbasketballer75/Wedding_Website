@@ -1,0 +1,1152 @@
+{
+  "schemaVersion": 1,
+  "kind": "bundle-budget",
+  "generatedAt": "2026-11-10T00:45:38.369Z",
+  "distDir": "tmp/dist-prod",
+  "budgets": {
+    "initialJsKiB": 180,
+    "routeJsKiB": 120,
+    "totalJsKiB": 450
+  },
+  "compression": "gzipSync(level 9); brotli reported for information only; KiB = 1024 B",
+  "entry": "assets/index-CCcpyBMo.js",
+  "initial": {
+    "files": [
+      {
+        "file": "assets/index-CCcpyBMo.js",
+        "rawBytes": 377291,
+        "gzipBytes": 119720,
+        "brotliBytes": 103471
+      },
+      {
+        "file": "assets/createLucideIcon-D1Rbj1GU.js",
+        "rawBytes": 11934,
+        "gzipBytes": 4679,
+        "brotliBytes": 4223
+      },
+      {
+        "file": "assets/proxy-uhp9PAoL.js",
+        "rawBytes": 122292,
+        "gzipBytes": 39426,
+        "brotliBytes": 35452
+      }
+    ],
+    "rawBytes": 511517,
+    "gzipBytes": 163825,
+    "brotliBytes": 143146,
+    "stylesheets": [
+      {
+        "file": "assets/index-tBQk_TUo.css",
+        "rawBytes": 189990,
+        "gzipBytes": 27795,
+        "brotliBytes": 20877
+      }
+    ],
+    "inlineScripts": 1
+  },
+  "routes": [
+    {
+      "id": "home",
+      "path": "/",
+      "chunkFiles": ["assets/home-DOmvFXnK.js"],
+      "incrementalFiles": [
+        {
+          "file": "assets/activity-C5HwlUfg.js",
+          "rawBytes": 1208,
+          "gzipBytes": 684,
+          "brotliBytes": 570
+        },
+        {
+          "file": "assets/arrow-right-B9oRgd9b.js",
+          "rawBytes": 205,
+          "gzipBytes": 188,
+          "brotliBytes": 161
+        },
+        {
+          "file": "assets/auth-C61Iak17.js",
+          "rawBytes": 9662,
+          "gzipBytes": 3557,
+          "brotliBytes": 3264
+        },
+        {
+          "file": "assets/Avatar-DhBOk3T6.js",
+          "rawBytes": 1080,
+          "gzipBytes": 686,
+          "brotliBytes": 612
+        },
+        {
+          "file": "assets/calendar-oOcq37eM.js",
+          "rawBytes": 295,
+          "gzipBytes": 231,
+          "brotliBytes": 197
+        },
+        {
+          "file": "assets/camera-BhM8kT8Y.js",
+          "rawBytes": 376,
+          "gzipBytes": 279,
+          "brotliBytes": 248
+        },
+        {
+          "file": "assets/chevron-right-NGVkTtTa.js",
+          "rawBytes": 170,
+          "gzipBytes": 167,
+          "brotliBytes": 174
+        },
+        {
+          "file": "assets/editorial-C2-Maa02.js",
+          "rawBytes": 3854,
+          "gzipBytes": 1484,
+          "brotliBytes": 1307
+        },
+        {
+          "file": "assets/guestbook-DXSsV0gC.js",
+          "rawBytes": 3012,
+          "gzipBytes": 1188,
+          "brotliBytes": 1028
+        },
+        {
+          "file": "assets/home-DOmvFXnK.js",
+          "rawBytes": 69635,
+          "gzipBytes": 19720,
+          "brotliBytes": 17233
+        },
+        {
+          "file": "assets/hooks-CWvBKXKb.js",
+          "rawBytes": 4358,
+          "gzipBytes": 1564,
+          "brotliBytes": 1388
+        },
+        {
+          "file": "assets/image-B3jjbP0_.js",
+          "rawBytes": 309,
+          "gzipBytes": 248,
+          "brotliBytes": 219
+        },
+        {
+          "file": "assets/Label-CWDQnxJ6.js",
+          "rawBytes": 2265,
+          "gzipBytes": 890,
+          "brotliBytes": 775
+        },
+        {
+          "file": "assets/media-CWXMj_lM.js",
+          "rawBytes": 697,
+          "gzipBytes": 419,
+          "brotliBytes": 374
+        },
+        {
+          "file": "assets/mediaReview-DCTtYciH.js",
+          "rawBytes": 3576,
+          "gzipBytes": 1211,
+          "brotliBytes": 1054
+        },
+        {
+          "file": "assets/message-circle-B1urAj2y.js",
+          "rawBytes": 281,
+          "gzipBytes": 239,
+          "brotliBytes": 218
+        },
+        {
+          "file": "assets/photos-DX6p-wtJ.js",
+          "rawBytes": 2409,
+          "gzipBytes": 1114,
+          "brotliBytes": 970
+        },
+        {
+          "file": "assets/schema-BJJ9EXhp.js",
+          "rawBytes": 297584,
+          "gzipBytes": 78001,
+          "brotliBytes": 66673
+        },
+        {
+          "file": "assets/Skeleton-Bd9XBf0_.js",
+          "rawBytes": 1488,
+          "gzipBytes": 562,
+          "brotliBytes": 489
+        },
+        {
+          "file": "assets/sparkles-DDrCFYji.js",
+          "rawBytes": 552,
+          "gzipBytes": 324,
+          "brotliBytes": 318
+        },
+        {
+          "file": "assets/ui-Co7ynpFJ.js",
+          "rawBytes": 12324,
+          "gzipBytes": 4562,
+          "brotliBytes": 4066
+        }
+      ],
+      "incrementalGzipBytes": 117318,
+      "incrementalRawBytes": 415340,
+      "missing": false
+    },
+    {
+      "id": "film",
+      "path": "/film",
+      "chunkFiles": ["assets/film-BVjIAQ5b.js"],
+      "incrementalFiles": [
+        {
+          "file": "assets/activity-C5HwlUfg.js",
+          "rawBytes": 1208,
+          "gzipBytes": 684,
+          "brotliBytes": 570
+        },
+        {
+          "file": "assets/arrow-right-B9oRgd9b.js",
+          "rawBytes": 205,
+          "gzipBytes": 188,
+          "brotliBytes": 161
+        },
+        {
+          "file": "assets/auth-C61Iak17.js",
+          "rawBytes": 9662,
+          "gzipBytes": 3557,
+          "brotliBytes": 3264
+        },
+        {
+          "file": "assets/Avatar-DhBOk3T6.js",
+          "rawBytes": 1080,
+          "gzipBytes": 686,
+          "brotliBytes": 612
+        },
+        {
+          "file": "assets/chevron-right-NGVkTtTa.js",
+          "rawBytes": 170,
+          "gzipBytes": 167,
+          "brotliBytes": 174
+        },
+        {
+          "file": "assets/editorial-C2-Maa02.js",
+          "rawBytes": 3854,
+          "gzipBytes": 1484,
+          "brotliBytes": 1307
+        },
+        {
+          "file": "assets/film-BVjIAQ5b.js",
+          "rawBytes": 76104,
+          "gzipBytes": 20509,
+          "brotliBytes": 17783
+        },
+        {
+          "file": "assets/guestbook-DXSsV0gC.js",
+          "rawBytes": 3012,
+          "gzipBytes": 1188,
+          "brotliBytes": 1028
+        },
+        {
+          "file": "assets/hooks-CWvBKXKb.js",
+          "rawBytes": 4358,
+          "gzipBytes": 1564,
+          "brotliBytes": 1388
+        },
+        {
+          "file": "assets/media-CWXMj_lM.js",
+          "rawBytes": 697,
+          "gzipBytes": 419,
+          "brotliBytes": 374
+        },
+        {
+          "file": "assets/mediaReview-DCTtYciH.js",
+          "rawBytes": 3576,
+          "gzipBytes": 1211,
+          "brotliBytes": 1054
+        },
+        {
+          "file": "assets/photos-DX6p-wtJ.js",
+          "rawBytes": 2409,
+          "gzipBytes": 1114,
+          "brotliBytes": 970
+        },
+        {
+          "file": "assets/rotate-ccw-D1PILux7.js",
+          "rawBytes": 240,
+          "gzipBytes": 214,
+          "brotliBytes": 186
+        },
+        {
+          "file": "assets/schema-BJJ9EXhp.js",
+          "rawBytes": 297584,
+          "gzipBytes": 78001,
+          "brotliBytes": 66673
+        },
+        {
+          "file": "assets/Skeleton-Bd9XBf0_.js",
+          "rawBytes": 1488,
+          "gzipBytes": 562,
+          "brotliBytes": 489
+        },
+        {
+          "file": "assets/sparkles-DDrCFYji.js",
+          "rawBytes": 552,
+          "gzipBytes": 324,
+          "brotliBytes": 318
+        },
+        {
+          "file": "assets/users-B1u4QUTn.js",
+          "rawBytes": 346,
+          "gzipBytes": 251,
+          "brotliBytes": 223
+        }
+      ],
+      "incrementalGzipBytes": 112123,
+      "incrementalRawBytes": 406545,
+      "missing": false
+    },
+    {
+      "id": "gallery",
+      "path": "/gallery",
+      "chunkFiles": ["assets/gallery-route-Da39ehH1.js"],
+      "incrementalFiles": [
+        {
+          "file": "assets/activity-C5HwlUfg.js",
+          "rawBytes": 1208,
+          "gzipBytes": 684,
+          "brotliBytes": 570
+        },
+        {
+          "file": "assets/auth-C61Iak17.js",
+          "rawBytes": 9662,
+          "gzipBytes": 3557,
+          "brotliBytes": 3264
+        },
+        {
+          "file": "assets/Avatar-DhBOk3T6.js",
+          "rawBytes": 1080,
+          "gzipBytes": 686,
+          "brotliBytes": 612
+        },
+        {
+          "file": "assets/editorial-C2-Maa02.js",
+          "rawBytes": 3854,
+          "gzipBytes": 1484,
+          "brotliBytes": 1307
+        },
+        {
+          "file": "assets/gallery-route-Da39ehH1.js",
+          "rawBytes": 61160,
+          "gzipBytes": 14742,
+          "brotliBytes": 12788
+        },
+        {
+          "file": "assets/guestbook-DXSsV0gC.js",
+          "rawBytes": 3012,
+          "gzipBytes": 1188,
+          "brotliBytes": 1028
+        },
+        {
+          "file": "assets/hooks-CWvBKXKb.js",
+          "rawBytes": 4358,
+          "gzipBytes": 1564,
+          "brotliBytes": 1388
+        },
+        {
+          "file": "assets/Label-CWDQnxJ6.js",
+          "rawBytes": 2265,
+          "gzipBytes": 890,
+          "brotliBytes": 775
+        },
+        {
+          "file": "assets/loader-circle-CgMPjnzs.js",
+          "rawBytes": 205,
+          "gzipBytes": 195,
+          "brotliBytes": 170
+        },
+        {
+          "file": "assets/media-CWXMj_lM.js",
+          "rawBytes": 697,
+          "gzipBytes": 419,
+          "brotliBytes": 374
+        },
+        {
+          "file": "assets/mediaReview-DCTtYciH.js",
+          "rawBytes": 3576,
+          "gzipBytes": 1211,
+          "brotliBytes": 1054
+        },
+        {
+          "file": "assets/photos-DX6p-wtJ.js",
+          "rawBytes": 2409,
+          "gzipBytes": 1114,
+          "brotliBytes": 970
+        },
+        {
+          "file": "assets/schema-BJJ9EXhp.js",
+          "rawBytes": 297584,
+          "gzipBytes": 78001,
+          "brotliBytes": 66673
+        },
+        {
+          "file": "assets/search-BiZiAtcB.js",
+          "rawBytes": 214,
+          "gzipBytes": 194,
+          "brotliBytes": 171
+        },
+        {
+          "file": "assets/share-2-CNxhLt7I.js",
+          "rawBytes": 397,
+          "gzipBytes": 263,
+          "brotliBytes": 239
+        },
+        {
+          "file": "assets/Skeleton-Bd9XBf0_.js",
+          "rawBytes": 1488,
+          "gzipBytes": 562,
+          "brotliBytes": 489
+        },
+        {
+          "file": "assets/square-check-big-D1TFoYW7.js",
+          "rawBytes": 294,
+          "gzipBytes": 239,
+          "brotliBytes": 213
+        },
+        {
+          "file": "assets/trash-y0cbOu_Q.js",
+          "rawBytes": 568,
+          "gzipBytes": 335,
+          "brotliBytes": 302
+        },
+        {
+          "file": "assets/ui-Co7ynpFJ.js",
+          "rawBytes": 12324,
+          "gzipBytes": 4562,
+          "brotliBytes": 4066
+        }
+      ],
+      "incrementalGzipBytes": 111890,
+      "incrementalRawBytes": 406355,
+      "missing": false
+    },
+    {
+      "id": "upload",
+      "path": "/upload",
+      "chunkFiles": ["assets/UploadPage-BWM4-XwI.js"],
+      "incrementalFiles": [
+        {
+          "file": "assets/arrow-right-B9oRgd9b.js",
+          "rawBytes": 205,
+          "gzipBytes": 188,
+          "brotliBytes": 161
+        },
+        {
+          "file": "assets/Avatar-DhBOk3T6.js",
+          "rawBytes": 1080,
+          "gzipBytes": 686,
+          "brotliBytes": 612
+        },
+        {
+          "file": "assets/check-0KzxodGz.js",
+          "rawBytes": 164,
+          "gzipBytes": 168,
+          "brotliBytes": 154
+        },
+        {
+          "file": "assets/circle-check-big-1zdENlDz.js",
+          "rawBytes": 259,
+          "gzipBytes": 226,
+          "brotliBytes": 200
+        },
+        {
+          "file": "assets/copy-BKQ6ILe1.js",
+          "rawBytes": 550,
+          "gzipBytes": 352,
+          "brotliBytes": 330
+        },
+        {
+          "file": "assets/image-B3jjbP0_.js",
+          "rawBytes": 309,
+          "gzipBytes": 248,
+          "brotliBytes": 219
+        },
+        {
+          "file": "assets/Label-CWDQnxJ6.js",
+          "rawBytes": 2265,
+          "gzipBytes": 890,
+          "brotliBytes": 775
+        },
+        {
+          "file": "assets/loader-circle-CgMPjnzs.js",
+          "rawBytes": 205,
+          "gzipBytes": 195,
+          "brotliBytes": 170
+        },
+        {
+          "file": "assets/message-circle-B1urAj2y.js",
+          "rawBytes": 281,
+          "gzipBytes": 239,
+          "brotliBytes": 218
+        },
+        {
+          "file": "assets/refresh-cw-Ccg8h7YJ.js",
+          "rawBytes": 361,
+          "gzipBytes": 254,
+          "brotliBytes": 224
+        },
+        {
+          "file": "assets/share-2-CNxhLt7I.js",
+          "rawBytes": 397,
+          "gzipBytes": 263,
+          "brotliBytes": 239
+        },
+        {
+          "file": "assets/shield-check--UZXtJq0.js",
+          "rawBytes": 545,
+          "gzipBytes": 375,
+          "brotliBytes": 347
+        },
+        {
+          "file": "assets/Skeleton-Bd9XBf0_.js",
+          "rawBytes": 1488,
+          "gzipBytes": 562,
+          "brotliBytes": 489
+        },
+        {
+          "file": "assets/sparkles-DDrCFYji.js",
+          "rawBytes": 552,
+          "gzipBytes": 324,
+          "brotliBytes": 318
+        },
+        {
+          "file": "assets/ui-Co7ynpFJ.js",
+          "rawBytes": 12324,
+          "gzipBytes": 4562,
+          "brotliBytes": 4066
+        },
+        {
+          "file": "assets/upload-CAUXJI4P.js",
+          "rawBytes": 270,
+          "gzipBytes": 221,
+          "brotliBytes": 194
+        },
+        {
+          "file": "assets/UploadPage-BWM4-XwI.js",
+          "rawBytes": 45690,
+          "gzipBytes": 12328,
+          "brotliBytes": 10771
+        }
+      ],
+      "incrementalGzipBytes": 22081,
+      "incrementalRawBytes": 66945,
+      "missing": false
+    },
+    {
+      "id": "guestbook",
+      "path": "/guestbook",
+      "chunkFiles": ["assets/guestbook-route-Co_wUT3S.js"],
+      "incrementalFiles": [
+        {
+          "file": "assets/Avatar-DhBOk3T6.js",
+          "rawBytes": 1080,
+          "gzipBytes": 686,
+          "brotliBytes": 612
+        },
+        {
+          "file": "assets/circle-check-big-1zdENlDz.js",
+          "rawBytes": 259,
+          "gzipBytes": 226,
+          "brotliBytes": 200
+        },
+        {
+          "file": "assets/guestbook-DXSsV0gC.js",
+          "rawBytes": 3012,
+          "gzipBytes": 1188,
+          "brotliBytes": 1028
+        },
+        {
+          "file": "assets/guestbook-route-Co_wUT3S.js",
+          "rawBytes": 31206,
+          "gzipBytes": 9713,
+          "brotliBytes": 8592
+        },
+        {
+          "file": "assets/Label-CWDQnxJ6.js",
+          "rawBytes": 2265,
+          "gzipBytes": 890,
+          "brotliBytes": 775
+        },
+        {
+          "file": "assets/loader-circle-CgMPjnzs.js",
+          "rawBytes": 205,
+          "gzipBytes": 195,
+          "brotliBytes": 170
+        },
+        {
+          "file": "assets/message-square-DfZ9_Hzb.js",
+          "rawBytes": 273,
+          "gzipBytes": 231,
+          "brotliBytes": 211
+        },
+        {
+          "file": "assets/schema-BJJ9EXhp.js",
+          "rawBytes": 297584,
+          "gzipBytes": 78001,
+          "brotliBytes": 66673
+        },
+        {
+          "file": "assets/search-BiZiAtcB.js",
+          "rawBytes": 214,
+          "gzipBytes": 194,
+          "brotliBytes": 171
+        },
+        {
+          "file": "assets/Skeleton-Bd9XBf0_.js",
+          "rawBytes": 1488,
+          "gzipBytes": 562,
+          "brotliBytes": 489
+        },
+        {
+          "file": "assets/sparkles-DDrCFYji.js",
+          "rawBytes": 552,
+          "gzipBytes": 324,
+          "brotliBytes": 318
+        },
+        {
+          "file": "assets/ui-Co7ynpFJ.js",
+          "rawBytes": 12324,
+          "gzipBytes": 4562,
+          "brotliBytes": 4066
+        }
+      ],
+      "incrementalGzipBytes": 96772,
+      "incrementalRawBytes": 350462,
+      "missing": false
+    },
+    {
+      "id": "guest-photos",
+      "path": "/guest-photos",
+      "chunkFiles": ["assets/guest-photos-D_dmYo_B.js"],
+      "incrementalFiles": [
+        {
+          "file": "assets/camera-BhM8kT8Y.js",
+          "rawBytes": 376,
+          "gzipBytes": 279,
+          "brotliBytes": 248
+        },
+        {
+          "file": "assets/guest-photos-D_dmYo_B.js",
+          "rawBytes": 10068,
+          "gzipBytes": 3558,
+          "brotliBytes": 3135
+        },
+        {
+          "file": "assets/image-B3jjbP0_.js",
+          "rawBytes": 309,
+          "gzipBytes": 248,
+          "brotliBytes": 219
+        },
+        {
+          "file": "assets/message-circle-B1urAj2y.js",
+          "rawBytes": 281,
+          "gzipBytes": 239,
+          "brotliBytes": 218
+        },
+        {
+          "file": "assets/upload-CAUXJI4P.js",
+          "rawBytes": 270,
+          "gzipBytes": 221,
+          "brotliBytes": 194
+        }
+      ],
+      "incrementalGzipBytes": 4545,
+      "incrementalRawBytes": 11304,
+      "missing": false
+    },
+    {
+      "id": "activity",
+      "path": "/activity",
+      "chunkFiles": ["assets/activity-route-CXKPvffP.js"],
+      "incrementalFiles": [
+        {
+          "file": "assets/activity-C5HwlUfg.js",
+          "rawBytes": 1208,
+          "gzipBytes": 684,
+          "brotliBytes": 570
+        },
+        {
+          "file": "assets/activity-route-CXKPvffP.js",
+          "rawBytes": 11884,
+          "gzipBytes": 4423,
+          "brotliBytes": 3947
+        },
+        {
+          "file": "assets/Avatar-DhBOk3T6.js",
+          "rawBytes": 1080,
+          "gzipBytes": 686,
+          "brotliBytes": 612
+        },
+        {
+          "file": "assets/camera-BhM8kT8Y.js",
+          "rawBytes": 376,
+          "gzipBytes": 279,
+          "brotliBytes": 248
+        },
+        {
+          "file": "assets/Label-CWDQnxJ6.js",
+          "rawBytes": 2265,
+          "gzipBytes": 890,
+          "brotliBytes": 775
+        },
+        {
+          "file": "assets/message-circle-B1urAj2y.js",
+          "rawBytes": 281,
+          "gzipBytes": 239,
+          "brotliBytes": 218
+        },
+        {
+          "file": "assets/schema-BJJ9EXhp.js",
+          "rawBytes": 297584,
+          "gzipBytes": 78001,
+          "brotliBytes": 66673
+        },
+        {
+          "file": "assets/Skeleton-Bd9XBf0_.js",
+          "rawBytes": 1488,
+          "gzipBytes": 562,
+          "brotliBytes": 489
+        },
+        {
+          "file": "assets/ui-Co7ynpFJ.js",
+          "rawBytes": 12324,
+          "gzipBytes": 4562,
+          "brotliBytes": 4066
+        }
+      ],
+      "incrementalGzipBytes": 90326,
+      "incrementalRawBytes": 328490,
+      "missing": false
+    },
+    {
+      "id": "admin-login",
+      "path": "/admin/login",
+      "chunkFiles": ["assets/admin-routes-CjQZ76HI.js"],
+      "incrementalFiles": [
+        {
+          "file": "assets/admin-routes-CjQZ76HI.js",
+          "rawBytes": 89871,
+          "gzipBytes": 23292,
+          "brotliBytes": 20230
+        },
+        {
+          "file": "assets/arrow-right-B9oRgd9b.js",
+          "rawBytes": 205,
+          "gzipBytes": 188,
+          "brotliBytes": 161
+        },
+        {
+          "file": "assets/auth-C61Iak17.js",
+          "rawBytes": 9662,
+          "gzipBytes": 3557,
+          "brotliBytes": 3264
+        },
+        {
+          "file": "assets/check-0KzxodGz.js",
+          "rawBytes": 164,
+          "gzipBytes": 168,
+          "brotliBytes": 154
+        },
+        {
+          "file": "assets/circle-check-big-1zdENlDz.js",
+          "rawBytes": 259,
+          "gzipBytes": 226,
+          "brotliBytes": 200
+        },
+        {
+          "file": "assets/eye-lFRbuBiq.js",
+          "rawBytes": 296,
+          "gzipBytes": 231,
+          "brotliBytes": 207
+        },
+        {
+          "file": "assets/image-B3jjbP0_.js",
+          "rawBytes": 309,
+          "gzipBytes": 248,
+          "brotliBytes": 219
+        },
+        {
+          "file": "assets/Label-CWDQnxJ6.js",
+          "rawBytes": 2265,
+          "gzipBytes": 890,
+          "brotliBytes": 775
+        },
+        {
+          "file": "assets/loader-circle-CgMPjnzs.js",
+          "rawBytes": 205,
+          "gzipBytes": 195,
+          "brotliBytes": 170
+        },
+        {
+          "file": "assets/message-square-DfZ9_Hzb.js",
+          "rawBytes": 273,
+          "gzipBytes": 231,
+          "brotliBytes": 211
+        },
+        {
+          "file": "assets/photos-DX6p-wtJ.js",
+          "rawBytes": 2409,
+          "gzipBytes": 1114,
+          "brotliBytes": 970
+        },
+        {
+          "file": "assets/schema-BJJ9EXhp.js",
+          "rawBytes": 297584,
+          "gzipBytes": 78001,
+          "brotliBytes": 66673
+        },
+        {
+          "file": "assets/shield-check--UZXtJq0.js",
+          "rawBytes": 545,
+          "gzipBytes": 375,
+          "brotliBytes": 347
+        },
+        {
+          "file": "assets/Skeleton-Bd9XBf0_.js",
+          "rawBytes": 1488,
+          "gzipBytes": 562,
+          "brotliBytes": 489
+        },
+        {
+          "file": "assets/sparkles-DDrCFYji.js",
+          "rawBytes": 552,
+          "gzipBytes": 324,
+          "brotliBytes": 318
+        },
+        {
+          "file": "assets/trash-y0cbOu_Q.js",
+          "rawBytes": 568,
+          "gzipBytes": 335,
+          "brotliBytes": 302
+        },
+        {
+          "file": "assets/upload-CAUXJI4P.js",
+          "rawBytes": 270,
+          "gzipBytes": 221,
+          "brotliBytes": 194
+        },
+        {
+          "file": "assets/users-B1u4QUTn.js",
+          "rawBytes": 346,
+          "gzipBytes": 251,
+          "brotliBytes": 223
+        }
+      ],
+      "incrementalGzipBytes": 110409,
+      "incrementalRawBytes": 407271,
+      "missing": false
+    },
+    {
+      "id": "admin",
+      "path": "/admin",
+      "chunkFiles": ["assets/admin-routes-CjQZ76HI.js"],
+      "incrementalFiles": [
+        {
+          "file": "assets/admin-routes-CjQZ76HI.js",
+          "rawBytes": 89871,
+          "gzipBytes": 23292,
+          "brotliBytes": 20230
+        },
+        {
+          "file": "assets/arrow-right-B9oRgd9b.js",
+          "rawBytes": 205,
+          "gzipBytes": 188,
+          "brotliBytes": 161
+        },
+        {
+          "file": "assets/auth-C61Iak17.js",
+          "rawBytes": 9662,
+          "gzipBytes": 3557,
+          "brotliBytes": 3264
+        },
+        {
+          "file": "assets/check-0KzxodGz.js",
+          "rawBytes": 164,
+          "gzipBytes": 168,
+          "brotliBytes": 154
+        },
+        {
+          "file": "assets/circle-check-big-1zdENlDz.js",
+          "rawBytes": 259,
+          "gzipBytes": 226,
+          "brotliBytes": 200
+        },
+        {
+          "file": "assets/eye-lFRbuBiq.js",
+          "rawBytes": 296,
+          "gzipBytes": 231,
+          "brotliBytes": 207
+        },
+        {
+          "file": "assets/image-B3jjbP0_.js",
+          "rawBytes": 309,
+          "gzipBytes": 248,
+          "brotliBytes": 219
+        },
+        {
+          "file": "assets/Label-CWDQnxJ6.js",
+          "rawBytes": 2265,
+          "gzipBytes": 890,
+          "brotliBytes": 775
+        },
+        {
+          "file": "assets/loader-circle-CgMPjnzs.js",
+          "rawBytes": 205,
+          "gzipBytes": 195,
+          "brotliBytes": 170
+        },
+        {
+          "file": "assets/message-square-DfZ9_Hzb.js",
+          "rawBytes": 273,
+          "gzipBytes": 231,
+          "brotliBytes": 211
+        },
+        {
+          "file": "assets/photos-DX6p-wtJ.js",
+          "rawBytes": 2409,
+          "gzipBytes": 1114,
+          "brotliBytes": 970
+        },
+        {
+          "file": "assets/schema-BJJ9EXhp.js",
+          "rawBytes": 297584,
+          "gzipBytes": 78001,
+          "brotliBytes": 66673
+        },
+        {
+          "file": "assets/shield-check--UZXtJq0.js",
+          "rawBytes": 545,
+          "gzipBytes": 375,
+          "brotliBytes": 347
+        },
+        {
+          "file": "assets/Skeleton-Bd9XBf0_.js",
+          "rawBytes": 1488,
+          "gzipBytes": 562,
+          "brotliBytes": 489
+        },
+        {
+          "file": "assets/sparkles-DDrCFYji.js",
+          "rawBytes": 552,
+          "gzipBytes": 324,
+          "brotliBytes": 318
+        },
+        {
+          "file": "assets/trash-y0cbOu_Q.js",
+          "rawBytes": 568,
+          "gzipBytes": 335,
+          "brotliBytes": 302
+        },
+        {
+          "file": "assets/upload-CAUXJI4P.js",
+          "rawBytes": 270,
+          "gzipBytes": 221,
+          "brotliBytes": 194
+        },
+        {
+          "file": "assets/users-B1u4QUTn.js",
+          "rawBytes": 346,
+          "gzipBytes": 251,
+          "brotliBytes": 223
+        }
+      ],
+      "incrementalGzipBytes": 110409,
+      "incrementalRawBytes": 407271,
+      "missing": false
+    },
+    {
+      "id": "guest-share",
+      "path": "/guest/:token",
+      "chunkFiles": ["assets/guest-share-CnKMWT0d.js"],
+      "incrementalFiles": [
+        {
+          "file": "assets/book-open-7vsiH59p.js",
+          "rawBytes": 329,
+          "gzipBytes": 250,
+          "brotliBytes": 228
+        },
+        {
+          "file": "assets/calendar-oOcq37eM.js",
+          "rawBytes": 295,
+          "gzipBytes": 231,
+          "brotliBytes": 197
+        },
+        {
+          "file": "assets/check-0KzxodGz.js",
+          "rawBytes": 164,
+          "gzipBytes": 168,
+          "brotliBytes": 154
+        },
+        {
+          "file": "assets/copy-BKQ6ILe1.js",
+          "rawBytes": 550,
+          "gzipBytes": 352,
+          "brotliBytes": 330
+        },
+        {
+          "file": "assets/eye-lFRbuBiq.js",
+          "rawBytes": 296,
+          "gzipBytes": 231,
+          "brotliBytes": 207
+        },
+        {
+          "file": "assets/guest-share-CnKMWT0d.js",
+          "rawBytes": 18925,
+          "gzipBytes": 6477,
+          "brotliBytes": 5694
+        },
+        {
+          "file": "assets/image-B3jjbP0_.js",
+          "rawBytes": 309,
+          "gzipBytes": 248,
+          "brotliBytes": 219
+        },
+        {
+          "file": "assets/loader-circle-CgMPjnzs.js",
+          "rawBytes": 205,
+          "gzipBytes": 195,
+          "brotliBytes": 170
+        },
+        {
+          "file": "assets/share-2-CNxhLt7I.js",
+          "rawBytes": 397,
+          "gzipBytes": 263,
+          "brotliBytes": 239
+        }
+      ],
+      "incrementalGzipBytes": 8415,
+      "incrementalRawBytes": 21470,
+      "missing": false
+    },
+    {
+      "id": "print",
+      "path": "/print",
+      "chunkFiles": ["assets/PrintPage-huDAElDw.js"],
+      "incrementalFiles": [
+        {
+          "file": "assets/book-open-7vsiH59p.js",
+          "rawBytes": 329,
+          "gzipBytes": 250,
+          "brotliBytes": 228
+        },
+        {
+          "file": "assets/guestbook-DXSsV0gC.js",
+          "rawBytes": 3012,
+          "gzipBytes": 1188,
+          "brotliBytes": 1028
+        },
+        {
+          "file": "assets/image-B3jjbP0_.js",
+          "rawBytes": 309,
+          "gzipBytes": 248,
+          "brotliBytes": 219
+        },
+        {
+          "file": "assets/loader-circle-CgMPjnzs.js",
+          "rawBytes": 205,
+          "gzipBytes": 195,
+          "brotliBytes": 170
+        },
+        {
+          "file": "assets/media-CWXMj_lM.js",
+          "rawBytes": 697,
+          "gzipBytes": 419,
+          "brotliBytes": 374
+        },
+        {
+          "file": "assets/message-circle-B1urAj2y.js",
+          "rawBytes": 281,
+          "gzipBytes": 239,
+          "brotliBytes": 218
+        },
+        {
+          "file": "assets/photos-DX6p-wtJ.js",
+          "rawBytes": 2409,
+          "gzipBytes": 1114,
+          "brotliBytes": 970
+        },
+        {
+          "file": "assets/PrintPage-huDAElDw.js",
+          "rawBytes": 11485,
+          "gzipBytes": 3545,
+          "brotliBytes": 3173
+        },
+        {
+          "file": "assets/schema-BJJ9EXhp.js",
+          "rawBytes": 297584,
+          "gzipBytes": 78001,
+          "brotliBytes": 66673
+        },
+        {
+          "file": "assets/square-check-big-D1TFoYW7.js",
+          "rawBytes": 294,
+          "gzipBytes": 239,
+          "brotliBytes": 213
+        },
+        {
+          "file": "assets/square-DQnNLkb-.js",
+          "rawBytes": 187,
+          "gzipBytes": 177,
+          "brotliBytes": 162
+        }
+      ],
+      "incrementalGzipBytes": 85615,
+      "incrementalRawBytes": 316792,
+      "missing": false
+    }
+  ],
+  "unattributed": [
+    {
+      "file": "assets/AlbumOrganizerPage-iRvoGo4r.js",
+      "rawBytes": 25410,
+      "gzipBytes": 7111,
+      "brotliBytes": 6391
+    },
+    {
+      "file": "assets/PeopleReviewPage-D9pZ7gOu.js",
+      "rawBytes": 18727,
+      "gzipBytes": 5066,
+      "brotliBytes": 4518
+    },
+    {
+      "file": "assets/FeaturedContentPage-DP3IUlfR.js",
+      "rawBytes": 14436,
+      "gzipBytes": 4126,
+      "brotliBytes": 3616
+    },
+    {
+      "file": "assets/AnalyticsPage-D114UVW-.js",
+      "rawBytes": 6414,
+      "gzipBytes": 2228,
+      "brotliBytes": 1947
+    },
+    {
+      "file": "assets/settings-Bt8dK3yk.js",
+      "rawBytes": 4742,
+      "gzipBytes": 1443,
+      "brotliBytes": 1126
+    },
+    {
+      "file": "sw.js",
+      "rawBytes": 3280,
+      "gzipBytes": 1231,
+      "brotliBytes": 1032
+    }
+  ],
+  "totals": {
+    "allJs": {
+      "files": 56,
+      "rawBytes": 1361757,
+      "gzipBytes": 405111,
+      "brotliBytes": 352988
+    },
+    "allCss": {
+      "files": 2,
+      "rawBytes": 190724,
+      "gzipBytes": 28123
+    },
+    "fonts": {
+      "files": 22,
+      "rawBytes": 555624
+    },
+    "distFiles": 118
+  },
+  "violations": []
+}

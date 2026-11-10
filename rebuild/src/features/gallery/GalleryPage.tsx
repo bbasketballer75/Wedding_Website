@@ -1,6 +1,7 @@
 import { useCallback, useMemo, useRef, useState } from 'react'
 import { motion } from 'framer-motion'
 import { usePageMeta } from '@/app/seo/usePageMeta'
+import type { PhotoViewerEngagement } from '@/features/photo-viewer'
 import { PAGE_SIZE, type CollectionTab } from './constants'
 import {
   parseGallerySearch,
@@ -16,6 +17,7 @@ import { GalleryControlPanel } from './GalleryControlPanel'
 import { GalleryGrid } from './GalleryGrid'
 import { GalleryHeader } from './GalleryHeader'
 import { GalleryLightboxSlot } from './GalleryLightboxSlot'
+import { mapGalleryPhotoToViewerPhoto } from './mapGalleryPhotoToViewerPhoto'
 import { GallerySelectionActionsBar } from './GallerySelectionActionsBar'
 import { GalleryUploadLookup } from './GalleryUploadLookup'
 import { DownloadQueuePanel } from './DownloadQueuePanel'
@@ -92,7 +94,7 @@ export function GalleryPage({ search, source, lookupStatus, shareOrigin }: Galle
     })
 
   const selection = useDownloadQueue(initialQueue)
-  const { toggleLike } = useGalleryEngagement()
+  const { toggleLike, submitComment } = useGalleryEngagement()
 
   const [toasts, setToasts] = useState<
     Array<{ id: number; message: string; kind: GalleryToastKind }>
@@ -113,6 +115,7 @@ export function GalleryPage({ search, source, lookupStatus, shareOrigin }: Galle
   const [isQueuePanelOpen, setQueuePanelOpen] = useState(false)
   const [lightboxPhotoId, setLightboxPhotoId] = useState<string | null>(null)
   const openLightbox = useCallback((photoId: string) => setLightboxPhotoId(photoId), [])
+  const closeLightbox = useCallback(() => setLightboxPhotoId(null), [])
 
   const {
     displayedItems,
@@ -173,6 +176,32 @@ export function GalleryPage({ search, source, lookupStatus, shareOrigin }: Galle
     selection.clear()
     setQueuePanelOpen(false)
   }, [selection])
+
+  const viewerPhotos = useMemo(
+    () => filteredPhotos.map(mapGalleryPhotoToViewerPhoto),
+    [filteredPhotos]
+  )
+
+  const lightboxIndex = useMemo(
+    () =>
+      lightboxPhotoId === null
+        ? -1
+        : filteredPhotos.findIndex(photo => photo.id === lightboxPhotoId),
+    [filteredPhotos, lightboxPhotoId]
+  )
+
+  const lightboxEngagement = useMemo<PhotoViewerEngagement>(
+    () => ({
+      onToggleLike: photoId => {
+        void toggleLike(photoId)
+      },
+      onSubmitComment: async (photoId, payload) => {
+        await submitComment(photoId, payload.content)
+        return true
+      },
+    }),
+    [submitComment, toggleLike]
+  )
 
   const requestedPhotoId = useMemo(() => {
     if (parsed.photoId) return parsed.photoId
@@ -282,7 +311,15 @@ export function GalleryPage({ search, source, lookupStatus, shareOrigin }: Galle
         </div>
       </section>
 
-      <GalleryLightboxSlot requestedPhotoId={requestedPhotoId} onOpen={openLightbox} />
+      <GalleryLightboxSlot
+        requestedPhotoId={requestedPhotoId}
+        onOpen={openLightbox}
+        photos={viewerPhotos}
+        isOpen={lightboxIndex >= 0}
+        initialIndex={lightboxIndex < 0 ? 0 : lightboxIndex}
+        onClose={closeLightbox}
+        engagement={lightboxEngagement}
+      />
       {lightboxPhotoId && (
         <span data-testid='gallery-lightbox-request' className='sr-only'>
           {lightboxPhotoId}

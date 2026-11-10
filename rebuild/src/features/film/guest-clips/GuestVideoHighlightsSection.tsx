@@ -1,8 +1,14 @@
 /**
  * Guest-video highlights section, ported from the frozen `src/pages/Film.tsx`
- * guest-clip block: heading + memory-trail chips + card grid, skeletons while
- * loading, and self-hide when there are no clips (the frozen page rendered
- * nothing in that case — A4 §7).
+ * guest-clip block: heading + memory-trail chips + card grid, and self-hide when
+ * there are no clips.
+ *
+ * Frozen parity detail: the frozen page gated the whole section on
+ * `guestHighlights.length > 0` (`src/pages/Film.tsx:431`), so nothing — not even
+ * the skeleton block — rendered while the read was in flight or when it came
+ * back empty. Wave 9 W9-4 keeps that exact gate; `isLoading` remains in the
+ * props for the card-grid skeleton branch (used only with non-empty data, e.g.
+ * optimistic fixtures/parity harness).
  */
 import { motion } from 'framer-motion'
 import { Smartphone } from 'lucide-react'
@@ -22,7 +28,7 @@ export function GuestVideoHighlightsSection({
   isLoading,
   onOpen,
 }: GuestVideoHighlightsSectionProps) {
-  if (!isLoading && clips.length === 0) {
+  if (clips.length === 0) {
     return null
   }
 

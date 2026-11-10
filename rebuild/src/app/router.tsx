@@ -1,6 +1,8 @@
 import { createRootRoute, createRoute, createRouter } from '@tanstack/react-router'
 import { lazy } from 'react'
 import { NotFoundPage } from '@/features/not-found/NotFoundPage'
+import { guestPhotosApi } from './routes/guest-photos-api'
+import { guestShareApi } from './routes/guest-share-api'
 import { RootLayout } from './shell/RootLayout'
 
 /**
@@ -93,7 +95,9 @@ const guestbookRoute = createRoute({
 const guestPhotosRoute = createRoute({
   getParentRoute: () => rootRoute,
   path: '/guest-photos',
-  component: GuestPhotosPage,
+  component: function GuestPhotosRoute() {
+    return <GuestPhotosPage api={guestPhotosApi} />
+  },
 })
 
 const activityRoute = createRoute({
@@ -125,7 +129,7 @@ const guestTokenRoute = createRoute({
   path: '/guest/$token',
   component: function GuestTokenRoute() {
     const { token } = guestTokenRoute.useParams()
-    return <GuestSharePage token={token} />
+    return <GuestSharePage token={token} api={guestShareApi} />
   },
 })
 

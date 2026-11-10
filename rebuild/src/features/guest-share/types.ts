@@ -64,8 +64,8 @@ export interface GuestShareApi {
  * Typed seam for the W5-2 lightbox.
  *
  * The page owns the open/close + like/comment state and hands the album to this
- * slot; the Lead mounts `<PhotoLightbox {...} />` here (do NOT implement a
- * second lightbox — the frozen page mounted `PhotoLightbox` at page level).
+ * slot; the slot mounts `<PhotoLightbox {...} />` (the frozen page mounted
+ * exactly one page-level viewer — no second lightbox implementation).
  */
 export interface GuestShareLightboxSlotProps {
   photos: ViewerPhoto[]
@@ -73,4 +73,6 @@ export interface GuestShareLightboxSlotProps {
   initialIndex: number
   onClose: () => void
   engagement?: PhotoViewerEngagement
+  /** Verified identity display names (empty until the data layer exposes them). */
+  verifiedNames?: string[]
 }

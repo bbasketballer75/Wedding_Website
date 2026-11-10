@@ -232,21 +232,24 @@ describe('GuestSharePage — album content', () => {
     expect(guestbookTab).toHaveAttribute('aria-selected', 'true')
   })
 
-  it('opens the lightbox slot with the clicked photo index (W5-2 seam)', async () => {
+  it('opens the W5-2 PhotoLightbox on a photo click and closes on Escape (focus restored)', async () => {
     const user = userEvent.setup()
     await renderReadyPage()
 
-    const slot = screen.getByTestId('guest-share-lightbox-slot')
-    expect(slot).toHaveAttribute('data-is-open', 'false')
-    expect(slot).toHaveAttribute('data-photo-count', '6')
-
+    expect(screen.queryByRole('dialog')).not.toBeInTheDocument()
     const photos = screen.getAllByTestId('guest-share-photo')
     const second = photos[1]
     expect(second).toBeDefined()
     await user.click(second as HTMLElement)
 
-    expect(slot).toHaveAttribute('data-is-open', 'true')
-    expect(slot).toHaveAttribute('data-initial-index', '1')
+    // The frozen guest-share lightbox opens on the clicked photo (1-based counter).
+    const dialog = await screen.findByRole('dialog')
+    expect(dialog).toHaveAttribute('aria-modal', 'true')
+    expect(screen.getByText('2 / 6')).toBeInTheDocument()
+
+    await user.keyboard('{Escape}')
+    await waitFor(() => expect(screen.queryByRole('dialog')).not.toBeInTheDocument())
+    await waitFor(() => expect(second).toHaveFocus())
   })
 })
 
