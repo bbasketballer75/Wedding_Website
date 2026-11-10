@@ -1,0 +1,531 @@
+{
+  "schemaVersion": 1,
+  "kind": "runtime-budget",
+  "generatedAt": "2026-11-10T00:12:26.786Z",
+  "label": "rebuild_dist_gzip",
+  "target": {
+    "mode": "internal-static",
+    "url": "http://127.0.0.1:58070",
+    "compression": "gzip",
+    "dist": "rebuild/dist"
+  },
+  "url": "http://127.0.0.1:58070",
+  "mockNetwork": "mocked (supabase empty JSON, image stub, media aborted)",
+  "networkProfile": {
+    "name": "slow-4g",
+    "latencyMs": 150,
+    "downloadThroughputBytesPerSecond": 209715,
+    "uploadThroughputBytesPerSecond": 96000,
+    "connectionType": "cellular4g"
+  },
+  "cpuThrottleRate": 4,
+  "settling": {
+    "quietWindowMs": 500,
+    "networkIdleTimeoutMs": 8000
+  },
+  "toolchain": {
+    "node": "v26.8.1",
+    "playwright": "1.65.0",
+    "chromium": "158.0.8127.18"
+  },
+  "budgets": {
+    "lcpMs": 2000,
+    "cls": 0.05
+  },
+  "routes": ["/", "/gallery"],
+  "viewports": [
+    {
+      "id": "desktop",
+      "width": 1440,
+      "height": 900
+    }
+  ],
+  "warmupRuns": 1,
+  "runs": 2,
+  "cells": [
+    {
+      "route": "/",
+      "viewport": "desktop",
+      "viewportPixels": {
+        "width": 1440,
+        "height": 900
+      },
+      "runs": [
+        {
+          "lcpMs": 3000,
+          "lcpElement": "h2.mt-4.font-display",
+          "lcpSize": 45732,
+          "cls": 0.6388888888888888,
+          "shiftCount": 1,
+          "clsShiftSources": [
+            {
+              "value": 0.6388888888888888,
+              "startedAtMs": 3731.100000023842,
+              "sources": [
+                {
+                  "node": "footer.relative.overflow-hidden",
+                  "previousRect": {
+                    "x": 0,
+                    "y": 0,
+                    "w": 1440,
+                    "h": 574.703125
+                  },
+                  "currentRect": {
+                    "x": 0,
+                    "y": 0,
+                    "w": 0,
+                    "h": 0
+                  }
+                }
+              ]
+            }
+          ],
+          "fcpMs": 3000,
+          "ttfbMs": 153.30000001192093,
+          "dclMs": 1585.4000000059605,
+          "loadMs": 1585.7000000178814,
+          "longTasks": 8,
+          "longTaskMs": 1253,
+          "transferBytes": {
+            "script": 296951,
+            "css": 28090,
+            "font": 62520,
+            "image": 370,
+            "media": 0,
+            "data": 0,
+            "other": 0,
+            "total": 389587
+          },
+          "requestCount": 64,
+          "httpStatus": 200,
+          "consoleErrors": [],
+          "requestFailures": [],
+          "mocks": {
+            "realAssets": 43,
+            "supabase": 3,
+            "images": 19,
+            "blocked": 0
+          },
+          "finalUrl": "http://127.0.0.1:58070/"
+        },
+        {
+          "lcpMs": 3096,
+          "lcpElement": "h2.mt-4.font-display",
+          "lcpSize": 45732,
+          "cls": 0.6388888888888888,
+          "shiftCount": 1,
+          "clsShiftSources": [
+            {
+              "value": 0.6388888888888888,
+              "startedAtMs": 4017.100000023842,
+              "sources": [
+                {
+                  "node": "footer.relative.overflow-hidden",
+                  "previousRect": {
+                    "x": 0,
+                    "y": 0,
+                    "w": 1440,
+                    "h": 574.703125
+                  },
+                  "currentRect": {
+                    "x": 0,
+                    "y": 0,
+                    "w": 0,
+                    "h": 0
+                  }
+                }
+              ]
+            }
+          ],
+          "fcpMs": 3096,
+          "ttfbMs": 153.10000002384186,
+          "dclMs": 1603.300000011921,
+          "loadMs": 1603.6000000238419,
+          "longTasks": 18,
+          "longTaskMs": 2058,
+          "transferBytes": {
+            "script": 296951,
+            "css": 28090,
+            "font": 62520,
+            "image": 370,
+            "media": 0,
+            "data": 0,
+            "other": 0,
+            "total": 389587
+          },
+          "requestCount": 64,
+          "httpStatus": 200,
+          "consoleErrors": [],
+          "requestFailures": [],
+          "mocks": {
+            "realAssets": 43,
+            "supabase": 3,
+            "images": 19,
+            "blocked": 0
+          },
+          "finalUrl": "http://127.0.0.1:58070/"
+        }
+      ],
+      "warmupRuns": [
+        {
+          "lcpMs": 4180,
+          "lcpElement": "h2.mt-4.font-display",
+          "lcpSize": 45732,
+          "cls": 0.6388888888888888,
+          "shiftCount": 1,
+          "clsShiftSources": [
+            {
+              "value": 0.6388888888888888,
+              "startedAtMs": 5300.700000017881,
+              "sources": [
+                {
+                  "node": "footer.relative.overflow-hidden",
+                  "previousRect": {
+                    "x": 0,
+                    "y": 0,
+                    "w": 1440,
+                    "h": 574.703125
+                  },
+                  "currentRect": {
+                    "x": 0,
+                    "y": 0,
+                    "w": 0,
+                    "h": 0
+                  }
+                }
+              ]
+            }
+          ],
+          "fcpMs": 4180,
+          "ttfbMs": 160,
+          "dclMs": 2299.4000000059605,
+          "loadMs": 2299.800000011921,
+          "longTasks": 9,
+          "longTaskMs": 1709,
+          "transferBytes": {
+            "script": 296951,
+            "css": 28090,
+            "font": 62520,
+            "image": 370,
+            "media": 0,
+            "data": 0,
+            "other": 0,
+            "total": 389587
+          },
+          "requestCount": 64,
+          "httpStatus": 200,
+          "consoleErrors": [],
+          "requestFailures": [],
+          "mocks": {
+            "realAssets": 43,
+            "supabase": 3,
+            "images": 19,
+            "blocked": 0
+          },
+          "finalUrl": "http://127.0.0.1:58070/"
+        }
+      ],
+      "median": {
+        "lcpMs": 3048,
+        "cls": 0.6388888888888888,
+        "fcpMs": 3048,
+        "ttfbMs": 153.2000000178814,
+        "dclMs": 1594.3500000089407,
+        "loadMs": 1594.6500000208616,
+        "longTasks": 13,
+        "longTaskMs": 1655.5,
+        "requestCount": 64,
+        "transferBytes": {
+          "script": 296951,
+          "css": 28090,
+          "font": 62520,
+          "image": 370,
+          "media": 0,
+          "data": 0,
+          "other": 0,
+          "total": 389587
+        },
+        "lcpElement": "h2.mt-4.font-display",
+        "clsSources": [
+          {
+            "value": 0.6388888888888888,
+            "startedAtMs": 3731.100000023842,
+            "sources": [
+              {
+                "node": "footer.relative.overflow-hidden",
+                "previousRect": {
+                  "x": 0,
+                  "y": 0,
+                  "w": 1440,
+                  "h": 574.703125
+                },
+                "currentRect": {
+                  "x": 0,
+                  "y": 0,
+                  "w": 0,
+                  "h": 0
+                }
+              }
+            ]
+          }
+        ],
+        "httpStatus": 200,
+        "consoleErrors": 0,
+        "requestFailures": 0
+      },
+      "budget": {
+        "ok": false,
+        "violations": ["lcp 3048 ms > 2000 ms", "cls 0.6389 > 0.05"]
+      }
+    },
+    {
+      "route": "/gallery",
+      "viewport": "desktop",
+      "viewportPixels": {
+        "width": 1440,
+        "height": 900
+      },
+      "runs": [
+        {
+          "lcpMs": 3192,
+          "lcpElement": "h2.mt-4.font-display",
+          "lcpSize": 45732,
+          "cls": 0.6388888888888888,
+          "shiftCount": 1,
+          "clsShiftSources": [
+            {
+              "value": 0.6388888888888888,
+              "startedAtMs": 3364,
+              "sources": [
+                {
+                  "node": "footer.relative.overflow-hidden",
+                  "previousRect": {
+                    "x": 0,
+                    "y": 0,
+                    "w": 1440,
+                    "h": 574.703125
+                  },
+                  "currentRect": {
+                    "x": 0,
+                    "y": 0,
+                    "w": 0,
+                    "h": 0
+                  }
+                }
+              ]
+            }
+          ],
+          "fcpMs": 3192,
+          "ttfbMs": 152.69999998807907,
+          "dclMs": 1656.5,
+          "loadMs": 1657.199999988079,
+          "longTasks": 9,
+          "longTaskMs": 1099,
+          "transferBytes": {
+            "script": 289683,
+            "css": 28090,
+            "font": 23176,
+            "image": 5550,
+            "media": 0,
+            "data": 0,
+            "other": 0,
+            "total": 348155
+          },
+          "requestCount": 54,
+          "httpStatus": 200,
+          "consoleErrors": [],
+          "requestFailures": [],
+          "mocks": {
+            "realAssets": 39,
+            "supabase": 1,
+            "images": 15,
+            "blocked": 0
+          },
+          "finalUrl": "http://127.0.0.1:58070/gallery"
+        },
+        {
+          "lcpMs": 3072,
+          "lcpElement": "h2.mt-4.font-display",
+          "lcpSize": 45732,
+          "cls": 0.6388888888888888,
+          "shiftCount": 1,
+          "clsShiftSources": [
+            {
+              "value": 0.6388888888888888,
+              "startedAtMs": 3215,
+              "sources": [
+                {
+                  "node": "footer.relative.overflow-hidden",
+                  "previousRect": {
+                    "x": 0,
+                    "y": 0,
+                    "w": 1440,
+                    "h": 574.703125
+                  },
+                  "currentRect": {
+                    "x": 0,
+                    "y": 0,
+                    "w": 0,
+                    "h": 0
+                  }
+                }
+              ]
+            }
+          ],
+          "fcpMs": 3072,
+          "ttfbMs": 153.59999999403954,
+          "dclMs": 1683.699999988079,
+          "loadMs": 1684.0999999940395,
+          "longTasks": 8,
+          "longTaskMs": 903,
+          "transferBytes": {
+            "script": 289683,
+            "css": 28090,
+            "font": 23176,
+            "image": 5550,
+            "media": 0,
+            "data": 0,
+            "other": 0,
+            "total": 348155
+          },
+          "requestCount": 54,
+          "httpStatus": 200,
+          "consoleErrors": [],
+          "requestFailures": [],
+          "mocks": {
+            "realAssets": 39,
+            "supabase": 1,
+            "images": 15,
+            "blocked": 0
+          },
+          "finalUrl": "http://127.0.0.1:58070/gallery"
+        }
+      ],
+      "warmupRuns": [
+        {
+          "lcpMs": 3080,
+          "lcpElement": "h2.mt-4.font-display",
+          "lcpSize": 45732,
+          "cls": 0.6388888888888888,
+          "shiftCount": 1,
+          "clsShiftSources": [
+            {
+              "value": 0.6388888888888888,
+              "startedAtMs": 3351.899999976158,
+              "sources": [
+                {
+                  "node": "footer.relative.overflow-hidden",
+                  "previousRect": {
+                    "x": 0,
+                    "y": 0,
+                    "w": 1440,
+                    "h": 574.703125
+                  },
+                  "currentRect": {
+                    "x": 0,
+                    "y": 0,
+                    "w": 0,
+                    "h": 0
+                  }
+                }
+              ]
+            }
+          ],
+          "fcpMs": 3080,
+          "ttfbMs": 154,
+          "dclMs": 1618,
+          "loadMs": 1618.3999999761581,
+          "longTasks": 8,
+          "longTaskMs": 926,
+          "transferBytes": {
+            "script": 289683,
+            "css": 28090,
+            "font": 23176,
+            "image": 5550,
+            "media": 0,
+            "data": 0,
+            "other": 0,
+            "total": 348155
+          },
+          "requestCount": 54,
+          "httpStatus": 200,
+          "consoleErrors": [],
+          "requestFailures": [],
+          "mocks": {
+            "realAssets": 39,
+            "supabase": 1,
+            "images": 15,
+            "blocked": 0
+          },
+          "finalUrl": "http://127.0.0.1:58070/gallery"
+        }
+      ],
+      "median": {
+        "lcpMs": 3132,
+        "cls": 0.6388888888888888,
+        "fcpMs": 3132,
+        "ttfbMs": 153.1499999910593,
+        "dclMs": 1670.0999999940395,
+        "loadMs": 1670.6499999910593,
+        "longTasks": 8.5,
+        "longTaskMs": 1001,
+        "requestCount": 54,
+        "transferBytes": {
+          "script": 289683,
+          "css": 28090,
+          "font": 23176,
+          "image": 5550,
+          "media": 0,
+          "data": 0,
+          "other": 0,
+          "total": 348155
+        },
+        "lcpElement": "h2.mt-4.font-display",
+        "clsSources": [
+          {
+            "value": 0.6388888888888888,
+            "startedAtMs": 3364,
+            "sources": [
+              {
+                "node": "footer.relative.overflow-hidden",
+                "previousRect": {
+                  "x": 0,
+                  "y": 0,
+                  "w": 1440,
+                  "h": 574.703125
+                },
+                "currentRect": {
+                  "x": 0,
+                  "y": 0,
+                  "w": 0,
+                  "h": 0
+                }
+              }
+            ]
+          }
+        ],
+        "httpStatus": 200,
+        "consoleErrors": 0,
+        "requestFailures": 0
+      },
+      "budget": {
+        "ok": false,
+        "violations": ["lcp 3132 ms > 2000 ms", "cls 0.6389 > 0.05"]
+      }
+    }
+  ],
+  "summary": {
+    "violations": [
+      {
+        "cell": "/ (desktop)",
+        "reasons": ["lcp 3048 ms > 2000 ms", "cls 0.6389 > 0.05"]
+      },
+      {
+        "cell": "/gallery (desktop)",
+        "reasons": ["lcp 3132 ms > 2000 ms", "cls 0.6389 > 0.05"]
+      }
+    ],
+    "cells": 2,
+    "failingCells": 2
+  }
+}

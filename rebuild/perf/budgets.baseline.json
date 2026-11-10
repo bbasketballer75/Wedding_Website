@@ -1,0 +1,476 @@
+{
+  "schemaVersion": 1,
+  "documentedAt": "2026-11-10",
+  "source": "rebuild/dist @ 2026-11-10T00:41:31.387Z (entry index-CCcpyBMo.js, mode strict)",
+  "compression": "gzip level 9 / brotli default over raw emitted bytes (zlib)",
+  "targets": {
+    "initialJsGzKiB": 180,
+    "routeChunkGzKiB": 120,
+    "totalJsGzKiB": 450,
+    "initialCssGzKiB": 40
+  },
+  "measured": {
+    "initialJsGzBytes": 163825,
+    "initialCssGzBytes": 27795,
+    "totalJsGzBytes": 403880,
+    "byRoute": {
+      "/": 19720,
+      "/activity": 5107,
+      "/admin/*": 23292,
+      "/film": 20509,
+      "/gallery": 14742,
+      "/guest-photos": 3558,
+      "/guest/:token": 6477,
+      "/guestbook": 9713,
+      "/print": 3545,
+      "/upload": 12328,
+      "shared": 121064
+    }
+  },
+  "chunks": [
+    {
+      "file": "index-CCcpyBMo.js",
+      "kind": "entry",
+      "route": "initial",
+      "rawBytes": 377291,
+      "gzipBytes": 119720,
+      "brotliBytes": 103471
+    },
+    {
+      "file": "schema-BJJ9EXhp.js",
+      "kind": "lazy",
+      "route": "shared",
+      "rawBytes": 297584,
+      "gzipBytes": 78001,
+      "brotliBytes": 66673
+    },
+    {
+      "file": "proxy-uhp9PAoL.js",
+      "kind": "preload",
+      "route": "initial",
+      "rawBytes": 122292,
+      "gzipBytes": 39426,
+      "brotliBytes": 35452
+    },
+    {
+      "file": "admin-routes-CjQZ76HI.js",
+      "kind": "lazy",
+      "route": "/admin/*",
+      "rawBytes": 89871,
+      "gzipBytes": 23292,
+      "brotliBytes": 20230
+    },
+    {
+      "file": "film-BVjIAQ5b.js",
+      "kind": "lazy",
+      "route": "/film",
+      "rawBytes": 76104,
+      "gzipBytes": 20509,
+      "brotliBytes": 17783
+    },
+    {
+      "file": "home-DOmvFXnK.js",
+      "kind": "lazy",
+      "route": "/",
+      "rawBytes": 69635,
+      "gzipBytes": 19720,
+      "brotliBytes": 17233
+    },
+    {
+      "file": "gallery-route-Da39ehH1.js",
+      "kind": "lazy",
+      "route": "/gallery",
+      "rawBytes": 61160,
+      "gzipBytes": 14742,
+      "brotliBytes": 12788
+    },
+    {
+      "file": "UploadPage-BWM4-XwI.js",
+      "kind": "lazy",
+      "route": "/upload",
+      "rawBytes": 45690,
+      "gzipBytes": 12328,
+      "brotliBytes": 10771
+    },
+    {
+      "file": "guestbook-route-Co_wUT3S.js",
+      "kind": "lazy",
+      "route": "/guestbook",
+      "rawBytes": 31206,
+      "gzipBytes": 9713,
+      "brotliBytes": 8592
+    },
+    {
+      "file": "AlbumOrganizerPage-iRvoGo4r.js",
+      "kind": "lazy",
+      "route": "shared",
+      "rawBytes": 25410,
+      "gzipBytes": 7111,
+      "brotliBytes": 6391
+    },
+    {
+      "file": "guest-share-CnKMWT0d.js",
+      "kind": "lazy",
+      "route": "/guest/:token",
+      "rawBytes": 18925,
+      "gzipBytes": 6477,
+      "brotliBytes": 5694
+    },
+    {
+      "file": "PeopleReviewPage-D9pZ7gOu.js",
+      "kind": "lazy",
+      "route": "shared",
+      "rawBytes": 18727,
+      "gzipBytes": 5066,
+      "brotliBytes": 4518
+    },
+    {
+      "file": "createLucideIcon-D1Rbj1GU.js",
+      "kind": "preload",
+      "route": "initial",
+      "rawBytes": 11934,
+      "gzipBytes": 4679,
+      "brotliBytes": 4223
+    },
+    {
+      "file": "ui-Co7ynpFJ.js",
+      "kind": "lazy",
+      "route": "shared",
+      "rawBytes": 12324,
+      "gzipBytes": 4562,
+      "brotliBytes": 4066
+    },
+    {
+      "file": "activity-route-CXKPvffP.js",
+      "kind": "lazy",
+      "route": "/activity",
+      "rawBytes": 11884,
+      "gzipBytes": 4423,
+      "brotliBytes": 3947
+    },
+    {
+      "file": "FeaturedContentPage-DP3IUlfR.js",
+      "kind": "lazy",
+      "route": "shared",
+      "rawBytes": 14436,
+      "gzipBytes": 4126,
+      "brotliBytes": 3616
+    },
+    {
+      "file": "guest-photos-D_dmYo_B.js",
+      "kind": "lazy",
+      "route": "/guest-photos",
+      "rawBytes": 10068,
+      "gzipBytes": 3558,
+      "brotliBytes": 3135
+    },
+    {
+      "file": "auth-C61Iak17.js",
+      "kind": "lazy",
+      "route": "shared",
+      "rawBytes": 9662,
+      "gzipBytes": 3557,
+      "brotliBytes": 3264
+    },
+    {
+      "file": "PrintPage-huDAElDw.js",
+      "kind": "lazy",
+      "route": "/print",
+      "rawBytes": 11485,
+      "gzipBytes": 3545,
+      "brotliBytes": 3173
+    },
+    {
+      "file": "AnalyticsPage-D114UVW-.js",
+      "kind": "lazy",
+      "route": "shared",
+      "rawBytes": 6414,
+      "gzipBytes": 2228,
+      "brotliBytes": 1947
+    },
+    {
+      "file": "hooks-CWvBKXKb.js",
+      "kind": "lazy",
+      "route": "shared",
+      "rawBytes": 4358,
+      "gzipBytes": 1564,
+      "brotliBytes": 1388
+    },
+    {
+      "file": "editorial-C2-Maa02.js",
+      "kind": "lazy",
+      "route": "shared",
+      "rawBytes": 3854,
+      "gzipBytes": 1484,
+      "brotliBytes": 1307
+    },
+    {
+      "file": "settings-Bt8dK3yk.js",
+      "kind": "lazy",
+      "route": "shared",
+      "rawBytes": 4742,
+      "gzipBytes": 1443,
+      "brotliBytes": 1126
+    },
+    {
+      "file": "mediaReview-DCTtYciH.js",
+      "kind": "lazy",
+      "route": "shared",
+      "rawBytes": 3576,
+      "gzipBytes": 1211,
+      "brotliBytes": 1054
+    },
+    {
+      "file": "guestbook-DXSsV0gC.js",
+      "kind": "lazy",
+      "route": "shared",
+      "rawBytes": 3012,
+      "gzipBytes": 1188,
+      "brotliBytes": 1028
+    },
+    {
+      "file": "photos-DX6p-wtJ.js",
+      "kind": "lazy",
+      "route": "shared",
+      "rawBytes": 2409,
+      "gzipBytes": 1114,
+      "brotliBytes": 970
+    },
+    {
+      "file": "Label-CWDQnxJ6.js",
+      "kind": "lazy",
+      "route": "shared",
+      "rawBytes": 2265,
+      "gzipBytes": 890,
+      "brotliBytes": 775
+    },
+    {
+      "file": "Avatar-DhBOk3T6.js",
+      "kind": "lazy",
+      "route": "shared",
+      "rawBytes": 1080,
+      "gzipBytes": 686,
+      "brotliBytes": 612
+    },
+    {
+      "file": "activity-C5HwlUfg.js",
+      "kind": "lazy",
+      "route": "/activity",
+      "rawBytes": 1208,
+      "gzipBytes": 684,
+      "brotliBytes": 570
+    },
+    {
+      "file": "Skeleton-Bd9XBf0_.js",
+      "kind": "lazy",
+      "route": "shared",
+      "rawBytes": 1488,
+      "gzipBytes": 562,
+      "brotliBytes": 489
+    },
+    {
+      "file": "media-CWXMj_lM.js",
+      "kind": "lazy",
+      "route": "shared",
+      "rawBytes": 697,
+      "gzipBytes": 419,
+      "brotliBytes": 374
+    },
+    {
+      "file": "shield-check--UZXtJq0.js",
+      "kind": "lazy",
+      "route": "shared",
+      "rawBytes": 545,
+      "gzipBytes": 375,
+      "brotliBytes": 347
+    },
+    {
+      "file": "copy-BKQ6ILe1.js",
+      "kind": "lazy",
+      "route": "shared",
+      "rawBytes": 550,
+      "gzipBytes": 352,
+      "brotliBytes": 330
+    },
+    {
+      "file": "trash-y0cbOu_Q.js",
+      "kind": "lazy",
+      "route": "shared",
+      "rawBytes": 568,
+      "gzipBytes": 335,
+      "brotliBytes": 302
+    },
+    {
+      "file": "sparkles-DDrCFYji.js",
+      "kind": "lazy",
+      "route": "shared",
+      "rawBytes": 552,
+      "gzipBytes": 324,
+      "brotliBytes": 318
+    },
+    {
+      "file": "camera-BhM8kT8Y.js",
+      "kind": "lazy",
+      "route": "shared",
+      "rawBytes": 376,
+      "gzipBytes": 279,
+      "brotliBytes": 248
+    },
+    {
+      "file": "share-2-CNxhLt7I.js",
+      "kind": "lazy",
+      "route": "shared",
+      "rawBytes": 397,
+      "gzipBytes": 263,
+      "brotliBytes": 239
+    },
+    {
+      "file": "refresh-cw-Ccg8h7YJ.js",
+      "kind": "lazy",
+      "route": "shared",
+      "rawBytes": 361,
+      "gzipBytes": 254,
+      "brotliBytes": 224
+    },
+    {
+      "file": "users-B1u4QUTn.js",
+      "kind": "lazy",
+      "route": "shared",
+      "rawBytes": 346,
+      "gzipBytes": 251,
+      "brotliBytes": 223
+    },
+    {
+      "file": "book-open-7vsiH59p.js",
+      "kind": "lazy",
+      "route": "shared",
+      "rawBytes": 329,
+      "gzipBytes": 250,
+      "brotliBytes": 228
+    },
+    {
+      "file": "image-B3jjbP0_.js",
+      "kind": "lazy",
+      "route": "shared",
+      "rawBytes": 309,
+      "gzipBytes": 248,
+      "brotliBytes": 219
+    },
+    {
+      "file": "message-circle-B1urAj2y.js",
+      "kind": "lazy",
+      "route": "shared",
+      "rawBytes": 281,
+      "gzipBytes": 239,
+      "brotliBytes": 218
+    },
+    {
+      "file": "square-check-big-D1TFoYW7.js",
+      "kind": "lazy",
+      "route": "shared",
+      "rawBytes": 294,
+      "gzipBytes": 239,
+      "brotliBytes": 213
+    },
+    {
+      "file": "calendar-oOcq37eM.js",
+      "kind": "lazy",
+      "route": "shared",
+      "rawBytes": 295,
+      "gzipBytes": 231,
+      "brotliBytes": 197
+    },
+    {
+      "file": "eye-lFRbuBiq.js",
+      "kind": "lazy",
+      "route": "shared",
+      "rawBytes": 296,
+      "gzipBytes": 231,
+      "brotliBytes": 207
+    },
+    {
+      "file": "message-square-DfZ9_Hzb.js",
+      "kind": "lazy",
+      "route": "shared",
+      "rawBytes": 273,
+      "gzipBytes": 231,
+      "brotliBytes": 211
+    },
+    {
+      "file": "circle-check-big-1zdENlDz.js",
+      "kind": "lazy",
+      "route": "shared",
+      "rawBytes": 259,
+      "gzipBytes": 226,
+      "brotliBytes": 200
+    },
+    {
+      "file": "upload-CAUXJI4P.js",
+      "kind": "lazy",
+      "route": "shared",
+      "rawBytes": 270,
+      "gzipBytes": 221,
+      "brotliBytes": 194
+    },
+    {
+      "file": "rotate-ccw-D1PILux7.js",
+      "kind": "lazy",
+      "route": "shared",
+      "rawBytes": 240,
+      "gzipBytes": 214,
+      "brotliBytes": 186
+    },
+    {
+      "file": "loader-circle-CgMPjnzs.js",
+      "kind": "lazy",
+      "route": "shared",
+      "rawBytes": 205,
+      "gzipBytes": 195,
+      "brotliBytes": 170
+    },
+    {
+      "file": "search-BiZiAtcB.js",
+      "kind": "lazy",
+      "route": "shared",
+      "rawBytes": 214,
+      "gzipBytes": 194,
+      "brotliBytes": 171
+    },
+    {
+      "file": "arrow-right-B9oRgd9b.js",
+      "kind": "lazy",
+      "route": "shared",
+      "rawBytes": 205,
+      "gzipBytes": 188,
+      "brotliBytes": 161
+    },
+    {
+      "file": "square-DQnNLkb-.js",
+      "kind": "lazy",
+      "route": "shared",
+      "rawBytes": 187,
+      "gzipBytes": 177,
+      "brotliBytes": 162
+    },
+    {
+      "file": "check-0KzxodGz.js",
+      "kind": "lazy",
+      "route": "shared",
+      "rawBytes": 164,
+      "gzipBytes": 168,
+      "brotliBytes": 154
+    },
+    {
+      "file": "chevron-right-NGVkTtTa.js",
+      "kind": "lazy",
+      "route": "shared",
+      "rawBytes": 170,
+      "gzipBytes": 167,
+      "brotliBytes": 174
+    }
+  ],
+  "notes": [
+    "QUALITY_BAR targets: initial JS ≤180 KiB gz, any route ≤120 KiB gz, total JS ≤450 KiB gz.",
+    "Measured with scripts/check-budgets.mjs (Lead-built rebuild/dist; no build run by this script)."
+  ]
+}

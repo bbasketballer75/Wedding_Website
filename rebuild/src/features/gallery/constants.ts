@@ -8,6 +8,8 @@
  * `normalizeCollectionValue` in ./data.ts; they are never URL values.
  */
 
+import { mediaPaths } from '@/shared/data/media'
+
 export const COLLECTION_TABS = ['Proposal', 'Bach+ette', 'Wedding Photos', 'Guest Photos'] as const
 
 export type CollectionTab = (typeof COLLECTION_TABS)[number]
@@ -69,9 +71,16 @@ export const collectionMeta: Record<
  */
 export const COLLECTION_COVERS: Record<CollectionTab, string> = {
   Proposal: '/images/engagement/PoradaProposal-29.webp',
-  'Bach+ette': '/images/shared-gallery-new/20250511_180812-0b9c.webp',
-  'Wedding Photos': '/images/couple/495660452_23961794676737340_6440789571967380360_n.webp',
-  'Guest Photos': '/images/shared-gallery-new/20250511_180812-0f19.webp',
+  // Frozen non-engagement covers resolve through the media CDN (`getMediaPath`).
+  'Bach+ette': mediaPaths.getMediaPath(
+    '/media/_thumbs/Bach+ette/Photos/PXL_20240816_221115487.MP.webp'
+  ),
+  'Wedding Photos': mediaPaths.getMediaPath(
+    '/media/_thumbs/Professional/Wedding Day/Photos/DSC06261.webp'
+  ),
+  'Guest Photos': mediaPaths.getMediaPath(
+    '/media/_thumbs/Guest Uploads/Wedding Day/Live Photos/Stills/20250511_180812-0b9c.webp'
+  ),
 }
 
 /** Frozen batch-download limits (`Gallery.tsx` select-all + `utils/download.ts`). */

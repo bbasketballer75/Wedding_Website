@@ -20,13 +20,20 @@ curl -s http://127.0.0.1:4174/ > /dev/null
 node tools/parity/selfcheck.mjs
 
 # 3. Compare the rebuild build against the oracle:
-node tools/parity/node tools/parity/compare.mjs \
+node tools/parity/compare.mjs \
   --legacy-url http://127.0.0.1:4174 \
   --rebuild-url http://127.0.0.1:4175 \
   --routes priority --matrix desktop,mobile --themes dark,light
 
-# 4. Serve a static rebuild build when needed (default port 4175):
-node tools/parity/serve.mjs --dir rebuild/dist --port 4175
+# 4. FULL matrix (all routes x viewports x themes + authenticated admin sections):
+node tools/parity/matrix.mjs \
+  --legacy-url http://127.0.0.1:4174 \
+  --rebuild-url http://127.0.0.1:4175 \
+  --wave 9 --prerender --out tools/parity/output/matrix
+
+# 5. Serve a static rebuild build when needed (default port 4175), resolving
+#    missing media/font assets from the frozen public/ tree during the rebuild window:
+node tools/parity/serve.mjs --dir rebuild/dist --fallback-dir public --port 4175
 ```
 
 Exit codes: `0` pass · `1` unexplained diff · `2` harness/config error.

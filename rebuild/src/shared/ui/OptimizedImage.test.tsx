@@ -1,5 +1,10 @@
 import { act, fireEvent, render, screen, waitFor } from '@testing-library/react'
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
+import {
+  IMAGE_SIZES,
+  type MediaManifest,
+  type MediaManifestEntry,
+} from '@/shared/media/responsive-image'
 import { OptimizedImage, ProgressiveImage, ResponsiveImage } from './OptimizedImage'
 
 type IntersectionCallback = (entries: Array<{ isIntersecting: boolean; target: Element }>) => void
@@ -213,5 +218,174 @@ describe('ProgressiveImage', () => {
     const image = await screen.findByRole('img', { name: 'Photo' })
     expect(image).toHaveAttribute('src', '/images/photo.webp?w=320&q=75')
     await waitFor(() => expect(screen.getByRole('img')).toHaveAttribute('alt', 'Photo'))
+  })
+})
+
+const heroEntry: MediaManifestEntry = {
+  source: '/images/hero.png',
+  width: 1600,
+  height: 900,
+  aspectRatio: 1.7778,
+  dominantColor: '#123456',
+  sourceSha256: 'a'.repeat(64),
+  configHash: 'b'.repeat(64),
+  derivatives: {
+    '320': {
+      avif: { path: '/images/optimized/hero-320.avif', bytes: 10, sha256: 'c'.repeat(64) },
+      webp: { path: '/images/optimized/hero-320.webp', bytes: 11, sha256: 'c'.repeat(64) },
+      jpg: { path: '/images/optimized/hero-320.jpg', bytes: 12, sha256: 'c'.repeat(64) },
+    },
+    '640': {
+      avif: { path: '/images/optimized/hero-640.avif', bytes: 20, sha256: 'd'.repeat(64) },
+      webp: { path: '/images/optimized/hero-640.webp', bytes: 21, sha256: 'd'.repeat(64) },
+      jpg: { path: '/images/optimized/hero-640.jpg', bytes: 22, sha256: 'd'.repeat(64) },
+    },
+  },
+}
+
+const heroManifest: MediaManifest = {
+  schemaVersion: 1,
+  config: {
+    widths: [320, 640],
+    formats: ['avif', 'webp', 'jpg'],
+    quality: { avif: 55, webp: 80, jpg: 82 },
+    generator: 'test',
+  },
+  images: { '/images/hero.png': heroEntry },
+}
+
+describe('responsive manifest delivery (Wave 8)', () => {
+  it('renders the AVIF/WebP picture with JPEG fallback, dimensions and LCP hints', async () => {
+    const { container } = render(
+      <OptimizedImage
+        src='/images/hero.png'
+        alt='Hero'
+        priority
+        manifest={heroManifest}
+        sizes='heroPoster'
+      />
+    )
+
+    const image = await screen.findByRole('img', { name: 'Hero' })
+    const sources = container.querySelectorAll('source')
+    expect(sources).toHaveLength(2)
+    expect(sources[0]).toHaveAttribute('type', 'image/avif')
+    expect(sources[0]).toHaveAttribute(
+      'srcset',
+      '/images/optimized/hero-320.avif 320w, /images/optimized/hero-640.avif 640w'
+    )
+    expect(sources[1]).toHaveAttribute('type', 'image/webp')
+    expect(sources[0]).toHaveAttribute('sizes', IMAGE_SIZES.heroPoster)
+
+    expect(image).toHaveAttribute('src', '/images/optimized/hero-640.jpg')
+    expect(image).toHaveAttribute(
+      'srcset',
+      '/images/optimized/hero-320.jpg 320w, /images/optimized/hero-640.jpg 640w'
+    )
+    expect(image).toHaveAttribute('sizes', IMAGE_SIZES.heroPoster)
+    expect(image).toHaveAttribute('width', '1600')
+    expect(image).toHaveAttribute('height', '900')
+    expect(image).toHaveAttribute('loading', 'eager')
+    expect(image).toHaveAttribute('fetchpriority', 'high')
+    expect(image).toHaveAttribute('decoding', 'async')
+
+    const wrapper = image.closest('picture')?.parentElement as HTMLElement
+    expect(wrapper.style.aspectRatio).toBe('1.7778 / 1')
+    expect(wrapper).toHaveStyle({ backgroundColor: 'rgb(18, 52, 86)' })
+  })
+
+  it('keeps manifest images lazy below the fold until intersecting', async () => {
+    render(<OptimizedImage src='/images/hero.png' alt='Hero' manifest={heroManifest} />)
+
+    expect(screen.queryByRole('img')).not.toBeInTheDocument()
+    expect(MockIntersectionObserver.instances).toHaveLength(1)
+
+    MockIntersectionObserver.trigger()
+
+    const image = await screen.findByRole('img', { name: 'Hero' })
+    expect(image).toHaveAttribute('loading', 'lazy')
+    expect(image).toHaveAttribute('fetchpriority', 'auto')
+  })
+
+  it('leaves absolute CDN URLs untouched (no resize query params)', async () => {
+    const { container } = render(
+      <OptimizedImage
+        src='https://media.wedding.theporadas.com/media/Engagement/photo.webp'
+        alt='CDN'
+        priority
+      />
+    )
+
+    const image = await screen.findByRole('img', { name: 'CDN' })
+    expect(image).toHaveAttribute(
+      'src',
+      'https://media.wedding.theporadas.com/media/Engagement/photo.webp'
+    )
+    expect(container.querySelector('source')).toBeNull()
+  })
+
+  it('leaves /media CDN paths untouched', async () => {
+    const { container } = render(
+      <OptimizedImage src='/media/Engagement/photo.webp' alt='CDN path' priority />
+    )
+
+    const image = await screen.findByRole('img', { name: 'CDN path' })
+    expect(image).toHaveAttribute('src', '/media/Engagement/photo.webp')
+    expect(container.querySelector('picture')).toBeNull()
+  })
+
+  it('can opt out of the responsive picture path', async () => {
+    render(
+      <OptimizedImage
+        src='/images/hero.png'
+        alt='Hero'
+        priority
+        width={200}
+        manifest={heroManifest}
+        responsive={false}
+      />
+    )
+
+    const image = await screen.findByRole('img', { name: 'Hero' })
+    expect(image).toHaveAttribute('src', '/images/hero.webp?w=200&q=75')
+  })
+
+  it('supports dominant-colour and inline blurhash placeholders', () => {
+    const { container, rerender } = render(
+      <OptimizedImage src='/images/photo.jpg' alt='Placeholder' dominantColor='#abcdef' />
+    )
+    expect(container.firstElementChild).toHaveStyle({ backgroundColor: 'rgb(171, 205, 239)' })
+
+    rerender(<OptimizedImage src='/images/photo.jpg' alt='Placeholder' blurHash='00TSUA' />)
+    const style = (container.firstElementChild as HTMLElement).style
+    expect(style.backgroundImage).toContain('linear-gradient')
+  })
+})
+
+describe('ResponsiveImage manifest mode (Wave 8)', () => {
+  it('uses the generated AVIF/WebP/JPEG sources instead of the frozen query contract', async () => {
+    const { container } = render(
+      <ResponsiveImage
+        src='/images/hero.png'
+        alt='Hero'
+        priority
+        manifest={heroManifest}
+        sizes='lightbox'
+      />
+    )
+
+    const image = await screen.findByRole('img', { name: 'Hero' })
+    const sources = container.querySelectorAll('source')
+    expect(sources).toHaveLength(2)
+    expect(sources[0]).toHaveAttribute('type', 'image/avif')
+    expect(sources[1]).toHaveAttribute('type', 'image/webp')
+    expect(image).toHaveAttribute('src', '/images/optimized/hero-640.jpg')
+    expect(image).toHaveAttribute(
+      'srcset',
+      '/images/optimized/hero-320.jpg 320w, /images/optimized/hero-640.jpg 640w'
+    )
+    expect(image).toHaveAttribute('sizes', IMAGE_SIZES.lightbox)
+    expect(image).toHaveAttribute('width', '1600')
+    expect(image).toHaveAttribute('loading', 'eager')
   })
 })

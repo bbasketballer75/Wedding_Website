@@ -279,6 +279,55 @@ async function warmUpContext(
 }
 
 /**
+ * Authenticated admin capture.
+ *
+ * The frozen legacy app authenticates from a seeded Supabase session in
+ * localStorage (see mocks/index.mjs), so it lands directly on the admin shell.
+ * The rebuild's current Wave-7 wiring point is an in-memory admin runtime
+ * (`rebuild/src/features/admin/runtime.ts`), so a fresh page navigation starts
+ * unauthenticated and the app itself redirects to `/admin/login`. When a login
+ * form is present, this harness performs the *app's own* sign-in flow with the
+ * documented synthetic fixture credentials (no data is faked beyond the app's
+ * own mock layer) and waits for the in-app redirect back to the requested
+ * section. Both outcomes are recorded in summary.json (captured vs exempt).
+ */
+async function maybeAdminLogin(page, adminLogin = {}, { routePath } = {}) {
+  const result = {
+    attempted: false,
+    succeeded: false,
+    requestedPath: routePath ?? null,
+    email: adminLogin.email ?? null,
+    finalPath: null,
+  }
+  try {
+    const passwordFields = await page.locator('input[type="password"]').count()
+    if (passwordFields === 0) return result
+    result.attempted = true
+    const emailInput = page.locator('input[type="email"], input[name="email"]').first()
+    const passwordInput = page.locator('input[type="password"]').first()
+    await emailInput.fill(adminLogin.email ?? '')
+    await passwordInput.fill(adminLogin.password ?? '')
+    await page.locator('button[type="submit"]').last().click()
+    // Playwright's own waitForFunction polls with rAF/timers, which are frozen
+    // by the paused fake clock. Poll from the host and advance the fake clock in
+    // small fixed steps instead, so the app can run its redirect effect.
+    const deadline = Date.now() + (adminLogin.submitTimeoutMs ?? 20000)
+    let currentPath = await page.evaluate(() => `${location.pathname}${location.search}`)
+    while (Date.now() < deadline) {
+      if (!currentPath.startsWith('/admin/login')) break
+      await page.clock.runFor(100).catch(() => {})
+      await page.waitForTimeout(50)
+      currentPath = await page.evaluate(() => `${location.pathname}${location.search}`)
+    }
+    result.finalPath = currentPath
+    result.succeeded = !currentPath.startsWith('/admin/login')
+  } catch (error) {
+    result.error = String(error.message ?? error)
+  }
+  return result
+}
+
+/**
  * Capture one shot and write its artifacts.
  *
  * @returns {{
@@ -302,6 +351,7 @@ export async function captureShot(
     textDir,
     masks = [],
     injectCss = '',
+    adminLogin = null,
   }
 ) {
   const key = `${sanitizeKey(route.id)}__${viewport.name}__${theme}`
@@ -316,6 +366,7 @@ export async function captureShot(
   let pageHeightPx = 0
   let themeState = null
   let imageWait = null
+  let adminAuth = null
 
   try {
     const warm = await warmUpContext(browser, {
@@ -359,6 +410,21 @@ export async function captureShot(
     await page.clock.runFor(1200)
     await page.waitForLoadState('networkidle', { timeout: 10000 }).catch(() => {})
     await waitForAppContent(page, { timeoutMs: 15000 })
+    if (mode === 'admin' && route.auth === 'admin' && adminLogin?.enabled) {
+      adminAuth = await maybeAdminLogin(page, adminLogin, { routePath })
+      if (adminAuth.attempted) {
+        // The login redirect is an in-app SPA navigation: give it a fixed
+        // fake-time budget plus one host-side network settle, then continue.
+        await page.clock.runFor(800)
+        await page.waitForLoadState('networkidle', { timeout: 8000 }).catch(() => {})
+        await waitForAppContent(page, { timeoutMs: 15000 })
+        if (!adminAuth.succeeded) {
+          warnings.push(
+            `Admin capture requested ${routePath} but ended on ${adminAuth.finalPath ?? 'unknown'} (login not accepted)`
+          )
+        }
+      }
+    }
     await page.evaluate(async () => {
       if ('fonts' in document) await document.fonts.ready
     })
@@ -436,6 +502,8 @@ export async function captureShot(
         theme,
         themeApplied: themeState,
         httpStatus,
+        finalUrl: page.url(),
+        adminAuth,
         pageHeightPx,
         sliceOffsets: offsets,
         sliceCount: offsets.length,
@@ -471,6 +539,8 @@ export async function captureShot(
         viewport: { name: viewport.name, width: viewport.width, height: viewport.height },
         theme,
         httpStatus,
+        finalUrl: null,
+        adminAuth,
         pageHeightPx,
         durationMs: Date.now() - started,
         shotFiles,

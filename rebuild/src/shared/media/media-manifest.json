@@ -1,0 +1,10 @@
+{
+  "schemaVersion": 1,
+  "config": {
+    "widths": [320, 480, 640, 768, 1024, 1280, 1600, 1920],
+    "formats": ["avif", "webp", "jpg"],
+    "quality": { "avif": 55, "webp": 80, "jpg": 82 },
+    "generator": "scripts/media-optimize.mjs"
+  },
+  "images": {}
+}

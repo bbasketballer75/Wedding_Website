@@ -22,6 +22,10 @@ export default tseslint.config(
       'playwright-report',
       'test-results',
       'node_modules',
+      // Generated static assets (service worker, manifest, robots, sitemap,
+      // icons). They are produced by scripts/generate-sitemap.mjs and guarded by
+      // its --check drift gate, not by the app's lint rules.
+      'public',
       'package-lock.json',
       // Plain-JS config file; it is not part of the TS project that type-aware
       // linting resolves.

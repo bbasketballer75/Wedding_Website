@@ -7,9 +7,9 @@ describe('useGalleryPhotos (Wave-5 stub data boundary)', () => {
   it('merges curated + live rows with the default deterministic source', () => {
     const { result } = renderHook(() => useGalleryPhotos())
 
-    expect(result.current.photos).toHaveLength(35)
+    expect(result.current.photos).toHaveLength(40)
     expect(result.current.photos[0]?.id).toBe(CURATED_PHOTOS[0]?.id)
-    expect(result.current.curatedPhotos).toHaveLength(30)
+    expect(result.current.curatedPhotos).toHaveLength(35)
     expect(result.current.isLoading).toBe(false)
     expect(result.current.loadError).toBeNull()
   })
@@ -24,7 +24,7 @@ describe('useGalleryPhotos (Wave-5 stub data boundary)', () => {
       })
     )
 
-    expect(result.current.photos).toHaveLength(30)
+    expect(result.current.photos).toHaveLength(35)
     expect(result.current.loadError).toMatch(/collections below are still ready/)
   })
 
@@ -44,7 +44,7 @@ describe('useGalleryPhotos (Wave-5 stub data boundary)', () => {
     const { result } = renderHook(() =>
       useGalleryPhotos({ curated: CURATED_PHOTOS, live: [duplicate] })
     )
-    expect(result.current.photos).toHaveLength(30)
+    expect(result.current.photos).toHaveLength(35)
   })
 
   it('provides stable no-op engagement actions for Wave 5', async () => {

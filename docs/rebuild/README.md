@@ -45,3 +45,16 @@ plan at its start, ends with a parity gate, and stops at a checkpoint.
 - One branch, one checkout, no worktrees.
 - No production writes, no secrets, no media copies.
 - Evidence before claims: every checkpoint cites commands and artifacts.
+
+## Operations and cutover (Wave 8/9)
+
+Runbooks for deploying, backing up, and rolling back the archive, plus the Wave 9 readiness package.
+All are documentation-only until the owner authorises the cutover:
+
+| Doc | What it is |
+|---|---|
+| [ops/ENVIRONMENT.md](./ops/ENVIRONMENT.md) | Every env var: layer, visibility, setter, failure mode, greenfield deltas |
+| [ops/DEPLOY.md](./ops/DEPLOY.md) | Preconditions, preview/staging deploy, smoke checks, production promote + DNS switch |
+| [ops/ROLLBACK.md](./ops/ROLLBACK.md) | Static hosting, data, media, auth/RLS rollback + the dry-run rehearsal script |
+| [ops/BACKUP_RESTORE.md](./ops/BACKUP_RESTORE.md) | What must be backed up, how, restore verification queries, owner-only actions |
+| [CUTOVER.md](./CUTOVER.md) | Wave 9 readiness package: parity/gate status, open owner decisions, go/no-go, **owner must authorise** (DNS switch, production migration, prod data writes) |

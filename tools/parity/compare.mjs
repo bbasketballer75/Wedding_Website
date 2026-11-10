@@ -9,6 +9,7 @@ import fs from 'node:fs/promises'
 import path from 'node:path'
 import { fileURLToPath } from 'node:url'
 import {
+  ADMIN_LOGIN_DEFAULTS,
   CAPTURE,
   DEFAULT_TOLERANCE,
   USAGE,
@@ -40,6 +41,8 @@ import {
   formatRatio,
   log,
   nowIso,
+  pathExists,
+  readJsonFile,
   writeJsonFile,
 } from './util.mjs'
 import { renderReport } from './report.mjs'
@@ -66,14 +69,24 @@ function normalizeOptions(rawOptions = {}) {
     report: rawOptions.report !== false,
     injectCss: rawOptions.injectCss ?? {},
     masks: rawOptions.masks ?? {},
+    // Wave-9 matrix additions: synthetic routes (admin sections), resumable output.
+    extraRoutes: Array.isArray(rawOptions.extraRoutes) ? rawOptions.extraRoutes : [],
+    resume: Boolean(rawOptions.resume ?? false),
+    progress: rawOptions.progress !== false,
+    adminLogin: { ...ADMIN_LOGIN_DEFAULTS, ...(rawOptions.adminLogin ?? {}) },
   }
 }
 
-async function prepareOutput(outDir) {
+async function prepareOutput(outDir, { resume = false } = {}) {
   const shotsRoot = path.join(outDir, 'shots')
   const textRoot = path.join(outDir, 'text')
-  await ensureFreshDir(shotsRoot)
-  await ensureFreshDir(textRoot)
+  if (!resume) {
+    await ensureFreshDir(shotsRoot)
+    await ensureFreshDir(textRoot)
+  } else {
+    await fs.mkdir(shotsRoot, { recursive: true })
+    await fs.mkdir(textRoot, { recursive: true })
+  }
   const dirs = {
     legacyShots: path.join(shotsRoot, 'legacy'),
     rebuildShots: path.join(shotsRoot, 'rebuild'),
@@ -99,6 +112,8 @@ function summarizeCapture(capture) {
     sliceCount: capture.meta.sliceCount ?? (capture.meta.sliceOffsets?.length || 0),
     durationMs: capture.meta.durationMs,
     themeApplied: capture.meta.themeApplied ?? null,
+    finalUrl: capture.meta.finalUrl ?? null,
+    adminAuth: capture.meta.adminAuth ?? null,
     imagesSettled: capture.meta.imagesSettled ?? null,
     warnings: capture.meta.warnings ?? [],
     consoleErrors: capture.meta.consoleErrors ?? [],
@@ -274,6 +289,30 @@ function summarizeTextValue(value) {
   return { kind: typeof value, value: value ?? null }
 }
 
+/**
+ * Load completed shots from a previous interrupted run so `--resume` can skip
+ * them. Prefers the incremental progress file, then the last final summary.
+ * Anything unreadable is ignored (a fresh run is safer than a corrupt merge).
+ */
+async function loadPreviousResults(outDir, resume) {
+  if (!resume) return new Map()
+  for (const name of ['summary.partial.json', 'summary.json']) {
+    const file = path.join(outDir, name)
+    if (!(await pathExists(file))) continue
+    try {
+      const previous = await readJsonFile(file)
+      const shots = Array.isArray(previous?.shots) ? previous.shots : []
+      if (shots.length > 0) {
+        log.info(`Resume: ${shots.length} completed shot(s) loaded from ${name}`)
+        return new Map(shots.filter(shot => shot?.key).map(shot => [shot.key, shot]))
+      }
+    } catch {
+      /* corrupt progress file: start this shot fresh */
+    }
+  }
+  return new Map()
+}
+
 /** Run a full compare. Returns { summary, exitCode } (never throws for diffs). */
 export async function runCompare(rawOptions) {
   const options = normalizeOptions(rawOptions)
@@ -284,7 +323,15 @@ export async function runCompare(rawOptions) {
   const startedMs = Date.now()
 
   const ui = await loadUiContract()
-  const routesContract = await loadRoutesContract()
+  const baseRoutesContract = await loadRoutesContract()
+  const routesContract =
+    options.extraRoutes.length > 0
+      ? {
+          ...baseRoutesContract,
+          routes: [...baseRoutesContract.routes, ...options.extraRoutes],
+          warnings: [...(baseRoutesContract.warnings ?? [])],
+        }
+      : baseRoutesContract
   const selection = resolveSelection({ ui, routesContract, options })
   announceWarnings([...ui.warnings, ...routesContract.warnings, ...selection.warnings])
 
@@ -298,7 +345,7 @@ export async function runCompare(rawOptions) {
   const allowlist = await loadAllowlist(options.allowlistPath)
   announceWarnings(allowlist.warnings)
 
-  const dirs = await prepareOutput(options.outDir)
+  const dirs = await prepareOutput(options.outDir, { resume: options.resume })
   let guestToken = null
   try {
     guestToken = guestShareToken(fixtureSet.data)
@@ -316,9 +363,29 @@ export async function runCompare(rawOptions) {
     /* informational */
   }
 
+  const previousResults = await loadPreviousResults(options.outDir, options.resume)
   const results = []
+  const partialPath = path.join(options.outDir, 'summary.partial.json')
+  const writePartial = async () => {
+    if (!options.progress) return
+    await writeJsonFile(partialPath, {
+      schemaVersion: SCHEMA_VERSION,
+      kind: 'parity-compare-progress',
+      updatedAt: nowIso(),
+      plannedShots: selection.plan.map(entry => entry.key),
+      shots: results,
+    })
+  }
   try {
     for (const entry of selection.plan) {
+      const previous = previousResults.get(entry.key)
+      // Concluded rows are reused on --resume; earlier `error` rows are retried
+      // (they usually mean a transient capture/server problem, not a result).
+      if (previous && previous.status !== 'error') {
+        results.push(previous)
+        log.step(`${entry.key}: RESUMED from previous run (${previous.status ?? 'unknown'})`)
+        continue
+      }
       const routePath = resolveRoutePath(entry.route, { guestToken })
       const masks = maskSelectorsFor(entry.route.id, options.masks)
       log.step(`capture ${entry.key} (legacy)`)
@@ -336,6 +403,7 @@ export async function runCompare(rawOptions) {
         textDir: dirs.legacyText,
         masks,
         injectCss: options.injectCss.legacy ?? '',
+        adminLogin: options.adminLogin,
       })
       logCaptureSummary(legacy)
       log.step(`capture ${entry.key} (rebuild)`)
@@ -353,6 +421,7 @@ export async function runCompare(rawOptions) {
         textDir: dirs.rebuildText,
         masks,
         injectCss: options.injectCss.rebuild ?? '',
+        adminLogin: options.adminLogin,
       })
       logCaptureSummary(rebuild)
 
@@ -367,6 +436,7 @@ export async function runCompare(rawOptions) {
         masks,
       })
       results.push(result)
+      await writePartial()
       log.step(
         `${entry.key}: ${result.status.toUpperCase()}${
           result.pixelDiff ? ` ratio=${formatRatio(result.pixelDiff.ratio)}` : ''
@@ -486,6 +556,12 @@ export async function runCompare(rawOptions) {
       file: allowlist.file ?? options.allowlistPath,
       entries: allowlist.entries.length,
       wave: options.wave,
+    },
+    matrix: {
+      resumable: options.progress,
+      resumed: options.resume,
+      extraRoutes: options.extraRoutes.map(route => ({ id: route.id, path: route.path })),
+      partialPath: options.progress ? relativePath(options.outDir, partialPath) : null,
     },
     shots: results,
     totals,

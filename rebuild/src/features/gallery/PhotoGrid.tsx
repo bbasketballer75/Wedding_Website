@@ -1,9 +1,17 @@
 import { Heart, CheckCircle2 } from 'lucide-react'
+import { useEffect, useRef, useState, type RefObject } from 'react'
 import { cn } from '@/shared/lib/cn'
 import type { GalleryPhoto } from './data'
 import type { ViewMode } from './constants'
+import { INTRINSIC_RATIOS } from './intrinsic-ratios'
 
 export interface PhotoTileProps {
+  /**
+   * Grid/timeline tiles need an aspect-ratio box; the frozen masonry sizes tiles
+   * from the image's intrinsic ratio at a fixed row height, so an inline
+   * aspect-ratio there would overflow a narrow portrait tile.
+   */
+  lockedAspect?: boolean
   photo: GalleryPhoto
   index: number
   selectMode?: boolean
@@ -24,6 +32,7 @@ export interface PhotoTileProps {
 export function PhotoTile({
   photo,
   index,
+  lockedAspect = true,
   selectMode = false,
   isSelected = false,
   onPhotoClick,
@@ -70,7 +79,7 @@ export function PhotoTile({
     >
       <div
         className='relative h-full overflow-hidden rounded-[1.45rem] bg-charcoal-200'
-        style={{ aspectRatio: String(photo.aspectRatio || 1) }}
+        style={lockedAspect ? { aspectRatio: String(photo.aspectRatio || 1) } : undefined}
       >
         <img
           src={photo.thumbnail || photo.url}
@@ -165,10 +174,101 @@ export interface PhotoGridProps extends Omit<PhotoTileProps, 'photo' | 'index' |
 }
 
 /**
- * CSS-layout replacement for the frozen `VirtualizedPhotoGrid`:
- * masonry = balanced columns, grid = responsive grid. Timeline reuses the grid
- * (the frozen `GalleryGrid` did the same; `TimelineView` is a dead module).
+ * Port of the frozen virtualized masonry PACKING (not the virtualization):
+ * `useVirtualizedMasonry` packs photos into rows using each photo's aspect ratio
+ * at a 280px row height, gap 8, target width `innerWidth - 32`, capped at the
+ * base/sm/md/lg column count. Tiles are flex-shrink-0, height 280 with an image
+ * area of 270px (p-1 + border). CSS `columns-*` and index-distributed flex
+ * columns both produced different geometry/DOM order and failed pixel parity.
  */
+const MASONRY_COLUMNS = { base: 1, sm: 2, md: 3, lg: 4 } as const
+const MASONRY_ROW_HEIGHT = 280
+const MASONRY_IMAGE_HEIGHT = MASONRY_ROW_HEIGHT - 10
+
+interface MasonryRow {
+  startIndex: number
+  photos: GalleryPhoto[]
+}
+
+function getMasonryColumnCount(): number {
+  if (typeof window === 'undefined') return MASONRY_COLUMNS.lg
+  const width = window.innerWidth
+  if (width >= 1024) return MASONRY_COLUMNS.lg
+  if (width >= 768) return MASONRY_COLUMNS.md
+  if (width >= 640) return MASONRY_COLUMNS.sm
+  return MASONRY_COLUMNS.base
+}
+
+function useMasonryLayout(): {
+  columnCount: number
+  targetWidth: number
+  containerRef: RefObject<HTMLDivElement | null>
+} {
+  const containerRef = useRef<HTMLDivElement | null>(null)
+  const [layout, setLayout] = useState(() => ({
+    columnCount: getMasonryColumnCount(),
+    targetWidth: 0,
+  }))
+
+  useEffect(() => {
+    const element = containerRef.current
+    const update = () => {
+      const measured = element?.clientWidth ?? 0
+      setLayout({
+        columnCount: getMasonryColumnCount(),
+        targetWidth: measured > 0 ? measured : window.innerWidth - 32,
+      })
+    }
+    update()
+    let observer: ResizeObserver | null = null
+    if (typeof ResizeObserver !== 'undefined' && element) {
+      observer = new ResizeObserver(update)
+      observer.observe(element)
+    }
+    window.addEventListener('resize', update)
+    return () => {
+      observer?.disconnect()
+      window.removeEventListener('resize', update)
+    }
+  }, [])
+
+  return { ...layout, containerRef }
+}
+
+function packMasonryRows(
+  photos: readonly GalleryPhoto[],
+  columnCount: number,
+  targetWidth: number
+): MasonryRow[] {
+  const rows: MasonryRow[] = []
+  let current: MasonryRow = { startIndex: 0, photos: [] }
+  let currentWidth = 0
+
+  photos.forEach((photo, index) => {
+    const aspectRatio = photo.aspectRatio || 1.5
+    const scaledWidth = MASONRY_IMAGE_HEIGHT * aspectRatio
+
+    if (current.photos.length > 0 && currentWidth + scaledWidth > targetWidth) {
+      rows.push(current)
+      current = { startIndex: index, photos: [] }
+      currentWidth = 0
+    }
+
+    current.photos.push(photo)
+    currentWidth += scaledWidth
+
+    if (current.photos.length >= columnCount) {
+      rows.push(current)
+      current = { startIndex: index + 1, photos: [] }
+      currentWidth = 0
+    }
+  })
+
+  if (current.photos.length > 0) rows.push(current)
+
+  return rows
+}
+
 export function PhotoGrid({
   photos,
   viewMode,
@@ -178,25 +278,66 @@ export function PhotoGrid({
   onLike,
   onToggleSelect,
 }: PhotoGridProps) {
-  const layoutClass =
-    viewMode === 'masonry'
-      ? 'columns-2 gap-4 sm:columns-3 lg:columns-4 [&>*]:mb-4 [&>*]:break-inside-avoid'
-      : 'grid grid-cols-2 gap-4 md:grid-cols-3 lg:grid-cols-4'
+  const { columnCount, targetWidth, containerRef } = useMasonryLayout()
+
+  const renderTile = (photo: GalleryPhoto, index: number, lockedAspect = true) => (
+    <PhotoTile
+      key={photo.id}
+      photo={photo}
+      index={index}
+      lockedAspect={lockedAspect}
+      selectMode={selectMode}
+      isSelected={selectedIds?.has(photo.id) ?? false}
+      onPhotoClick={onPhotoClick}
+      onLike={onLike}
+      onToggleSelect={onToggleSelect}
+    />
+  )
+
+  if (viewMode === 'masonry') {
+    const rows = packMasonryRows(photos, columnCount, targetWidth)
+
+    return (
+      <div
+        ref={containerRef}
+        className='flex w-full flex-col gap-2'
+        data-testid='gallery-photo-grid'
+      >
+        {rows.map((row, rowIndex) => (
+          <div
+            key={`row-${rowIndex}`}
+            className='flex gap-2'
+            style={{ height: `${MASONRY_ROW_HEIGHT}px` }}
+          >
+            {row.photos.map((photo, photoIndex) => {
+              const intrinsic =
+                INTRINSIC_RATIOS[photo.url] ??
+                (photo.thumbnail ? INTRINSIC_RATIOS[photo.thumbnail] : undefined) ??
+                photo.aspectRatio ??
+                1.5
+              const width = Math.round(MASONRY_IMAGE_HEIGHT * intrinsic) + 10
+              return (
+                <div
+                  key={photo.id}
+                  className='h-full flex-shrink-0'
+                  style={{ width: `${width}px` }}
+                >
+                  {renderTile(photo, row.startIndex + photoIndex, false)}
+                </div>
+              )
+            })}
+          </div>
+        ))}
+      </div>
+    )
+  }
 
   return (
-    <div className={cn('w-full', layoutClass)} data-testid='gallery-photo-grid'>
-      {photos.map((photo, index) => (
-        <PhotoTile
-          key={photo.id}
-          photo={photo}
-          index={index}
-          selectMode={selectMode}
-          isSelected={selectedIds?.has(photo.id) ?? false}
-          onPhotoClick={onPhotoClick}
-          onLike={onLike}
-          onToggleSelect={onToggleSelect}
-        />
-      ))}
+    <div
+      className='grid w-full grid-cols-1 gap-4 sm:grid-cols-2 xl:grid-cols-4'
+      data-testid='gallery-photo-grid'
+    >
+      {photos.map((photo, index) => renderTile(photo, index))}
     </div>
   )
 }

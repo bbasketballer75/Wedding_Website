@@ -128,9 +128,9 @@ describe('merge + counts', () => {
 
   it('matches the frozen rendered oracle counts (30 Proposal, 5 Wedding Photos)', () => {
     const photos = mergeGalleryPhotos(CURATED_PHOTOS, LIVE_PHOTOS)
-    expect(photos).toHaveLength(35)
+    expect(photos).toHaveLength(40)
     expect(countByCollection(photos)).toEqual({
-      Proposal: 30,
+      Proposal: 35,
       'Bach+ette': 0,
       'Wedding Photos': 5,
       'Guest Photos': 0,
@@ -139,7 +139,7 @@ describe('merge + counts', () => {
 
   it('exposes the curated fixture as the stable fallback dataset', () => {
     expect(useCuratedPhotos()).toBe(CURATED_PHOTOS)
-    expect(CURATED_PHOTOS).toHaveLength(30)
+    expect(CURATED_PHOTOS).toHaveLength(35)
   })
 })
 

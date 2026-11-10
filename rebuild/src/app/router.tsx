@@ -1,17 +1,16 @@
 import { createRootRoute, createRoute, createRouter } from '@tanstack/react-router'
 import { lazy } from 'react'
-import { GuestbookPage } from '@/features/guestbook/GuestbookPage'
-import { validateGallerySearch } from '@/features/gallery/data'
 import { NotFoundPage } from '@/features/not-found/NotFoundPage'
-import { activityApi } from './routes/activity-api'
-import { AdminLoginRoute, AdminRoute } from './routes/admin-route'
-import { guestbookApi } from './routes/guestbook-api'
 import { RootLayout } from './shell/RootLayout'
 
 /**
- * Route-level code splitting keeps the initial payload small (QUALITY_BAR:
- * initial JS ≤180 KB gz). Each feature chunk loads on navigation; the shell and
- * 404 stay eager so the first paint never waits on data.
+ * Route-level code splitting keeps the initial payload at shell size
+ * (QUALITY_BAR: initial JS ≤180 KB gz). Only the shell and 404 are eager; every
+ * feature page AND its data adapter/service wiring lives in a lazy chunk.
+ *
+ * `app/route-preload.ts` awaits the initial route's module before the first
+ * render so a tall page cannot replace the shell fallback after paint (that was
+ * the measured CLS 0.64–1.03 footer-push defect).
  */
 const HomePage = lazy(() =>
   import('@/features/home').then(module => ({ default: module.HomePage }))
@@ -19,23 +18,32 @@ const HomePage = lazy(() =>
 const FilmPage = lazy(() =>
   import('@/features/film').then(module => ({ default: module.FilmPage }))
 )
-const GalleryPage = lazy(() =>
-  import('@/features/gallery/GalleryPage').then(module => ({ default: module.GalleryPage }))
-)
-const PrintPage = lazy(() =>
-  import('@/features/print/PrintPage').then(module => ({ default: module.PrintPage }))
+const GalleryRoute = lazy(() =>
+  import('./routes/gallery-route').then(module => ({ default: module.GalleryRoute }))
 )
 const UploadPage = lazy(() =>
   import('@/features/upload/UploadPage').then(module => ({ default: module.UploadPage }))
 )
+const GuestbookRoute = lazy(() =>
+  import('./routes/guestbook-route').then(module => ({ default: module.GuestbookRoute }))
+)
 const GuestPhotosPage = lazy(() =>
   import('@/features/guest-photos').then(module => ({ default: module.GuestPhotosPage }))
+)
+const ActivityRoute = lazy(() =>
+  import('./routes/activity-route').then(module => ({ default: module.ActivityRoute }))
+)
+const AdminLoginPageRoute = lazy(() =>
+  import('./routes/admin-routes').then(module => ({ default: module.AdminLoginPageRoute }))
+)
+const AdminPageRoute = lazy(() =>
+  import('./routes/admin-routes').then(module => ({ default: module.AdminPageRoute }))
 )
 const GuestSharePage = lazy(() =>
   import('@/features/guest-share').then(module => ({ default: module.GuestSharePage }))
 )
-const ActivityPage = lazy(() =>
-  import('@/features/activity').then(module => ({ default: module.ActivityPage }))
+const PrintPage = lazy(() =>
+  import('@/features/print/PrintPage').then(module => ({ default: module.PrintPage }))
 )
 
 /**
@@ -64,10 +72,9 @@ const filmRoute = createRoute({
 const galleryRoute = createRoute({
   getParentRoute: () => rootRoute,
   path: '/gallery',
-  validateSearch: validateGallerySearch,
-  component: function GalleryRoute() {
+  component: function GalleryRouteComponent() {
     const search = galleryRoute.useSearch()
-    return <GalleryPage search={search} />
+    return <GalleryRoute rawSearch={search} />
   },
 })
 
@@ -80,12 +87,7 @@ const uploadRoute = createRoute({
 const guestbookRoute = createRoute({
   getParentRoute: () => rootRoute,
   path: '/guestbook',
-  component: function GuestbookRoute() {
-    // The page reads `?message=`/`?q=` from the URL on mount (the frozen page did
-    // the same). Keeping the route search schema empty means other pages' links to
-    // `/guestbook` stay plain hrefs, exactly like the oracle.
-    return <GuestbookPage api={guestbookApi} />
-  },
+  component: GuestbookRoute,
 })
 
 const guestPhotosRoute = createRoute({
@@ -97,27 +99,25 @@ const guestPhotosRoute = createRoute({
 const activityRoute = createRoute({
   getParentRoute: () => rootRoute,
   path: '/activity',
-  component: function ActivityRoute() {
-    return <ActivityPage api={activityApi} />
-  },
+  component: ActivityRoute,
 })
 
 const adminLoginRoute = createRoute({
   getParentRoute: () => rootRoute,
   path: '/admin/login',
-  component: AdminLoginRoute,
+  component: AdminLoginPageRoute,
 })
 
 const adminRoute = createRoute({
   getParentRoute: () => rootRoute,
   path: '/admin',
-  component: AdminRoute,
+  component: AdminPageRoute,
 })
 
 const adminSplatRoute = createRoute({
   getParentRoute: () => rootRoute,
   path: '/admin/$',
-  component: AdminRoute,
+  component: AdminPageRoute,
 })
 
 const guestTokenRoute = createRoute({

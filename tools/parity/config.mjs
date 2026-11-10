@@ -102,6 +102,63 @@ export const ROUTE_MASKS = {
  */
 export const ROUTE_PATH_OVERRIDES = {
   'not-found': '/people',
+  // The contract gates the admin shell behind `/admin/*`; `/admin` is its
+  // navigable dashboard URL (both apps render the dashboard at /admin).
+  admin: '/admin',
+}
+
+/**
+ * Synthetic admin credentials for the rebuild's current Wave-7 in-memory auth
+ * stub (`rebuild/src/features/admin/fixtures.ts`). They are documented test
+ * fixtures, never real credentials, and only used by `--admin-login` capture.
+ * The frozen legacy app authenticates with the seeded Supabase session instead,
+ * so it never reaches a login form.
+ */
+export const ADMIN_LOGIN_DEFAULTS = {
+  enabled: true,
+  email: 'admin@test.wedding',
+  password: 'admin-fixture-password',
+  submitTimeoutMs: 20000,
+}
+
+/**
+ * Admin child sections captured by the full matrix (Wave 9 W9-1).
+ *
+ * Both apps serve the same 10 sections under `/admin/*`; `/admin/photos` is the
+ * uploads-moderation route in both apps, so the task's `/admin/uploads` is
+ * captured as the documented alias row `admin-uploads` (unknown section →
+ * dashboard on the rebuild; layout-only fallback on the legacy app).
+ */
+export const ADMIN_CAPTURE_SECTIONS = [
+  'photos',
+  'uploads',
+  'albums',
+  'review',
+  'claims',
+  'guestbook',
+  'featured',
+  'audit',
+  'analytics',
+  'settings',
+]
+
+/** Build synthetic contract-shaped admin routes for the extra matrix rows. */
+export function adminCaptureRoutes() {
+  return ADMIN_CAPTURE_SECTIONS.map(section => ({
+    id: `admin-${section}`,
+    path: `/admin/${section}`,
+    kind: 'admin',
+    auth: 'admin',
+    parity: 2,
+    matrix: ['desktop', 'mobile'],
+    themes: ['dark', 'light'],
+    query: [],
+    fixtures: [],
+    notes:
+      section === 'uploads'
+        ? 'Alias row: /admin/photos is the uploads route in both apps; /admin/uploads is not a frozen route (unknown section → dashboard).'
+        : `Admin section /admin/${section}.`,
+  }))
 }
 
 export const FALLBACK_UI = {

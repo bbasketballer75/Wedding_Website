@@ -26,7 +26,7 @@ describe('GalleryPage', () => {
     expect(
       screen.getByRole('heading', { level: 1, name: 'Browse the archive' })
     ).toBeInTheDocument()
-    expect(screen.getByText('30 visible')).toBeInTheDocument()
+    expect(screen.getByText('35 visible')).toBeInTheDocument()
     expect(
       screen.getByText(
         'Start with the album you want, then use search or people browsing only when you need it.'
@@ -37,7 +37,7 @@ describe('GalleryPage', () => {
     const tabs = within(controlBar).getAllByRole('button', { name: /collection, \d+ photos/ })
     expect(tabs).toHaveLength(4)
     expect(tabs.map(tab => tab.textContent)).toEqual([
-      'Proposal30 photos',
+      'Proposal35 photos',
       'Bach+ette0 photos',
       'Wedding Photos5 photos',
       'Guest Photos0 photos',
@@ -45,7 +45,7 @@ describe('GalleryPage', () => {
 
     // Proposal is the default collection: frozen h2 + 30-photo count.
     expect(screen.getByRole('heading', { level: 2, name: 'Proposal' })).toBeInTheDocument()
-    expect(screen.getByRole('button', { name: 'Proposal collection, 30 photos' })).toHaveAttribute(
+    expect(screen.getByRole('button', { name: 'Proposal collection, 35 photos' })).toHaveAttribute(
       'aria-pressed',
       'true'
     )
@@ -59,7 +59,7 @@ describe('GalleryPage', () => {
     await user.click(screen.getByRole('button', { name: /load more/i }))
     expect(photoButtons()).toHaveLength(24)
     await user.click(screen.getByRole('button', { name: /load more/i }))
-    expect(photoButtons()).toHaveLength(30)
+    expect(photoButtons()).toHaveLength(35)
     expect(screen.queryByRole('button', { name: /load more/i })).toBeNull()
   })
 
@@ -100,20 +100,20 @@ describe('GalleryPage', () => {
 
     const search = screen.getByLabelText('Search gallery photos')
     await user.type(search, 'Emma Photography')
-    expect(screen.getByText('20 visible')).toBeInTheDocument()
+    expect(screen.getByText('35 visible')).toBeInTheDocument()
     expect(screen.getByText('Active filters')).toBeInTheDocument()
     expect(screen.getByText('Search: "Emma Photography"')).toBeInTheDocument()
 
     await user.clear(search)
     await user.type(search, 'jordyn')
-    expect(screen.getByText('20 visible')).toBeInTheDocument()
+    expect(screen.getByText('8 visible')).toBeInTheDocument()
 
     await user.clear(search)
     await user.type(search, 'no-such-photo-term')
     expect(screen.getByText('0 visible')).toBeInTheDocument()
 
     await user.click(screen.getByRole('button', { name: 'Clear all' }))
-    expect(screen.getByText('30 visible')).toBeInTheDocument()
+    expect(screen.getByText('35 visible')).toBeInTheDocument()
   })
 
   it('toggles the three view modes with aria-pressed and the 18-item grid page size', async () => {
@@ -154,16 +154,16 @@ describe('GalleryPage', () => {
     expect(screen.getByText('0 photos in queue (max 50)')).toBeInTheDocument()
 
     await user.click(screen.getByRole('button', { name: 'Select All Visible' }))
-    expect(screen.getByText('30 photos in queue (max 50)')).toBeInTheDocument()
-    expect(screen.getByText('30 photos selected')).toBeInTheDocument()
-    expect(screen.getByText('30 photos added to the download queue.')).toBeInTheDocument()
+    expect(screen.getByText('35 photos in queue (max 50)')).toBeInTheDocument()
+    expect(screen.getByText('35 photos selected')).toBeInTheDocument()
+    expect(screen.getByText('35 photos added to the download queue.')).toBeInTheDocument()
 
     await user.click(screen.getByRole('button', { name: 'Copy link' }))
     expect(writeText).toHaveBeenCalledOnce()
     expect(screen.getByText('Share link copied to clipboard')).toBeInTheDocument()
 
     await user.click(screen.getByRole('button', { name: 'Clear Selection' }))
-    expect(screen.queryByText('30 photos selected')).toBeNull()
+    expect(screen.queryByText('35 photos selected')).toBeNull()
   })
 
   it('caps select-all at 50 photos and warns (frozen batch limit)', async () => {
@@ -225,7 +225,7 @@ describe('GalleryPage', () => {
     expect(screen.getByRole('alert')).toHaveTextContent(
       'The live gallery is taking a moment — the collections below are still ready to explore.'
     )
-    expect(screen.getByText('30 visible')).toBeInTheDocument()
+    expect(screen.getByText('35 visible')).toBeInTheDocument()
     expect(photoButtons()).toHaveLength(12)
   })
 

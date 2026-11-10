@@ -47,3 +47,6 @@ Reviewed at every wave checkpoint. Add risks; never silently delete them — clo
   gitignored, images are tracked.
 - Local tooling: Node 26.8.1, npm 11.19.0, Docker 29.7.2, Supabase CLI 2.117.0, Playwright 1.62,
   `gh` 2.102.0.
+
+
+**Lead status update (Wave 8):** R21 is resolved — Wave 8 shipped a real 1200×630 `/images/og-image.webp` (+ PNG) and the brand icon set under `rebuild/public`; `tools/cutover/check-data.mjs --ignore-known` is green. R25/R27/R28 remain accepted-inherited-visual defects with a post-cutover fix slot. R17 and the A3 §6 RLS gaps stay cutover-owned per `docs/rebuild/DATA_CUTOVER.md` (D-01/D-02).

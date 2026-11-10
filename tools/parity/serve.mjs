@@ -62,6 +62,40 @@ async function fileIfReadable(file) {
   }
 }
 
+/**
+ * Extensions eligible for `--fallback-dir`. Deliberately media/font-only:
+ * documents (.html), scripts (.js/.mjs) and styles (.css) are NEVER served from
+ * the fallback tree, so a fallback cannot mask a missing app shell or script.
+ */
+const FALLBACK_EXTENSIONS = new Set([
+  '.webp',
+  '.png',
+  '.jpg',
+  '.jpeg',
+  '.avif',
+  '.gif',
+  '.svg',
+  '.ico',
+  '.mp4',
+  '.webm',
+  '.ogv',
+  '.mp3',
+  '.m4a',
+  '.wav',
+  '.ogg',
+  '.aac',
+  '.vtt',
+  '.woff',
+  '.woff2',
+  '.ttf',
+  '.otf',
+])
+
+function isFallbackEligible(requestPath) {
+  const extension = path.extname(requestPath.split('?')[0]).toLowerCase()
+  return FALLBACK_EXTENSIONS.has(extension)
+}
+
 function safeResolve(rootDir, requestPath) {
   const decoded = decodeURIComponent(requestPath.split('?')[0].split('#')[0])
   const resolved = path.resolve(rootDir, `.${path.posix.normalize(decoded)}`)
@@ -71,10 +105,19 @@ function safeResolve(rootDir, requestPath) {
 
 /**
  * Create (but do not start listening on) a static SPA server.
+ *
+ * `fallbackDir` (CLI `--fallback-dir`) serves media-looking files from a second
+ * directory when the build itself has none. This exists because the frozen
+ * media contract is byte-identical across legacy/rebuild: during the rebuild
+ * window the greenfield `dist/` may not ship `public/` assets yet, so parity
+ * runs point the fallback at the frozen legacy `public/` tree until Wave 8's
+ * media pipeline lands. Documents/scripts/styles are never served from it.
+ *
  * @returns {{server: import('node:http').Server, url: string, port: number, close: () => Promise<void>}}
  */
 export async function createStaticServer({
   dir,
+  fallbackDir = null,
   host = '127.0.0.1',
   port = 4175,
   quiet = false,
@@ -86,6 +129,15 @@ export async function createStaticServer({
   } catch (error) {
     throw new HarnessError(`serve: build directory not found: ${rootDir} (${error.message})`)
   }
+  const fallbackRoot = fallbackDir ? path.resolve(fallbackDir) : null
+  if (fallbackRoot) {
+    try {
+      const stat = await fs.stat(fallbackRoot)
+      if (!stat.isDirectory()) throw new Error('not a directory')
+    } catch (error) {
+      throw new HarnessError(`serve: --fallback-dir not found: ${fallbackRoot} (${error.message})`)
+    }
+  }
   const server = http.createServer(async (request, response) => {
     try {
       const target = safeResolve(rootDir, request.url ?? '/')
@@ -94,9 +146,29 @@ export async function createStaticServer({
         return
       }
       let file = target
-      const stat = await fileIfReadable(file)
+      let stat = await fileIfReadable(file)
+      if (!stat && fallbackRoot && isFallbackEligible(request.url ?? '/')) {
+        // Media-only fallback: serve the frozen media byte-for-byte when the
+        // rebuild build ships none yet. Never applies to html/js/css.
+        const fallbackTarget = safeResolve(fallbackRoot, request.url ?? '/')
+        if (fallbackTarget) {
+          const fallbackStat = await fileIfReadable(fallbackTarget)
+          if (fallbackStat) {
+            file = fallbackTarget
+            stat = fallbackStat
+            if (!quiet) log.step(`${request.method} ${request.url} → 200 (fallback media)`)
+          }
+        }
+      }
       if (!stat) {
-        // Directory request or extensionless SPA route → fall back to index.html.
+        // Requested asset with an extension that is not HTML → 404, never the
+        // SPA shell (a missing .js/.css/image must stay visible as missing).
+        const requestedExtension = path.extname((request.url ?? '/').split('?')[0]).toLowerCase()
+        if (requestedExtension && requestedExtension !== '.html') {
+          response.writeHead(404).end('Not found')
+          return
+        }
+        // Directory request or extensionless SPA route → index.html fallback.
         const index = path.join(rootDir, 'index.html')
         const indexStat = await fileIfReadable(index)
         if (!indexStat) {
@@ -140,6 +212,7 @@ export async function createStaticServer({
 function parseArgs(argv) {
   const options = {
     dir: path.join(ROOT, 'dist'),
+    fallbackDir: null,
     host: '127.0.0.1',
     port: 4175,
     quiet: false,
@@ -156,6 +229,9 @@ function parseArgs(argv) {
     switch (arg) {
       case '--dir':
         options.dir = path.resolve(readValue(arg))
+        break
+      case '--fallback-dir':
+        options.fallbackDir = path.resolve(readValue(arg))
         break
       case '--port': {
         const port = Number(readValue(arg))
@@ -187,12 +263,18 @@ export async function main(argv) {
     const options = parseArgs(argv)
     if (options.help) {
       process.stdout.write(
-        'Usage: node tools/parity/serve.mjs [--dir <build-dir>] [--port 4175] [--host 127.0.0.1] [--quiet]\n'
+        'Usage: node tools/parity/serve.mjs [--dir <build-dir>] [--fallback-dir <media-dir>] [--port 4175] [--host 127.0.0.1] [--quiet]\n' +
+          '  --dir           build directory to serve (default: dist)\n' +
+          '  --fallback-dir  media/font-only fallback tree for missing assets (e.g. the frozen public/ tree)\n' +
+          '  --port          listen port (default: 4175; Lead-owned ports 4174/4175 must be confirmed first)\n'
       )
       return 0
     }
     const { url, close } = await createStaticServer(options)
-    log.out(`Accepting connections at ${url} (serving ${options.dir})`)
+    log.out(
+      `Accepting connections at ${url} (serving ${options.dir}` +
+        `${options.fallbackDir ? `, media fallback ${options.fallbackDir}` : ''})`
+    )
     const shutdown = async () => {
       await close().catch(() => {})
       process.exit(0)

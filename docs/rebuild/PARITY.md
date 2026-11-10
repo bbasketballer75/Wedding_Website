@@ -333,3 +333,138 @@ The run's verdict is written to `<out>/selfcheck.json`; the underlying compares 
 own `summary.json` + `report.html` under `<out>/run1`, `<out>/run2` and `<out>/perturbed-capture`.
 `npm run parity:selfcheck` runs the reduced gate (`priority` × `desktop` × `dark`); pass
 `--routes priority --matrix all --themes dark,light` for the full matrix.
+
+## 10. Wave 9 — full-matrix sweep, admin capture, prerender-aware capture
+
+Wave 9 turns the per-wave spot checks into one **full-matrix sweep**: every contract route (12,
+including the `/*` 404 override), every viewport, every theme, plus the authenticated admin
+sections — all in a single deterministic run.
+
+### 10.1 The matrix runner
+
+```bash
+# Full sweep (public routes + 10 admin sections; both sides served separately)
+node tools/parity/matrix.mjs \
+  --legacy-url http://127.0.0.1:4174 \
+  --rebuild-url http://127.0.0.1:4175 \
+  --wave 9 \
+  --prerender \
+  --out tools/parity/output/matrix
+
+# Resume an interrupted sweep (completed rows are skipped, never re-captured)
+node tools/parity/matrix.mjs ... --resume
+
+# Localised sweep (e.g. validate one route/viewport/theme before the full run)
+node tools/parity/matrix.mjs ... --routes not-found --matrix desktop --themes dark
+```
+
+Outputs under `--out` (default `tools/parity/output/matrix`):
+
+| File | Meaning |
+|---|---|
+| `matrix-summary.json` | machine-readable: every row + counts + admin capture/exempt details + prerender results |
+| `MATRIX.md` | generated markdown status table (the table reported to the Lead) |
+| `README.md` | generated "how to read this" guide for the run |
+| `summary.json`, `report.html`, `shots/`, `text/` | underlying compare evidence (same layout as §6) |
+| `summary.partial.json` | incremental progress written after every row; drives `--resume` |
+
+Every row carries: route/path, viewport, theme, `pass|allowed|fail|error|exempt`, changed pixels +
+ratio, text-diff count, legacy/rebuild page heights, and the **first failure detail** — the text-diff
+JSON path or the first changed diff slice PNG. The matrix **never auto-allowlists**: failures are
+routed to their owner; a reviewed exception is a separate, expiring
+`contracts/parity-allowlist.json` entry proposed with the measured ratio (§4).
+
+Defaults: `--routes all`, `--matrix all`, `--themes` from each route's contract themes (so `/print`
+is captured in light only), exact pixel mode (`--edge-tolerance 0`), `--wave 9`. Exit codes: `0`
+pass, `1` parity/prerender failure, `2` harness/config error.
+
+### 10.2 Authenticated admin capture (`/admin/*`)
+
+The sweep includes 10 admin sections — `photos`, `uploads` (documented alias row: the uploads route
+is `/admin/photos` in both apps), `albums`, `review`, `claims`, `guestbook`, `featured`, `audit`,
+`analytics`, `settings` — at both viewports and both themes, on **both** sides:
+
+- **Legacy (frozen oracle)** authenticates from the seeded Supabase session that the mock layer
+  already injects (`contracts/fixtures/adminSession.json`): storage key
+  `sb-<project-ref>-auth-token` (project ref derived from the fixture's `storageKey`), value shape
+  `{ access_token, token_type, refresh_token, expires_at, user }` with
+  `user.app_metadata.role === 'admin'`. `expires_at` is pinned to `contracts/ui.json.fixedNow`, so
+  the session is valid at the deterministic capture instant.
+- **Rebuild** currently wires admin through the app's own Wave-7 in-memory runtime
+  (`rebuild/src/features/admin/runtime.ts`), so a fresh navigation starts unauthenticated and the
+  app redirects to `/admin/login`. The harness therefore performs **the app's own sign-in flow**
+  with the documented synthetic fixture credentials from
+  `rebuild/src/features/admin/fixtures.ts` (`admin@test.wedding` / `admin-fixture-password`;
+  never real credentials, CLI-overridable with `--admin-email` / `--admin-password`, disable with
+  `--no-admin-login`). The fake clock is advanced in small fixed steps while polling, because the
+  rebuild's login redirect is a React effect.
+- Each row records **captured vs exempt**: `matrix-summary.json.admin` lists captured keys and
+  every exempt row with the side that redirected to `/admin/login` and why. An exempt row is not
+  parity evidence and never counts as a pass.
+
+### 10.3 Prerender-aware capture (`--prerender`)
+
+The W8-1 owner prerenders per-route HTML. Captures must still assert the **hydrated** DOM (the
+normal capture flow is unchanged), but `--prerender` additionally fetches the **served** HTML of
+each route, before any JS runs, on both sides and checks that it already carries the per-route
+`title` and `canonical` declared in `contracts/seo-pwa.json`:
+
+- `pass` — every contract route with per-route metadata serves it pre-hydration on the rebuild;
+- `pending` — none do yet (W8-1 not landed); captures remain the parity evidence;
+- `fail` — inconsistent (some prerendered, some not); the same partial state is a real defect.
+
+`prerender` results are recorded in `matrix-summary.json.prerender`; legacy is an SPA and is
+recorded for reference only. A `fail` makes the matrix exit `1` when `--prerender` is passed.
+
+### 10.4 Media fallback for the rebuild preview (`serve.mjs --fallback-dir`)
+
+The frozen media contract is byte-identical across legacy and rebuild: `/images/**`, `/media/**`,
+`/video/**`, fonts and captions must render from the **same bytes** for parity to mean anything.
+Until the Wave-8 media pipeline ships `rebuild/public/`, the rebuild `dist/` can ship no public
+assets at all, so image requests would fall through to the SPA shell (an HTML 200 for a `.webp`) and
+every image would capture as broken.
+
+`tools/parity/serve.mjs` now supports a documented **media-only fallback tree**:
+
+```bash
+# Serve the rebuild build, but resolve missing media/font assets from the frozen public/ tree
+node tools/parity/serve.mjs --dir rebuild/dist --fallback-dir public --port 4175
+```
+
+Rules: the fallback is consulted **only** for media/font extensions (webp/png/jpg/jpeg/avif/gif/
+svg/ico/mp4/webm/mp3/m4a/wav/ogg/vtt/woff/woff2/ttf/otf). `.html`, `.js`, `.mjs` and `.css` are
+**never** served from the fallback, and a missing asset with any other extension returns `404`
+instead of the SPA shell — a missing script/style/image must stay visible as missing. The fallback
+is a parity-run convenience only; production always serves the rebuild's own assets. Ports remain
+Lead-owned: confirm :4175 before (re)starting it.
+
+
+## 11. Wave 8 additions (Lead, 2026-11-09)
+
+### Media fallback for the rebuild side
+`rebuild/dist` does not ship the frozen `public/` media tree yet (the Wave-8 media pipeline
+generates derivatives but byte-identical originals stay the parity source). The harness server now
+supports `tools/parity/serve.mjs --fallback-dir <dir>`: only media/font extensions are served from
+the fallback tree (`.webp .png .jpg .jpeg .avif .gif .svg .ico .mp4 .webm .mp3 .m4a .wav .ogg .vtt
+.woff .woff2 .ttf .otf`); `.html/.js/.mjs/.css` are never served from it and a missing extensioned
+asset returns 404 instead of the SPA shell. This keeps the two sides on identical media bytes.
+
+### Runtime metadata repairs are crawlable-only (parity-safe by design)
+Wave 8 prerenders corrected metadata into the static HTML for the two known frozen defects
+(`/activity`, `/admin/*`). The hydrated React runtime deliberately keeps the frozen stale tags, so
+the parity text gate (which captures the post-hydration DOM) is unchanged. Crawlers/no-JS clients
+get the fix; parity stays honest. The exact value table lives in `src/app/seo/routeMeta.json` and is
+contract-tested.
+
+### Gallery layout contract (closed Wave-5 gap)
+`/gallery` now renders curated copy generated from `contracts/content/curated-photos.json`, merges
+live rows exactly like the frozen `mapSupabasePhoto` (including the `albumSortOrder` dedupe quirk),
+and ports the frozen virtualized-masonry **packing** with tile widths taken from measured intrinsic
+image ratios (`rebuild/src/features/gallery/intrinsic-ratios.ts`). Desktop/dark parity: 0 text diffs,
+identical page heights, 0.0137% pixel residual.
+
+### Boot shell vs CLS
+The prerendered boot shell is replaced by `createRoot` before layout containment settles; the shell
+footer is rendered `display:none` until the app's main content has real height, then revealed — a
+reveal below content cannot shift earlier elements, so CLS stays 0.0000–0.0007 while LCP paints the
+shell text in ~0.9 s (slow-4G/CPU×4, production build).

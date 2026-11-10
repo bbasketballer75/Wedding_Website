@@ -1,105 +1,25 @@
 import type { GalleryPhoto } from './data'
+import { CURATED_PHOTOS } from './curated-photos'
 
 /**
- * Deterministic Wave-5 gallery fixtures.
+ * Wave-5 gallery fixtures.
  *
- * TODO(Wave3): delete this module when `useGalleryPhotos` is wired to the typed
- * `shared/data` gallery hooks. The shapes mirror `contracts/content/curated-photos.json`
- * (curated rows) and `contracts/fixtures/photos.json` (live rows) so the swap is
- * a data-source change, not a component change.
+ * `CURATED_PHOTOS` is GENERATED from `contracts/content/curated-photos.json`
+ * (frozen gallery copy: 35 rows across Proposal/Wedding Photos). Hand-written
+ * fixtures drifted from the oracle's captions/counts and broke `/gallery` text
+ * parity, so the list is contract-sourced now.
  *
- * Counts on purpose match the frozen rendered oracle for `/gallery`
- * (contracts/content/rendered/gallery.json): 30 Proposal + 5 Wedding Photos,
- * 0 Bach+ette, 0 Guest Photos.
+ * `LIVE_PHOTOS` stays as the deterministic stub used by feature tests and the
+ * storybook-style previews; the page itself reads live rows through the typed
+ * data layer (`app/routes/gallery-data.ts`).
  */
-
-const ENGAGEMENT_IMAGES = [
-  'PoradaProposal-29',
-  'PoradaProposal-11',
-  'PoradaProposal-150',
-  'PoradaProposal-181',
-  'PoradaProposal-255',
-  'PoradaProposal-277',
-  'PoradaProposal-310',
-  'PoradaProposal-375',
-  'PoradaProposal-4',
-  'PoradaProposal-6',
-  'PoradaProposal-28',
-  'PoradaProposal-31',
-  'PoradaProposal-36',
-  'PoradaProposal-40',
-  'PoradaProposal-58',
-  'PoradaProposal-62',
-  'PoradaProposal-67',
-  'PoradaProposal-75',
-  'PoradaProposal-78',
-  'PoradaProposal-146',
-  'PoradaProposal-156',
-  'PoradaProposal-198',
-  'PoradaProposal-259',
-  'PoradaProposal-262',
-  'PoradaProposal-268',
-  'PoradaProposal-273',
-  'PoradaProposal-286',
-  'PoradaProposal-309',
-  'PoradaProposal-316',
-  'PoradaProposal-318',
-] as const
-
-const CURATED_CAPTIONS = [
-  'The walk into the surprise',
-  'A quiet pause before forever',
-  'The question already answered in her smile',
-  'Portraits in the last light',
-  'Laughing between takes',
-  'The ring, finally on her hand',
-  'Golden hour on the water',
-  'A promise made at dusk',
-] as const
-
-const CURATED_LOCATIONS = ['Proposal spot', 'The Lodge Lawn', 'Waterfront path'] as const
-const PHOTOGRAPHERS = ['Emma Photography', 'Emma Photography', 'The Poradas Archive'] as const
-const FACE_SETS: ReadonlyArray<ReadonlyArray<{ id: string; name: string; x: number; y: number }>> =
-  [
-    [
-      { id: 'f1', name: 'Jordyn', x: 40, y: 35 },
-      { id: 'f2', name: 'Austin', x: 65, y: 40 },
-    ],
-    [{ id: 'f3', name: 'Jordyn', x: 50, y: 45 }],
-    [{ id: 'f4', name: 'Austin', x: 55, y: 42 }],
-  ]
-
-const ASPECT_RATIOS = [1.5, 0.67, 1, 1.33, 0.8, 1.5, 1, 0.67] as const
+export { CURATED_PHOTOS }
 
 function image(path: string) {
   return { url: path, thumbnail: path, downloadUrl: path }
 }
 
-export const CURATED_PHOTOS: GalleryPhoto[] = ENGAGEMENT_IMAGES.map((name, index) => {
-  const path = `/images/engagement/${name}.webp`
-  const caption = CURATED_CAPTIONS[index % CURATED_CAPTIONS.length] ?? 'Proposal portrait'
-  return {
-    id: `curated-${index + 1}`,
-    ...image(path),
-    caption,
-    album: 'Engagement',
-    category: 'Proposal',
-    likes: 10 + index * 3,
-    aspectRatio: ASPECT_RATIOS[index % ASPECT_RATIOS.length] ?? 1,
-    time: 'Golden hour',
-    location: CURATED_LOCATIONS[index % CURATED_LOCATIONS.length] ?? 'Proposal spot',
-    photographer: PHOTOGRAPHERS[index % PHOTOGRAPHERS.length] ?? 'Emma Photography',
-    date: '2024-10-31',
-    createdAt: `2024-10-31T18:${String(index % 60).padStart(2, '0')}:00`,
-    faces: [...(FACE_SETS[index % FACE_SETS.length] ?? [])],
-    tags: ['engagement', 'proposal', 'portrait'],
-    source: 'professional',
-    collection: 'Proposal',
-    albumSortOrder: index + 1,
-  }
-})
-
-/** 5 live wedding-day rows (the oracle's `Wedding Photos` tab count). */
+/** Deterministic stub live rows used by feature tests. */
 export const LIVE_PHOTOS: GalleryPhoto[] = [
   {
     id: 'photo-1',
