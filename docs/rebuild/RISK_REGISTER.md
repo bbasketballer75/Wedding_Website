@@ -69,3 +69,12 @@ Cross-reference only; the full table with options/evidence is `CUTOVER.md` §4 a
 | R25/R27/R28 inherited visual/a11y defects | owner approves visual change | Accepted for parity; fix after cutover with new baselines |
 
 **Lead status update (Wave 9 closure):** R23 (parity residual risk) is closed for the contract matrix — final run `w9-matrix-final6` is 46 rows with 0 failures (41 PASS + the 5 documented raster ALLOWED entries), including gallery and admin on mobile after the narrow-viewport pagination and mobile-chrome fixes. Residual Wave-9 verification extras (authenticated admin-section capture, prerender-aware matrix pass) and the owner-gated cutover actions remain tracked in `docs/rebuild/CUTOVER.md` (U11/U15, G4–G10, A1–A8).
+
+**Implementation update (2026-11-10, owner-ratified cutover bundle):** R17 is implemented as an additive forward
+migration (`tools/cutover/migrations/20261110000000_fix_guestbook_submit_rpc.sql`) and locally verified (rate
+limiting restored; post-cutover contract suite 11/11). The A3 §6 RLS bundle S1–S7 is implemented
+(`…_rls_hardening_bundle.sql`) with the 10 dynamic invariants green and an idempotent re-apply; the app wiring
+for the new RPCs (guest-share aggregate/identity/token, RPC-only guestbook submit, admin delete/audit RPCs)
+ships with it. R18/R19/R20 dispositions are owner-ratified (honest moderated claims queue; token-gated lookup;
+RPC reaction semantics). Remaining: staging apply + sign-off, and the window's production backup/restore +
+rollback rehearsal.

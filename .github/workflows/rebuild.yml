@@ -163,6 +163,13 @@ jobs:
         if: steps.scaffold.outputs.exists == 'true'
         run: node ../tools/cutover/check-migrations.mjs
 
+      # The owner-approved cutover migrations live outside the frozen baseline
+      # (tools/cutover/migrations). CI proves the chain is additive/ordered/
+      # idempotent; applying them to a database is the A2 window action.
+      - name: Cutover forward migrations (static audit)
+        if: steps.scaffold.outputs.exists == 'true'
+        run: node ../tools/cutover/check-forward-migrations.mjs
+
   parity:
     name: Parity (legacy vs rebuild)
     # Heavy (~10 min, two production builds). Runs nightly, on manual dispatch,

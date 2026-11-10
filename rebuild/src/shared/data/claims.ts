@@ -11,6 +11,7 @@
  */
 import type { TypedSupabaseClient } from './client'
 import { getSupabaseClient } from './client'
+import { callCutoverRpc } from './cutover-rpc'
 import { DataError, toDataError, unwrapResult } from './errors'
 import { parseGuestbookMessage, type GuestbookMessage } from './guestbook'
 import type { GuestUpload } from './guestUploads'
@@ -220,55 +221,38 @@ interface FindOrCreateIdentityInput {
 }
 
 /**
- * Find a guest identity by email or create it. Mirrors the frozen
- * "update-unverified-then-insert" flow; a race on the unique email re-reads the
- * winner's row.
+ * Find a guest identity by email or create it.
+ *
+ * After the D-02 cutover migrations the public table SELECT on
+ * `guest_identities` is revoked, so this goes through the SECURITY DEFINER
+ * `resolve_guest_identity(email, display_name, session_id)` RPC, which keeps the
+ * frozen "update unverified, else find-or-create" behaviour (including the
+ * unique-email race) without exposing the table to anon.
  */
 export async function findOrCreateGuestIdentity(
   input: FindOrCreateIdentityInput,
   client: TypedSupabaseClient = getSupabaseClient()
 ): Promise<GuestIdentityRow> {
-  const { data: existing, error: readError } = await client
-    .from('guest_identities')
-    .select('*')
-    .eq('email', input.email)
-    .maybeSingle()
-
-  if (readError) throw toDataError(readError, CLAIMS_READ_ERROR)
-
-  if (existing) {
-    if (!existing.is_verified) {
-      const { error: updateError } = await client
-        .from('guest_identities')
-        .update({ display_name: input.displayName, session_id: input.sessionId ?? null })
-        .eq('id', existing.id)
-      if (updateError) throw toDataError(updateError, CLAIMS_WRITE_ERROR)
+  const { data, error } = await callCutoverRpc<Record<string, unknown> | null>(
+    client,
+    'resolve_guest_identity',
+    {
+      p_email: input.email,
+      p_display_name: input.displayName,
+      p_session_id: input.sessionId ?? null,
     }
-    return existing
+  )
+
+  if (error || !data) throw toDataError(error, CLAIMS_WRITE_ERROR)
+
+  return {
+    id: asString(data.id) ?? '',
+    email: asString(data.email) ?? input.email,
+    display_name: asString(data.display_name) ?? input.displayName,
+    session_id: asString(data.session_id),
+    is_verified: data.is_verified === true,
+    created_at: asString(data.created_at) ?? '',
   }
-
-  const { data: inserted, error: insertError } = await client
-    .from('guest_identities')
-    .insert({
-      email: input.email,
-      display_name: input.displayName,
-      session_id: input.sessionId ?? null,
-      is_verified: false,
-    })
-    .select('*')
-    .maybeSingle()
-
-  if (!insertError && inserted) return inserted
-
-  // Unique-email race: another caller created the identity first.
-  const { data: raced, error: raceError } = await client
-    .from('guest_identities')
-    .select('*')
-    .eq('email', input.email)
-    .maybeSingle()
-
-  if (raceError || !raced) throw toDataError(insertError ?? raceError, CLAIMS_WRITE_ERROR)
-  return raced
 }
 
 /** Submit one or more photo/face claims for a guest (find-or-create identity first). */
@@ -446,42 +430,26 @@ export async function fetchPotentialPhotosToClaimByEmail(
 
 /**
  * Guest's permanent share token: existing token or a freshly generated one.
- * Race-safe (unique email): on insert failure the winner's token is re-read.
+ *
+ * The public table read/write on `guest_share_tokens` is revoked by the D-02
+ * migrations; the SECURITY DEFINER `get_or_create_share_token(email, upload_id)`
+ * RPC only returns a token for the owner of a known (unguessable) upload row, so
+ * knowing an email is not enough to enumerate share links.
  */
 export async function getOrCreateShareToken(
   email: string,
+  uploadId: string,
   client: TypedSupabaseClient = getSupabaseClient()
 ): Promise<string> {
-  const formattedEmail = email.trim().toLowerCase()
+  const { data, error } = await callCutoverRpc<string | null>(client, 'get_or_create_share_token', {
+    p_email: email.trim().toLowerCase(),
+    p_upload_id: uploadId,
+  })
 
-  const { data: existing, error: readError } = await client
-    .from('guest_share_tokens')
-    .select('token')
-    .eq('guest_email', formattedEmail)
-    .maybeSingle()
-
-  if (readError) throw toDataError(readError, SHARE_TOKEN_ERROR)
-  if (existing?.token) return existing.token
-
-  const newToken = crypto.randomUUID()
-  const { data: inserted, error: insertError } = await client
-    .from('guest_share_tokens')
-    .insert({ guest_email: formattedEmail, token: newToken })
-    .select('token')
-    .maybeSingle()
-
-  if (!insertError && inserted?.token) return inserted.token
-
-  const { data: raced, error: raceError } = await client
-    .from('guest_share_tokens')
-    .select('token')
-    .eq('guest_email', formattedEmail)
-    .maybeSingle()
-
-  if (raceError) throw toDataError(raceError, SHARE_TOKEN_ERROR)
-  if (raced?.token) return raced.token
-
-  throw toDataError(insertError ?? new Error('token could not be created'), SHARE_TOKEN_ERROR)
+  if (error || typeof data !== 'string' || data.length === 0) {
+    throw toDataError(error ?? new Error('token could not be created'), SHARE_TOKEN_ERROR)
+  }
+  return data
 }
 
 /**
@@ -560,67 +528,36 @@ const EMPTY_GUEST_UPLOAD: Parameters<typeof mapGuestUploadRow>[0] = {
 /**
  * Fetch a guest's showcase by token. Returns `null` for an unknown token so the
  * page can render its friendly "link unresolved" state.
+ *
+ * The whole aggregate comes from one SECURITY DEFINER RPC after the D-02
+ * migrations revoke public table reads on `guest_share_tokens` and
+ * `guest_identities`. Keeping the payload shape close to the old multi-query
+ * result means `resolveGuestContributions` (and its fixture tests) still own the
+ * normalisation.
  */
 export async function fetchGuestContributionsByToken(
   token: string,
   client: TypedSupabaseClient = getSupabaseClient()
 ): Promise<GuestContributions | null> {
-  const { data: tokenRow, error: tokenError } = await client
-    .from('guest_share_tokens')
-    .select('guest_email')
-    .eq('token', token)
-    .maybeSingle()
+  const { data, error } = await callCutoverRpc<Record<string, unknown> | null>(
+    client,
+    'get_guest_contributions',
+    { p_token: token }
+  )
 
-  if (tokenError) throw toDataError(tokenError, SHARE_TOKEN_ERROR)
-  if (!tokenRow) return null
+  if (error) throw toDataError(error, SHARE_TOKEN_ERROR)
+  if (!data) return null
 
-  const email = tokenRow.guest_email
+  const tokenRow = toJsonObject(data.token)
+  const identityRow = toJsonObject(data.identity)
+  const uploads = toUnknownArray(data.uploads as Json | undefined) ?? []
+  const guestbookRows = toUnknownArray(data.guestbook as Json | undefined) ?? []
 
-  // The identity row is fetched twice on purpose: the frozen claim aggregate is
-  // a separate embed query, and asking for `photo_claims` in the same select
-  // hides `display_name` behind a differently-shaped PostgREST embed response
-  // (this made the album title show a note author instead of the album owner).
-  const [uploadsResult, guestbookResult, identityResult, claimsResult] = await Promise.all([
-    client
-      .from('guest_uploads')
-      .select('*')
-      .eq('guest_email', email)
-      .eq('status', 'approved')
-      .order('created_at', { ascending: false }),
-    client
-      .from('guestbook_messages')
-      .select('*')
-      .eq('email', email)
-      .order('created_at', { ascending: false }),
-    client.from('guest_identities').select('id, display_name').eq('email', email).maybeSingle(),
-    client
-      .from('guest_identities')
-      .select('id, photo_claims(*, photos(*))')
-      .eq('email', email)
-      .maybeSingle(),
-  ])
-
-  if (uploadsResult.error) throw toDataError(uploadsResult.error, SHARE_TOKEN_ERROR)
-  if (guestbookResult.error) throw toDataError(guestbookResult.error, SHARE_TOKEN_ERROR)
-  if (identityResult.error) throw toDataError(identityResult.error, SHARE_TOKEN_ERROR)
-  if (claimsResult.error) throw toDataError(claimsResult.error, SHARE_TOKEN_ERROR)
-
-  const identityBase = toJsonObject(identityResult.data)
-  const identityClaims = toJsonObject(claimsResult.data)
-  const identityRow =
-    identityBase || identityClaims ? { ...(identityBase ?? {}), ...(identityClaims ?? {}) } : null
-  const resolved = resolveGuestContributions({
-    tokenRow,
-    uploads: uploadsResult.data ?? [],
-    guestbookRows: guestbookResult.data ?? [],
-    identityRow,
-  })
-
+  const resolved = resolveGuestContributions({ tokenRow, uploads, guestbookRows, identityRow })
   if (!resolved) return null
 
   // Prefer the identity name when the aggregate row exposes one.
-  const identity = toJsonObject(identityRow)
-  const displayName = identity?.display_name
+  const displayName = identityRow?.display_name
   if (typeof displayName === 'string' && displayName.length > 0) {
     return { ...resolved, guestName: displayName }
   }

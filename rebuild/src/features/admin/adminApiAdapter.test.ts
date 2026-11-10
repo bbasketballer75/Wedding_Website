@@ -4,9 +4,10 @@
  * Every test injects the structural mock client from
  * `shared/data/test-support/mock-client` and asserts the exact table/RPC query
  * shapes the adapter emits, the frozen error copy, empty-state behaviour, and
- * the "no double audit logging" invariant (mutation paths must write exactly one
- * `moderation_audit_log` row per entity — the shared-data mutations do it, the
- * adapter must not repeat it).
+ * the "no double audit logging" invariant (mutation paths must call the
+ * `insert_moderation_audit_v1` RPC exactly once per entity — the shared-data
+ * mutations do it, the adapter must not repeat it; the RPC derives the actor
+ * from the JWT, so payloads carry only the `p_*` audit fields).
  */
 import { describe, expect, it } from 'vitest'
 import {
@@ -114,8 +115,9 @@ function callsTo(calls: readonly MockCall[], target: string, method: string): Mo
   return calls.filter(call => call.target === target && call.method === method)
 }
 
-function auditInserts(calls: readonly MockCall[]): Array<Record<string, unknown>> {
-  return callsTo(calls, 'moderation_audit_log', 'insert').map(
+/** Audit payloads sent through the D-02 RPC (the actor is derived server-side). */
+function auditPayloads(calls: readonly MockCall[]): Array<Record<string, unknown>> {
+  return callsTo(calls, 'insert_moderation_audit_v1', 'rpc').map(
     call => call.args[0] as Record<string, unknown>
   )
 }
@@ -230,8 +232,8 @@ describe('upload moderation', () => {
           { data: null },
           { data: uploadRow('approved') },
         ],
-        moderation_audit_log: { data: [auditRow()] },
       },
+      rpcs: { insert_moderation_audit_v1: { data: auditRow() } },
     })
 
     const upload = await api.moderateUpload({ id: 'upload-1', action: 'approve', actor })
@@ -240,16 +242,18 @@ describe('upload moderation', () => {
     expect(callsTo(handle.calls, 'guest_uploads', 'update')[0]?.args).toEqual([
       { status: 'approved' },
     ])
-    // Exactly one audit row: the shared-data mutation owns the audit write.
-    expect(auditInserts(handle.calls)).toHaveLength(1)
-    expect(auditInserts(handle.calls)[0]).toMatchObject({
-      entity_type: 'guest_upload',
-      entity_id: 'upload-1',
-      action: 'upload_approved_published',
-      from_status: 'pending',
-      to_status: 'approved',
-      actor_email: 'admin@test.wedding',
+    // Exactly one audit row: the shared-data mutation owns the audit write, and
+    // the RPC derives the actor from the JWT (the actor is never sent).
+    const audits = auditPayloads(handle.calls)
+    expect(audits).toHaveLength(1)
+    expect(audits[0]).toMatchObject({
+      p_entity_type: 'guest_upload',
+      p_entity_id: 'upload-1',
+      p_action: 'upload_approved_published',
+      p_from_status: 'pending',
+      p_to_status: 'approved',
     })
+    expect(audits[0]).not.toHaveProperty('actor_email')
   })
 
   it('rejects with the trimmed reason and returns the rejected upload', async () => {
@@ -260,8 +264,8 @@ describe('upload moderation', () => {
           { data: null },
           { data: uploadRow('rejected', { rejection_reason: 'Blurry' }) },
         ],
-        moderation_audit_log: { data: [auditRow()] },
       },
+      rpcs: { insert_moderation_audit_v1: { data: auditRow() } },
     })
 
     const upload = await api.moderateUpload({
@@ -275,11 +279,12 @@ describe('upload moderation', () => {
     expect(callsTo(handle.calls, 'guest_uploads', 'update')[0]?.args).toEqual([
       { status: 'rejected', rejection_reason: 'Blurry' },
     ])
-    expect(auditInserts(handle.calls)).toHaveLength(1)
-    expect(auditInserts(handle.calls)[0]).toMatchObject({
-      action: 'upload_rejected',
-      summary: 'Guest upload rejected: Blurry',
-      metadata: { rejection_reason: 'Blurry' },
+    const audits = auditPayloads(handle.calls)
+    expect(audits).toHaveLength(1)
+    expect(audits[0]).toMatchObject({
+      p_action: 'upload_rejected',
+      p_summary: 'Guest upload rejected: Blurry',
+      p_metadata: { rejection_reason: 'Blurry' },
     })
   })
 
@@ -290,8 +295,8 @@ describe('upload moderation', () => {
           { data: null },
           { data: [uploadRow('rejected', { id: 'a' }), uploadRow('rejected', { id: 'b' })] },
         ],
-        moderation_audit_log: { data: [auditRow()] },
       },
+      rpcs: { insert_moderation_audit_v1: { data: auditRow() } },
     })
 
     const uploads = await api.bulkModerate({
@@ -303,11 +308,12 @@ describe('upload moderation', () => {
 
     expect(uploads.map(upload => upload.id)).toEqual(['a', 'b'])
     expect(callsTo(handle.calls, 'guest_uploads', 'in')[0]?.args).toEqual(['id', ['a', 'b']])
-    expect(auditInserts(handle.calls)).toHaveLength(2)
-    for (const insert of auditInserts(handle.calls)) {
-      expect(insert).toMatchObject({
-        action: 'upload_bulk_rejected',
-        summary: 'Guest upload bulk rejected: Duplicate',
+    const audits = auditPayloads(handle.calls)
+    expect(audits).toHaveLength(2)
+    for (const payload of audits) {
+      expect(payload).toMatchObject({
+        p_action: 'upload_bulk_rejected',
+        p_summary: 'Guest upload bulk rejected: Duplicate',
       })
     }
   })
@@ -319,8 +325,8 @@ describe('upload moderation', () => {
           data: [{ id: 'a', guest_name: 'Riley Thompson', photo_urls: ['u1', 'u2'] }],
         },
         photos: { data: [{ id: 'p1' }, { id: 'p2' }] },
-        moderation_audit_log: { data: [auditRow()] },
       },
+      rpcs: { insert_moderation_audit_v1: { data: auditRow() } },
     })
 
     const result = await api.publishToAlbum({ ids: ['a'], album: 'Wedding Day', actor })
@@ -330,10 +336,11 @@ describe('upload moderation', () => {
       expect.objectContaining({ url: 'u1', album: 'Wedding Day', category: 'Wedding Day' }),
       expect.objectContaining({ url: 'u2', album: 'Wedding Day', category: 'Wedding Day' }),
     ])
-    expect(auditInserts(handle.calls)).toHaveLength(1)
-    expect(auditInserts(handle.calls)[0]).toMatchObject({
-      summary: 'Guest upload photos published to Wedding Day album',
-      metadata: { album: 'Wedding Day' },
+    const audits = auditPayloads(handle.calls)
+    expect(audits).toHaveLength(1)
+    expect(audits[0]).toMatchObject({
+      p_summary: 'Guest upload photos published to Wedding Day album',
+      p_metadata: { album: 'Wedding Day' },
     })
   })
 
@@ -377,14 +384,12 @@ describe('guestbook moderation', () => {
     ])
   })
 
-  it('bulk-deletes and writes one bulk audit row per message', async () => {
+  it('bulk-deletes via the admin RPC and writes one bulk audit row per message', async () => {
     const { api, handle } = makeApi({
-      tables: {
-        guestbook_messages: [
-          { data: adminMessages.slice(0, 2) },
-          { data: [{ id: 'gb-msg-1' }, { id: 'gb-msg-2' }] },
-        ],
-        moderation_audit_log: { data: [auditRow()] },
+      tables: { guestbook_messages: { data: adminMessages.slice(0, 2) } },
+      rpcs: {
+        delete_guestbook_messages_v1: { data: 2 },
+        insert_moderation_audit_v1: { data: auditRow() },
       },
     })
 
@@ -394,34 +399,37 @@ describe('guestbook moderation', () => {
     })
 
     expect(deleted).toBe(2)
-    expect(callsTo(handle.calls, 'guestbook_messages', 'delete')[0]?.args).toEqual([])
-    expect(callsTo(handle.calls, 'guestbook_messages', 'in')[0]?.args).toEqual([
-      'id',
-      ['gb-msg-1', 'gb-msg-2'],
+    expect(callsTo(handle.calls, 'delete_guestbook_messages_v1', 'rpc')[0]?.args).toEqual([
+      { p_message_ids: ['gb-msg-1', 'gb-msg-2'] },
     ])
-    expect(auditInserts(handle.calls)).toHaveLength(2)
-    expect(auditInserts(handle.calls)[0]).toMatchObject({
-      entity_type: 'guestbook_message',
-      action: 'guestbook_bulk_deleted',
-      summary: 'Deleted guestbook message from Sarah Mitchell.',
-      metadata: { bulk_count: 2 },
+    const audits = auditPayloads(handle.calls)
+    expect(audits).toHaveLength(2)
+    expect(audits[0]).toMatchObject({
+      p_entity_type: 'guestbook_message',
+      p_action: 'guestbook_bulk_deleted',
+      p_summary: 'Deleted guestbook message from Sarah Mitchell.',
+      p_metadata: { bulk_count: 2 },
     })
   })
 
-  it('single-delete uses the single-message audit action', async () => {
+  it('single-delete uses the admin RPC and the single-message audit action', async () => {
     const { api, handle } = makeApi({
-      tables: {
-        guestbook_messages: [{ data: adminMessages.slice(0, 1) }, { data: [{ id: 'gb-msg-1' }] }],
-        moderation_audit_log: { data: [auditRow()] },
+      tables: { guestbook_messages: { data: adminMessages.slice(0, 1) } },
+      rpcs: {
+        delete_guestbook_messages_v1: { data: 1 },
+        insert_moderation_audit_v1: { data: auditRow() },
       },
     })
 
     await api.deleteGuestbookMessages({ ids: ['gb-msg-1'], actor })
 
-    const inserts = auditInserts(handle.calls)
-    expect(inserts).toHaveLength(1)
-    expect(inserts[0]).toMatchObject({ action: 'guestbook_message_deleted' })
-    expect(inserts[0]?.['metadata']).not.toHaveProperty('bulk_count')
+    expect(callsTo(handle.calls, 'delete_guestbook_messages_v1', 'rpc')[0]?.args).toEqual([
+      { p_message_ids: ['gb-msg-1'] },
+    ])
+    const audits = auditPayloads(handle.calls)
+    expect(audits).toHaveLength(1)
+    expect(audits[0]).toMatchObject({ p_action: 'guestbook_message_deleted' })
+    expect(audits[0]?.['p_metadata']).not.toHaveProperty('bulk_count')
   })
 })
 
@@ -461,8 +469,8 @@ describe('claims moderation', () => {
         ],
         guest_identities: { data: null },
         media_review_faces: { data: null },
-        moderation_audit_log: { data: [auditRow()] },
       },
+      rpcs: { insert_moderation_audit_v1: { data: auditRow() } },
     })
 
     const claim = await api.moderateClaim({ id: 'claim-pending-1', decision: 'approve', actor })
@@ -472,11 +480,12 @@ describe('claims moderation', () => {
       { is_verified: true },
     ])
     expect(callsTo(handle.calls, 'media_review_faces', 'update')).toHaveLength(1)
-    expect(auditInserts(handle.calls)).toHaveLength(1)
-    expect(auditInserts(handle.calls)[0]).toMatchObject({
-      entity_type: 'photo_claim',
-      action: 'claim_approved',
-      to_status: 'approved',
+    const audits = auditPayloads(handle.calls)
+    expect(audits).toHaveLength(1)
+    expect(audits[0]).toMatchObject({
+      p_entity_type: 'photo_claim',
+      p_action: 'claim_approved',
+      p_to_status: 'approved',
     })
   })
 
@@ -488,8 +497,8 @@ describe('claims moderation', () => {
           { data: null },
           { data: updatedClaim('rejected') },
         ],
-        moderation_audit_log: { data: [auditRow()] },
       },
+      rpcs: { insert_moderation_audit_v1: { data: auditRow() } },
     })
 
     await api.moderateClaim({
@@ -504,10 +513,11 @@ describe('claims moderation', () => {
       rejection_reason: 'Photos do not match',
     })
     expect(callsTo(handle.calls, 'media_review_faces', 'update')).toHaveLength(0)
-    expect(auditInserts(handle.calls)).toHaveLength(1)
-    expect(auditInserts(handle.calls)[0]).toMatchObject({
-      action: 'claim_rejected',
-      metadata: { rejection_reason: 'Photos do not match' },
+    const audits = auditPayloads(handle.calls)
+    expect(audits).toHaveLength(1)
+    expect(audits[0]).toMatchObject({
+      p_action: 'claim_rejected',
+      p_metadata: { rejection_reason: 'Photos do not match' },
     })
   })
 
@@ -544,23 +554,21 @@ describe('audit log', () => {
     ])
   })
 
-  it('logAudit writes one audit row with the actor and parses the result', async () => {
+  it('logAudit writes one audit row through the RPC and parses the derived-actor result', async () => {
     const { api, handle } = makeApi({
-      tables: {
-        moderation_audit_log: {
-          data: [
-            auditRow({
-              entity_type: 'guestbook_message',
-              entity_id: 'gb-msg-1',
-              action: 'guestbook_message_deleted',
-              summary: 'Deleted guestbook message from Sarah Mitchell.',
-              actor_email: 'admin@test.wedding',
-              actor_name: 'Admin',
-              actor_user_id: 'admin-1',
-              from_status: null,
-              to_status: 'deleted',
-            }),
-          ],
+      rpcs: {
+        insert_moderation_audit_v1: {
+          data: auditRow({
+            entity_type: 'guestbook_message',
+            entity_id: 'gb-msg-1',
+            action: 'guestbook_message_deleted',
+            summary: 'Deleted guestbook message from Sarah Mitchell.',
+            actor_email: 'admin@test.wedding',
+            actor_name: 'Admin',
+            actor_user_id: 'admin-1',
+            from_status: null,
+            to_status: 'deleted',
+          }),
         },
       },
     })
@@ -582,17 +590,19 @@ describe('audit log', () => {
       actorEmail: 'admin@test.wedding',
       toStatus: 'deleted',
     })
-    const inserts = auditInserts(handle.calls)
-    expect(inserts).toHaveLength(1)
-    expect(inserts[0]).toMatchObject({
-      entity_type: 'guestbook_message',
-      entity_id: 'gb-msg-1',
-      action: 'guestbook_message_deleted',
-      actor_user_id: 'admin-1',
-      actor_email: 'admin@test.wedding',
-      actor_name: 'Admin',
-      to_status: 'deleted',
+    const audits = auditPayloads(handle.calls)
+    expect(audits).toHaveLength(1)
+    expect(audits[0]).toMatchObject({
+      p_entity_type: 'guestbook_message',
+      p_entity_id: 'gb-msg-1',
+      p_action: 'guestbook_message_deleted',
+      p_summary: 'Deleted guestbook message from Sarah Mitchell.',
+      p_from_status: null,
+      p_to_status: 'deleted',
     })
+    // The RPC derives the actor from the JWT; the payload must not carry it.
+    expect(audits[0]).not.toHaveProperty('actor_user_id')
+    expect(audits[0]).not.toHaveProperty('actor_email')
   })
 })
 

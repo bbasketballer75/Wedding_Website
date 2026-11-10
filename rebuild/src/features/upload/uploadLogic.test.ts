@@ -283,7 +283,9 @@ describe('stub upload API', () => {
         videoFingerprints: [],
       })
     ).toEqual({ id: 'stub-guest-upload-1' })
-    expect(await api.getOrCreateShareToken('Jamie@Example.com')).toBe('token-jamie-example-com-1')
+    expect(await api.getOrCreateShareToken('Jamie@Example.com', 'stub-guest-upload-1')).toBe(
+      'token-jamie-example-com-1'
+    )
 
     expect(await api.lookupClaimIdentity('jamie@example.com')).toEqual({
       found: true,

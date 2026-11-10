@@ -76,7 +76,7 @@ export function useGuestUploadSubmit({
           Promise.all(completedVideoFiles.map(file => fingerprintFile(file.file))),
         ])
 
-        await withRetry(
+        const insertedUpload = await withRetry(
           () =>
             api.insertGuestUpload({
               guestName: name.trim(),
@@ -106,7 +106,7 @@ export function useGuestUploadSubmit({
         // The row is saved: fetch/derive the persistent guest share token. A
         // token failure must not lose the submission (frozen behavior).
         try {
-          setShareToken(await api.getOrCreateShareToken(email.trim()))
+          setShareToken(await api.getOrCreateShareToken(email.trim(), insertedUpload.id))
         } catch {
           setShareToken(null)
         }

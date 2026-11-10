@@ -260,7 +260,7 @@ describe('guestbook submit (RPC + documented fallback for R17)', () => {
     })
   })
 
-  it('falls back to a direct insert when the RPC errors (current baseline, R17)', async () => {
+  it('fails closed when the RPC errors (R17 repaired: no direct-insert fallback)', async () => {
     const { client, calls } = createMockClient({
       rpcs: {
         submit_guestbook_message_with_rate_limit: {
@@ -272,44 +272,26 @@ describe('guestbook submit (RPC + documented fallback for R17)', () => {
 
     const result = await submitGuestbookMessage(input, client)
 
-    expect(result).toEqual({
-      status: 'submitted',
-      messageId: 'fallback-id',
-      rateLimitRemaining: null,
-      viaFallback: true,
-    })
-    expect(calls).toContainEqual({
-      surface: 'from',
-      target: 'guestbook_messages',
-      method: 'insert',
-      args: [
-        { name: 'Fixture Guest', email: 'fixture@example.com', content: 'A note', media_url: null },
-      ],
-    })
+    expect(result.status).toBe('failed')
+    // The D-01/D-02 migrations revoke direct guest inserts, so the data layer
+    // must never attempt the old bypass path.
+    expect(calls.some(call => call.target === 'guestbook_messages')).toBe(false)
   })
 
-  it('falls back when the RPC returns an empty result (defect shield)', async () => {
+  it('fails closed when the RPC returns an empty result', async () => {
     const { client } = createMockClient({
       rpcs: { submit_guestbook_message_with_rate_limit: { data: [] } },
-      tables: { guestbook_messages: { data: { id: 'fallback-id-2' } } },
     })
 
     await expect(submitGuestbookMessage(input, client)).resolves.toMatchObject({
-      status: 'submitted',
-      messageId: 'fallback-id-2',
-      viaFallback: true,
+      status: 'failed',
     })
   })
 
-  it('returns a safe failure when both the RPC and the fallback fail', async () => {
+  it('returns a safe failure detail when the RPC is denied', async () => {
     const { client } = createMockClient({
       rpcs: {
         submit_guestbook_message_with_rate_limit: {
-          error: { message: 'column "type" does not exist', code: '42703' },
-        },
-      },
-      tables: {
-        guestbook_messages: {
           error: { message: 'new row violates row-level security policy', code: '42501' },
         },
       },
@@ -387,14 +369,29 @@ describe('guestbook writes', () => {
     })
   })
 
-  it('deleteGuestbookMessages short-circuits and returns the deleted count', async () => {
+  it('deleteGuestbookMessages short-circuits and uses the admin RPC', async () => {
     const empty = createMockClient({})
     await expect(deleteGuestbookMessages([], empty.client)).resolves.toBe(0)
     expect(empty.calls).toHaveLength(0)
 
-    const { client } = createMockClient({
-      tables: { guestbook_messages: { data: [{ id: 'm1' }, { id: 'm2' }] } },
+    const { client, calls } = createMockClient({
+      rpcs: { delete_guestbook_messages_v1: { data: 2 } },
     })
     await expect(deleteGuestbookMessages(['m1', 'm2'], client)).resolves.toBe(2)
+    expect(calls).toContainEqual({
+      surface: 'rpc',
+      target: 'delete_guestbook_messages_v1',
+      method: 'rpc',
+      args: [{ p_message_ids: ['m1', 'm2'] }],
+    })
+  })
+
+  it('wraps guestbook delete RPC failures', async () => {
+    const { client } = createMockClient({
+      rpcs: {
+        delete_guestbook_messages_v1: { error: { message: 'not authorized', code: '42501' } },
+      },
+    })
+    await expect(deleteGuestbookMessages(['m1'], client)).rejects.toBeInstanceOf(DataError)
   })
 })

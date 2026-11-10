@@ -227,6 +227,45 @@ function supabasePublicResponse({ request, url, fixtures }) {
   if (path.includes('/rpc/submit_guestbook_message_with_rate_limit')) {
     return { body: guestbook.submitResponse }
   }
+  if (path.includes('/rpc/get_guest_contributions')) {
+    // D-02: the rebuild's guest-share page uses this SECURITY DEFINER aggregate
+    // instead of the old public table reads. Build the same payload the frozen
+    // page effectively sees from the fixtures (valid token => full showcase,
+    // anything else => null so the frozen "unresolved link" state renders).
+    let token = ''
+    try {
+      token = JSON.parse(request.postData() ?? '{}')?.p_token ?? ''
+    } catch {
+      token = ''
+    }
+    const invalidToken = tokens.invalidToken ?? 'invalid-token'
+    if (!tokens.valid || token === '' || token === invalidToken) return { body: null }
+    return {
+      body: {
+        token: tokens.valid,
+        identity: {
+          id: tokens.identityWithClaims?.id ?? 'identity-jane',
+          display_name: tokens.identity?.display_name ?? 'Jane Miller',
+          photo_claims: tokens.identityWithClaims?.photo_claims ?? [],
+        },
+        uploads: uploads.approved,
+        guestbook: guestbook.messages,
+      },
+    }
+  }
+  if (path.includes('/rpc/resolve_guest_identity')) {
+    return {
+      body: {
+        id: tokens.identityWithClaims?.id ?? 'identity-jane',
+        display_name: tokens.identity?.display_name ?? 'Jane Miller',
+        email: tokens.valid?.guest_email ?? 'jane@example.com',
+        is_verified: false,
+      },
+    }
+  }
+  if (path.includes('/rpc/get_or_create_share_token')) {
+    return { body: 'parity-guest-share-token' }
+  }
   if (path.includes('/rest/v1/guestbook_messages') && method === 'GET') {
     return { body: guestbook.messages }
   }

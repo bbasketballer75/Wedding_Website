@@ -77,10 +77,10 @@ describe('moderation audit parsing (contracts/fixtures/adminSession.json)', () =
   })
 })
 
-describe('recordModerationAudit', () => {
-  it('inserts the frozen payload and returns the row', async () => {
+describe('recordModerationAudit (D-02 RPC)', () => {
+  it('appends through the RPC and returns the derived-actor row', async () => {
     const { client, calls } = createMockClient({
-      tables: { moderation_audit_log: { data: [auditRow()] } },
+      rpcs: { insert_moderation_audit_v1: { data: auditRow() } },
     })
 
     const row = await recordModerationAudit(
@@ -92,6 +92,8 @@ describe('recordModerationAudit', () => {
         fromStatus: 'pending',
         toStatus: 'approved',
         metadata: { album: 'Engagement' },
+        // Kept for call-site compatibility; the RPC derives the actor from the
+        // JWT, so the payload must not carry these fields.
         actor: { userId: 'admin-1', email: 'admin@test.wedding', name: 'Admin' },
       },
       client
@@ -99,29 +101,30 @@ describe('recordModerationAudit', () => {
 
     expect(row.id).toBe('audit-new')
     expect(calls).toContainEqual({
-      surface: 'from',
-      target: 'moderation_audit_log',
-      method: 'insert',
+      surface: 'rpc',
+      target: 'insert_moderation_audit_v1',
+      method: 'rpc',
       args: [
         {
-          entity_type: 'guest_upload',
-          entity_id: 'upload-1',
-          action: 'upload_approved_published',
-          summary: 'Approved',
-          metadata: { album: 'Engagement' },
-          from_status: 'pending',
-          to_status: 'approved',
-          actor_user_id: 'admin-1',
-          actor_email: 'admin@test.wedding',
-          actor_name: 'Admin',
+          p_entity_type: 'guest_upload',
+          p_entity_id: 'upload-1',
+          p_action: 'upload_approved_published',
+          p_summary: 'Approved',
+          p_metadata: { album: 'Engagement' },
+          p_from_status: 'pending',
+          p_to_status: 'approved',
         },
       ],
     })
+    const rpcArgs = calls.find(call => call.target === 'insert_moderation_audit_v1')
+      ?.args[0] as Record<string, unknown>
+    expect(rpcArgs).not.toHaveProperty('actor_user_id')
+    expect(rpcArgs).not.toHaveProperty('p_actor_email')
   })
 
-  it('omits absent optional fields entirely (exactOptional-compatible)', async () => {
+  it('defaults absent optional fields to null/empty metadata', async () => {
     const { client, calls } = createMockClient({
-      tables: { moderation_audit_log: { data: [auditRow()] } },
+      rpcs: { insert_moderation_audit_v1: { data: auditRow() } },
     })
 
     await recordModerationAudit(
@@ -134,15 +137,26 @@ describe('recordModerationAudit', () => {
       client
     )
 
-    const payload = calls.find(call => call.method === 'insert')?.args[0] as Record<string, unknown>
-    expect(payload).not.toHaveProperty('from_status')
-    expect(payload).not.toHaveProperty('to_status')
-    expect(payload).not.toHaveProperty('actor_user_id')
-    expect(payload.metadata).toEqual({})
+    expect(calls).toContainEqual({
+      surface: 'rpc',
+      target: 'insert_moderation_audit_v1',
+      method: 'rpc',
+      args: [
+        {
+          p_entity_type: 'photo_claim',
+          p_entity_id: 'claim-1',
+          p_action: 'claim_rejected',
+          p_summary: 'Rejected',
+          p_metadata: {},
+          p_from_status: null,
+          p_to_status: null,
+        },
+      ],
+    })
   })
 
   it('rejects empty results and wraps errors', async () => {
-    const empty = createMockClient({ tables: { moderation_audit_log: { data: [] } } })
+    const empty = createMockClient({ rpcs: { insert_moderation_audit_v1: { data: null } } })
     await expect(
       recordModerationAudit(
         { entityType: 'guest_upload', entityId: 'u', action: 'upload_rejected', summary: 'x' },
@@ -151,7 +165,9 @@ describe('recordModerationAudit', () => {
     ).rejects.toMatchObject({ code: 'insert:empty-result' })
 
     const broken = createMockClient({
-      tables: { moderation_audit_log: { error: { message: 'denied', code: '42501' } } },
+      rpcs: {
+        insert_moderation_audit_v1: { error: { message: 'denied', code: '42501' } },
+      },
     })
     await expect(
       recordModerationAudit(

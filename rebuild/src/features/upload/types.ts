@@ -7,7 +7,7 @@
  * component change:
  *   requestUploadSlot -> POST /.netlify/functions/guest-upload-url → { uploadUrl, publicUrl }
  *   insertGuestUpload -> guest_uploads insert (status 'pending')
- *   getOrCreateShareToken -> shared/data/claims.ts getOrCreateShareToken(email)
+ *   getOrCreateShareToken -> shared/data/claims.ts getOrCreateShareToken(email, uploadId)
  *   lookupClaimIdentity -> claims identity lookup seam (ClaimModal is W5-2 scope)
  */
 
@@ -72,7 +72,7 @@ export interface ClaimIdentityLookup {
 export interface UploadApi {
   requestUploadSlot: (request: UploadSlotRequest) => Promise<UploadSlot>
   insertGuestUpload: (input: GuestUploadInsertInput) => Promise<GuestUploadInsertResult>
-  getOrCreateShareToken: (email: string) => Promise<string>
+  getOrCreateShareToken: (email: string, uploadId: string) => Promise<string>
   lookupClaimIdentity: (email: string) => Promise<ClaimIdentityLookup>
 }
 

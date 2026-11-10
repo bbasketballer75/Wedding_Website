@@ -265,12 +265,12 @@ describe('guest upload reads', () => {
 })
 
 describe('guest upload moderation transitions', () => {
-  it('approveGuestUpload updates status and writes an audit entry', async () => {
+  it('approveGuestUpload updates status and audits through the D-02 RPC', async () => {
     const { client, calls } = createMockClient({
       tables: {
         guest_uploads: [{ data: { status: 'pending' } }, { data: [] }],
-        moderation_audit_log: { data: [makeRow({ id: 'ignored' })] },
       },
+      rpcs: { insert_moderation_audit_v1: { data: makeRow({ id: 'ignored' }) } },
     })
 
     await approveGuestUpload('upload-1', { userId: 'admin-1', email: 'admin@test.wedding' }, client)
@@ -282,31 +282,29 @@ describe('guest upload moderation transitions', () => {
       args: [{ status: 'approved' }],
     })
     expect(calls).toContainEqual({
-      surface: 'from',
-      target: 'moderation_audit_log',
-      method: 'insert',
+      surface: 'rpc',
+      target: 'insert_moderation_audit_v1',
+      method: 'rpc',
       args: [
         {
-          entity_type: 'guest_upload',
-          entity_id: 'upload-1',
-          action: 'upload_approved_published',
-          summary: 'Guest upload approved',
-          metadata: {},
-          from_status: 'pending',
-          to_status: 'approved',
-          actor_user_id: 'admin-1',
-          actor_email: 'admin@test.wedding',
+          p_entity_type: 'guest_upload',
+          p_entity_id: 'upload-1',
+          p_action: 'upload_approved_published',
+          p_summary: 'Guest upload approved',
+          p_metadata: {},
+          p_from_status: 'pending',
+          p_to_status: 'approved',
         },
       ],
     })
   })
 
-  it('rejectGuestUpload writes the reason and audit metadata', async () => {
+  it('rejectGuestUpload writes the reason and audit metadata through the RPC', async () => {
     const { client, calls } = createMockClient({
       tables: {
         guest_uploads: [{ data: { status: 'pending' } }, { data: [] }],
-        moderation_audit_log: { data: [makeRow()] },
       },
+      rpcs: { insert_moderation_audit_v1: { data: makeRow() } },
     })
 
     await rejectGuestUpload('upload-2', 'duplicate', null, client)
@@ -318,25 +316,23 @@ describe('guest upload moderation transitions', () => {
       args: [{ status: 'rejected', rejection_reason: 'duplicate' }],
     })
     expect(calls).toContainEqual({
-      surface: 'from',
-      target: 'moderation_audit_log',
-      method: 'insert',
+      surface: 'rpc',
+      target: 'insert_moderation_audit_v1',
+      method: 'rpc',
       args: [
         expect.objectContaining({
-          action: 'upload_rejected',
-          summary: 'Guest upload rejected: duplicate',
-          metadata: { rejection_reason: 'duplicate' },
+          p_action: 'upload_rejected',
+          p_summary: 'Guest upload rejected: duplicate',
+          p_metadata: { rejection_reason: 'duplicate' },
         }),
       ],
     })
   })
 
-  it('bulk transitions audit every id and short-circuit empty input', async () => {
+  it('bulk transitions audit every id through the RPC and short-circuit empty input', async () => {
     const { client, calls } = createMockClient({
-      tables: {
-        guest_uploads: { data: [] },
-        moderation_audit_log: { data: [makeRow()] },
-      },
+      tables: { guest_uploads: { data: [] } },
+      rpcs: { insert_moderation_audit_v1: { data: makeRow() } },
     })
 
     await bulkApproveGuestUploads([], null, client)
@@ -345,18 +341,18 @@ describe('guest upload moderation transitions', () => {
     await bulkApproveGuestUploads(['u1', 'u2'], null, client)
     await bulkRejectGuestUploads(['u3'], 'spam', null, client)
 
-    const auditInserts = calls.filter(
-      call => call.target === 'moderation_audit_log' && call.method === 'insert'
+    const audits = calls.filter(
+      call => call.target === 'insert_moderation_audit_v1' && call.method === 'rpc'
     )
-    expect(auditInserts).toHaveLength(3)
-    expect(auditInserts[0]?.args[0]).toMatchObject({
-      entity_id: 'u1',
-      action: 'upload_approved_published',
+    expect(audits).toHaveLength(3)
+    expect(audits[0]?.args[0]).toMatchObject({
+      p_entity_id: 'u1',
+      p_action: 'upload_approved_published',
     })
-    expect(auditInserts[2]?.args[0]).toMatchObject({
-      entity_id: 'u3',
-      action: 'upload_bulk_rejected',
-      from_status: 'pending',
+    expect(audits[2]?.args[0]).toMatchObject({
+      p_entity_id: 'u3',
+      p_action: 'upload_bulk_rejected',
+      p_from_status: 'pending',
     })
   })
 
@@ -371,7 +367,7 @@ describe('guest upload moderation transitions', () => {
 })
 
 describe('publish guest uploads to an album', () => {
-  it('inserts one photo row per url and audits each upload', async () => {
+  it('inserts one photo row per url and audits each upload through the RPC', async () => {
     const { client, calls } = createMockClient({
       tables: {
         guest_uploads: {
@@ -381,8 +377,8 @@ describe('publish guest uploads to an album', () => {
           ],
         },
         photos: { data: [{ id: 'photo-new-1' }, { id: 'photo-new-2' }] },
-        moderation_audit_log: { data: [makeRow()] },
       },
+      rpcs: { insert_moderation_audit_v1: { data: makeRow() } },
     })
 
     const result = await publishGuestUploadPhotosToAlbum(
@@ -420,12 +416,12 @@ describe('publish guest uploads to an album', () => {
     })
 
     const audits = calls.filter(
-      call => call.target === 'moderation_audit_log' && call.method === 'insert'
+      call => call.target === 'insert_moderation_audit_v1' && call.method === 'rpc'
     )
     expect(audits).toHaveLength(2)
     expect(audits[1]?.args[0]).toMatchObject({
-      entity_id: 'u2',
-      metadata: { album: 'Guest Uploads' },
+      p_entity_id: 'u2',
+      p_metadata: { album: 'Guest Uploads' },
     })
   })
 

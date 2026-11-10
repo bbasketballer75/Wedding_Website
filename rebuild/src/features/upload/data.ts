@@ -8,7 +8,7 @@
  *   insertGuestUpload   -> guest_uploads insert (status 'pending'); NOTE: shared/data/guestUploads.ts
  *                          does not export an insert helper yet — it must be added there (or in a
  *                          thin app route) with this input shape.
- *   getOrCreateShareToken -> shared/data/claims.ts getOrCreateShareToken(email)  (same signature)
+ *   getOrCreateShareToken -> shared/data/claims.ts getOrCreateShareToken(email, uploadId)
  *   lookupClaimIdentity -> claims identity lookup seam (ClaimModal/claims wizard is W5-2 scope)
  */
 import type { ClaimIdentityLookup, UploadApi, UploadSlotRequest } from './types'
@@ -34,7 +34,10 @@ export function createStubUploadApi(): UploadApi {
       insertCount += 1
       return Promise.resolve({ id: `stub-guest-upload-${insertCount}` })
     },
-    getOrCreateShareToken: (email: string) => {
+    getOrCreateShareToken: (email: string, uploadId: string) => {
+      // The stub keeps the deterministic token shape; the real adapter sends the
+      // upload id to the RPC as proof of ownership.
+      void uploadId
       tokenCount += 1
       const slug = email
         .trim()

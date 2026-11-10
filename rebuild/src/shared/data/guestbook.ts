@@ -1,20 +1,19 @@
 /**
- * Guestbook data API — read (with replies), submit (RPC + documented fallback),
- * reactions, replies and admin deletion.
+ * Guestbook data API — read (with replies), submit (rate-limited RPC), reactions,
+ * replies and admin deletion.
  *
  * Frozen surface: `src/pages/guestbook/*` hooks + `src/lib/supabase/claims.ts`
  * (guestbook reads by email) + `src/pages/admin/GuestbookModeration.tsx`.
  *
- * IMPORTANT — known baseline defect (risk register R17, A3 §5): the deployed
- * `submit_guestbook_message_with_rate_limit` RPC still inserts a dropped
- * `guestbook_messages.type` column, so it raises at runtime. The frozen client
- * silently falls back to a direct table insert, which bypasses server-side rate
- * limiting. We preserve that behaviour here (RPC first, direct insert fallback)
- * and mark the result `viaFallback: true` so the UI/telemetry can see it; the
- * repair is Wave 3/cutover work (see `contracts/schema/rpc.md` §3).
+ * Cutover state: the D-01 forward migration repairs
+ * `submit_guestbook_message_with_rate_limit` (R17) and the D-02 migration routes
+ * admin deletion through `delete_guestbook_messages_v1` while revoking direct
+ * writes. The old direct-insert fallback is therefore gone: a broken RPC now
+ * fails closed instead of silently bypassing the rate limit.
  */
 import type { TypedSupabaseClient } from './client'
 import { getSupabaseClient } from './client'
+import { callCutoverRpc } from './cutover-rpc'
 import { DataError, toDataError, unwrapResult } from './errors'
 import type { Json, RpcRow, TableRow } from './schema'
 import { isJsonObject } from './schema'
@@ -226,9 +225,11 @@ export async function fetchGuestbookMessagesWithCommentsRpc(
 }
 
 /**
- * Submit a note: rate-limited RPC first, direct insert fallback when the RPC is
- * broken (current production baseline, risk R17). Never throws — UI maps the
- * discriminated result.
+ * Submit a note through the repaired rate-limited RPC (D-01).
+ *
+ * The direct-insert fallback was only needed while R17 broke the wrapper; the
+ * cutover migration fixes the RPC and revokes direct guest INSERTs, so a broken
+ * RPC now fails closed instead of silently bypassing the rate limit.
  */
 export async function submitGuestbookMessage(
   input: GuestbookMessageInput,
@@ -244,52 +245,29 @@ export async function submitGuestbookMessage(
       p_window_minutes: 1,
     })
 
-    if (!error) {
-      const result = (data ?? [])[0]
-      if (result) {
-        if (!result.success) {
-          return {
-            status: 'rate-limited',
-            message: result.error_message || 'Just a moment before the next note.',
-            resetAfterSeconds: Number.isFinite(result.rate_limit_reset_after)
-              ? Number(result.rate_limit_reset_after)
-              : null,
-          }
-        }
-        return {
-          status: 'submitted',
-          messageId: result.message_id,
-          rateLimitRemaining: Number.isFinite(result.rate_limit_remaining)
-            ? Number(result.rate_limit_remaining)
-            : null,
-          viaFallback: false,
-        }
+    if (error) throw error
+
+    const result = (data ?? [])[0]
+    if (!result) {
+      throw new Error('guestbook submit RPC returned no rows')
+    }
+
+    if (!result.success) {
+      return {
+        status: 'rate-limited',
+        message: result.error_message || 'Just a moment before the next note.',
+        resetAfterSeconds: Number.isFinite(result.rate_limit_reset_after)
+          ? Number(result.rate_limit_reset_after)
+          : null,
       }
     }
-  } catch {
-    // Fall through to the direct insert; the RPC raising must not lose the note.
-  }
-
-  // Documented fallback (same behaviour as the frozen composer). RLS allows
-  // public INSERT on guestbook_messages, so this still works while R17 is open.
-  try {
-    const { data, error } = await client
-      .from('guestbook_messages')
-      .insert({
-        name: input.name,
-        email: input.email,
-        content: input.content,
-        media_url: input.mediaUrl ?? null,
-      })
-      .select('id')
-      .single()
-
-    if (error) throw error
     return {
       status: 'submitted',
-      messageId: data.id,
-      rateLimitRemaining: null,
-      viaFallback: true,
+      messageId: result.message_id,
+      rateLimitRemaining: Number.isFinite(result.rate_limit_remaining)
+        ? Number(result.rate_limit_remaining)
+        : null,
+      viaFallback: false,
     }
   } catch (error) {
     return {
@@ -342,12 +320,11 @@ export async function addGuestbookReply(
 }
 
 /**
- * Admin: delete guestbook notes by id.
+ * Admin: delete guestbook notes by id through the D-02 RPC.
  *
- * Baseline drift (A3 §6 S4): `guestbook_messages` has no DELETE RLS policy, so
- * this call is denied for anon/authenticated until the rebuild adds the admin
- * delete RPC. Kept here so the admin surface is complete and the contract test
- * can record the current behaviour.
+ * The public table DELETE was revoked by the cutover migration; the SECURITY
+ * DEFINER function derives the admin actor from the JWT and returns how many
+ * rows were removed. The caller records one audit row per deleted message.
  */
 export async function deleteGuestbookMessages(
   messageIds: readonly string[],
@@ -355,14 +332,12 @@ export async function deleteGuestbookMessages(
 ): Promise<number> {
   if (messageIds.length === 0) return 0
 
-  const { data, error } = await client
-    .from('guestbook_messages')
-    .delete()
-    .in('id', [...messageIds])
-    .select('id')
+  const { data, error } = await callCutoverRpc<number>(client, 'delete_guestbook_messages_v1', {
+    p_message_ids: [...messageIds],
+  })
 
   if (error) throw toDataError(error, GUESTBOOK_WRITE_ERROR)
-  return (data ?? []).length
+  return typeof data === 'number' ? data : 0
 }
 
 /** The note shape stored by the rate-limited submit RPC, re-exported for tests. */

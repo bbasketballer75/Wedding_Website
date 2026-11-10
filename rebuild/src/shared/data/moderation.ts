@@ -12,6 +12,7 @@
  */
 import type { TypedSupabaseClient } from './client'
 import { getSupabaseClient } from './client'
+import { callCutoverRpc } from './cutover-rpc'
 import { DataError, toDataError, unwrapResult } from './errors'
 import type { Json, TableRow } from './schema'
 import { isJsonObject } from './schema'
@@ -123,41 +124,34 @@ export function parseModerationAuditEntries(raw: readonly unknown[]): Moderation
 }
 
 /**
- * Append one audit entry. Callers are the moderation transitions in
- * `guestUploads.ts` / `claims.ts`; a failed audit write never blocks the
- * transition itself (the frozen app logs and continues out of band — here the
- * caller decides, we throw so it is observable in dev/tests).
+ * Append one audit entry through the D-02 RPC.
+ *
+ * The actor is derived inside the SECURITY DEFINER function from the JWT
+ * (`auth.uid()` / email / user_metadata name), so the client can no longer forge
+ * another admin's identity. The `actor` argument is kept for call-site
+ * compatibility (and fixtures) but is not sent to the database.
+ *
+ * Callers are the moderation transitions in `guestUploads.ts` / `claims.ts`; a
+ * failed audit write never blocks the transition itself (the caller decides; we
+ * throw so it is observable in dev/tests).
  */
 export async function recordModerationAudit(
   input: RecordModerationAuditInput,
   client: TypedSupabaseClient = getSupabaseClient()
 ): Promise<ModerationAuditLogRow> {
-  const actor = input.actor ?? null
+  const { data, error } = await callCutoverRpc<unknown>(client, 'insert_moderation_audit_v1', {
+    p_entity_type: input.entityType,
+    p_entity_id: input.entityId,
+    p_action: input.action,
+    p_summary: input.summary,
+    p_metadata: input.metadata ?? {},
+    p_from_status: input.fromStatus ?? null,
+    p_to_status: input.toStatus ?? null,
+  })
 
-  const rows = unwrapResult(
-    await client
-      .from('moderation_audit_log')
-      .insert({
-        entity_type: input.entityType,
-        entity_id: input.entityId,
-        action: input.action,
-        summary: input.summary,
-        metadata: input.metadata ?? {},
-        ...(input.fromStatus !== undefined && input.fromStatus !== null
-          ? { from_status: input.fromStatus }
-          : {}),
-        ...(input.toStatus !== undefined && input.toStatus !== null
-          ? { to_status: input.toStatus }
-          : {}),
-        ...(actor?.userId != null ? { actor_user_id: actor.userId } : {}),
-        ...(actor?.email != null ? { actor_email: actor.email } : {}),
-        ...(actor?.name != null ? { actor_name: actor.name } : {}),
-      })
-      .select('*'),
-    MODERATION_WRITE_ERROR
-  )
+  if (error) throw toDataError(error, MODERATION_WRITE_ERROR)
 
-  const row = (rows ?? [])[0]
+  const row = (Array.isArray(data) ? data[0] : data) as ModerationAuditLogRow | null
   if (!row) {
     throw new DataError({
       message: MODERATION_WRITE_ERROR,

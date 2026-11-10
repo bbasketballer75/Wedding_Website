@@ -713,3 +713,41 @@ Gating decisions before Phase 2: **D-01** and **D-02** (§7) and the owner decis
 `CUTOVER.md` §4–§5. Records to capture in the cutover checkpoint: checker outputs + SHA-256 hashes
 (Appendix B), backup checksum, restore RTO, deploy IDs, matrix verdict, authorisation record.
 
+
+---
+
+## 13. Implementation status update (2026-11-10)
+
+The owner approved **D-01 + D-02 (all seven S1–S7 items)** and the product defaults for D-08/D-09/D-10.
+The forward migrations now exist and are locally verified:
+
+| Decision | Status | Artifact |
+|---|---|---|
+| D-01 R17 repair | **implemented** (additive; apply in window) | `tools/cutover/migrations/20261110000000_fix_guestbook_submit_rpc.sql` |
+| D-02 RLS S1–S7 | **implemented** (additive; all seven) | `tools/cutover/migrations/20261110000100_rls_hardening_bundle.sql` |
+| D-08 honest claims queue | ratified product default (rebuild already admin-moderated) | `rebuild/src/features/gallery` claim copy/queue |
+| D-09 email upload lookup | retired in favour of token-gated lookup (`get_or_create_share_token(email, upload_id)`) | `tools/cutover/migrations/...rls_hardening_bundle.sql`; app wiring in `shared/data/claims.ts` |
+| D-10 reactions | Lead-decided RPC/append-only semantics, owner ratified | unchanged from Wave 6 |
+
+Apply/verify runbook, manifest hashes and evidence: [cutover/MIGRATIONS.md](./cutover/MIGRATIONS.md).
+The frozen baseline chain is unchanged (31 migrations). Post-cutover contract suite (anon role, local
+sandbox) is 11/11 green; the migration applier's 10 invariants pass and are idempotent on re-apply.
+
+---
+
+## 13. Implementation status update (2026-11-10)
+
+The owner approved **D-01 + D-02 (all seven S1–S7 items)** and the product defaults for D-08/D-09/D-10.
+The forward migrations now exist and are locally verified:
+
+| Decision | Status | Artifact |
+|---|---|---|
+| D-01 R17 repair | **implemented** (additive; apply in window) | `tools/cutover/migrations/20261110000000_fix_guestbook_submit_rpc.sql` |
+| D-02 RLS S1–S7 | **implemented** (additive; all seven) | `tools/cutover/migrations/20261110000100_rls_hardening_bundle.sql` |
+| D-08 honest claims queue | ratified product default (rebuild already admin-moderated) | `rebuild/src/features/gallery` claim copy/queue |
+| D-09 email upload lookup | retired in favour of token-gated lookup (`get_or_create_share_token(email, upload_id)`) | `tools/cutover/migrations/...rls_hardening_bundle.sql`; app wiring in `shared/data/claims.ts` |
+| D-10 reactions | Lead-decided RPC/append-only semantics, owner ratified | unchanged from Wave 6 |
+
+Apply/verify runbook, manifest hashes and evidence: [cutover/MIGRATIONS.md](./cutover/MIGRATIONS.md).
+The frozen baseline chain is unchanged (31 migrations). Post-cutover contract suite (anon role, local
+sandbox) is 11/11 green; the migration applier's 10 invariants pass and are idempotent on re-apply.

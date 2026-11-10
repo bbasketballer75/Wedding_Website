@@ -428,3 +428,26 @@ SHA-256 prefixes (16 hex chars); full hashes for the three checker JSONs are in 
 
 `status-env.txt` contains the local sandbox demo anon key (public by design, regenerated per start);
 it is kept only in gitignored `tmp/` and never committed.
+
+---
+
+## Appendix — post-cutover contract evidence (local sandbox, 2026-11-10)
+
+The optional local-Supabase contract suite can now run in post-cutover mode
+(`SUPABASE_CONTRACT_POST_CUTOVER=1 npm run test:contract`) after applying the owner-approved forward
+migrations. Result against a fresh local reset + applied cutover bundle: **11/11 tests passed**.
+
+What it proves beyond the pre-cutover run:
+
+- **D-01**: `submit_guestbook_message_with_rate_limit` succeeds (returns `success=true` + a message id)
+  instead of raising `42703`; the server-side rate limiter is active again.
+- **D-02 S2**: anon SELECT on `guest_share_tokens` and `guest_identities` is denied (`42501`); the
+  guest-share aggregate/identity/token RPCs answer the anon role and return only safe fields; the token RPC
+  returns `null` for a non-owning upload id.
+- **S1/S4/S5**: anon INSERT on `activity_log` is denied, direct guestbook INSERT is denied, `photo_likes`
+  is unreadable to anon, and the admin delete/audit RPCs are denied to anon.
+- Public reads the app needs still work: photos, guestbook feed (with replies), approved uploads,
+  editorial features, activity feed, engagement RPCs.
+
+Migration artifacts + manifest hashes + the 10 dynamic invariants: [cutover/MIGRATIONS.md](./cutover/MIGRATIONS.md).
+Frozen baseline migration chain remains 31 files with 0 checker mismatches.

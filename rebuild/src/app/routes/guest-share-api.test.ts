@@ -67,13 +67,41 @@ function guestbookRow(overrides: Record<string, unknown> = {}): Record<string, u
   }
 }
 
+/** Payload shape returned by `get_guest_contributions` (D-02 SECURITY DEFINER RPC). */
+function contributionsPayload(overrides: Record<string, unknown> = {}): Record<string, unknown> {
+  return {
+    token: { guest_email: 'jamie@example.com' },
+    identity: {
+      id: 'identity-1',
+      display_name: 'Jane Miller',
+      photo_claims: [
+        // Duplicate of an uploaded photo: dedupe must drop it.
+        { status: 'approved', photos: photoRow() },
+        {
+          status: 'approved',
+          photos: photoRow({
+            id: 'photo-c',
+            url: '/images/guest/c.webp',
+            thumbnail: '/images/guest/c-thumb.webp',
+            caption: 'Claimed photo',
+            likes: 2,
+          }),
+        },
+        { status: 'pending', photos: photoRow({ id: 'photo-pending' }) },
+      ],
+    },
+    uploads: [uploadRow(), uploadRow({ id: 'upload-2', photo_urls: ['/images/guest/b.webp'] })],
+    guestbook: [guestbookRow()],
+    ...overrides,
+  }
+}
+
 function fullAlbumClient() {
   return createMockClient({
+    rpcs: {
+      get_guest_contributions: { data: contributionsPayload() },
+    },
     tables: {
-      guest_share_tokens: { data: { guest_email: 'jamie@example.com' } },
-      guest_uploads: {
-        data: [uploadRow(), uploadRow({ id: 'upload-2', photo_urls: ['/images/guest/b.webp'] })],
-      },
       photos: {
         data: [
           photoRow(),
@@ -85,28 +113,6 @@ function fullAlbumClient() {
             likes: 9,
           }),
         ],
-      },
-      guestbook_messages: { data: [guestbookRow()] },
-      guest_identities: {
-        data: {
-          id: 'identity-1',
-          display_name: 'Jane Miller',
-          photo_claims: [
-            // Duplicate of an uploaded photo: dedupe must drop it.
-            { status: 'approved', photos: photoRow() },
-            {
-              status: 'approved',
-              photos: photoRow({
-                id: 'photo-c',
-                url: '/images/guest/c.webp',
-                thumbnail: '/images/guest/c-thumb.webp',
-                caption: 'Claimed photo',
-                likes: 2,
-              }),
-            },
-            { status: 'pending', photos: photoRow({ id: 'photo-pending' }) },
-          ],
-        },
       },
     },
   })
@@ -160,18 +166,20 @@ describe('mergeSharedPhotos', () => {
 
 describe('loadGuestShareAlbum', () => {
   it('returns null for an unknown token (invalid link state)', async () => {
-    const { client } = createMockClient({ tables: { guest_share_tokens: { data: null } } })
+    const { client } = createMockClient({
+      rpcs: { get_guest_contributions: { data: null } },
+    })
     await expect(loadGuestShareAlbum('missing-token', client)).resolves.toBeNull()
   })
 
   it('rejects on a transport error (network state)', async () => {
     const { client } = createMockClient({
-      tables: { guest_share_tokens: { error: new Error('boom') } },
+      rpcs: { get_guest_contributions: { error: new Error('boom') } },
     })
     await expect(loadGuestShareAlbum('some-token', client)).rejects.toBeTruthy()
   })
 
-  it('builds the frozen album: guest name, upload-then-claimed photos, notes', async () => {
+  it('builds the frozen album from the aggregate RPC: name, upload+claimed photos, notes', async () => {
     const { client, calls } = fullAlbumClient()
     const album = await loadGuestShareAlbum('valid-token', client)
 
@@ -208,19 +216,13 @@ describe('loadGuestShareAlbum', () => {
       },
     ])
 
-    // Frozen read path: token lookup, approved uploads by email, guestbook by
-    // email, and a photo-row hydration for the upload urls.
+    // One token-addressed RPC replaces the old public table reads; the uploaded
+    // photo ids are still hydrated through the public `photos` table.
     expect(calls).toContainEqual({
-      surface: 'from',
-      target: 'guest_uploads',
-      method: 'eq',
-      args: ['status', 'approved'],
-    })
-    expect(calls).toContainEqual({
-      surface: 'from',
-      target: 'guestbook_messages',
-      method: 'eq',
-      args: ['email', 'jamie@example.com'],
+      surface: 'rpc',
+      target: 'get_guest_contributions',
+      method: 'rpc',
+      args: [{ p_token: 'valid-token' }],
     })
     expect(calls).toContainEqual({
       surface: 'from',
@@ -228,15 +230,28 @@ describe('loadGuestShareAlbum', () => {
       method: 'in',
       args: ['url', ['/images/guest/a.webp', '/images/guest/b.webp']],
     })
+    expect(
+      calls.some(
+        call =>
+          call.surface === 'from' &&
+          (call.target === 'guest_share_tokens' ||
+            call.target === 'guest_identities' ||
+            call.target === 'guest_uploads' ||
+            call.target === 'guestbook_messages')
+      )
+    ).toBe(false)
   })
 
   it('falls back to the first guestbook name, then first upload name, then Special Guest', async () => {
     const guestbookFallback = createMockClient({
-      tables: {
-        guest_share_tokens: { data: { guest_email: 'guest@example.com' } },
-        guest_uploads: { data: [] },
-        guest_identities: { data: null },
-        guestbook_messages: { data: [guestbookRow()] },
+      rpcs: {
+        get_guest_contributions: {
+          data: contributionsPayload({
+            identity: null,
+            uploads: [],
+            guestbook: [guestbookRow()],
+          }),
+        },
       },
     })
     expect((await loadGuestShareAlbum('t', guestbookFallback.client))?.guestName).toBe(
@@ -244,21 +259,20 @@ describe('loadGuestShareAlbum', () => {
     )
 
     const uploadFallback = createMockClient({
-      tables: {
-        guest_share_tokens: { data: { guest_email: 'guest@example.com' } },
-        guest_uploads: { data: [uploadRow()] },
-        guest_identities: { data: null },
-        guestbook_messages: { data: [] },
+      rpcs: {
+        get_guest_contributions: {
+          data: contributionsPayload({ identity: null, guestbook: [] }),
+        },
       },
+      tables: { photos: { data: [photoRow()] } },
     })
     expect((await loadGuestShareAlbum('t', uploadFallback.client))?.guestName).toBe('Jamie Rivera')
 
     const empty = createMockClient({
-      tables: {
-        guest_share_tokens: { data: { guest_email: 'guest@example.com' } },
-        guest_uploads: { data: [] },
-        guest_identities: { data: null },
-        guestbook_messages: { data: [] },
+      rpcs: {
+        get_guest_contributions: {
+          data: contributionsPayload({ identity: null, uploads: [], guestbook: [] }),
+        },
       },
     })
     expect((await loadGuestShareAlbum('t', empty.client))?.guestName).toBe('Special Guest')
@@ -266,11 +280,14 @@ describe('loadGuestShareAlbum', () => {
 
   it('does not query photo rows when no upload has photo urls', async () => {
     const { client, calls } = createMockClient({
-      tables: {
-        guest_share_tokens: { data: { guest_email: 'notes-only@example.com' } },
-        guest_uploads: { data: [uploadRow({ photo_urls: [] })] },
-        guest_identities: { data: null },
-        guestbook_messages: { data: [guestbookRow()] },
+      rpcs: {
+        get_guest_contributions: {
+          data: contributionsPayload({
+            identity: null,
+            uploads: [uploadRow({ photo_urls: [] })],
+            guestbook: [guestbookRow()],
+          }),
+        },
       },
     })
     const album = await loadGuestShareAlbum('t', client)

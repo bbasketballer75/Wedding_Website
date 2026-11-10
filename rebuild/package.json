@@ -29,7 +29,9 @@
     "media:plan": "node scripts/media-optimize.mjs --plan",
     "media:check": "node scripts/media-optimize.mjs --check",
     "media:generate": "node scripts/media-optimize.mjs --generate",
-    "test:contract": "node scripts/run-contract-test.mjs"
+    "test:contract": "node scripts/run-contract-test.mjs",
+    "cutover:check": "node ../tools/cutover/check-forward-migrations.mjs",
+    "cutover:verify": "node ../tools/cutover/apply-forward-migrations.mjs --dry-run"
   },
   "dependencies": {
     "@fontsource/cormorant-garamond": "5.3.0",

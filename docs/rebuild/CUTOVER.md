@@ -257,3 +257,57 @@ accept). The remaining open items are unchanged and all owner-side or Wave-9 ext
 admin-section capture + prerender-aware matrix pass (U11/U15), R17/RLS cutover migrations (D-01/D-02),
 production schema reconciliation, backup/restore drill, rollback rehearsal, media Option B sign-off,
 Netlify site/DNS values, and the A1–A8 authorisations. **Still NO production action and NO-GO until the owner signs.**
+
+---
+
+## Owner ratification + cutover migration bundle (2026-11-10)
+
+The owner answered the decision set in chat. These are recorded as ratified product/security inputs for the
+sign-off record (the formal A1–A8 authorisation is still a separate step):
+
+| Decision | Ratified choice |
+|---|---|
+| OD-1 claims verification | honest admin-moderated queue (no fake client-side verification) |
+| OD-2 / R19 upload-status lookup | gated behind the share token (no email-only lookup) |
+| OD-4 retired features | music/quiz/map/sort/timeline variants stay retired |
+| OD-5 `/people` | stays a 404 (parity 4/4, absent from sitemap) |
+| OD-6 stale metadata | crawlable-only fix stays (hydrated runtime keeps frozen tags) |
+| OD-7 print flow | current browser-print + memory-book links |
+| OD-13 URL policy | keep every legacy path, add redirect aliases only |
+| D-01 R17 + D-02 S1–S7 | **ship all** in the cutover window (additive forward migrations) |
+| OD-11 hosting | new dedicated Netlify site, base directory `rebuild` |
+| OD-10 legacy retention | 30 days read-only after the switch |
+| OD-12 media | **hybrid**: switch on the current bytes/URLs, migrate to the new layout + derivatives immediately after cutover (with redirects/DB URL rewrite verified) |
+| OD-9 / A8 telemetry | Sentry error monitoring + privacy-light analytics, consent-gated |
+| A4 write freeze | revoke anon write policies for the window (tested revert) |
+| Rollback ownership | Lead executes rollback; owner approves abort decisions |
+| U8/U9 drills | approved, local-only first |
+| Window | prep + staging first; aim for the coming weekend once staging passes review |
+
+### Migration bundle landed (engineering)
+
+- `tools/cutover/migrations/20261110000000_fix_guestbook_submit_rpc.sql` (D-01) and
+  `…_rls_hardening_bundle.sql` (D-02) — additive/replacement-only, idempotent, owner-approved.
+- Runbook + manifest + verification checks: [cutover/MIGRATIONS.md](./cutover/MIGRATIONS.md).
+- Tooling: `tools/cutover/check-forward-migrations.mjs` (static audit, wired into CI) and
+  `tools/cutover/apply-forward-migrations.mjs` (`--dry-run` / `--verify-only` / `--yes`, 10 invariants).
+- Local evidence: fresh reset + apply + **re-apply (idempotency)** + **10/10 invariants PASS**; REST-level
+  denials (`42501`) and RPC success paths verified; post-cutover contract suite **11/11 PASS**.
+- App wiring ships with it: guest-share aggregate/identity/token RPCs, RPC-only guestbook submit,
+  admin guestbook delete RPC, JWT-derived audit RPC; parity mocks updated for the aggregate payload.
+- Frozen baseline untouched: `supabase/migrations/` remains 31 files; baseline checker 0 mismatches.
+
+### Updated gate positions
+
+- **U3 (R17)** and **U4 (S1–S7)**: implemented and locally verified; remaining = apply to staging and record
+  the owner sign-off (D-01/D-02) inside the window.
+- **U16 (mobile residual)**: CLOSED — final matrix 41 PASS / 5 documented ALLOWED / 0 FAIL (w9-matrix-final6/7).
+- **G4**: product/security decisions now ratified; open sub-items are credentials, staging, DNS/TTL, and the
+  signed A1–A8 record.
+- **G5–G10**: unchanged (production reconciliation, backup/restore drill, media completeness, RLS/R17
+  sign-off, rollback rehearsal, authorisation) — all owner/window-side.
+- **OD-12 media**: updated to the owner's hybrid choice; the Option B derivation plan remains the post-cutover
+  task, sequenced after the URL-stable switch.
+
+**Still NO production action.** The next concrete steps are the staging site + staging-database apply, the
+backup/restore + rollback drills, and the owner's A1–A8 signature with the window start/end.

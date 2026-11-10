@@ -20,7 +20,7 @@ import {
   resolveGuestContributions,
   submitPhotoClaims,
 } from './claims'
-import { DataError, isDataError } from './errors'
+import { DataError } from './errors'
 import { loadFixtures } from './test-support/fixtures'
 import { createMockClient } from './test-support/mock-client'
 
@@ -170,10 +170,11 @@ describe('claim reads', () => {
   })
 })
 
-describe('guest identity find-or-create', () => {
-  it('returns an existing verified identity without updating it', async () => {
+describe('guest identity find-or-create (D-02 RPC)', () => {
+  it('resolves an existing identity through the SECURITY DEFINER RPC', async () => {
+    const row = makeIdentityRow({ is_verified: true })
     const { client, calls } = createMockClient({
-      tables: { guest_identities: { data: makeIdentityRow({ is_verified: true }) } },
+      rpcs: { resolve_guest_identity: { data: row } },
     })
 
     const identity = await findOrCreateGuestIdentity(
@@ -182,82 +183,70 @@ describe('guest identity find-or-create', () => {
     )
 
     expect(identity.id).toBe('identity-1')
-    expect(calls.some(call => call.method === 'update')).toBe(false)
+    expect(identity.display_name).toBe('Jane Miller')
+    expect(identity.is_verified).toBe(true)
+    expect(calls).toContainEqual({
+      surface: 'rpc',
+      target: 'resolve_guest_identity',
+      method: 'rpc',
+      args: [{ p_email: 'jane@example.com', p_display_name: 'Jane', p_session_id: null }],
+    })
+    // The D-02 migrations revoke public table reads, so no direct table access.
+    expect(calls.some(call => call.surface === 'from' && call.target === 'guest_identities')).toBe(
+      false
+    )
   })
 
-  it('updates an existing unverified identity', async () => {
+  it('passes the session id and maps the RPC payload onto the row shape', async () => {
     const { client, calls } = createMockClient({
-      tables: { guest_identities: [{ data: makeIdentityRow() }, { data: [] }] },
-    })
-
-    await findOrCreateGuestIdentity(
-      { email: 'jane@example.com', displayName: 'Jane', sessionId: 's1' },
-      client
-    )
-
-    expect(calls).toContainEqual({
-      surface: 'from',
-      target: 'guest_identities',
-      method: 'update',
-      args: [{ display_name: 'Jane', session_id: 's1' }],
-    })
-  })
-
-  it('creates a new identity when none exists', async () => {
-    const created = makeIdentityRow({ id: 'identity-new' })
-    const { client, calls } = createMockClient({
-      tables: { guest_identities: [{ data: null }, { data: created }] },
-    })
-
-    const identity = await findOrCreateGuestIdentity(
-      { email: 'new@example.com', displayName: 'New Guest', sessionId: null },
-      client
-    )
-
-    expect(identity.id).toBe('identity-new')
-    expect(calls).toContainEqual({
-      surface: 'from',
-      target: 'guest_identities',
-      method: 'insert',
-      args: [
-        {
-          email: 'new@example.com',
-          display_name: 'New Guest',
-          session_id: null,
-          is_verified: false,
+      rpcs: {
+        resolve_guest_identity: {
+          data: {
+            id: 'identity-new',
+            email: 'new@example.com',
+            display_name: 'New Guest',
+            session_id: 's1',
+            is_verified: false,
+            created_at: '2025-05-10T14:00:00.000Z',
+          },
         },
-      ],
-    })
-  })
-
-  it('re-reads the winner on a unique-email race', async () => {
-    const raced = makeIdentityRow({ id: 'identity-raced' })
-    const { client } = createMockClient({
-      tables: {
-        guest_identities: [
-          { data: null },
-          { error: { message: 'duplicate key', code: '23505' } },
-          { data: raced },
-        ],
       },
     })
 
     const identity = await findOrCreateGuestIdentity(
-      { email: 'race@example.com', displayName: 'Race' },
+      { email: 'new@example.com', displayName: 'New Guest', sessionId: 's1' },
       client
     )
-    expect(identity.id).toBe('identity-raced')
+
+    expect(identity).toMatchObject({
+      id: 'identity-new',
+      session_id: 's1',
+      is_verified: false,
+      created_at: '2025-05-10T14:00:00.000Z',
+    })
+    expect(calls).toContainEqual({
+      surface: 'rpc',
+      target: 'resolve_guest_identity',
+      method: 'rpc',
+      args: [{ p_email: 'new@example.com', p_display_name: 'New Guest', p_session_id: 's1' }],
+    })
   })
 
-  it('throws when the race re-read also fails', async () => {
+  it('wraps RPC failures as DataError', async () => {
     const { client } = createMockClient({
-      tables: {
-        guest_identities: [
-          { data: null },
-          { error: { message: 'duplicate', code: '23505' } },
-          { data: null },
-        ],
+      rpcs: {
+        resolve_guest_identity: { error: { message: 'not authorized', code: '42501' } },
       },
+    })
+
+    await expect(
+      findOrCreateGuestIdentity({ email: 'race@example.com', displayName: 'Race' }, client)
+    ).rejects.toBeInstanceOf(DataError)
+  })
+
+  it('rejects an empty RPC payload', async () => {
+    const { client } = createMockClient({
+      rpcs: { resolve_guest_identity: { data: null } },
     })
 
     await expect(
@@ -275,8 +264,8 @@ describe('claim submission', () => {
     expect(calls).toHaveLength(0)
 
     const withClaims = createMockClient({
+      rpcs: { resolve_guest_identity: { data: makeIdentityRow({ is_verified: true }) } },
       tables: {
-        guest_identities: { data: makeIdentityRow({ is_verified: true }) },
         photo_claims: { data: [{ id: 'claim-new' }] },
       },
     })
@@ -328,7 +317,17 @@ describe('claim moderation transitions', () => {
         photo_claims: [{ data: claimsFixture.pending[0] }, { data: [] }],
         guest_identities: { data: [] },
         media_review_faces: { data: [] },
-        moderation_audit_log: { data: [{ id: 'audit-1' }] },
+      },
+      rpcs: {
+        insert_moderation_audit_v1: {
+          data: {
+            id: 'audit-1',
+            entity_type: 'photo_claim',
+            action: 'claim_approved',
+            summary: 'Approved face claim for Jane Miller (jane@example.com)',
+            metadata: {},
+          },
+        },
       },
     })
 
@@ -359,16 +358,16 @@ describe('claim moderation transitions', () => {
       ],
     })
     expect(calls).toContainEqual({
-      surface: 'from',
-      target: 'moderation_audit_log',
-      method: 'insert',
+      surface: 'rpc',
+      target: 'insert_moderation_audit_v1',
+      method: 'rpc',
       args: [
         expect.objectContaining({
-          action: 'claim_approved',
-          entity_type: 'photo_claim',
-          from_status: 'pending',
-          to_status: 'approved',
-          summary: 'Approved face claim for Jane Miller (jane@example.com)',
+          p_action: 'claim_approved',
+          p_entity_type: 'photo_claim',
+          p_from_status: 'pending',
+          p_to_status: 'approved',
+          p_summary: 'Approved face claim for Jane Miller (jane@example.com)',
         }),
       ],
     })
@@ -378,7 +377,17 @@ describe('claim moderation transitions', () => {
     const { client, calls } = createMockClient({
       tables: {
         photo_claims: [{ data: claimsFixture.rejected[0] }, { data: [] }],
-        moderation_audit_log: { data: [{ id: 'audit-1' }] },
+      },
+      rpcs: {
+        insert_moderation_audit_v1: {
+          data: {
+            id: 'audit-1',
+            entity_type: 'photo_claim',
+            action: 'claim_rejected',
+            summary: 'Rejected',
+            metadata: {},
+          },
+        },
       },
     })
 
@@ -391,10 +400,10 @@ describe('claim moderation transitions', () => {
       args: [expect.objectContaining({ status: 'rejected', rejection_reason: 'not your face' })],
     })
     expect(calls).toContainEqual({
-      surface: 'from',
-      target: 'moderation_audit_log',
-      method: 'insert',
-      args: [expect.objectContaining({ action: 'claim_rejected' })],
+      surface: 'rpc',
+      target: 'insert_moderation_audit_v1',
+      method: 'rpc',
+      args: [expect.objectContaining({ p_action: 'claim_rejected' })],
     })
   })
 
@@ -439,56 +448,38 @@ describe('claim wizard + share tokens', () => {
     expect(calls.some(call => call.target === 'photos')).toBe(false)
   })
 
-  it('getOrCreateShareToken returns an existing token', async () => {
+  it('fetches the uploader token through the RPC', async () => {
     const { client, calls } = createMockClient({
-      tables: { guest_share_tokens: { data: { token: 'existing-token' } } },
+      rpcs: { get_or_create_share_token: { data: 'existing-token' } },
     })
 
-    await expect(getOrCreateShareToken('Jane@Example.com', client)).resolves.toBe('existing-token')
+    await expect(getOrCreateShareToken('Jane@Example.com', 'upload-1', client)).resolves.toBe(
+      'existing-token'
+    )
     expect(calls).toContainEqual({
-      surface: 'from',
-      target: 'guest_share_tokens',
-      method: 'eq',
-      args: ['guest_email', 'jane@example.com'],
+      surface: 'rpc',
+      target: 'get_or_create_share_token',
+      method: 'rpc',
+      args: [{ p_email: 'jane@example.com', p_upload_id: 'upload-1' }],
     })
   })
 
-  it('creates a token for a new guest (lowercased email)', async () => {
-    const { client, calls } = createMockClient({
-      tables: { guest_share_tokens: [{ data: null }, { data: { token: 'generated-token' } }] },
-    })
-
-    await expect(getOrCreateShareToken(' New@Example.com ', client)).resolves.toBe(
-      'generated-token'
-    )
-
-    const insertCall = calls.find(call => call.method === 'insert')
-    expect(insertCall?.args[0]).toMatchObject({ guest_email: 'new@example.com' })
-    expect(typeof (insertCall?.args[0] as { token?: unknown }).token).toBe('string')
-  })
-
-  it('re-reads the winner on a token race and fails when both paths fail', async () => {
-    const raced = createMockClient({
-      tables: {
-        guest_share_tokens: [
-          { data: null },
-          { error: null, data: null },
-          { data: { token: 'raced-token' } },
-        ],
+  it('throws when the token RPC errors or returns null', async () => {
+    const failing = createMockClient({
+      rpcs: {
+        get_or_create_share_token: { error: { message: 'permission denied', code: '42501' } },
       },
     })
-    await expect(getOrCreateShareToken('race@example.com', raced.client)).resolves.toBe(
-      'raced-token'
-    )
+    await expect(
+      getOrCreateShareToken('broken@example.com', 'upload-1', failing.client)
+    ).rejects.toBeInstanceOf(DataError)
 
-    const broken = createMockClient({
-      tables: {
-        guest_share_tokens: [{ data: null }, { error: new Error('insert failed') }, { data: null }],
-      },
+    const empty = createMockClient({
+      rpcs: { get_or_create_share_token: { data: null } },
     })
-    await expect(getOrCreateShareToken('broken@example.com', broken.client)).rejects.toBeInstanceOf(
-      DataError
-    )
+    await expect(
+      getOrCreateShareToken('wrong-owner@example.com', 'upload-2', empty.client)
+    ).rejects.toBeInstanceOf(DataError)
   })
 })
 
@@ -541,17 +532,23 @@ describe('guest-share aggregation (/guest/:token)', () => {
     expect(resolveGuestContributions({ ...base, tokenRow: null })).toBeNull()
   })
 
-  it('fetchGuestContributionsByToken resolves the whole showcase', async () => {
+  it('fetchGuestContributionsByToken resolves the showcase from the aggregate RPC', async () => {
     const identityWithClaims = fixtures.guestTokens.identityWithClaims as {
       photo_claims: unknown[]
     }
-    const { client } = createMockClient({
-      tables: {
-        guest_share_tokens: { data: { guest_email: 'jane@example.com' } },
-        guest_uploads: { data: fixtures.guestUploads.approved },
-        guestbook_messages: { data: fixtures.guestbook.messages },
-        guest_identities: {
-          data: { display_name: 'Jane Miller', photo_claims: identityWithClaims.photo_claims },
+    const { client, calls } = createMockClient({
+      rpcs: {
+        get_guest_contributions: {
+          data: {
+            token: { guest_email: 'jane@example.com', token: 'valid-showcase-token' },
+            identity: {
+              id: 'identity-jane',
+              display_name: 'Jane Miller',
+              photo_claims: identityWithClaims.photo_claims,
+            },
+            uploads: fixtures.guestUploads.approved,
+            guestbook: fixtures.guestbook.messages,
+          },
         },
       },
     })
@@ -560,34 +557,37 @@ describe('guest-share aggregation (/guest/:token)', () => {
 
     expect(contributions?.guestName).toBe('Jane Miller')
     expect(contributions?.claimedPhotos).toHaveLength(1)
+    expect(contributions?.uploads).toHaveLength(2)
+    expect(calls).toContainEqual({
+      surface: 'rpc',
+      target: 'get_guest_contributions',
+      method: 'rpc',
+      args: [{ p_token: 'valid-showcase-token' }],
+    })
   })
 
-  it('returns null for an unknown token and wraps DB failures', async () => {
-    const unknown = createMockClient({ tables: { guest_share_tokens: { data: null } } })
+  it('returns null for an unknown token or an empty payload', async () => {
+    const unknown = createMockClient({
+      rpcs: { get_guest_contributions: { data: null } },
+    })
     await expect(
       fetchGuestContributionsByToken(fixtures.guestTokens.invalidToken, unknown.client)
     ).resolves.toBeNull()
 
+    const malformed = createMockClient({
+      rpcs: { get_guest_contributions: { data: { token: null } } },
+    })
+    await expect(fetchGuestContributionsByToken('token', malformed.client)).resolves.toBeNull()
+  })
+
+  it('wraps aggregate RPC failures as DataError', async () => {
     const broken = createMockClient({
-      tables: { guest_share_tokens: { error: { message: 'denied', code: '42501' } } },
+      rpcs: {
+        get_guest_contributions: { error: { message: 'denied', code: '42501' } },
+      },
     })
     await expect(fetchGuestContributionsByToken('token', broken.client)).rejects.toBeInstanceOf(
       DataError
     )
-  })
-
-  it('propagates a relation read failure (uploads/guestbook/identity)', async () => {
-    const brokenUploads = createMockClient({
-      tables: {
-        guest_share_tokens: { data: { guest_email: 'jane@example.com' } },
-        guest_uploads: { error: new Error('boom') },
-      },
-    })
-    try {
-      await fetchGuestContributionsByToken('token', brokenUploads.client)
-      throw new Error('expected rejection')
-    } catch (error) {
-      expect(isDataError(error)).toBe(true)
-    }
   })
 })
