@@ -588,3 +588,10 @@ Generated artifacts: `tools/parity/output/w9-matrix-final5/matrix-summary.json`,
 - Fixed since the first final matrix: gallery mobile pagination parity (frozen narrow-viewport preload behaviour), admin mobile nav line box + wordmark link, admin runtime metadata (stale by design; crawlable copy from prerender), guest-share album-owner identity precedence.
 - ALLOWED = the documented home ×4 and film desktop/dark raster entries in `contracts/parity-allowlist.json`; every other row is a strict PASS.
 - Prerender status is `pending` on parity builds by design (no prerender layer in a plain `vite build`); the production deploy pipeline validates prerender separately via `build:seo:check`.
+
+### Certification run on branch HEAD (Wave 9 closeout)
+
+Rebuilt from pushed HEAD and re-ran the full matrix (12 routes × desktop/mobile × dark/light, `--edge-tolerance 1`)
+on dist sha256 `BA42E30B177EEE92AAD8EB4E8FE160A75087D67391F96421290DA49B58C07FDF` (hash verified stable):
+**46 rows — 41 PASS · 5 ALLOWED · 0 FAIL**. Artifacts: `tools/parity/output/w9-matrix-final7/`. The earlier
+`w9-matrix-final6/` run on the pre-CI-hardening build agrees (41/5/0).
