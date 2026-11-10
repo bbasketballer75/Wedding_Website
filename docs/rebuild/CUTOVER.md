@@ -240,3 +240,20 @@ Data/media cutover: [DATA_CUTOVER.md](./DATA_CUTOVER.md); media adoption decisio
 [CONTRACT_EVIDENCE.md](./CONTRACT_EVIDENCE.md); parity rules: [PARITY.md](./PARITY.md); risks/decisions:
 [RISK_REGISTER.md](./RISK_REGISTER.md); Wave evidence:
 [checkpoints/2026-11-09-waves-7-8.md](./checkpoints/2026-11-09-waves-7-8.md).
+
+---
+
+## Lead addendum — final all-green parity matrix (2026-11-09, post mobile fixes)
+
+The 6 mobile failures recorded above are fixed and the full contract matrix is now green:
+**46 rows = 41 PASS / 5 ALLOWED / 0 FAIL / 0 error** (`tools/parity/output/w9-matrix-final6/`,
+dist sha256 `AE867B0E5F6F0023101968FE7D42B00D887A3031022836DCCA70883CA4966A5B`, hash verified unchanged).
+Fixes: gallery narrow-viewport pagination parity; admin mobile nav line box + admin wordmark link to `/`;
+admin runtime metadata kept frozen/stale (crawlable metadata comes from the Wave-8 prerender);
+guest-share album-owner identity precedence. ALLOWED rows are the documented home ×4 / film raster entries only.
+
+**Updated go/no-go position:** G1 parity is now **GREEN for the contract matrix** (no mobile residual bundle to
+accept). The remaining open items are unchanged and all owner-side or Wave-9 extras: authenticated
+admin-section capture + prerender-aware matrix pass (U11/U15), R17/RLS cutover migrations (D-01/D-02),
+production schema reconciliation, backup/restore drill, rollback rehearsal, media Option B sign-off,
+Netlify site/DNS values, and the A1–A8 authorisations. **Still NO production action and NO-GO until the owner signs.**

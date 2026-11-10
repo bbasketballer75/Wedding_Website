@@ -67,3 +67,5 @@ Cross-reference only; the full table with options/evidence is `CUTOVER.md` §4 a
 | R23 parity coverage | owner accepts scope + mobile residual bundle | **Mitigated** — final matrix recorded (`w9-matrix-final5`: 35 pass/5 allowed/6 mobile-only fails); authenticated admin sections not captured; interactive states outside snapshot parity |
 | R26 404 mobile allowances | — | **Closed (Wave 2)** — edge-tolerance replaced both entries; run passes with 0 allowed |
 | R25/R27/R28 inherited visual/a11y defects | owner approves visual change | Accepted for parity; fix after cutover with new baselines |
+
+**Lead status update (Wave 9 closure):** R23 (parity residual risk) is closed for the contract matrix — final run `w9-matrix-final6` is 46 rows with 0 failures (41 PASS + the 5 documented raster ALLOWED entries), including gallery and admin on mobile after the narrow-viewport pagination and mobile-chrome fixes. Residual Wave-9 verification extras (authenticated admin-section capture, prerender-aware matrix pass) and the owner-gated cutover actions remain tracked in `docs/rebuild/CUTOVER.md` (U11/U15, G4–G10, A1–A8).

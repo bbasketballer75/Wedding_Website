@@ -578,3 +578,13 @@ targeted scope (`--no-admin`) — run the same command without `--no-admin` to i
 Generated artifacts: `tools/parity/output/w9-matrix-final5/matrix-summary.json`,
 `MATRIX.md`, `README.md`, `summary.json`, `report.html`, `shots/`, `text/`.
 
+
+### Final matrix — Wave 9 closure (Lead run, `w9-matrix-final6`)
+
+46 rows (12 contract routes × desktop/mobile × dark/light, `--edge-tolerance 1`): **41 PASS · 5 ALLOWED · 0 FAIL · 0 error**.
+
+- Dist: `rebuild/dist/index.html` sha256 `AE867B0E5F6F0023101968FE7D42B00D887A3031022836DCCA70883CA4966A5B` (plain `vite build`), hash verified unchanged before/after.
+- Artifacts: `tools/parity/output/w9-matrix-final6/` (`matrix-summary.json`, `MATRIX.md`, `summary.json`, `report.html`, shots/text).
+- Fixed since the first final matrix: gallery mobile pagination parity (frozen narrow-viewport preload behaviour), admin mobile nav line box + wordmark link, admin runtime metadata (stale by design; crawlable copy from prerender), guest-share album-owner identity precedence.
+- ALLOWED = the documented home ×4 and film desktop/dark raster entries in `contracts/parity-allowlist.json`; every other row is a strict PASS.
+- Prerender status is `pending` on parity builds by design (no prerender layer in a plain `vite build`); the production deploy pipeline validates prerender separately via `build:seo:check`.

@@ -120,7 +120,10 @@ export function AdminLayout({ children }: AdminLayoutProps) {
                 className={buttonVariants({
                   variant: section === item.section ? 'primary' : 'secondary',
                   size: 'sm',
-                  className: 'shrink-0',
+                  // Wrapped mobile labels need the frozen line box (11px text at
+                  // normal leading ⇒ 16.5px lines); Tailwind's generated line-height
+                  // for the size class resolves differently in the rebuild bundle.
+                  className: 'leading-normal',
                 })}
                 ariaCurrent={section === item.section ? 'page' : undefined}
               >

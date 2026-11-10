@@ -1,4 +1,4 @@
-import { useCallback, useMemo, useRef, useState } from 'react'
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import { motion } from 'framer-motion'
 import { usePageMeta } from '@/app/seo/usePageMeta'
 import type { PhotoViewerEngagement } from '@/features/photo-viewer'
@@ -117,6 +117,20 @@ export function GalleryPage({ search, source, lookupStatus, shareOrigin }: Galle
   const openLightbox = useCallback((photoId: string) => setLightboxPhotoId(photoId), [])
   const closeLightbox = useCallback(() => setLightboxPhotoId(null), [])
 
+  // The frozen gallery preloads the whole (already fetched) first page below the
+  // lg breakpoint: its scroll container is taller than the viewport there, so the
+  // infinite-scroll loop dumps every page immediately (observed 30/30 photos at
+  // 390-768px, 12 at >=1024px). Reproduce that observable behaviour: narrow
+  // viewports show the loaded rows without a LOAD MORE gate.
+  const [narrowViewport, setNarrowViewport] = useState(
+    () => typeof window !== 'undefined' && window.innerWidth < 1024
+  )
+  useEffect(() => {
+    const onResize = () => setNarrowViewport(window.innerWidth < 1024)
+    window.addEventListener('resize', onResize)
+    return () => window.removeEventListener('resize', onResize)
+  }, [])
+
   const {
     displayedItems,
     hasMore,
@@ -125,7 +139,7 @@ export function GalleryPage({ search, source, lookupStatus, shareOrigin }: Galle
     observerRef,
   } = useInfiniteScroll({
     items: filteredPhotos,
-    itemsPerPage: PAGE_SIZE[viewMode],
+    itemsPerPage: narrowViewport ? Math.max(filteredPhotos.length, 1) : PAGE_SIZE[viewMode],
   })
 
   const collectionCounts = useMemo(() => {
