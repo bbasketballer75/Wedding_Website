@@ -127,7 +127,7 @@ const CHECKS = [
   },
   {
     name: 'S3: guest_uploads admin-only read/update policies (old authenticated policies gone)',
-    sql: `select case when exists (select 1 from pg_policies where schemaname='public' and tablename='guest_uploads' and policyname='Admin read all guest uploads') and exists (select 1 from pg_policies where schemaname='public' and tablename='guest_uploads' and policyname='Admin update guest uploads') and not exists (select 1 from pg_policies where schemaname='public' and tablename='guest_uploads' and policyname in ('Allow authenticated read all','Allow authenticated update')) then 'OK' else 'FAIL' end;`,
+    sql: `select case when (select relrowsecurity from pg_class where oid='public.guest_uploads'::regclass) and exists (select 1 from pg_policies where schemaname='public' and tablename='guest_uploads' and policyname='Admin read all guest uploads') and exists (select 1 from pg_policies where schemaname='public' and tablename='guest_uploads' and policyname='Admin update guest uploads') and not exists (select 1 from pg_policies where schemaname='public' and tablename='guest_uploads' and policyname in ('Allow authenticated read all','Allow authenticated update')) then 'OK' else 'FAIL' end;`,
   },
   {
     name: 'S4: admin delete RPC exists, direct anon delete/insert revoked',

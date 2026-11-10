@@ -12,7 +12,7 @@ operator's database URL.
 | # | File | Bytes | SHA-256 |
 |---|---|---|---|
 | 1 | `20261110000000_fix_guestbook_submit_rpc.sql` | 4527 | `bad079c9d1579af18c93ec70fbc7449a8412273779c22c34a8a143289d9e3340` |
-| 2 | `20261110000100_rls_hardening_bundle.sql` | 18169 | `53d99eab0802df22457cb8bdd1504770c1d5219983f1359f4dbcaaf9d1bb8cc4` |
+| 2 | `20261110000100_rls_hardening_bundle.sql` | 19122 | `9057df6abd2cd4791f2e34e499856a5a947a4ce053c3ac1e48a3899749a98b92` |
 
 Re-print at any time:
 

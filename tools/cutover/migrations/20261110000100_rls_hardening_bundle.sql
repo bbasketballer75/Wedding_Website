@@ -281,6 +281,10 @@ create policy "Public submit pending photo claims"
 -- ---------------------------------------------------------------------------
 -- S3 — guest_uploads: admin-only reads/updates, public insert + approved read
 -- ---------------------------------------------------------------------------
+-- Production drift (Phase-0, 2026-11-10): RLS is disabled on guest_uploads while
+-- policies exist, so policies would not constrain anything. Enable it explicitly.
+alter table public.guest_uploads enable row level security;
+
 drop policy if exists "Allow authenticated read all" on public.guest_uploads;
 drop policy if exists "Allow authenticated update" on public.guest_uploads;
 
@@ -299,7 +303,24 @@ create policy "Admin update guest uploads"
   using (public.is_admin())
   with check (public.is_admin());
 
--- Public insert + "approved" read policies from the frozen baseline are kept.
+-- Public insert + approved-read are guaranteed explicitly: production drift
+-- (Phase-0, 2026-11-10) dropped the baseline insert policy name, and the guest
+-- upload flow needs it to keep accepting submissions after RLS is enforced.
+drop policy if exists "Allow public insert" on public.guest_uploads;
+drop policy if exists "Public insert guest uploads" on public.guest_uploads;
+create policy "Public insert guest uploads"
+  on public.guest_uploads
+  for insert
+  to anon, authenticated
+  with check (true);
+
+drop policy if exists "Allow public read approved" on public.guest_uploads;
+drop policy if exists "Public read approved guest uploads" on public.guest_uploads;
+create policy "Public read approved guest uploads"
+  on public.guest_uploads
+  for select
+  to anon, authenticated
+  using (status = 'approved');
 
 -- ---------------------------------------------------------------------------
 -- S4 — guestbook_messages: admin delete via RPC; admin update via is_admin()
