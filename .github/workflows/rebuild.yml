@@ -147,9 +147,12 @@ jobs:
         if: steps.scaffold.outputs.exists == 'true'
         run: npm run build:seo:check
 
-      - name: Bundle budgets (targets + regression baseline)
+      # QUALITY_BAR targets are OS-independent; the recorded baseline is a local
+      # regression aid, so CI gates on the targets (strict) rather than on small
+      # cross-OS chunk-size drift.
+      - name: Bundle budgets (QUALITY_BAR targets)
         if: steps.scaffold.outputs.exists == 'true'
-        run: node scripts/check-budgets.mjs --mode baseline --report-json perf/last-budget-report.json
+        run: node scripts/check-budgets.mjs --mode strict --report-json perf/last-budget-report.json
 
       - name: Data/media cutover checkers (read-only)
         if: steps.scaffold.outputs.exists == 'true'
