@@ -40,6 +40,7 @@ jobs:
     permissions:
       contents: read
     env:
+      TZ: America/New_York
       VITE_SUPABASE_URL: https://placeholder.supabase.co
       VITE_SUPABASE_ANON_KEY: ci-placeholder-anon-key
       VITE_SITE_URL: https://www.theporadas.com
@@ -81,6 +82,13 @@ jobs:
     timeout-minutes: 20
     permissions:
       contents: read
+    env:
+      # The archive is displayed in the couple's timezone; countdown/date tests
+      # assert that behaviour and must not depend on the runner's UTC default.
+      TZ: America/New_York
+      VITE_SUPABASE_URL: https://placeholder.supabase.co
+      VITE_SUPABASE_ANON_KEY: ci-placeholder-anon-key
+      VITE_SITE_URL: https://www.theporadas.com
     defaults:
       run:
         working-directory: rebuild
@@ -162,6 +170,7 @@ jobs:
     permissions:
       contents: read
     env:
+      TZ: America/New_York
       VITE_SUPABASE_URL: https://placeholder.supabase.co
       VITE_SUPABASE_ANON_KEY: ci-placeholder-anon-key
       VITE_MEDIA_BASE_URL: https://media.wedding.theporadas.com

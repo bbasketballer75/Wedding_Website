@@ -21,7 +21,14 @@ const here = path.dirname(fileURLToPath(import.meta.url))
 const repoRoot = path.resolve(here, '..', '..')
 const curatedPath = path.join(repoRoot, 'contracts', 'content', 'curated-photos.json')
 const liveFixturePath = path.join(repoRoot, 'contracts', 'fixtures', 'photos.json')
-const targetPath = path.join(repoRoot, 'rebuild', 'src', 'features', 'gallery', 'intrinsic-ratios.ts')
+const targetPath = path.join(
+  repoRoot,
+  'rebuild',
+  'src',
+  'features',
+  'gallery',
+  'intrinsic-ratios.ts'
+)
 
 const curated = JSON.parse(readFileSync(curatedPath, 'utf8'))
 const live = JSON.parse(readFileSync(liveFixturePath, 'utf8'))
@@ -48,9 +55,7 @@ for (const assetPath of [...paths].sort()) {
   entries.push([assetPath, Number((metadata.width / metadata.height).toFixed(4))])
 }
 
-const body = entries
-  .map(([asset, ratio]) => `  ${JSON.stringify(asset)}: ${ratio},`)
-  .join('\n')
+const body = entries.map(([asset, ratio]) => `  ${JSON.stringify(asset)}: ${ratio},`).join('\n')
 
 const file = `/**
  * GENERATED FILE — do not edit by hand.
@@ -78,7 +83,9 @@ if (check) {
     process.exit(1)
   }
   if (current !== file) {
-    console.error(`STALE: ${path.relative(repoRoot, targetPath)} differs from measured media ratios`)
+    console.error(
+      `STALE: ${path.relative(repoRoot, targetPath)} differs from measured media ratios`
+    )
     process.exit(1)
   }
   console.log(`OK: ${path.relative(repoRoot, targetPath)} is in sync (${entries.length} images)`)
