@@ -154,11 +154,14 @@ jobs:
         if: steps.scaffold.outputs.exists == 'true'
         run: node scripts/check-budgets.mjs --mode strict --report-json perf/last-budget-report.json
 
-      - name: Data/media cutover checkers (read-only)
+      # The media-inventory half of check-data.mjs needs the full local media
+      # tree (public/video, public/background_audio, public/media are large,
+      # gitignored artifacts), so it runs in the cutover window on a
+      # media-complete checkout. CI gates the migration chain, which is fully
+      # reproducible from git.
+      - name: Migration chain contract (read-only)
         if: steps.scaffold.outputs.exists == 'true'
-        run: |
-          node ../tools/cutover/check-data.mjs --ignore-known
-          node ../tools/cutover/check-migrations.mjs
+        run: node ../tools/cutover/check-migrations.mjs
 
   parity:
     name: Parity (legacy vs rebuild)
