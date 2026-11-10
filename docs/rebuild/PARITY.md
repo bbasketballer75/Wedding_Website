@@ -368,6 +368,12 @@ Outputs under `--out` (default `tools/parity/output/matrix`):
 | `summary.json`, `report.html`, `shots/`, `text/` | underlying compare evidence (same layout as §6) |
 | `summary.partial.json` | incremental progress written after every row; drives `--resume` |
 
+Duplicate meta keys are resolved **last-wins** during text capture: the frozen apps ship static
+`property="twitter:*"` tags in `index.html` and append route-specific `name="twitter:*"` tags at
+runtime, so keeping the first duplicate would compare stale static defaults. Absolute URLs written
+from `location.origin` are normalised to `<ORIGIN>` so the two preview ports cannot create false
+text diffs.
+
 Every row carries: route/path, viewport, theme, `pass|allowed|fail|error|exempt`, changed pixels +
 ratio, text-diff count, legacy/rebuild page heights, and the **first failure detail** — the text-diff
 JSON path or the first changed diff slice PNG. The matrix **never auto-allowlists**: failures are

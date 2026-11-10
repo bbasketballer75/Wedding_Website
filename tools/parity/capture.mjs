@@ -178,9 +178,13 @@ const TEXT_EXTRACTION = () => {
   const origin = location.origin
   const normalise = value => (value ? value.split(origin).join('<ORIGIN>') : value)
   const meta = {}
+  // Duplicate logical keys are real and expected: the frozen apps ship static
+  // `property="twitter:*"` tags in index.html and then APPEND route-specific
+  // `name="twitter:*"` tags at runtime. The later tag is the effective one, so
+  // last-wins — keeping the first would capture stale static defaults.
   for (const tag of document.querySelectorAll('meta[name], meta[property]')) {
     const key = tag.getAttribute('name') ?? tag.getAttribute('property')
-    if (!key || key in meta) continue
+    if (!key) continue
     meta[key] = normalise((tag.getAttribute('content') ?? '').trim())
   }
   const canonical = normalise(

@@ -1,5 +1,5 @@
 import { Outlet, useRouterState } from '@tanstack/react-router'
-import { Suspense, useCallback, useEffect, useState } from 'react'
+import { Suspense, useEffect, useRef, useState } from 'react'
 import { PageLoader } from '@/shared/ui/PageLoader'
 import { QueryProvider } from '../providers/QueryProvider'
 import { AccessibilityProvider } from './AccessibilityProvider'
@@ -17,54 +17,53 @@ import { ThemeProvider } from './ThemeProvider'
  * on `/print` and admin-login/admin children (`/admin` itself renders both in
  * the frozen app, so it does here too).
  *
- * The footer is held back until the route content has a real height. The app is
- * client rendered, so the shell paints before a tall route mounts; rendering the
- * footer on the first empty frame made it jump thousands of pixels when content
- * arrived (measured CLS 0.64, source `footer`). Mounting it below real content
- * removes the shift; a 1.5 s fallback guarantees the footer still appears if a
- * route errors or never loads.
+ * The footer stays out of the first frame and is revealed only once `main` has
+ * real route content (scroll height above the 70vh Suspense fallback, so a
+ * suspended route cannot trigger it). It is mounted at all times but starts
+ * `display:none`, so revealing it below content never moves an element above it
+ * — that is what removes the measured footer layout shift (CLS 0.64–1.0).
  *
- * The ready flag lives at MODULE scope, not component state: the shell can be
- * remounted during router hydration normalization, and a state-only latch would
- * reset to false and hide an already-painted footer (measured as a late CLS
- * shift on uncompressed delivery). The module latch is per page load, so any
- * remount renders the footer visible immediately.
+ * A long fallback ensures the footer still appears on tiny error/unknown pages
+ * or a route that never renders; the timeout is well above the slowest measured
+ * first-content time so it cannot reveal early on a slow network.
  */
-let footerReadyForPageLoad = false
-
-/**
- * Mounts only after the route inside the Suspense boundary has actually rendered
- * (a marker child resolves with the same boundary). Revealing the footer on
- * route-commit — instead of on a height heuristic — is what keeps the footer out
- * of the first frame: the 70vh Suspense fallback is taller than any height
- * threshold a heuristic would use, so measuring heights revealed the footer
- * before content and produced a shift when content arrived.
- */
-function RouteReady({ onReady }: { onReady: () => void }) {
-  useEffect(() => {
-    // Deferred a frame so the marker never setState synchronously inside an
-    // effect (React lint / cascading-render hygiene).
-    const frame = window.requestAnimationFrame(onReady)
-    return () => window.cancelAnimationFrame(frame)
-  }, [onReady])
-
-  return null
-}
+const CONTENT_READY_MIN_HEIGHT_PX = 700
+const CONTENT_READY_FALLBACK_MS = 10_000
 
 export function RootLayout() {
   const pathname = useRouterState({ select: state => state.location.pathname })
   const isHome = pathname === '/'
   const isPrint = pathname === '/print'
   const isAdmin = pathname === '/admin/login' || pathname.startsWith('/admin/')
-  const [contentReady, setContentReady] = useState(footerReadyForPageLoad)
+  const mainRef = useRef<HTMLElement | null>(null)
+  const [contentReady, setContentReady] = useState(false)
 
-  const markReady = useCallback(() => {
-    // One-way latch: once revealed, the footer never hides again (hiding it after
-    // paint is itself a layout shift). A later route mount keeps the footer
-    // mounted below the content, so nothing above it moves.
-    footerReadyForPageLoad = true
-    setContentReady(true)
-  }, [])
+  useEffect(() => {
+    // One-way latch: once revealed, the footer never hides again (hiding it
+    // after paint is itself a layout shift).
+    if (contentReady) return
+    const element = mainRef.current
+    const markReady = () => setContentReady(true)
+    const timer = window.setTimeout(markReady, CONTENT_READY_FALLBACK_MS)
+    if (!element) return () => window.clearTimeout(timer)
+
+    const check = () => {
+      if (element.scrollHeight > CONTENT_READY_MIN_HEIGHT_PX) markReady()
+    }
+    // Deferred one frame so the initial measurement never setState synchronously
+    // inside the effect (React lint + cascading-render hygiene).
+    const frame = window.requestAnimationFrame(check)
+    let observer: ResizeObserver | null = null
+    if (typeof ResizeObserver !== 'undefined') {
+      observer = new ResizeObserver(check)
+      observer.observe(element)
+    }
+    return () => {
+      window.cancelAnimationFrame(frame)
+      window.clearTimeout(timer)
+      observer?.disconnect()
+    }
+  }, [contentReady])
 
   return (
     <AccessibilityProvider>
@@ -76,6 +75,7 @@ export function RootLayout() {
 
             <main
               id='main-content'
+              ref={mainRef}
               role='main'
               aria-label={pageTitle(pathname) ?? 'Page content'}
               tabIndex={-1}
@@ -91,7 +91,6 @@ export function RootLayout() {
                     }
                   >
                     <Outlet />
-                    {!contentReady && <RouteReady onReady={markReady} />}
                   </Suspense>
                 </PageTransition>
               </RouteErrorBoundary>
