@@ -1,0 +1,4 @@
+# Stray tool output written by teammates/scripts at the rebuild root; build
+# artifacts and logs live in dist/coverage or tmp/, never tracked.
+/*.txt
+/*.log
