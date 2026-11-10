@@ -199,8 +199,13 @@ describe('ActivityPage', () => {
     act(() => {
       triggerIntersection()
     })
-    // Empty page => hasMore false => the "end of feed" footer disappears.
-    await waitFor(() => expect(screen.queryByText(ACTIVITY_COPY.feedFooter)).toBeNull())
+    // Empty page => hasMore false. The frozen page keeps the footer as the
+    // end-of-feed copy ("Scroll for more or end of feed"); only the loading
+    // state goes away and no further rows are appended.
+    await waitFor(() => expect(screen.queryByText(ACTIVITY_COPY.loadingMore)).toBeNull(), {
+      timeout: 3000,
+    })
+    expect(screen.getByText(ACTIVITY_COPY.feedFooter)).toBeInTheDocument()
     expect(screen.getAllByTestId('activity-card')).toHaveLength(5)
   })
 
