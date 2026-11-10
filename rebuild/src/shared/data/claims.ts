@@ -522,11 +522,15 @@ export function resolveGuestContributions(input: {
     }
   }
 
+  // Frozen precedence: identity display name, then the uploading guest's name on
+  // the approved upload (the album owner), then a guestbook author, then a
+  // generic label. Preferring the guestbook author first showed the wrong album
+  // owner on /guest/:token when other guests wrote notes under the same email.
   let guestName = ''
   const displayName = identity?.display_name
   if (typeof displayName === 'string') guestName = displayName
-  if (!guestName && guestbook.length > 0) guestName = guestbook[0]?.name ?? ''
   if (!guestName && uploads.length > 0) guestName = uploads[0]?.guest_name ?? ''
+  if (!guestName && guestbook.length > 0) guestName = guestbook[0]?.name ?? ''
   if (!guestName) guestName = 'Special Guest'
 
   return { guestName, uploads, guestbook, claimedPhotos }
@@ -572,7 +576,11 @@ export async function fetchGuestContributionsByToken(
 
   const email = tokenRow.guest_email
 
-  const [uploadsResult, guestbookResult, identityResult] = await Promise.all([
+  // The identity row is fetched twice on purpose: the frozen claim aggregate is
+  // a separate embed query, and asking for `photo_claims` in the same select
+  // hides `display_name` behind a differently-shaped PostgREST embed response
+  // (this made the album title show a note author instead of the album owner).
+  const [uploadsResult, guestbookResult, identityResult, claimsResult] = await Promise.all([
     client
       .from('guest_uploads')
       .select('*')
@@ -584,9 +592,10 @@ export async function fetchGuestContributionsByToken(
       .select('*')
       .eq('email', email)
       .order('created_at', { ascending: false }),
+    client.from('guest_identities').select('id, display_name').eq('email', email).maybeSingle(),
     client
       .from('guest_identities')
-      .select('id, display_name, photo_claims(*, photos(*))')
+      .select('id, photo_claims(*, photos(*))')
       .eq('email', email)
       .maybeSingle(),
   ])
@@ -594,8 +603,12 @@ export async function fetchGuestContributionsByToken(
   if (uploadsResult.error) throw toDataError(uploadsResult.error, SHARE_TOKEN_ERROR)
   if (guestbookResult.error) throw toDataError(guestbookResult.error, SHARE_TOKEN_ERROR)
   if (identityResult.error) throw toDataError(identityResult.error, SHARE_TOKEN_ERROR)
+  if (claimsResult.error) throw toDataError(claimsResult.error, SHARE_TOKEN_ERROR)
 
-  const identityRow = identityResult.data
+  const identityBase = toJsonObject(identityResult.data)
+  const identityClaims = toJsonObject(claimsResult.data)
+  const identityRow =
+    identityBase || identityClaims ? { ...(identityBase ?? {}), ...(identityClaims ?? {}) } : null
   const resolved = resolveGuestContributions({
     tokenRow,
     uploads: uploadsResult.data ?? [],

@@ -18,7 +18,6 @@
 import { ArrowLeft, LockKeyhole, LogOut, ShieldAlert, ShieldCheck } from 'lucide-react'
 import { useEffect, useRef, useState } from 'react'
 import { useRouterState } from '@tanstack/react-router'
-import { usePageMeta } from '@/app/seo/usePageMeta'
 import { Button } from '@/shared/ui/Button'
 import { Input } from '@/shared/ui/Input'
 import { Label } from '@/shared/ui/Label'
@@ -34,13 +33,6 @@ import {
 } from './routing'
 import { getDefaultAdminRuntime } from './runtime'
 
-const LOGIN_META = {
-  title: 'Admin Login',
-  description: 'Secure admin access for the Austin and Jordyn wedding site.',
-  canonical: '/admin/login',
-  noIndex: true,
-} as const
-
 interface AdminLoginScreenProps {
   destination: string
 }
@@ -54,8 +46,6 @@ function AdminLoginScreen({ destination }: AdminLoginScreenProps) {
   const [errorMessage, setErrorMessage] = useState<string | null>(null)
   const [statusMessage, setStatusMessage] = useState<string | null>(null)
   const hasRedirectedRef = useRef(false)
-
-  usePageMeta(LOGIN_META)
 
   // Already-admin: honour the requested admin URL (limited to /admin* by parse).
   // The ref guard keeps the redirect single-shot: the login route can re-render

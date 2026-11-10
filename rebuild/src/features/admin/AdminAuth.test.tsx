@@ -179,21 +179,19 @@ describe('AdminLoginPage', () => {
     ).toBeInTheDocument()
   })
 
-  it('sets the frozen noindex metadata', async () => {
+  it('keeps the frozen stale admin metadata (parity-visible defect)', async () => {
     const { runtime } = createTestAdminRuntime({ session: 'anonymous' })
     await renderAdminRoute({ runtime, initialPath: '/admin/login' })
     await screen.findByRole('heading', { level: 1, name: 'Admin sign in' })
 
-    expect(document.title).toBe("Admin Login | Austin & Jordyn's Wedding")
-    expect(document.querySelector('meta[name="description"]')?.getAttribute('content')).toBe(
-      'Secure admin access for the Austin and Jordyn wedding site.'
-    )
-    expect(document.querySelector('meta[name="robots"]')?.getAttribute('content')).toBe(
-      'noindex, nofollow'
-    )
-    expect(document.querySelector('link[rel="canonical"]')?.getAttribute('href')).toBe(
-      'https://www.theporadas.com/admin/login'
-    )
+    // The frozen admin routes ship no SEOHead: the static index.html metadata is
+    // what visitors and the parity text gate see. Crawler-facing /admin/login
+    // metadata is emitted by the Wave-8 prerender instead (noindex + title), so
+    // the hydrated runtime must leave the document metadata untouched.
+    expect(document.title).toBe('')
+    expect(document.querySelector('meta[name="robots"]')).toBeNull()
+    expect(document.querySelector('link[rel="canonical"]')).toBeNull()
+    expect(document.querySelector('meta[name="description"]')).toBeNull()
   })
 
   it('renders the two frozen panels with the protected-access copy', async () => {

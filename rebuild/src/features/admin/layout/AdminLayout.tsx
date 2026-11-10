@@ -1,3 +1,4 @@
+import { Link } from '@tanstack/react-router'
 /**
  * Admin shell, ported from the frozen `src/pages/admin/AdminLayout.tsx`.
  *
@@ -55,13 +56,10 @@ export function AdminLayout({ children }: AdminLayoutProps) {
       >
         <div className='mx-auto flex max-w-7xl flex-col gap-4 px-4 py-4 sm:flex-row sm:items-center sm:justify-between'>
           <div className='min-w-0'>
-            <AdminSectionLink
-              section='dashboard'
-              className='font-display text-xl text-[color:var(--ui-text)]'
-            >
+            <Link to='/' className='font-display text-xl text-[color:var(--ui-text)]'>
               <span className='text-gold-500'>A</span>&<span className='text-gold-500'>J</span>
               <span className='theme-muted ml-2 text-sm font-normal'>Admin</span>
-            </AdminSectionLink>
+            </Link>
             <p className='theme-muted mt-1 text-sm'>
               A calmer workspace for moderation, people review, and site upkeep.
             </p>
