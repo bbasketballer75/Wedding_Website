@@ -5,9 +5,10 @@ after the final parity matrix is signed (`CUTOVER.md` §5 G1) and the owner auth
 (`CUTOVER.md` §6). Commands marked `UNVERIFIED` need the owner's Netlify/Cloudflare session; nothing
 here is a production action by itself.
 
-Context: branch `rebuild/greenfield` @ `056ae0c` (Wave 8 committed, 2026-11-09). Wave 8 evidence is
-committed in `../checkpoints/2026-11-09-waves-7-8.md`; the greenfield deploy config is
-`rebuild/netlify.toml` (committed).
+Context: branch `rebuild/greenfield` @ `53cda7b` (2026-11-09; Wave 8 + Wave 9 evidence committed). Wave 8
+evidence is committed in `../checkpoints/2026-11-09-waves-7-8.md` (Wave 9 section at the end); the
+greenfield deploy config is `rebuild/netlify.toml` (committed); the final parity matrix is
+`tools/parity/output/w9-matrix-final5/` (immutable for the cutover record).
 
 ## 1. Preconditions (all must be true before any deploy command)
 
@@ -15,15 +16,15 @@ committed in `../checkpoints/2026-11-09-waves-7-8.md`; the greenfield deploy con
 |---|---|---|---|---|
 | P1 | Legacy freeze intact | `node tools/check-legacy-freeze.mjs` | `Legacy freeze intact`, exit 0 | **PASS** (re-measured: 624 allowlisted branch changes) |
 | P2 | Contracts valid for the exact commit | `node tools/verify-contracts.mjs` | `contracts valid: …`, exit 0 | **PASS** (8 contracts / 8 fixtures / 9 content / 12 rendered / 7 schema) |
-| P3 | Rebuild gates green **on the exact cutover commit** | CI `Rebuild Workbench` (`.github/workflows/rebuild.yml` jobs `workbench`, `rebuild`); local `cd rebuild && npm run lint && npm run typecheck && npm run typecheck:ts6 && npm run test:coverage` | all green | **GREEN at `056ae0c`**: 121 files / 1015 tests (9 skipped), coverage thresholds met, TS7+TS6 0, ESLint 0 errors (11 documented warnings), prettier clean (`../checkpoints/2026-11-09-waves-7-8.md:53-68`). Record the CI run id for the final cutover commit |
-| P4 | **Final parity matrix green** | `node tools/parity/matrix.mjs --legacy-url <u> --rebuild-url <u> --wave 9 --prerender --out tools/parity/output/matrix` | exit 0; no unexplained text/pixel diffs; admin rows captured or explicitly exempt | **PENDING** — Lead-supplied artifact; table in `CUTOVER.md` §2 stays empty until it lands |
-| P5 | Wave 8 artifacts drift-free + budgets green | `cd rebuild && npm run build:seo:check`, `node scripts/check-budgets.mjs --mode baseline`, `node ../tools/perf/bundle.mjs --check` | exit 0 each | **PASS at `056ae0c`**: budgets initial 160.0/180 KiB gz, public routes 4.4–113.9/120, total 394.4/450, CSS 27.1/40 (`../checkpoints/2026-11-09-waves-7-8.md:63`) |
+| P3 | Rebuild gates green **on the exact cutover commit** | CI `Rebuild Workbench` (`.github/workflows/rebuild.yml` jobs `workbench`, `rebuild`); local `cd rebuild && npm run lint && npm run typecheck && npm run typecheck:ts6 && npm run test:coverage` | all green | **GREEN at the final integration snapshot `53cda7b`**: 127 files / 1077 tests passed (9 skipped), coverage thresholds met, TS7+TS6 0, ESLint 0 errors (11 documented warnings), prettier clean (`../checkpoints/2026-11-09-waves-7-8.md` Wave 9 l.126-128). Re-run CI for the exact cutover commit and record the run id |
+| P4 | **Final parity matrix acceptable** | `node tools/parity/matrix.mjs --legacy-url <u> --rebuild-url <u> --wave 9 --out tools/parity/output/matrix`; compare with the recorded `tools/parity/output/w9-matrix-final5/` | `matrix-summary.json` + `MATRIX.md`; no unexplained diffs | **RECORDED — CONDITIONAL**: 46 rows = 35 PASS / 5 reviewed ALLOWED / 6 FAIL, all failures **mobile-only** (gallery mobile capture-pagination text delta; admin/admin-login mobile chrome pixels). Desktop and every non-mobile row green. **Not mobile green** — deploy requires the owner to accept the documented residual bundle (`../CUTOVER.md` §2.3/U16) or order a pre-switch fix. Prerender-aware matrix run against the production build remains a follow-up (U15) |
+| P5 | Wave 8 artifacts drift-free + budgets/perf green | `cd rebuild && npm run build:seo:check`, `node scripts/check-budgets.mjs --mode baseline`, `node ../tools/perf/bundle.mjs --check` | exit 0 each | **PASS at `53cda7b`**: initial **160.14 KiB gz / 180**; public routes **≤118.94 / 120**; admin 116.41; total 411.83 (informational 450). Runtime **LCP 920–1092 ms ≤2000 / CLS 0.0000–0.0010 ≤0.05**, all 6 cells PASS (`../checkpoints/2026-11-09-waves-7-8.md` l.105-109; `tools/perf/output/before-after-wave8.md` FINAL) |
 | P6 | Production schema/RLS/RPC reconciliation report | read-only diff vs `contracts/schema/*` (`../audit/A3-data.md:171-186`; `DATA_CUTOVER.md` §5 Phase 0) | no divergence, or accepted list | **UNVERIFIED** — no production access was used |
 | P7 | Backup created + restore drill passed | `BACKUP_RESTORE.md` §2–§3 | dump checksum + restore-into-scratch + RTO recorded | **NOT DONE** |
 | P8 | Owner authorisation recorded | `CUTOVER.md` §6 | A1 DNS switch, A2 production migration, A3 prod data writes (+ others) approved | **NOT YET** |
 | P9 | Rollback rehearsal passed | `ROLLBACK.md` §6 | evidence bundle recorded | **NOT DONE** |
 
-Do not deploy while P4, P6, P7, P8 or P9 are open.
+Do not deploy while the P4 mobile-residual acceptance, P6, P7, P8 or P9 are open.
 
 ## 2. What actually deploys (two sites, one repo)
 
@@ -132,7 +133,7 @@ www.theporadas.com` before/after.
 | Budgets | `cd rebuild && npm run perf:budgets` | no violations |
 | Perf | `node tools/perf/run.mjs --serve-dist rebuild/dist --check` | LCP ≤2.0 s, CLS ≤0.05 |
 | Cutover checkers | `node tools/cutover/check-data.mjs --ignore-known`; `check-migrations.mjs` | exit 0 both; `--expect-r17-fixed` only after D-01 |
-| Parity matrix | `node tools/parity/matrix.mjs … --wave 9 --prerender` | exit 0; `MATRIX.md` supplied to CUTOVER §2 |
+| Parity matrix | `node tools/parity/matrix.mjs --legacy-url <u> --rebuild-url <u> --wave 9 --out tools/parity/output/matrix` | exit 0 or documented residuals; compare with the recorded `tools/parity/output/w9-matrix-final5/` (35 PASS / 5 ALLOWED / 6 mobile-only FAIL); record the owner's U16 acceptance |
 | Deployed headers | `curl -sSI https://www.theporadas.com/` | HSTS/CSP/XFO present |
 | Deployed OG | `curl -s https://www.theporadas.com/` + inspect `og:image` | real `/images/og-image.webp` (R21 resolved in rebuild) |
 | Sitemap | `curl -s https://www.theporadas.com/sitemap.xml` | 6 indexable entries, no `/people` (`rebuild/scripts/generate-sitemap.mjs`) |

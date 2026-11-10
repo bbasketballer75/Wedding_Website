@@ -2,7 +2,9 @@
 
 Documentation only. **No rollback, restore, or production action was executed.** Derived from the
 owner-approved cutover strategy (`../audit/A3-data.md` §9.1–9.6; `../plans/2026-11-08-workbench.md:13-24`),
-the data/media plan (`../DATA_CUTOVER.md`), and documented production history
+the data/media plan (`../DATA_CUTOVER.md`), the recorded final parity matrix
+(`tools/parity/output/w9-matrix-final5/`, 46 rows: 35 PASS / 5 ALLOWED / 6 documented mobile-only FAIL;
+`../CUTOVER.md` §2), and documented production history
 (`docs/archival/RELEASE_RECOVERY_2026-07-05.md:9-16`).
 
 Core principle (A3 §9.5): **until the DNS/Netlify switch and the data migration both succeed, the
@@ -125,7 +127,7 @@ evidence in the window log.
 | R7 | Restore verification queries | `../DATA_CUTOVER.md` §9.1 / `../audit/A3-data.md:504-521` | counts match pre-snapshot; RLS/function diffs empty |
 | R8 | Static rollback rehearsal | publish the previous **preview** deploy (dashboard; CLI path `UNVERIFIED`) | previous commit marker served; `curl -sI` 200; `Cache-Control` headers as expected |
 | R9 | Media manifest sanity | `node scripts/list-r2.mjs` with a **read-only** key (single ListObjectsV2 page — treat as sample; paginate/`rclone ls` 1.75.1 present) or `rclone ls` | spot-checked keys/sizes |
-| R10 | Parity against rolled-back site | `node tools/parity/matrix.mjs … --wave 9 --routes priority` | exit 0 or reviewed allowlist only |
+| R10 | Parity against rolled-back site | `node tools/parity/matrix.mjs … --wave 9 --routes priority`; compare with the recorded baseline `tools/parity/output/w9-matrix-final5/` | exit 0 for priority rows except the known mobile residual bundle (gallery mobile capture pagination, admin mobile chrome) + reviewed allowlist; no *new* diff vs the recorded matrix |
 | R11 | Record timings/gaps | manual | RTO per step, `UNVERIFIED` items, operator name |
 
 Expected evidence bundle (checkpoint, not git, if URLs are involved): R1–R3 tails, dump checksum, restore
