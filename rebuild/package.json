@@ -21,7 +21,7 @@
     "test:run": "vitest run",
     "test:coverage": "vitest run --coverage",
     "test:e2e": "playwright test",
-    "build:seo": "node scripts/generate-sitemap.mjs && node scripts/prerender.mjs",
+    "build:seo": "node scripts/generate-sitemap.mjs && node scripts/prerender.mjs && node scripts/check-deploy-assets.mjs",
     "build:seo:check": "node scripts/generate-sitemap.mjs --check && node scripts/prerender.mjs --check",
     "build:prod": "vite build && npm run build:seo",
     "perf:budgets": "node scripts/check-budgets.mjs",

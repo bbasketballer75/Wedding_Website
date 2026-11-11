@@ -158,3 +158,5 @@ rebuild/test-results/
 # bundler does not need it. Re-add a lockfile (next to a deno.json) if a real
 # Deno edge function with npm/jsr imports is ever introduced.
 deno.lock
+
+playwright-report-visual-prod/
