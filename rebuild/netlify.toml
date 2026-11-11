@@ -149,3 +149,8 @@ Security headers and cache policy mirror the frozen `public/_headers` contract
   for = "/*.html"
   [headers.values]
     Cache-Control = "public, max-age=0, must-revalidate"
+
+[[redirects]]
+  from = "/*"
+  to = "/index.html"
+  status = 200
