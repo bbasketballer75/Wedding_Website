@@ -23,6 +23,16 @@
   VITE_SENTRY_DSN = "https://a3e91a8bb1d2fe48c19cb84944dea8f7@o4509754165755904.ingest.us.sentry.io/4512409698369536"
 
 [[redirects]]
+  from = "/admin/*"
+  to = "/admin/index.html"
+  status = 200
+
+[[redirects]]
+  from = "/guest/*"
+  to = "/guest/index.html"
+  status = 200
+
+[[redirects]]
   from = "/*"
   to = "/index.html"
   status = 200
