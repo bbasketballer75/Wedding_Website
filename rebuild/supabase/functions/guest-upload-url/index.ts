@@ -78,10 +78,7 @@ Deno.serve(async request => {
   }
 
   const mediaType = contentType.startsWith('video/') ? 'videos' : 'photos'
-  const extension = contentType
-    .split('/')[1]
-    .replace('quicktime', 'mov')
-    .replace('jpeg', 'jpg')
+  const extension = contentType.split('/')[1].replace('quicktime', 'mov').replace('jpeg', 'jpg')
   const objectKey = `guest-uploads/${mediaType}/${crypto.randomUUID()}.${extension}`
 
   const client = new AwsClient({
@@ -97,7 +94,7 @@ Deno.serve(async request => {
     const signed = await client.sign(url, { method: 'PUT', aws: { signQuery: true } })
     return json({
       uploadUrl: signed.url,
-      publicUrl: `${publicBaseUrl.replace(/\/$/, '')}/${objectKey}`,
+      publicUrl: `${publicBaseUrl.replace(/\/$/, '')}?key=${encodeURIComponent(objectKey)}`,
     })
   } catch {
     return json({ error: 'Failed to generate upload URL' }, 500)
