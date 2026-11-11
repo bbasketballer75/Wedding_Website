@@ -12,6 +12,7 @@
  * strategy) are data-shape independent and stay as-is.
  */
 import { useCallback, useMemo, useState } from 'react'
+import { mediaPaths } from '@/shared/data/media'
 import { CLIENT_ZIP_LIMIT, MAX_SELECTION, collectionTabs, type CollectionTab } from './constants'
 import { CURATED_PHOTOS, LIVE_PHOTOS, UPLOAD_STATUS_FIXTURE } from './fixtures'
 
@@ -412,10 +413,12 @@ export function useGalleryEngagement(): GalleryEngagementActions {
 function toQueueEntry(photo: GalleryPhoto): QueuedPhoto {
   return {
     id: photo.id,
-    url: photo.url,
-    thumbnail: photo.thumbnail || photo.url,
+    // Download/zip sources must be normalised exactly like the rendered tile so
+    // a relative DB `media/...` path never resolves against the current route.
+    url: mediaPaths.getMediaPath(photo.url),
+    thumbnail: mediaPaths.getMediaPath(photo.thumbnail || photo.url),
     caption: photo.caption,
-    downloadUrl: photo.downloadUrl ?? photo.url,
+    downloadUrl: mediaPaths.getMediaPath(photo.downloadUrl ?? photo.url),
     collection: photo.collection,
   }
 }

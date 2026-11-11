@@ -13,6 +13,7 @@ import {
   type GalleryPhotosSource,
 } from '@/features/gallery/data'
 import type { Photo } from '@/shared/data/photos'
+import { mediaPaths } from '@/shared/data/media'
 import { useGalleryPhotos } from '@/shared/data/hooks'
 
 const GALLERY_READ_ERROR =
@@ -21,9 +22,13 @@ const GALLERY_READ_ERROR =
 function mapSupabasePhoto(photo: Photo): GalleryPhoto {
   return {
     id: photo.id,
-    url: photo.url,
-    thumbnail: photo.thumbnail || photo.url,
-    downloadUrl: photo.download_url ?? photo.url,
+    // The database stores media-relative paths without a leading slash
+    // (`media/Album/photo.webp`). The frozen mapper normalised them through
+    // `getMediaPath`; rendering the raw value made the browser request
+    // `<route>/media/...` (broken gallery + missing CDN offload).
+    url: mediaPaths.getMediaPath(photo.url),
+    thumbnail: mediaPaths.getMediaPath(photo.thumbnail || photo.url),
+    downloadUrl: mediaPaths.getMediaPath(photo.download_url ?? photo.url),
     caption: photo.caption ?? undefined,
     album: photo.album ?? undefined,
     // The typed data layer defaults a missing album_sort_order to 0; the frozen

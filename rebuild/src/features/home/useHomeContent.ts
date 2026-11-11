@@ -8,6 +8,7 @@
  * `shared/data/hooks`; this module only shapes the view state.
  */
 import { useMemo } from 'react'
+import { mediaPaths } from '@/shared/data/media'
 import { useEditorialFeatures, useGuestbookMessages, useTopPhotos } from '@/shared/data/hooks'
 
 export interface HomeEditorialFeature {
@@ -73,8 +74,10 @@ export function useHomeContent(): HomeContentState {
     () =>
       (photosQuery.data ?? []).slice(0, 6).map(photo => ({
         id: photo.id,
-        url: photo.url,
-        thumbnail: photo.thumbnail,
+        // DB media paths are relative (`media/...`) and must resolve like the
+        // frozen mapper: same-origin for `/images/`, CDN for offloaded prefixes.
+        url: mediaPaths.getMediaPath(photo.url),
+        thumbnail: mediaPaths.getMediaPath(photo.thumbnail || photo.url),
         caption: photo.caption,
       })),
     [photosQuery.data]

@@ -123,8 +123,10 @@ export function toOrganizerPhoto(
   return {
     id: photo.id,
     album: photo.album ?? 'Engagement',
-    url: photo.url,
-    thumbnail: photo.thumbnail ?? null,
+    // DB media paths are relative; the organizer renders the same CDN/local URLs
+    // as the public gallery.
+    url: mediaPaths.getMediaPath(photo.url),
+    thumbnail: photo.thumbnail ? mediaPaths.getMediaPath(photo.thumbnail) : null,
     caption: photo.caption ?? null,
     albumSortOrder: photo.album_sort_order ?? 0,
     createdAt: photo.created_at ?? null,

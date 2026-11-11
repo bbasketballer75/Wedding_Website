@@ -22,14 +22,16 @@ import type {
 import type { TypedSupabaseClient } from '@/shared/data/client'
 import { fetchGuestContributionsByToken } from '@/shared/data/claims'
 import type { GuestbookMessage } from '@/shared/data/guestbook'
+import { mediaPaths } from '@/shared/data/media'
 import { fetchPhotosByUrls, type Photo } from '@/shared/data/photos'
 
 /** Normalised `Photo` -> the feature's photo view model (subset of `ViewerPhoto`). */
 export function mapSharedPhoto(photo: Photo): GuestSharePhoto {
   return {
     id: photo.id,
-    url: photo.url,
-    thumbnail: photo.thumbnail || photo.url,
+    // DB rows store `media/...` without a leading slash; normalise before render.
+    url: mediaPaths.getMediaPath(photo.url),
+    thumbnail: mediaPaths.getMediaPath(photo.thumbnail || photo.url),
     caption: photo.caption ?? null,
     likes: photo.likes,
   }
