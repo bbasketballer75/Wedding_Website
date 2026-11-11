@@ -1,0 +1,75 @@
+{
+  "approved": [
+    {
+      "id": "upload-approved-1",
+      "guest_name": "Jamie Rivera",
+      "guest_email": "jamie@example.com",
+      "message": "So glad we were there — what a beautiful day!",
+      "photo_urls": [
+        "/images/engagement/PoradaProposal-29.webp",
+        "/images/engagement/PoradaProposal-11.webp",
+        "/images/engagement/PoradaProposal-150.webp"
+      ],
+      "video_urls": [],
+      "status": "approved",
+      "created_at": "2025-05-11T10:00:00.000Z"
+    },
+    {
+      "id": "upload-approved-2",
+      "guest_name": "Morgan Lee",
+      "guest_email": "morgan@example.com",
+      "message": "Caught some candid moments from our table.",
+      "photo_urls": ["/images/engagement/PoradaProposal-181.webp"],
+      "video_urls": [],
+      "status": "approved",
+      "created_at": "2025-05-11T12:30:00.000Z"
+    }
+  ],
+  "pending": [
+    {
+      "id": "upload-pending-1",
+      "guest_name": "Riley Thompson",
+      "guest_email": "riley@example.com",
+      "message": "Captured a few special moments from our table!",
+      "photo_urls": [
+        "/images/engagement/PoradaProposal-29.webp",
+        "/images/engagement/PoradaProposal-11.webp"
+      ],
+      "video_urls": [],
+      "status": "pending",
+      "created_at": "2025-05-11T09:00:00.000Z"
+    },
+    {
+      "id": "upload-pending-2",
+      "guest_name": "Sam Garcia",
+      "guest_email": "sam@example.com",
+      "message": "Love these photos from the reception!",
+      "photo_urls": ["/images/engagement/PoradaProposal-150.webp"],
+      "video_urls": [],
+      "status": "pending",
+      "created_at": "2025-05-11T10:30:00.000Z"
+    },
+    {
+      "id": "upload-pending-3",
+      "guest_name": "Alex Chen",
+      "guest_email": "alex@example.com",
+      "message": "",
+      "photo_urls": ["/images/engagement/PoradaProposal-181.webp"],
+      "video_urls": ["https://mock-storage.example.com/video-1.mp4"],
+      "status": "pending",
+      "created_at": "2025-05-11T11:00:00.000Z"
+    }
+  ],
+  "insertResponse": [
+    {
+      "id": "upload-1",
+      "guest_name": "Test Guest",
+      "guest_email": "guest@example.com",
+      "message": "A few favorites from our table.",
+      "photo_urls": ["https://mock-storage.example.com/photo-1.webp"],
+      "video_urls": [],
+      "status": "pending",
+      "created_at": "2025-05-16T10:00:00.000Z"
+    }
+  ]
+}

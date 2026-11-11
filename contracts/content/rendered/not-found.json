@@ -1,0 +1,118 @@
+{
+  "id": "not-found",
+  "route": "/this-page-does-not-exist",
+  "capturedFrom": "legacy-freeze-2026-11-08",
+  "fixedNow": "2026-11-08T17:00:00.000Z",
+  "capture": {
+    "baseUrl": "http://127.0.0.1:4174",
+    "build": "production build of legacy-freeze-2026-11-08",
+    "reducedMotion": "reduce",
+    "deviceScaleFactor": 1,
+    "colorScheme": "light",
+    "timezone": "America/New_York",
+    "locale": "en-US",
+    "serviceWorkers": "blocked",
+    "mocks": "contracts/fixtures/*.json"
+  },
+  "snapshots": {
+    "desktop": {
+      "viewport": { "width": 1440, "height": 900 },
+      "title": "Page Not Found | Austin & Jordyn's Wedding",
+      "lang": "en",
+      "theme": "dark",
+      "meta": {
+        "description": "This page could not be found.",
+        "robots": "noindex, nofollow",
+        "canonical": "https://www.theporadas.com/404",
+        "ogTitle": "Page Not Found | Austin & Jordyn's Wedding",
+        "ogDescription": "This page could not be found.",
+        "ogImage": "https://www.theporadas.com/images/home/intro-video-poster.png",
+        "twitterTitle": "Page Not Found | Austin & Jordyn's Wedding",
+        "twitterImage": "https://www.theporadas.com/images/home/intro-video-poster.png",
+        "structuredDataCount": 1
+      },
+      "headings": [
+        { "level": 1, "text": "404" },
+        { "level": 2, "text": "Page Not Found" }
+      ],
+      "navLinks": [
+        { "text": "A&J", "href": "/" },
+        { "text": "WATCH FILM", "href": "/film" },
+        { "text": "GALLERY", "href": "/gallery" },
+        { "text": "GUESTBOOK", "href": "/guestbook" },
+        { "text": "SHARE", "href": "/upload" },
+        { "text": "MEMORY BOOK", "href": "/print" },
+        {
+          "text": "Watch the film Revisit the ceremony, speeches, and the whole dance floor arc.",
+          "href": "/film"
+        },
+        {
+          "text": "Browse the gallery Portraits, candids, and every little detail we never want to forget.",
+          "href": "/gallery"
+        },
+        {
+          "text": "Leave a note A quiet last stop for one message, blessing, or little memory from the day.",
+          "href": "/guestbook"
+        },
+        {
+          "text": "Memory Book Print a keepsake photo book or guestbook — save as PDF from any browser.",
+          "href": "/print"
+        }
+      ],
+      "images": [],
+      "mainText": [
+        "404",
+        "Page Not Found",
+        "Oops! It seems this page wandered off like a wedding guest looking for the open bar. Let's get you back to the celebration!",
+        "GO BACK",
+        "BACK TO HOME"
+      ]
+    },
+    "mobile": {
+      "viewport": { "width": 390, "height": 844 },
+      "title": "Page Not Found | Austin & Jordyn's Wedding",
+      "lang": "en",
+      "theme": "dark",
+      "meta": {
+        "description": "This page could not be found.",
+        "robots": "noindex, nofollow",
+        "canonical": "https://www.theporadas.com/404",
+        "ogTitle": "Page Not Found | Austin & Jordyn's Wedding",
+        "ogDescription": "This page could not be found.",
+        "ogImage": "https://www.theporadas.com/images/home/intro-video-poster.png",
+        "twitterTitle": "Page Not Found | Austin & Jordyn's Wedding",
+        "twitterImage": "https://www.theporadas.com/images/home/intro-video-poster.png",
+        "structuredDataCount": 1
+      },
+      "headings": [
+        { "level": 1, "text": "404" },
+        { "level": 2, "text": "Page Not Found" }
+      ],
+      "navLinks": [
+        { "text": "A&J", "href": "/" },
+        { "text": "FilmWatch Film", "href": "/film" },
+        { "text": "PhotosGallery", "href": "/gallery" },
+        { "text": "GuestsGuestbook", "href": "/guestbook" },
+        { "text": "ShareShare", "href": "/upload" },
+        { "text": "PrintMemory Book", "href": "/print" },
+        { "text": "Watch the film", "href": "/film" },
+        { "text": "Browse the gallery", "href": "/gallery" },
+        { "text": "Leave a note", "href": "/guestbook" },
+        { "text": "Memory Book", "href": "/print" },
+        { "text": "WATCH FILM", "href": "/film" },
+        { "text": "GALLERY", "href": "/gallery" },
+        { "text": "GUESTBOOK", "href": "/guestbook" },
+        { "text": "SHARE", "href": "/upload" },
+        { "text": "MEMORY BOOK", "href": "/print" }
+      ],
+      "images": [],
+      "mainText": [
+        "404",
+        "Page Not Found",
+        "Oops! It seems this page wandered off like a wedding guest looking for the open bar. Let's get you back to the celebration!",
+        "GO BACK",
+        "BACK TO HOME"
+      ]
+    }
+  }
+}

@@ -24,9 +24,19 @@
 --   list / RETURNS TABLE column set in PostgreSQL, so we must
 --   DROP the old signature first. IF EXISTS guards keep the
 --   migration re-runnable / safe on partially-applied state.
+--
+-- Workbench note (2026-11-08):
+--   This file was reconstructed by hand in #141 and never executed:
+--   four statements were missing their terminating semicolons, so
+--   `supabase db reset` failed with SQLSTATE 42601 and the committed
+--   migration set could not reproduce the schema. A four-semicolon,
+--   syntax-only repair was applied so the 2026 greenfield rebuild can
+--   regenerate a trustworthy baseline from the repo. No SQL semantics
+--   changed. This is the single documented exception to the legacy
+--   freeze (see tools/check-legacy-freeze.mjs).
 -- ============================================
 
-DROP FUNCTION IF EXISTS public.get_guestbook_messages_with_comments()
+DROP FUNCTION IF EXISTS public.get_guestbook_messages_with_comments();
 CREATE FUNCTION public.get_guestbook_messages_with_comments()
 RETURNS TABLE (
   id uuid,
@@ -64,10 +74,10 @@ BEGIN
   GROUP BY gm.id, gm.name, gm.email, gm.content, gm.media_url, gm.reactions, gm.created_at
   ORDER BY gm.created_at DESC;
 END;
-$$ LANGUAGE plpgsql
+$$ LANGUAGE plpgsql;
 -- Re-grant default privileges (carried over from the original CREATE OR REPLACE
 -- in 20240303000002_guestbook_comments.sql, where the function is callable by
 -- the anon role via PostgREST). Function defaults to PUBLIC execute on creation,
 -- but be explicit so future reviewers can see the intent.
-GRANT EXECUTE ON FUNCTION public.get_guestbook_messages_with_comments() TO anon
-GRANT EXECUTE ON FUNCTION public.get_guestbook_messages_with_comments() TO authenticated
+GRANT EXECUTE ON FUNCTION public.get_guestbook_messages_with_comments() TO anon;
+GRANT EXECUTE ON FUNCTION public.get_guestbook_messages_with_comments() TO authenticated;

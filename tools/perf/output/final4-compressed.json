@@ -1,0 +1,1732 @@
+{
+  "schemaVersion": 1,
+  "kind": "runtime-budget",
+  "generatedAt": "2026-11-10T01:16:06.752Z",
+  "label": "tmp_dist-prod_gzip",
+  "target": {
+    "mode": "internal-static",
+    "url": "http://127.0.0.1:64859",
+    "compression": "gzip",
+    "dist": "tmp/dist-prod",
+    "fingerprintBefore": {
+      "indexHtmlSha256": "470a0627bdabc6533e22d96b96957954561dafb9a0e8b09b46c4500c2813e698",
+      "assetFiles": 86
+    },
+    "fingerprintAfter": {
+      "indexHtmlSha256": "470a0627bdabc6533e22d96b96957954561dafb9a0e8b09b46c4500c2813e698",
+      "assetFiles": 86
+    },
+    "consistency": "stable"
+  },
+  "url": "http://127.0.0.1:64859",
+  "mockNetwork": "mocked (supabase empty JSON, image stub, media aborted)",
+  "networkProfile": {
+    "name": "slow-4g",
+    "latencyMs": 150,
+    "downloadThroughputBytesPerSecond": 209715,
+    "uploadThroughputBytesPerSecond": 96000,
+    "connectionType": "cellular4g"
+  },
+  "cpuThrottleRate": 4,
+  "settling": {
+    "quietWindowMs": 500,
+    "networkIdleTimeoutMs": 8000
+  },
+  "toolchain": {
+    "node": "v26.8.1",
+    "playwright": "1.65.0",
+    "chromium": "158.0.8127.18"
+  },
+  "budgets": {
+    "lcpMs": 2000,
+    "cls": 0.05
+  },
+  "routes": ["/", "/gallery", "/film"],
+  "viewports": [
+    {
+      "id": "mobile",
+      "width": 390,
+      "height": 844
+    },
+    {
+      "id": "desktop",
+      "width": 1440,
+      "height": 900
+    }
+  ],
+  "warmupRuns": 1,
+  "runs": 3,
+  "cells": [
+    {
+      "route": "/",
+      "viewport": "mobile",
+      "viewportPixels": {
+        "width": 390,
+        "height": 844
+      },
+      "runs": [
+        {
+          "lcpMs": 1108,
+          "lcpElement": "style",
+          "lcpSize": 199101,
+          "cls": 0,
+          "shiftCount": 0,
+          "clsShiftSources": [],
+          "fcpMs": 1108,
+          "ttfbMs": 155.60000002384186,
+          "dclMs": 1750.9000000059605,
+          "loadMs": 1751.6000000238419,
+          "longTasks": 21,
+          "longTaskMs": 3826,
+          "transferBytes": {
+            "script": 293555,
+            "css": 28101,
+            "font": 62520,
+            "image": 370,
+            "media": 0,
+            "data": 0,
+            "other": 0,
+            "total": 386923
+          },
+          "requestCount": 51,
+          "httpStatus": 200,
+          "consoleErrors": [],
+          "requestFailures": [],
+          "mocks": {
+            "realAssets": 30,
+            "supabase": 3,
+            "images": 19,
+            "blocked": 0
+          },
+          "finalUrl": "http://127.0.0.1:64859/",
+          "ok": true,
+          "invalidReason": null
+        },
+        {
+          "lcpMs": 996,
+          "lcpElement": "style",
+          "lcpSize": 199101,
+          "cls": 0,
+          "shiftCount": 0,
+          "clsShiftSources": [],
+          "fcpMs": 996,
+          "ttfbMs": 154.5,
+          "dclMs": 1756.3999999761581,
+          "loadMs": 1757,
+          "longTasks": 8,
+          "longTaskMs": 1675,
+          "transferBytes": {
+            "script": 293555,
+            "css": 28101,
+            "font": 62520,
+            "image": 370,
+            "media": 0,
+            "data": 0,
+            "other": 0,
+            "total": 386923
+          },
+          "requestCount": 51,
+          "httpStatus": 200,
+          "consoleErrors": [],
+          "requestFailures": [],
+          "mocks": {
+            "realAssets": 30,
+            "supabase": 3,
+            "images": 19,
+            "blocked": 0
+          },
+          "finalUrl": "http://127.0.0.1:64859/",
+          "ok": true,
+          "invalidReason": null
+        },
+        {
+          "lcpMs": 952,
+          "lcpElement": "style",
+          "lcpSize": 199101,
+          "cls": 0,
+          "shiftCount": 0,
+          "clsShiftSources": [],
+          "fcpMs": 952,
+          "ttfbMs": 154,
+          "dclMs": 1703.7999999821186,
+          "loadMs": 1704.199999988079,
+          "longTasks": 8,
+          "longTaskMs": 1518,
+          "transferBytes": {
+            "script": 293555,
+            "css": 28101,
+            "font": 62520,
+            "image": 370,
+            "media": 0,
+            "data": 0,
+            "other": 0,
+            "total": 386923
+          },
+          "requestCount": 51,
+          "httpStatus": 200,
+          "consoleErrors": [],
+          "requestFailures": [],
+          "mocks": {
+            "realAssets": 30,
+            "supabase": 3,
+            "images": 19,
+            "blocked": 0
+          },
+          "finalUrl": "http://127.0.0.1:64859/",
+          "ok": true,
+          "invalidReason": null
+        }
+      ],
+      "warmupRuns": [
+        {
+          "lcpMs": 3852,
+          "lcpElement": "p.mt-4.max-w-lg",
+          "lcpSize": 29600,
+          "cls": 1,
+          "shiftCount": 1,
+          "clsShiftSources": [
+            {
+              "value": 1,
+              "startedAtMs": 4427.899999976158,
+              "sources": [
+                {
+                  "node": "footer.relative.overflow-hidden",
+                  "previousRect": {
+                    "x": 0,
+                    "y": 0,
+                    "w": 390,
+                    "h": 844
+                  },
+                  "currentRect": {
+                    "x": 0,
+                    "y": 0,
+                    "w": 0,
+                    "h": 0
+                  }
+                }
+              ]
+            }
+          ],
+          "fcpMs": 1856,
+          "ttfbMs": 159.7999999821186,
+          "dclMs": 2056.199999988079,
+          "loadMs": 2149.199999988079,
+          "longTasks": 20,
+          "longTaskMs": 2174,
+          "transferBytes": {
+            "script": 293555,
+            "css": 28101,
+            "font": 62520,
+            "image": 370,
+            "media": 0,
+            "data": 0,
+            "other": 0,
+            "total": 386923
+          },
+          "requestCount": 51,
+          "httpStatus": 200,
+          "consoleErrors": [],
+          "requestFailures": [],
+          "mocks": {
+            "realAssets": 30,
+            "supabase": 3,
+            "images": 19,
+            "blocked": 0
+          },
+          "finalUrl": "http://127.0.0.1:64859/",
+          "ok": true,
+          "invalidReason": null
+        }
+      ],
+      "median": {
+        "lcpMs": 996,
+        "cls": 0,
+        "fcpMs": 996,
+        "ttfbMs": 154.5,
+        "dclMs": 1750.9000000059605,
+        "loadMs": 1751.6000000238419,
+        "longTasks": 8,
+        "longTaskMs": 1675,
+        "requestCount": 51,
+        "transferBytes": {
+          "script": 293555,
+          "css": 28101,
+          "font": 62520,
+          "image": 370,
+          "media": 0,
+          "data": 0,
+          "other": 0,
+          "total": 386923
+        },
+        "lcpElement": "style",
+        "clsSources": [],
+        "httpStatus": 200,
+        "consoleErrors": 0,
+        "requestFailures": 0
+      },
+      "budget": {
+        "ok": true,
+        "violations": []
+      },
+      "validRuns": 3,
+      "invalidRuns": []
+    },
+    {
+      "route": "/gallery",
+      "viewport": "mobile",
+      "viewportPixels": {
+        "width": 390,
+        "height": 844
+      },
+      "runs": [
+        {
+          "lcpMs": 960,
+          "lcpElement": "style",
+          "lcpSize": 199101,
+          "cls": 0,
+          "shiftCount": 0,
+          "clsShiftSources": [],
+          "fcpMs": 960,
+          "ttfbMs": 152.90000000596046,
+          "dclMs": 1643.9000000059605,
+          "loadMs": 1644.0999999940395,
+          "longTasks": 6,
+          "longTaskMs": 708,
+          "transferBytes": {
+            "script": 302529,
+            "css": 28101,
+            "font": 23176,
+            "image": 1480,
+            "media": 0,
+            "data": 0,
+            "other": 0,
+            "total": 357451
+          },
+          "requestCount": 45,
+          "httpStatus": 200,
+          "consoleErrors": [],
+          "requestFailures": [],
+          "mocks": {
+            "realAssets": 38,
+            "supabase": 1,
+            "images": 7,
+            "blocked": 0
+          },
+          "finalUrl": "http://127.0.0.1:64859/gallery",
+          "ok": true,
+          "invalidReason": null
+        },
+        {
+          "lcpMs": 900,
+          "lcpElement": "style",
+          "lcpSize": 199101,
+          "cls": 0,
+          "shiftCount": 0,
+          "clsShiftSources": [],
+          "fcpMs": 900,
+          "ttfbMs": 153.2000000178814,
+          "dclMs": 1614.800000011921,
+          "loadMs": 1615.2000000178814,
+          "longTasks": 5,
+          "longTaskMs": 480,
+          "transferBytes": {
+            "script": 302529,
+            "css": 28101,
+            "font": 23176,
+            "image": 1480,
+            "media": 0,
+            "data": 0,
+            "other": 0,
+            "total": 357451
+          },
+          "requestCount": 45,
+          "httpStatus": 200,
+          "consoleErrors": [],
+          "requestFailures": [],
+          "mocks": {
+            "realAssets": 38,
+            "supabase": 1,
+            "images": 7,
+            "blocked": 0
+          },
+          "finalUrl": "http://127.0.0.1:64859/gallery",
+          "ok": true,
+          "invalidReason": null
+        },
+        {
+          "lcpMs": 940,
+          "lcpElement": "style",
+          "lcpSize": 199101,
+          "cls": 0,
+          "shiftCount": 0,
+          "clsShiftSources": [],
+          "fcpMs": 940,
+          "ttfbMs": 152.90000000596046,
+          "dclMs": 1657.4000000059605,
+          "loadMs": 1657.7000000178814,
+          "longTasks": 5,
+          "longTaskMs": 567,
+          "transferBytes": {
+            "script": 302529,
+            "css": 28101,
+            "font": 23176,
+            "image": 1480,
+            "media": 0,
+            "data": 0,
+            "other": 0,
+            "total": 357451
+          },
+          "requestCount": 45,
+          "httpStatus": 200,
+          "consoleErrors": [],
+          "requestFailures": [],
+          "mocks": {
+            "realAssets": 38,
+            "supabase": 1,
+            "images": 7,
+            "blocked": 0
+          },
+          "finalUrl": "http://127.0.0.1:64859/gallery",
+          "ok": true,
+          "invalidReason": null
+        }
+      ],
+      "warmupRuns": [
+        {
+          "lcpMs": 952,
+          "lcpElement": "style",
+          "lcpSize": 199101,
+          "cls": 0,
+          "shiftCount": 0,
+          "clsShiftSources": [],
+          "fcpMs": 952,
+          "ttfbMs": 153.2000000178814,
+          "dclMs": 1628.9000000059605,
+          "loadMs": 1629.2000000178814,
+          "longTasks": 6,
+          "longTaskMs": 693,
+          "transferBytes": {
+            "script": 302529,
+            "css": 28101,
+            "font": 23176,
+            "image": 1480,
+            "media": 0,
+            "data": 0,
+            "other": 0,
+            "total": 357451
+          },
+          "requestCount": 45,
+          "httpStatus": 200,
+          "consoleErrors": [],
+          "requestFailures": [],
+          "mocks": {
+            "realAssets": 38,
+            "supabase": 1,
+            "images": 7,
+            "blocked": 0
+          },
+          "finalUrl": "http://127.0.0.1:64859/gallery",
+          "ok": true,
+          "invalidReason": null
+        }
+      ],
+      "median": {
+        "lcpMs": 940,
+        "cls": 0,
+        "fcpMs": 940,
+        "ttfbMs": 152.90000000596046,
+        "dclMs": 1643.9000000059605,
+        "loadMs": 1644.0999999940395,
+        "longTasks": 5,
+        "longTaskMs": 567,
+        "requestCount": 45,
+        "transferBytes": {
+          "script": 302529,
+          "css": 28101,
+          "font": 23176,
+          "image": 1480,
+          "media": 0,
+          "data": 0,
+          "other": 0,
+          "total": 357451
+        },
+        "lcpElement": "style",
+        "clsSources": [],
+        "httpStatus": 200,
+        "consoleErrors": 0,
+        "requestFailures": 0
+      },
+      "budget": {
+        "ok": true,
+        "violations": []
+      },
+      "validRuns": 3,
+      "invalidRuns": []
+    },
+    {
+      "route": "/film",
+      "viewport": "mobile",
+      "viewportPixels": {
+        "width": 390,
+        "height": 844
+      },
+      "runs": [
+        {
+          "lcpMs": 948,
+          "lcpElement": "style",
+          "lcpSize": 199101,
+          "cls": 0,
+          "shiftCount": 0,
+          "clsShiftSources": [],
+          "fcpMs": 948,
+          "ttfbMs": 153.7999999821186,
+          "dclMs": 1666.5,
+          "loadMs": 1666.7999999821186,
+          "longTasks": 7,
+          "longTaskMs": 901,
+          "transferBytes": {
+            "script": 286880,
+            "css": 28101,
+            "font": 46788,
+            "image": 9620,
+            "media": 0,
+            "data": 0,
+            "other": 0,
+            "total": 373589
+          },
+          "requestCount": 61,
+          "httpStatus": 200,
+          "consoleErrors": [
+            "Failed to load resource: net::ERR_FAILED",
+            "Failed to load resource: net::ERR_FAILED",
+            "Failed to load resource: net::ERR_FAILED",
+            "Failed to load resource: net::ERR_FAILED",
+            "Failed to load resource: net::ERR_FAILED",
+            "Failed to load resource: net::ERR_FAILED",
+            "Failed to load resource: net::ERR_FAILED",
+            "Failed to load resource: net::ERR_FAILED",
+            "Failed to load resource: net::ERR_FAILED"
+          ],
+          "requestFailures": [
+            "net::ERR_FAILED https://media.wedding.theporadas.com/video/main.mp4",
+            "net::ERR_FAILED https://media.wedding.theporadas.com/video/main.mp4",
+            "net::ERR_FAILED https://media.wedding.theporadas.com/video/main.mp4",
+            "net::ERR_FAILED https://media.wedding.theporadas.com/video/mom.mp4",
+            "net::ERR_FAILED https://media.wedding.theporadas.com/video/melony.mp4",
+            "net::ERR_FAILED https://media.wedding.theporadas.com/video/christine.mp4",
+            "net::ERR_FAILED https://media.wedding.theporadas.com/video/jerame.mp4",
+            "net::ERR_FAILED https://media.wedding.theporadas.com/video/main-film-chapters.vtt",
+            "net::ERR_FAILED https://media.wedding.theporadas.com/video/main.vtt"
+          ],
+          "mocks": {
+            "realAssets": 25,
+            "supabase": 2,
+            "images": 26,
+            "blocked": 9
+          },
+          "finalUrl": "http://127.0.0.1:64859/film",
+          "ok": true,
+          "invalidReason": null
+        },
+        {
+          "lcpMs": 976,
+          "lcpElement": "style",
+          "lcpSize": 199101,
+          "cls": 0,
+          "shiftCount": 0,
+          "clsShiftSources": [],
+          "fcpMs": 976,
+          "ttfbMs": 152.39999997615814,
+          "dclMs": 1802.5999999940395,
+          "loadMs": 1802.5999999940395,
+          "longTasks": 8,
+          "longTaskMs": 1209,
+          "transferBytes": {
+            "script": 286880,
+            "css": 28101,
+            "font": 46788,
+            "image": 9620,
+            "media": 0,
+            "data": 0,
+            "other": 0,
+            "total": 373589
+          },
+          "requestCount": 61,
+          "httpStatus": 200,
+          "consoleErrors": [
+            "Failed to load resource: net::ERR_FAILED",
+            "Failed to load resource: net::ERR_FAILED",
+            "Failed to load resource: net::ERR_FAILED",
+            "Failed to load resource: net::ERR_FAILED",
+            "Failed to load resource: net::ERR_FAILED",
+            "Failed to load resource: net::ERR_FAILED",
+            "Failed to load resource: net::ERR_FAILED",
+            "Failed to load resource: net::ERR_FAILED",
+            "Failed to load resource: net::ERR_FAILED"
+          ],
+          "requestFailures": [
+            "net::ERR_FAILED https://media.wedding.theporadas.com/video/main.mp4",
+            "net::ERR_FAILED https://media.wedding.theporadas.com/video/main.mp4",
+            "net::ERR_FAILED https://media.wedding.theporadas.com/video/main.mp4",
+            "net::ERR_FAILED https://media.wedding.theporadas.com/video/mom.mp4",
+            "net::ERR_FAILED https://media.wedding.theporadas.com/video/melony.mp4",
+            "net::ERR_FAILED https://media.wedding.theporadas.com/video/christine.mp4",
+            "net::ERR_FAILED https://media.wedding.theporadas.com/video/jerame.mp4",
+            "net::ERR_FAILED https://media.wedding.theporadas.com/video/main-film-chapters.vtt",
+            "net::ERR_FAILED https://media.wedding.theporadas.com/video/main.vtt"
+          ],
+          "mocks": {
+            "realAssets": 25,
+            "supabase": 2,
+            "images": 26,
+            "blocked": 9
+          },
+          "finalUrl": "http://127.0.0.1:64859/film",
+          "ok": true,
+          "invalidReason": null
+        },
+        {
+          "lcpMs": 992,
+          "lcpElement": "style",
+          "lcpSize": 199101,
+          "cls": 0,
+          "shiftCount": 0,
+          "clsShiftSources": [],
+          "fcpMs": 992,
+          "ttfbMs": 154.5,
+          "dclMs": 1902.5999999940395,
+          "loadMs": 1903.0999999940395,
+          "longTasks": 9,
+          "longTaskMs": 1670,
+          "transferBytes": {
+            "script": 286880,
+            "css": 28101,
+            "font": 46788,
+            "image": 9620,
+            "media": 0,
+            "data": 0,
+            "other": 0,
+            "total": 373589
+          },
+          "requestCount": 61,
+          "httpStatus": 200,
+          "consoleErrors": [
+            "Failed to load resource: net::ERR_FAILED",
+            "Failed to load resource: net::ERR_FAILED",
+            "Failed to load resource: net::ERR_FAILED",
+            "Failed to load resource: net::ERR_FAILED",
+            "Failed to load resource: net::ERR_FAILED",
+            "Failed to load resource: net::ERR_FAILED",
+            "Failed to load resource: net::ERR_FAILED",
+            "Failed to load resource: net::ERR_FAILED",
+            "Failed to load resource: net::ERR_FAILED"
+          ],
+          "requestFailures": [
+            "net::ERR_FAILED https://media.wedding.theporadas.com/video/main.mp4",
+            "net::ERR_FAILED https://media.wedding.theporadas.com/video/main.mp4",
+            "net::ERR_FAILED https://media.wedding.theporadas.com/video/main.mp4",
+            "net::ERR_FAILED https://media.wedding.theporadas.com/video/mom.mp4",
+            "net::ERR_FAILED https://media.wedding.theporadas.com/video/melony.mp4",
+            "net::ERR_FAILED https://media.wedding.theporadas.com/video/christine.mp4",
+            "net::ERR_FAILED https://media.wedding.theporadas.com/video/jerame.mp4",
+            "net::ERR_FAILED https://media.wedding.theporadas.com/video/main-film-chapters.vtt",
+            "net::ERR_FAILED https://media.wedding.theporadas.com/video/main.vtt"
+          ],
+          "mocks": {
+            "realAssets": 25,
+            "supabase": 2,
+            "images": 26,
+            "blocked": 9
+          },
+          "finalUrl": "http://127.0.0.1:64859/film",
+          "ok": true,
+          "invalidReason": null
+        }
+      ],
+      "warmupRuns": [
+        {
+          "lcpMs": 1004,
+          "lcpElement": "style",
+          "lcpSize": 199101,
+          "cls": 0,
+          "shiftCount": 0,
+          "clsShiftSources": [],
+          "fcpMs": 1004,
+          "ttfbMs": 154.69999998807907,
+          "dclMs": 1744.4000000059605,
+          "loadMs": 1744.699999988079,
+          "longTasks": 5,
+          "longTaskMs": 940,
+          "transferBytes": {
+            "script": 286880,
+            "css": 28101,
+            "font": 46788,
+            "image": 9620,
+            "media": 0,
+            "data": 0,
+            "other": 0,
+            "total": 373589
+          },
+          "requestCount": 61,
+          "httpStatus": 200,
+          "consoleErrors": [
+            "Failed to load resource: net::ERR_FAILED",
+            "Failed to load resource: net::ERR_FAILED",
+            "Failed to load resource: net::ERR_FAILED",
+            "Failed to load resource: net::ERR_FAILED",
+            "Failed to load resource: net::ERR_FAILED",
+            "Failed to load resource: net::ERR_FAILED",
+            "Failed to load resource: net::ERR_FAILED",
+            "Failed to load resource: net::ERR_FAILED",
+            "Failed to load resource: net::ERR_FAILED"
+          ],
+          "requestFailures": [
+            "net::ERR_FAILED https://media.wedding.theporadas.com/video/main.mp4",
+            "net::ERR_FAILED https://media.wedding.theporadas.com/video/main.mp4",
+            "net::ERR_FAILED https://media.wedding.theporadas.com/video/main.mp4",
+            "net::ERR_FAILED https://media.wedding.theporadas.com/video/mom.mp4",
+            "net::ERR_FAILED https://media.wedding.theporadas.com/video/melony.mp4",
+            "net::ERR_FAILED https://media.wedding.theporadas.com/video/christine.mp4",
+            "net::ERR_FAILED https://media.wedding.theporadas.com/video/jerame.mp4",
+            "net::ERR_FAILED https://media.wedding.theporadas.com/video/main-film-chapters.vtt",
+            "net::ERR_FAILED https://media.wedding.theporadas.com/video/main.vtt"
+          ],
+          "mocks": {
+            "realAssets": 25,
+            "supabase": 2,
+            "images": 26,
+            "blocked": 9
+          },
+          "finalUrl": "http://127.0.0.1:64859/film",
+          "ok": true,
+          "invalidReason": null
+        }
+      ],
+      "median": {
+        "lcpMs": 976,
+        "cls": 0,
+        "fcpMs": 976,
+        "ttfbMs": 153.7999999821186,
+        "dclMs": 1802.5999999940395,
+        "loadMs": 1802.5999999940395,
+        "longTasks": 8,
+        "longTaskMs": 1209,
+        "requestCount": 61,
+        "transferBytes": {
+          "script": 286880,
+          "css": 28101,
+          "font": 46788,
+          "image": 9620,
+          "media": 0,
+          "data": 0,
+          "other": 0,
+          "total": 373589
+        },
+        "lcpElement": "style",
+        "clsSources": [],
+        "httpStatus": 200,
+        "consoleErrors": 27,
+        "requestFailures": 27
+      },
+      "budget": {
+        "ok": true,
+        "violations": []
+      },
+      "validRuns": 3,
+      "invalidRuns": []
+    },
+    {
+      "route": "/",
+      "viewport": "desktop",
+      "viewportPixels": {
+        "width": 1440,
+        "height": 900
+      },
+      "runs": [
+        {
+          "lcpMs": 968,
+          "lcpElement": "style",
+          "lcpSize": 191681,
+          "cls": 0.0007158608016653806,
+          "shiftCount": 1,
+          "clsShiftSources": [
+            {
+              "value": 0.0007158608016653806,
+              "startedAtMs": 1365.5,
+              "sources": [
+                {
+                  "node": "h1",
+                  "previousRect": {
+                    "x": 463.34375,
+                    "y": 523.734375,
+                    "w": 512,
+                    "h": 88
+                  },
+                  "currentRect": {
+                    "x": 493.125,
+                    "y": 520.734375,
+                    "w": 454,
+                    "h": 88
+                  }
+                }
+              ]
+            }
+          ],
+          "fcpMs": 968,
+          "ttfbMs": 153.5,
+          "dclMs": 1669.7999999821186,
+          "loadMs": 1670.199999988079,
+          "longTasks": 8,
+          "longTaskMs": 1555,
+          "transferBytes": {
+            "script": 293555,
+            "css": 28101,
+            "font": 62520,
+            "image": 370,
+            "media": 0,
+            "data": 0,
+            "other": 0,
+            "total": 386923
+          },
+          "requestCount": 51,
+          "httpStatus": 200,
+          "consoleErrors": [],
+          "requestFailures": [],
+          "mocks": {
+            "realAssets": 30,
+            "supabase": 3,
+            "images": 19,
+            "blocked": 0
+          },
+          "finalUrl": "http://127.0.0.1:64859/",
+          "ok": true,
+          "invalidReason": null
+        },
+        {
+          "lcpMs": 948,
+          "lcpElement": "style",
+          "lcpSize": 191681,
+          "cls": 0.0007158608016653806,
+          "shiftCount": 1,
+          "clsShiftSources": [
+            {
+              "value": 0.0007158608016653806,
+              "startedAtMs": 1333.5,
+              "sources": [
+                {
+                  "node": "h1",
+                  "previousRect": {
+                    "x": 463.34375,
+                    "y": 523.734375,
+                    "w": 512,
+                    "h": 88
+                  },
+                  "currentRect": {
+                    "x": 493.125,
+                    "y": 520.734375,
+                    "w": 454,
+                    "h": 88
+                  }
+                }
+              ]
+            }
+          ],
+          "fcpMs": 948,
+          "ttfbMs": 154,
+          "dclMs": 1629.5,
+          "loadMs": 1629.9000000059605,
+          "longTasks": 13,
+          "longTaskMs": 1665,
+          "transferBytes": {
+            "script": 293555,
+            "css": 28101,
+            "font": 62520,
+            "image": 370,
+            "media": 0,
+            "data": 0,
+            "other": 0,
+            "total": 386923
+          },
+          "requestCount": 51,
+          "httpStatus": 200,
+          "consoleErrors": [],
+          "requestFailures": [],
+          "mocks": {
+            "realAssets": 30,
+            "supabase": 3,
+            "images": 19,
+            "blocked": 0
+          },
+          "finalUrl": "http://127.0.0.1:64859/",
+          "ok": true,
+          "invalidReason": null
+        },
+        {
+          "lcpMs": 968,
+          "lcpElement": "style",
+          "lcpSize": 191681,
+          "cls": 0.0007158608016653806,
+          "shiftCount": 1,
+          "clsShiftSources": [
+            {
+              "value": 0.0007158608016653806,
+              "startedAtMs": 1355.7000000178814,
+              "sources": [
+                {
+                  "node": "h1",
+                  "previousRect": {
+                    "x": 463.34375,
+                    "y": 523.734375,
+                    "w": 512,
+                    "h": 88
+                  },
+                  "currentRect": {
+                    "x": 493.125,
+                    "y": 520.734375,
+                    "w": 454,
+                    "h": 88
+                  }
+                }
+              ]
+            }
+          ],
+          "fcpMs": 968,
+          "ttfbMs": 153.2000000178814,
+          "dclMs": 1712.7000000178814,
+          "loadMs": 1713.0999999940395,
+          "longTasks": 11,
+          "longTaskMs": 1618,
+          "transferBytes": {
+            "script": 293555,
+            "css": 28101,
+            "font": 62520,
+            "image": 370,
+            "media": 0,
+            "data": 0,
+            "other": 0,
+            "total": 386923
+          },
+          "requestCount": 51,
+          "httpStatus": 200,
+          "consoleErrors": [],
+          "requestFailures": [],
+          "mocks": {
+            "realAssets": 30,
+            "supabase": 3,
+            "images": 19,
+            "blocked": 0
+          },
+          "finalUrl": "http://127.0.0.1:64859/",
+          "ok": true,
+          "invalidReason": null
+        }
+      ],
+      "warmupRuns": [
+        {
+          "lcpMs": 972,
+          "lcpElement": "style",
+          "lcpSize": 191681,
+          "cls": 0.0007158608016653806,
+          "shiftCount": 1,
+          "clsShiftSources": [
+            {
+              "value": 0.0007158608016653806,
+              "startedAtMs": 1380.5,
+              "sources": [
+                {
+                  "node": "h1",
+                  "previousRect": {
+                    "x": 463.34375,
+                    "y": 523.734375,
+                    "w": 512,
+                    "h": 88
+                  },
+                  "currentRect": {
+                    "x": 493.125,
+                    "y": 520.734375,
+                    "w": 454,
+                    "h": 88
+                  }
+                }
+              ]
+            }
+          ],
+          "fcpMs": 972,
+          "ttfbMs": 154,
+          "dclMs": 1729.5999999940395,
+          "loadMs": 1730,
+          "longTasks": 8,
+          "longTaskMs": 1627,
+          "transferBytes": {
+            "script": 293555,
+            "css": 28101,
+            "font": 62520,
+            "image": 370,
+            "media": 0,
+            "data": 0,
+            "other": 0,
+            "total": 386923
+          },
+          "requestCount": 51,
+          "httpStatus": 200,
+          "consoleErrors": [],
+          "requestFailures": [],
+          "mocks": {
+            "realAssets": 30,
+            "supabase": 3,
+            "images": 19,
+            "blocked": 0
+          },
+          "finalUrl": "http://127.0.0.1:64859/",
+          "ok": true,
+          "invalidReason": null
+        }
+      ],
+      "median": {
+        "lcpMs": 968,
+        "cls": 0.0007158608016653806,
+        "fcpMs": 968,
+        "ttfbMs": 153.5,
+        "dclMs": 1669.7999999821186,
+        "loadMs": 1670.199999988079,
+        "longTasks": 11,
+        "longTaskMs": 1618,
+        "requestCount": 51,
+        "transferBytes": {
+          "script": 293555,
+          "css": 28101,
+          "font": 62520,
+          "image": 370,
+          "media": 0,
+          "data": 0,
+          "other": 0,
+          "total": 386923
+        },
+        "lcpElement": "style",
+        "clsSources": [
+          {
+            "value": 0.0007158608016653806,
+            "startedAtMs": 1365.5,
+            "sources": [
+              {
+                "node": "h1",
+                "previousRect": {
+                  "x": 463.34375,
+                  "y": 523.734375,
+                  "w": 512,
+                  "h": 88
+                },
+                "currentRect": {
+                  "x": 493.125,
+                  "y": 520.734375,
+                  "w": 454,
+                  "h": 88
+                }
+              }
+            ]
+          }
+        ],
+        "httpStatus": 200,
+        "consoleErrors": 0,
+        "requestFailures": 0
+      },
+      "budget": {
+        "ok": true,
+        "violations": []
+      },
+      "validRuns": 3,
+      "invalidRuns": []
+    },
+    {
+      "route": "/gallery",
+      "viewport": "desktop",
+      "viewportPixels": {
+        "width": 1440,
+        "height": 900
+      },
+      "runs": [
+        {
+          "lcpMs": 948,
+          "lcpElement": "style",
+          "lcpSize": 191681,
+          "cls": 0.0004621635531201775,
+          "shiftCount": 1,
+          "clsShiftSources": [
+            {
+              "value": 0.0004621635531201775,
+              "startedAtMs": 1331.800000011921,
+              "sources": [
+                {
+                  "node": "h1",
+                  "previousRect": {
+                    "x": 507.125,
+                    "y": 523.734375,
+                    "w": 429,
+                    "h": 88
+                  },
+                  "currentRect": {
+                    "x": 529.296875,
+                    "y": 520.734375,
+                    "w": 383,
+                    "h": 88
+                  }
+                }
+              ]
+            }
+          ],
+          "fcpMs": 948,
+          "ttfbMs": 152.7000000178814,
+          "dclMs": 1646.300000011921,
+          "loadMs": 1646.5,
+          "longTasks": 5,
+          "longTaskMs": 567,
+          "transferBytes": {
+            "script": 302529,
+            "css": 28101,
+            "font": 23176,
+            "image": 4440,
+            "media": 0,
+            "data": 0,
+            "other": 0,
+            "total": 360411
+          },
+          "requestCount": 53,
+          "httpStatus": 200,
+          "consoleErrors": [],
+          "requestFailures": [],
+          "mocks": {
+            "realAssets": 38,
+            "supabase": 1,
+            "images": 15,
+            "blocked": 0
+          },
+          "finalUrl": "http://127.0.0.1:64859/gallery",
+          "ok": true,
+          "invalidReason": null
+        },
+        {
+          "lcpMs": 964,
+          "lcpElement": "style",
+          "lcpSize": 191681,
+          "cls": 0.0004621635531201775,
+          "shiftCount": 1,
+          "clsShiftSources": [
+            {
+              "value": 0.0004621635531201775,
+              "startedAtMs": 1348.4000000059605,
+              "sources": [
+                {
+                  "node": "h1",
+                  "previousRect": {
+                    "x": 507.125,
+                    "y": 523.734375,
+                    "w": 429,
+                    "h": 88
+                  },
+                  "currentRect": {
+                    "x": 529.296875,
+                    "y": 520.734375,
+                    "w": 383,
+                    "h": 88
+                  }
+                }
+              ]
+            }
+          ],
+          "fcpMs": 964,
+          "ttfbMs": 153.5,
+          "dclMs": 1638.7999999821186,
+          "loadMs": 1639.199999988079,
+          "longTasks": 6,
+          "longTaskMs": 662,
+          "transferBytes": {
+            "script": 302529,
+            "css": 28101,
+            "font": 23176,
+            "image": 4440,
+            "media": 0,
+            "data": 0,
+            "other": 0,
+            "total": 360411
+          },
+          "requestCount": 53,
+          "httpStatus": 200,
+          "consoleErrors": [],
+          "requestFailures": [],
+          "mocks": {
+            "realAssets": 38,
+            "supabase": 1,
+            "images": 15,
+            "blocked": 0
+          },
+          "finalUrl": "http://127.0.0.1:64859/gallery",
+          "ok": true,
+          "invalidReason": null
+        },
+        {
+          "lcpMs": 932,
+          "lcpElement": "style",
+          "lcpSize": 191681,
+          "cls": 0.0004621635531201775,
+          "shiftCount": 1,
+          "clsShiftSources": [
+            {
+              "value": 0.0004621635531201775,
+              "startedAtMs": 1314.5,
+              "sources": [
+                {
+                  "node": "h1",
+                  "previousRect": {
+                    "x": 507.125,
+                    "y": 523.734375,
+                    "w": 429,
+                    "h": 88
+                  },
+                  "currentRect": {
+                    "x": 529.296875,
+                    "y": 520.734375,
+                    "w": 383,
+                    "h": 88
+                  }
+                }
+              ]
+            }
+          ],
+          "fcpMs": 932,
+          "ttfbMs": 153.30000001192093,
+          "dclMs": 1654.0999999940395,
+          "loadMs": 1654.699999988079,
+          "longTasks": 11,
+          "longTaskMs": 1458,
+          "transferBytes": {
+            "script": 302529,
+            "css": 28101,
+            "font": 23176,
+            "image": 4440,
+            "media": 0,
+            "data": 0,
+            "other": 0,
+            "total": 360411
+          },
+          "requestCount": 53,
+          "httpStatus": 200,
+          "consoleErrors": [],
+          "requestFailures": [],
+          "mocks": {
+            "realAssets": 38,
+            "supabase": 1,
+            "images": 15,
+            "blocked": 0
+          },
+          "finalUrl": "http://127.0.0.1:64859/gallery",
+          "ok": true,
+          "invalidReason": null
+        }
+      ],
+      "warmupRuns": [
+        {
+          "lcpMs": 1008,
+          "lcpElement": "style",
+          "lcpSize": 191681,
+          "cls": 0.0004621635531201775,
+          "shiftCount": 1,
+          "clsShiftSources": [
+            {
+              "value": 0.0004621635531201775,
+              "startedAtMs": 1398.300000011921,
+              "sources": [
+                {
+                  "node": "h1",
+                  "previousRect": {
+                    "x": 507.125,
+                    "y": 523.734375,
+                    "w": 429,
+                    "h": 88
+                  },
+                  "currentRect": {
+                    "x": 529.296875,
+                    "y": 520.734375,
+                    "w": 383,
+                    "h": 88
+                  }
+                }
+              ]
+            }
+          ],
+          "fcpMs": 1008,
+          "ttfbMs": 158,
+          "dclMs": 1663.2000000178814,
+          "loadMs": 1663.4000000059605,
+          "longTasks": 6,
+          "longTaskMs": 630,
+          "transferBytes": {
+            "script": 302529,
+            "css": 28101,
+            "font": 23176,
+            "image": 4440,
+            "media": 0,
+            "data": 0,
+            "other": 0,
+            "total": 360411
+          },
+          "requestCount": 53,
+          "httpStatus": 200,
+          "consoleErrors": [],
+          "requestFailures": [],
+          "mocks": {
+            "realAssets": 38,
+            "supabase": 1,
+            "images": 15,
+            "blocked": 0
+          },
+          "finalUrl": "http://127.0.0.1:64859/gallery",
+          "ok": true,
+          "invalidReason": null
+        }
+      ],
+      "median": {
+        "lcpMs": 948,
+        "cls": 0.0004621635531201775,
+        "fcpMs": 948,
+        "ttfbMs": 153.30000001192093,
+        "dclMs": 1646.300000011921,
+        "loadMs": 1646.5,
+        "longTasks": 6,
+        "longTaskMs": 662,
+        "requestCount": 53,
+        "transferBytes": {
+          "script": 302529,
+          "css": 28101,
+          "font": 23176,
+          "image": 4440,
+          "media": 0,
+          "data": 0,
+          "other": 0,
+          "total": 360411
+        },
+        "lcpElement": "style",
+        "clsSources": [
+          {
+            "value": 0.0004621635531201775,
+            "startedAtMs": 1331.800000011921,
+            "sources": [
+              {
+                "node": "h1",
+                "previousRect": {
+                  "x": 507.125,
+                  "y": 523.734375,
+                  "w": 429,
+                  "h": 88
+                },
+                "currentRect": {
+                  "x": 529.296875,
+                  "y": 520.734375,
+                  "w": 383,
+                  "h": 88
+                }
+              }
+            ]
+          }
+        ],
+        "httpStatus": 200,
+        "consoleErrors": 0,
+        "requestFailures": 0
+      },
+      "budget": {
+        "ok": true,
+        "violations": []
+      },
+      "validRuns": 3,
+      "invalidRuns": []
+    },
+    {
+      "route": "/film",
+      "viewport": "desktop",
+      "viewportPixels": {
+        "width": 1440,
+        "height": 900
+      },
+      "runs": [
+        {
+          "lcpMs": 920,
+          "lcpElement": "style",
+          "lcpSize": 191681,
+          "cls": 0.001005553294994213,
+          "shiftCount": 1,
+          "clsShiftSources": [
+            {
+              "value": 0.001005553294994213,
+              "startedAtMs": 1304.8999999761581,
+              "sources": [
+                {
+                  "node": "h1",
+                  "previousRect": {
+                    "x": 429.609375,
+                    "y": 523.734375,
+                    "w": 582,
+                    "h": 88
+                  },
+                  "currentRect": {
+                    "x": 465.1875,
+                    "y": 520.734375,
+                    "w": 509.625,
+                    "h": 88
+                  }
+                }
+              ]
+            }
+          ],
+          "fcpMs": 920,
+          "ttfbMs": 153.19999998807907,
+          "dclMs": 1599.199999988079,
+          "loadMs": 1599.5,
+          "longTasks": 7,
+          "longTaskMs": 777,
+          "transferBytes": {
+            "script": 286880,
+            "css": 28101,
+            "font": 46788,
+            "image": 9620,
+            "media": 0,
+            "data": 0,
+            "other": 0,
+            "total": 373589
+          },
+          "requestCount": 61,
+          "httpStatus": 200,
+          "consoleErrors": [
+            "Failed to load resource: net::ERR_FAILED",
+            "Failed to load resource: net::ERR_FAILED",
+            "Failed to load resource: net::ERR_FAILED",
+            "Failed to load resource: net::ERR_FAILED",
+            "Failed to load resource: net::ERR_FAILED",
+            "Failed to load resource: net::ERR_FAILED",
+            "Failed to load resource: net::ERR_FAILED",
+            "Failed to load resource: net::ERR_FAILED",
+            "Failed to load resource: net::ERR_FAILED"
+          ],
+          "requestFailures": [
+            "net::ERR_FAILED https://media.wedding.theporadas.com/video/main.mp4",
+            "net::ERR_FAILED https://media.wedding.theporadas.com/video/main.mp4",
+            "net::ERR_FAILED https://media.wedding.theporadas.com/video/main.mp4",
+            "net::ERR_FAILED https://media.wedding.theporadas.com/video/mom.mp4",
+            "net::ERR_FAILED https://media.wedding.theporadas.com/video/melony.mp4",
+            "net::ERR_FAILED https://media.wedding.theporadas.com/video/christine.mp4",
+            "net::ERR_FAILED https://media.wedding.theporadas.com/video/jerame.mp4",
+            "net::ERR_FAILED https://media.wedding.theporadas.com/video/main-film-chapters.vtt",
+            "net::ERR_FAILED https://media.wedding.theporadas.com/video/main.vtt"
+          ],
+          "mocks": {
+            "realAssets": 25,
+            "supabase": 2,
+            "images": 26,
+            "blocked": 9
+          },
+          "finalUrl": "http://127.0.0.1:64859/film",
+          "ok": true,
+          "invalidReason": null
+        },
+        {
+          "lcpMs": 924,
+          "lcpElement": "style",
+          "lcpSize": 191681,
+          "cls": 0.001005553294994213,
+          "shiftCount": 1,
+          "clsShiftSources": [
+            {
+              "value": 0.001005553294994213,
+              "startedAtMs": 1307.4000000059605,
+              "sources": [
+                {
+                  "node": "h1",
+                  "previousRect": {
+                    "x": 429.609375,
+                    "y": 523.734375,
+                    "w": 582,
+                    "h": 88
+                  },
+                  "currentRect": {
+                    "x": 465.1875,
+                    "y": 520.734375,
+                    "w": 509.625,
+                    "h": 88
+                  }
+                }
+              ]
+            }
+          ],
+          "fcpMs": 924,
+          "ttfbMs": 153.19999998807907,
+          "dclMs": 1633.300000011921,
+          "loadMs": 1633.5,
+          "longTasks": 5,
+          "longTaskMs": 648,
+          "transferBytes": {
+            "script": 286880,
+            "css": 28101,
+            "font": 46788,
+            "image": 9620,
+            "media": 0,
+            "data": 0,
+            "other": 0,
+            "total": 373589
+          },
+          "requestCount": 61,
+          "httpStatus": 200,
+          "consoleErrors": [
+            "Failed to load resource: net::ERR_FAILED",
+            "Failed to load resource: net::ERR_FAILED",
+            "Failed to load resource: net::ERR_FAILED",
+            "Failed to load resource: net::ERR_FAILED",
+            "Failed to load resource: net::ERR_FAILED",
+            "Failed to load resource: net::ERR_FAILED",
+            "Failed to load resource: net::ERR_FAILED",
+            "Failed to load resource: net::ERR_FAILED",
+            "Failed to load resource: net::ERR_FAILED"
+          ],
+          "requestFailures": [
+            "net::ERR_FAILED https://media.wedding.theporadas.com/video/main.mp4",
+            "net::ERR_FAILED https://media.wedding.theporadas.com/video/main.mp4",
+            "net::ERR_FAILED https://media.wedding.theporadas.com/video/main.mp4",
+            "net::ERR_FAILED https://media.wedding.theporadas.com/video/mom.mp4",
+            "net::ERR_FAILED https://media.wedding.theporadas.com/video/melony.mp4",
+            "net::ERR_FAILED https://media.wedding.theporadas.com/video/christine.mp4",
+            "net::ERR_FAILED https://media.wedding.theporadas.com/video/jerame.mp4",
+            "net::ERR_FAILED https://media.wedding.theporadas.com/video/main-film-chapters.vtt",
+            "net::ERR_FAILED https://media.wedding.theporadas.com/video/main.vtt"
+          ],
+          "mocks": {
+            "realAssets": 25,
+            "supabase": 2,
+            "images": 26,
+            "blocked": 9
+          },
+          "finalUrl": "http://127.0.0.1:64859/film",
+          "ok": true,
+          "invalidReason": null
+        },
+        {
+          "lcpMs": 956,
+          "lcpElement": "style",
+          "lcpSize": 191681,
+          "cls": 0.001005553294994213,
+          "shiftCount": 1,
+          "clsShiftSources": [
+            {
+              "value": 0.001005553294994213,
+              "startedAtMs": 1349.4000000059605,
+              "sources": [
+                {
+                  "node": "h1",
+                  "previousRect": {
+                    "x": 429.609375,
+                    "y": 523.734375,
+                    "w": 582,
+                    "h": 88
+                  },
+                  "currentRect": {
+                    "x": 465.1875,
+                    "y": 520.734375,
+                    "w": 509.625,
+                    "h": 88
+                  }
+                }
+              ]
+            }
+          ],
+          "fcpMs": 956,
+          "ttfbMs": 153.40000000596046,
+          "dclMs": 1618.5,
+          "loadMs": 1619,
+          "longTasks": 6,
+          "longTaskMs": 780,
+          "transferBytes": {
+            "script": 286880,
+            "css": 28101,
+            "font": 46788,
+            "image": 9620,
+            "media": 0,
+            "data": 0,
+            "other": 0,
+            "total": 373589
+          },
+          "requestCount": 61,
+          "httpStatus": 200,
+          "consoleErrors": [
+            "Failed to load resource: net::ERR_FAILED",
+            "Failed to load resource: net::ERR_FAILED",
+            "Failed to load resource: net::ERR_FAILED",
+            "Failed to load resource: net::ERR_FAILED",
+            "Failed to load resource: net::ERR_FAILED",
+            "Failed to load resource: net::ERR_FAILED",
+            "Failed to load resource: net::ERR_FAILED",
+            "Failed to load resource: net::ERR_FAILED",
+            "Failed to load resource: net::ERR_FAILED"
+          ],
+          "requestFailures": [
+            "net::ERR_FAILED https://media.wedding.theporadas.com/video/main.mp4",
+            "net::ERR_FAILED https://media.wedding.theporadas.com/video/main.mp4",
+            "net::ERR_FAILED https://media.wedding.theporadas.com/video/main.mp4",
+            "net::ERR_FAILED https://media.wedding.theporadas.com/video/mom.mp4",
+            "net::ERR_FAILED https://media.wedding.theporadas.com/video/melony.mp4",
+            "net::ERR_FAILED https://media.wedding.theporadas.com/video/christine.mp4",
+            "net::ERR_FAILED https://media.wedding.theporadas.com/video/jerame.mp4",
+            "net::ERR_FAILED https://media.wedding.theporadas.com/video/main-film-chapters.vtt",
+            "net::ERR_FAILED https://media.wedding.theporadas.com/video/main.vtt"
+          ],
+          "mocks": {
+            "realAssets": 25,
+            "supabase": 2,
+            "images": 26,
+            "blocked": 9
+          },
+          "finalUrl": "http://127.0.0.1:64859/film",
+          "ok": true,
+          "invalidReason": null
+        }
+      ],
+      "warmupRuns": [
+        {
+          "lcpMs": 928,
+          "lcpElement": "style",
+          "lcpSize": 191681,
+          "cls": 0.001005553294994213,
+          "shiftCount": 1,
+          "clsShiftSources": [
+            {
+              "value": 0.001005553294994213,
+              "startedAtMs": 1325.5999999940395,
+              "sources": [
+                {
+                  "node": "h1",
+                  "previousRect": {
+                    "x": 429.609375,
+                    "y": 523.734375,
+                    "w": 582,
+                    "h": 88
+                  },
+                  "currentRect": {
+                    "x": 465.1875,
+                    "y": 520.734375,
+                    "w": 509.625,
+                    "h": 88
+                  }
+                }
+              ]
+            }
+          ],
+          "fcpMs": 928,
+          "ttfbMs": 152.59999999403954,
+          "dclMs": 1656.7000000178814,
+          "loadMs": 1656.9000000059605,
+          "longTasks": 8,
+          "longTaskMs": 1049,
+          "transferBytes": {
+            "script": 286880,
+            "css": 28101,
+            "font": 46788,
+            "image": 9620,
+            "media": 0,
+            "data": 0,
+            "other": 0,
+            "total": 373589
+          },
+          "requestCount": 61,
+          "httpStatus": 200,
+          "consoleErrors": [
+            "Failed to load resource: net::ERR_FAILED",
+            "Failed to load resource: net::ERR_FAILED",
+            "Failed to load resource: net::ERR_FAILED",
+            "Failed to load resource: net::ERR_FAILED",
+            "Failed to load resource: net::ERR_FAILED",
+            "Failed to load resource: net::ERR_FAILED",
+            "Failed to load resource: net::ERR_FAILED",
+            "Failed to load resource: net::ERR_FAILED",
+            "Failed to load resource: net::ERR_FAILED"
+          ],
+          "requestFailures": [
+            "net::ERR_FAILED https://media.wedding.theporadas.com/video/main.mp4",
+            "net::ERR_FAILED https://media.wedding.theporadas.com/video/main.mp4",
+            "net::ERR_FAILED https://media.wedding.theporadas.com/video/main.mp4",
+            "net::ERR_FAILED https://media.wedding.theporadas.com/video/mom.mp4",
+            "net::ERR_FAILED https://media.wedding.theporadas.com/video/melony.mp4",
+            "net::ERR_FAILED https://media.wedding.theporadas.com/video/christine.mp4",
+            "net::ERR_FAILED https://media.wedding.theporadas.com/video/jerame.mp4",
+            "net::ERR_FAILED https://media.wedding.theporadas.com/video/main-film-chapters.vtt",
+            "net::ERR_FAILED https://media.wedding.theporadas.com/video/main.vtt"
+          ],
+          "mocks": {
+            "realAssets": 25,
+            "supabase": 2,
+            "images": 26,
+            "blocked": 9
+          },
+          "finalUrl": "http://127.0.0.1:64859/film",
+          "ok": true,
+          "invalidReason": null
+        }
+      ],
+      "median": {
+        "lcpMs": 924,
+        "cls": 0.001005553294994213,
+        "fcpMs": 924,
+        "ttfbMs": 153.19999998807907,
+        "dclMs": 1618.5,
+        "loadMs": 1619,
+        "longTasks": 6,
+        "longTaskMs": 777,
+        "requestCount": 61,
+        "transferBytes": {
+          "script": 286880,
+          "css": 28101,
+          "font": 46788,
+          "image": 9620,
+          "media": 0,
+          "data": 0,
+          "other": 0,
+          "total": 373589
+        },
+        "lcpElement": "style",
+        "clsSources": [
+          {
+            "value": 0.001005553294994213,
+            "startedAtMs": 1304.8999999761581,
+            "sources": [
+              {
+                "node": "h1",
+                "previousRect": {
+                  "x": 429.609375,
+                  "y": 523.734375,
+                  "w": 582,
+                  "h": 88
+                },
+                "currentRect": {
+                  "x": 465.1875,
+                  "y": 520.734375,
+                  "w": 509.625,
+                  "h": 88
+                }
+              }
+            ]
+          }
+        ],
+        "httpStatus": 200,
+        "consoleErrors": 27,
+        "requestFailures": 27
+      },
+      "budget": {
+        "ok": true,
+        "violations": []
+      },
+      "validRuns": 3,
+      "invalidRuns": []
+    }
+  ],
+  "summary": {
+    "violations": [],
+    "cells": 6,
+    "failingCells": 0,
+    "invalidRuns": 0,
+    "distChangedDuringRun": false
+  }
+}

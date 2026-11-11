@@ -84,7 +84,17 @@
     "typecheck": "tsc --noEmit",
     "typecheck:legacy": "tsc6 --noEmit",
     "test:visual:prod": "playwright test --config playwright.config.visual-prod.ts",
-    "test:visual:prod:update": "playwright test --config playwright.config.visual-prod.ts --update-snapshots"
+    "test:visual:prod:update": "playwright test --config playwright.config.visual-prod.ts --update-snapshots",
+    "workbench:verify": "node tools/verify-contracts.mjs && node tools/check-legacy-freeze.mjs",
+    "workbench:freeze": "node tools/check-legacy-freeze.mjs",
+    "inventory:capture": "node tools/inventory/capture.mjs",
+    "content:extract": "node tools/extract-content/extract.mjs",
+    "content:copy": "node tools/extract-content/rendered-copy.mjs",
+    "baseline:capture": "node tools/baseline/capture.mjs",
+    "parity:serve": "node tools/parity/serve.mjs",
+    "parity:compare": "node tools/parity/compare.mjs",
+    "parity:selfcheck": "node tools/parity/selfcheck.mjs",
+    "parity:report": "node tools/parity/report.mjs"
   },
   "dependencies": {
     "@aws-sdk/client-s3": "^3.1115.0",

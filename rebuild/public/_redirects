@@ -1,0 +1,4 @@
+# SPA fallback for client-side routes that are not prerendered (e.g. /guest/<token>,
+# /admin/*). Netlify serves an existing static file first, so prerendered routes
+# keep their static HTML and everything else hydrates the SPA.
+/*    /index.html    200

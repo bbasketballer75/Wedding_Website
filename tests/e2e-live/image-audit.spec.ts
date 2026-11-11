@@ -69,6 +69,9 @@ test.describe('Live image audit — gallery album tabs', () => {
 
 test.describe('Live image audit — summary report', () => {
   test('Full site image health report', async ({ page }) => {
+    // Walks every public page with a 10s settle window each; the default 60s
+    // test timeout killed the browser mid-page after the cutover.
+    test.slow()
     const results = []
 
     for (const { route, name, waitMs } of PUBLIC_PAGES) {

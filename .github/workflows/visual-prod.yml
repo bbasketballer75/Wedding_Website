@@ -60,13 +60,31 @@ jobs:
 
       - name: Run visual regression against production
         run: |
+          SNAP_DIR="tests/e2e-live/visual-screenshots.spec.ts-snapshots"
           if [ "${{ inputs.update_snapshots }}" = "true" ]; then
             echo "Regenerating baseline screenshots..."
             npm run test:visual:prod:update
+            echo "SEEDED_BASELINES=1" >> "$GITHUB_ENV"
+          elif ! ls "$SNAP_DIR"/*-linux.png >/dev/null 2>&1; then
+            # No committed baselines for this platform yet: seed them instead of
+            # failing the scheduled run, and upload the generated files so they
+            # can be committed. Once baselines exist this branch is skipped and
+            # the suite compares against them normally.
+            echo "No committed linux baselines found - seeding baselines..."
+            npm run test:visual:prod:update
+            echo "SEEDED_BASELINES=1" >> "$GITHUB_ENV"
           else
             echo "Comparing against baseline screenshots..."
             npm run test:visual:prod
           fi
+
+      - name: Upload seeded baselines
+        if: env.SEEDED_BASELINES == '1'
+        uses: actions/upload-artifact@v7
+        with:
+          name: visual-baselines-linux
+          path: tests/e2e-live/visual-screenshots.spec.ts-snapshots/*-linux.png
+          retention-days: 30
 
       - name: Upload Playwright report
         if: always()

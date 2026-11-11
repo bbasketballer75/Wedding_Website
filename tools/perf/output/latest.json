@@ -1,0 +1,1124 @@
+{
+  "schemaVersion": 1,
+  "kind": "runtime-budget",
+  "generatedAt": "2026-11-10T00:09:18.135Z",
+  "label": "rebuild_dist_gzip",
+  "target": {
+    "mode": "internal-static",
+    "url": "http://127.0.0.1:56548",
+    "compression": "gzip",
+    "dist": "rebuild/dist"
+  },
+  "url": "http://127.0.0.1:56548",
+  "mockNetwork": "mocked (supabase empty JSON, image stub, media aborted)",
+  "networkProfile": {
+    "name": "slow-4g",
+    "latencyMs": 150,
+    "downloadThroughputBytesPerSecond": 209715,
+    "uploadThroughputBytesPerSecond": 96000,
+    "connectionType": "cellular4g"
+  },
+  "cpuThrottleRate": 4,
+  "settling": {
+    "quietWindowMs": 500,
+    "networkIdleTimeoutMs": 8000
+  },
+  "toolchain": {
+    "node": "v26.8.1",
+    "playwright": "1.65.0",
+    "chromium": "158.0.8127.18"
+  },
+  "budgets": {
+    "lcpMs": 2000,
+    "cls": 0.05
+  },
+  "routes": ["/", "/gallery", "/film"],
+  "viewports": [
+    {
+      "id": "mobile",
+      "width": 390,
+      "height": 844
+    },
+    {
+      "id": "desktop",
+      "width": 1440,
+      "height": 900
+    }
+  ],
+  "warmupRuns": 0,
+  "runs": 1,
+  "cells": [
+    {
+      "route": "/",
+      "viewport": "mobile",
+      "viewportPixels": {
+        "width": 390,
+        "height": 844
+      },
+      "runs": [
+        {
+          "lcpMs": 4084,
+          "lcpElement": "h2.mt-4.font-display",
+          "lcpSize": 29766,
+          "cls": 0.02934426220066704,
+          "shiftCount": 1,
+          "clsShiftSources": [
+            {
+              "value": 0.02934426220066704,
+              "startedAtMs": 4368.5999999940395,
+              "sources": [
+                {
+                  "node": "div.grid.grid-cols-1",
+                  "previousRect": {
+                    "x": 41,
+                    "y": 511.5,
+                    "w": 308,
+                    "h": 332.5
+                  },
+                  "currentRect": {
+                    "x": 41,
+                    "y": 471.5,
+                    "w": 308,
+                    "h": 372.5
+                  }
+                },
+                {
+                  "node": "a.group.cinematic-card",
+                  "previousRect": {
+                    "x": 17,
+                    "y": 693.5,
+                    "w": 356,
+                    "h": 135.5
+                  },
+                  "currentRect": {
+                    "x": 17,
+                    "y": 653.5,
+                    "w": 356,
+                    "h": 135.5
+                  }
+                },
+                {
+                  "node": "a.group.cinematic-card",
+                  "previousRect": {
+                    "x": 17,
+                    "y": 498.5,
+                    "w": 356,
+                    "h": 135.5
+                  },
+                  "currentRect": {
+                    "x": 17,
+                    "y": 458.5,
+                    "w": 356,
+                    "h": 135.5
+                  }
+                },
+                {
+                  "node": "a.group.cinematic-card",
+                  "previousRect": {
+                    "x": 17,
+                    "y": 596,
+                    "w": 356,
+                    "h": 135.5
+                  },
+                  "currentRect": {
+                    "x": 17,
+                    "y": 556,
+                    "w": 356,
+                    "h": 135.5
+                  }
+                },
+                {
+                  "node": "p.mt-4.max-w-lg",
+                  "previousRect": {
+                    "x": 40,
+                    "y": 282.5,
+                    "w": 309,
+                    "h": 112
+                  },
+                  "currentRect": {
+                    "x": 40,
+                    "y": 242.5,
+                    "w": 309,
+                    "h": 112
+                  }
+                }
+              ]
+            }
+          ],
+          "fcpMs": 4084,
+          "ttfbMs": 157.90000000596046,
+          "dclMs": 3673,
+          "loadMs": 3673.2000000178814,
+          "longTasks": 4,
+          "longTaskMs": 689,
+          "transferBytes": {
+            "script": 326994,
+            "css": 28083,
+            "font": 23176,
+            "image": 370,
+            "media": 0,
+            "data": 0,
+            "other": 0,
+            "total": 380023
+          },
+          "requestCount": 28,
+          "httpStatus": 200,
+          "consoleErrors": [],
+          "requestFailures": [],
+          "mocks": {
+            "realAssets": 11,
+            "supabase": 3,
+            "images": 19,
+            "blocked": 0
+          },
+          "finalUrl": "http://127.0.0.1:56548/"
+        }
+      ],
+      "warmupRuns": [],
+      "median": {
+        "lcpMs": 4084,
+        "cls": 0.02934426220066704,
+        "fcpMs": 4084,
+        "ttfbMs": 157.90000000596046,
+        "dclMs": 3673,
+        "loadMs": 3673.2000000178814,
+        "longTasks": 4,
+        "longTaskMs": 689,
+        "requestCount": 28,
+        "transferBytes": {
+          "script": 326994,
+          "css": 28083,
+          "font": 23176,
+          "image": 370,
+          "media": 0,
+          "data": 0,
+          "other": 0,
+          "total": 380023
+        },
+        "lcpElement": "h2.mt-4.font-display",
+        "clsSources": [
+          {
+            "value": 0.02934426220066704,
+            "startedAtMs": 4368.5999999940395,
+            "sources": [
+              {
+                "node": "div.grid.grid-cols-1",
+                "previousRect": {
+                  "x": 41,
+                  "y": 511.5,
+                  "w": 308,
+                  "h": 332.5
+                },
+                "currentRect": {
+                  "x": 41,
+                  "y": 471.5,
+                  "w": 308,
+                  "h": 372.5
+                }
+              },
+              {
+                "node": "a.group.cinematic-card",
+                "previousRect": {
+                  "x": 17,
+                  "y": 693.5,
+                  "w": 356,
+                  "h": 135.5
+                },
+                "currentRect": {
+                  "x": 17,
+                  "y": 653.5,
+                  "w": 356,
+                  "h": 135.5
+                }
+              },
+              {
+                "node": "a.group.cinematic-card",
+                "previousRect": {
+                  "x": 17,
+                  "y": 498.5,
+                  "w": 356,
+                  "h": 135.5
+                },
+                "currentRect": {
+                  "x": 17,
+                  "y": 458.5,
+                  "w": 356,
+                  "h": 135.5
+                }
+              },
+              {
+                "node": "a.group.cinematic-card",
+                "previousRect": {
+                  "x": 17,
+                  "y": 596,
+                  "w": 356,
+                  "h": 135.5
+                },
+                "currentRect": {
+                  "x": 17,
+                  "y": 556,
+                  "w": 356,
+                  "h": 135.5
+                }
+              },
+              {
+                "node": "p.mt-4.max-w-lg",
+                "previousRect": {
+                  "x": 40,
+                  "y": 282.5,
+                  "w": 309,
+                  "h": 112
+                },
+                "currentRect": {
+                  "x": 40,
+                  "y": 242.5,
+                  "w": 309,
+                  "h": 112
+                }
+              }
+            ]
+          }
+        ],
+        "httpStatus": 200,
+        "consoleErrors": 0,
+        "requestFailures": 0
+      },
+      "budget": {
+        "ok": false,
+        "violations": ["lcp 4084 ms > 2000 ms"]
+      }
+    },
+    {
+      "route": "/gallery",
+      "viewport": "mobile",
+      "viewportPixels": {
+        "width": 390,
+        "height": 844
+      },
+      "runs": [
+        {
+          "lcpMs": 2828,
+          "lcpElement": "h2.mt-4.font-display",
+          "lcpSize": 29766,
+          "cls": 1,
+          "shiftCount": 1,
+          "clsShiftSources": [
+            {
+              "value": 1,
+              "startedAtMs": 3030.5,
+              "sources": [
+                {
+                  "node": "footer.relative.overflow-hidden",
+                  "previousRect": {
+                    "x": 0,
+                    "y": 0,
+                    "w": 390,
+                    "h": 844
+                  },
+                  "currentRect": {
+                    "x": 0,
+                    "y": 0,
+                    "w": 0,
+                    "h": 0
+                  }
+                }
+              ]
+            }
+          ],
+          "fcpMs": 2828,
+          "ttfbMs": 153.5,
+          "dclMs": 2286,
+          "loadMs": 2286.399999976158,
+          "longTasks": 6,
+          "longTaskMs": 955,
+          "transferBytes": {
+            "script": 315838,
+            "css": 28083,
+            "font": 23176,
+            "image": 2590,
+            "media": 0,
+            "data": 0,
+            "other": 0,
+            "total": 371087
+          },
+          "requestCount": 15,
+          "httpStatus": 200,
+          "consoleErrors": [],
+          "requestFailures": [],
+          "mocks": {
+            "realAssets": 8,
+            "supabase": 1,
+            "images": 7,
+            "blocked": 0
+          },
+          "finalUrl": "http://127.0.0.1:56548/gallery"
+        }
+      ],
+      "warmupRuns": [],
+      "median": {
+        "lcpMs": 2828,
+        "cls": 1,
+        "fcpMs": 2828,
+        "ttfbMs": 153.5,
+        "dclMs": 2286,
+        "loadMs": 2286.399999976158,
+        "longTasks": 6,
+        "longTaskMs": 955,
+        "requestCount": 15,
+        "transferBytes": {
+          "script": 315838,
+          "css": 28083,
+          "font": 23176,
+          "image": 2590,
+          "media": 0,
+          "data": 0,
+          "other": 0,
+          "total": 371087
+        },
+        "lcpElement": "h2.mt-4.font-display",
+        "clsSources": [
+          {
+            "value": 1,
+            "startedAtMs": 3030.5,
+            "sources": [
+              {
+                "node": "footer.relative.overflow-hidden",
+                "previousRect": {
+                  "x": 0,
+                  "y": 0,
+                  "w": 390,
+                  "h": 844
+                },
+                "currentRect": {
+                  "x": 0,
+                  "y": 0,
+                  "w": 0,
+                  "h": 0
+                }
+              }
+            ]
+          }
+        ],
+        "httpStatus": 200,
+        "consoleErrors": 0,
+        "requestFailures": 0
+      },
+      "budget": {
+        "ok": false,
+        "violations": ["lcp 2828 ms > 2000 ms", "cls 1.0000 > 0.05"]
+      }
+    },
+    {
+      "route": "/film",
+      "viewport": "mobile",
+      "viewportPixels": {
+        "width": 390,
+        "height": 844
+      },
+      "runs": [
+        {
+          "lcpMs": 2728,
+          "lcpElement": "h2.mt-4.font-display",
+          "lcpSize": 29766,
+          "cls": 1.029344262200667,
+          "shiftCount": 2,
+          "clsShiftSources": [
+            {
+              "value": 0.02934426220066704,
+              "startedAtMs": 2992.300000011921,
+              "sources": [
+                {
+                  "node": "div.grid.grid-cols-1",
+                  "previousRect": {
+                    "x": 41,
+                    "y": 511.5,
+                    "w": 308,
+                    "h": 332.5
+                  },
+                  "currentRect": {
+                    "x": 41,
+                    "y": 471.5,
+                    "w": 308,
+                    "h": 372.5
+                  }
+                },
+                {
+                  "node": "a.group.cinematic-card",
+                  "previousRect": {
+                    "x": 17,
+                    "y": 693.5,
+                    "w": 356,
+                    "h": 135.5
+                  },
+                  "currentRect": {
+                    "x": 17,
+                    "y": 653.5,
+                    "w": 356,
+                    "h": 135.5
+                  }
+                },
+                {
+                  "node": "a.group.cinematic-card",
+                  "previousRect": {
+                    "x": 17,
+                    "y": 498.5,
+                    "w": 356,
+                    "h": 135.5
+                  },
+                  "currentRect": {
+                    "x": 17,
+                    "y": 458.5,
+                    "w": 356,
+                    "h": 135.5
+                  }
+                },
+                {
+                  "node": "a.group.cinematic-card",
+                  "previousRect": {
+                    "x": 17,
+                    "y": 596,
+                    "w": 356,
+                    "h": 135.5
+                  },
+                  "currentRect": {
+                    "x": 17,
+                    "y": 556,
+                    "w": 356,
+                    "h": 135.5
+                  }
+                },
+                {
+                  "node": "p.mt-4.max-w-lg",
+                  "previousRect": {
+                    "x": 40,
+                    "y": 282.5,
+                    "w": 309,
+                    "h": 112
+                  },
+                  "currentRect": {
+                    "x": 40,
+                    "y": 242.5,
+                    "w": 309,
+                    "h": 112
+                  }
+                }
+              ]
+            },
+            {
+              "value": 1,
+              "startedAtMs": 3337.9000000059605,
+              "sources": [
+                {
+                  "node": "footer.relative.overflow-hidden",
+                  "previousRect": {
+                    "x": 0,
+                    "y": 0,
+                    "w": 390,
+                    "h": 844
+                  },
+                  "currentRect": {
+                    "x": 0,
+                    "y": 0,
+                    "w": 0,
+                    "h": 0
+                  }
+                }
+              ]
+            }
+          ],
+          "fcpMs": 2728,
+          "ttfbMs": 153.60000002384186,
+          "dclMs": 2252.600000023842,
+          "loadMs": 2252.800000011921,
+          "longTasks": 5,
+          "longTaskMs": 782,
+          "transferBytes": {
+            "script": 325847,
+            "css": 28083,
+            "font": 46788,
+            "image": 9620,
+            "media": 0,
+            "data": 0,
+            "other": 0,
+            "total": 411738
+          },
+          "requestCount": 44,
+          "httpStatus": 200,
+          "consoleErrors": [
+            "Failed to load resource: net::ERR_FAILED",
+            "Failed to load resource: net::ERR_FAILED",
+            "Failed to load resource: net::ERR_FAILED",
+            "Failed to load resource: net::ERR_FAILED",
+            "Failed to load resource: net::ERR_FAILED",
+            "Failed to load resource: net::ERR_FAILED",
+            "Failed to load resource: net::ERR_FAILED",
+            "Failed to load resource: net::ERR_FAILED",
+            "Failed to load resource: net::ERR_FAILED"
+          ],
+          "requestFailures": [
+            "net::ERR_FAILED https://media.wedding.theporadas.com/video/main.mp4",
+            "net::ERR_FAILED https://media.wedding.theporadas.com/video/main.mp4",
+            "net::ERR_FAILED https://media.wedding.theporadas.com/video/main.mp4",
+            "net::ERR_FAILED https://media.wedding.theporadas.com/video/mom.mp4",
+            "net::ERR_FAILED https://media.wedding.theporadas.com/video/melony.mp4",
+            "net::ERR_FAILED https://media.wedding.theporadas.com/video/christine.mp4",
+            "net::ERR_FAILED https://media.wedding.theporadas.com/video/jerame.mp4",
+            "net::ERR_FAILED https://media.wedding.theporadas.com/video/main-film-chapters.vtt",
+            "net::ERR_FAILED https://media.wedding.theporadas.com/video/main.vtt"
+          ],
+          "mocks": {
+            "realAssets": 9,
+            "supabase": 1,
+            "images": 26,
+            "blocked": 9
+          },
+          "finalUrl": "http://127.0.0.1:56548/film"
+        }
+      ],
+      "warmupRuns": [],
+      "median": {
+        "lcpMs": 2728,
+        "cls": 1.029344262200667,
+        "fcpMs": 2728,
+        "ttfbMs": 153.60000002384186,
+        "dclMs": 2252.600000023842,
+        "loadMs": 2252.800000011921,
+        "longTasks": 5,
+        "longTaskMs": 782,
+        "requestCount": 44,
+        "transferBytes": {
+          "script": 325847,
+          "css": 28083,
+          "font": 46788,
+          "image": 9620,
+          "media": 0,
+          "data": 0,
+          "other": 0,
+          "total": 411738
+        },
+        "lcpElement": "h2.mt-4.font-display",
+        "clsSources": [
+          {
+            "value": 0.02934426220066704,
+            "startedAtMs": 2992.300000011921,
+            "sources": [
+              {
+                "node": "div.grid.grid-cols-1",
+                "previousRect": {
+                  "x": 41,
+                  "y": 511.5,
+                  "w": 308,
+                  "h": 332.5
+                },
+                "currentRect": {
+                  "x": 41,
+                  "y": 471.5,
+                  "w": 308,
+                  "h": 372.5
+                }
+              },
+              {
+                "node": "a.group.cinematic-card",
+                "previousRect": {
+                  "x": 17,
+                  "y": 693.5,
+                  "w": 356,
+                  "h": 135.5
+                },
+                "currentRect": {
+                  "x": 17,
+                  "y": 653.5,
+                  "w": 356,
+                  "h": 135.5
+                }
+              },
+              {
+                "node": "a.group.cinematic-card",
+                "previousRect": {
+                  "x": 17,
+                  "y": 498.5,
+                  "w": 356,
+                  "h": 135.5
+                },
+                "currentRect": {
+                  "x": 17,
+                  "y": 458.5,
+                  "w": 356,
+                  "h": 135.5
+                }
+              },
+              {
+                "node": "a.group.cinematic-card",
+                "previousRect": {
+                  "x": 17,
+                  "y": 596,
+                  "w": 356,
+                  "h": 135.5
+                },
+                "currentRect": {
+                  "x": 17,
+                  "y": 556,
+                  "w": 356,
+                  "h": 135.5
+                }
+              },
+              {
+                "node": "p.mt-4.max-w-lg",
+                "previousRect": {
+                  "x": 40,
+                  "y": 282.5,
+                  "w": 309,
+                  "h": 112
+                },
+                "currentRect": {
+                  "x": 40,
+                  "y": 242.5,
+                  "w": 309,
+                  "h": 112
+                }
+              }
+            ]
+          },
+          {
+            "value": 1,
+            "startedAtMs": 3337.9000000059605,
+            "sources": [
+              {
+                "node": "footer.relative.overflow-hidden",
+                "previousRect": {
+                  "x": 0,
+                  "y": 0,
+                  "w": 390,
+                  "h": 844
+                },
+                "currentRect": {
+                  "x": 0,
+                  "y": 0,
+                  "w": 0,
+                  "h": 0
+                }
+              }
+            ]
+          }
+        ],
+        "httpStatus": 200,
+        "consoleErrors": 9,
+        "requestFailures": 9
+      },
+      "budget": {
+        "ok": false,
+        "violations": ["lcp 2728 ms > 2000 ms", "cls 1.0293 > 0.05"]
+      }
+    },
+    {
+      "route": "/",
+      "viewport": "desktop",
+      "viewportPixels": {
+        "width": 1440,
+        "height": 900
+      },
+      "runs": [
+        {
+          "lcpMs": 2620,
+          "lcpElement": "h2.mt-4.font-display",
+          "lcpSize": 45732,
+          "cls": 0.6388888888888888,
+          "shiftCount": 1,
+          "clsShiftSources": [
+            {
+              "value": 0.6388888888888888,
+              "startedAtMs": 3564.199999988079,
+              "sources": [
+                {
+                  "node": "footer.relative.overflow-hidden",
+                  "previousRect": {
+                    "x": 0,
+                    "y": 0,
+                    "w": 1440,
+                    "h": 574.703125
+                  },
+                  "currentRect": {
+                    "x": 0,
+                    "y": 0,
+                    "w": 0,
+                    "h": 0
+                  }
+                }
+              ]
+            }
+          ],
+          "fcpMs": 2620,
+          "ttfbMs": 152.5,
+          "dclMs": 2234.7999999821186,
+          "loadMs": 2234.9000000059605,
+          "longTasks": 8,
+          "longTaskMs": 1396,
+          "transferBytes": {
+            "script": 326994,
+            "css": 28083,
+            "font": 62520,
+            "image": 370,
+            "media": 0,
+            "data": 0,
+            "other": 0,
+            "total": 419367
+          },
+          "requestCount": 32,
+          "httpStatus": 200,
+          "consoleErrors": [],
+          "requestFailures": [],
+          "mocks": {
+            "realAssets": 11,
+            "supabase": 3,
+            "images": 19,
+            "blocked": 0
+          },
+          "finalUrl": "http://127.0.0.1:56548/"
+        }
+      ],
+      "warmupRuns": [],
+      "median": {
+        "lcpMs": 2620,
+        "cls": 0.6388888888888888,
+        "fcpMs": 2620,
+        "ttfbMs": 152.5,
+        "dclMs": 2234.7999999821186,
+        "loadMs": 2234.9000000059605,
+        "longTasks": 8,
+        "longTaskMs": 1396,
+        "requestCount": 32,
+        "transferBytes": {
+          "script": 326994,
+          "css": 28083,
+          "font": 62520,
+          "image": 370,
+          "media": 0,
+          "data": 0,
+          "other": 0,
+          "total": 419367
+        },
+        "lcpElement": "h2.mt-4.font-display",
+        "clsSources": [
+          {
+            "value": 0.6388888888888888,
+            "startedAtMs": 3564.199999988079,
+            "sources": [
+              {
+                "node": "footer.relative.overflow-hidden",
+                "previousRect": {
+                  "x": 0,
+                  "y": 0,
+                  "w": 1440,
+                  "h": 574.703125
+                },
+                "currentRect": {
+                  "x": 0,
+                  "y": 0,
+                  "w": 0,
+                  "h": 0
+                }
+              }
+            ]
+          }
+        ],
+        "httpStatus": 200,
+        "consoleErrors": 0,
+        "requestFailures": 0
+      },
+      "budget": {
+        "ok": false,
+        "violations": ["lcp 2620 ms > 2000 ms", "cls 0.6389 > 0.05"]
+      }
+    },
+    {
+      "route": "/gallery",
+      "viewport": "desktop",
+      "viewportPixels": {
+        "width": 1440,
+        "height": 900
+      },
+      "runs": [
+        {
+          "lcpMs": 2620,
+          "lcpElement": "h2.mt-4.font-display",
+          "lcpSize": 45732,
+          "cls": 0.6388888888888888,
+          "shiftCount": 1,
+          "clsShiftSources": [
+            {
+              "value": 0.6388888888888888,
+              "startedAtMs": 2824.0999999940395,
+              "sources": [
+                {
+                  "node": "footer.relative.overflow-hidden",
+                  "previousRect": {
+                    "x": 0,
+                    "y": 0,
+                    "w": 1440,
+                    "h": 574.703125
+                  },
+                  "currentRect": {
+                    "x": 0,
+                    "y": 0,
+                    "w": 0,
+                    "h": 0
+                  }
+                }
+              ]
+            }
+          ],
+          "fcpMs": 2620,
+          "ttfbMs": 154,
+          "dclMs": 2234,
+          "loadMs": 2234.2000000178814,
+          "longTasks": 6,
+          "longTaskMs": 714,
+          "transferBytes": {
+            "script": 315838,
+            "css": 28083,
+            "font": 23176,
+            "image": 5550,
+            "media": 0,
+            "data": 0,
+            "other": 0,
+            "total": 374047
+          },
+          "requestCount": 23,
+          "httpStatus": 200,
+          "consoleErrors": [],
+          "requestFailures": [],
+          "mocks": {
+            "realAssets": 8,
+            "supabase": 1,
+            "images": 15,
+            "blocked": 0
+          },
+          "finalUrl": "http://127.0.0.1:56548/gallery"
+        }
+      ],
+      "warmupRuns": [],
+      "median": {
+        "lcpMs": 2620,
+        "cls": 0.6388888888888888,
+        "fcpMs": 2620,
+        "ttfbMs": 154,
+        "dclMs": 2234,
+        "loadMs": 2234.2000000178814,
+        "longTasks": 6,
+        "longTaskMs": 714,
+        "requestCount": 23,
+        "transferBytes": {
+          "script": 315838,
+          "css": 28083,
+          "font": 23176,
+          "image": 5550,
+          "media": 0,
+          "data": 0,
+          "other": 0,
+          "total": 374047
+        },
+        "lcpElement": "h2.mt-4.font-display",
+        "clsSources": [
+          {
+            "value": 0.6388888888888888,
+            "startedAtMs": 2824.0999999940395,
+            "sources": [
+              {
+                "node": "footer.relative.overflow-hidden",
+                "previousRect": {
+                  "x": 0,
+                  "y": 0,
+                  "w": 1440,
+                  "h": 574.703125
+                },
+                "currentRect": {
+                  "x": 0,
+                  "y": 0,
+                  "w": 0,
+                  "h": 0
+                }
+              }
+            ]
+          }
+        ],
+        "httpStatus": 200,
+        "consoleErrors": 0,
+        "requestFailures": 0
+      },
+      "budget": {
+        "ok": false,
+        "violations": ["lcp 2620 ms > 2000 ms", "cls 0.6389 > 0.05"]
+      }
+    },
+    {
+      "route": "/film",
+      "viewport": "desktop",
+      "viewportPixels": {
+        "width": 1440,
+        "height": 900
+      },
+      "runs": [
+        {
+          "lcpMs": 2872,
+          "lcpElement": "h2.mt-4.font-display",
+          "lcpSize": 45732,
+          "cls": 0.6388888888888888,
+          "shiftCount": 1,
+          "clsShiftSources": [
+            {
+              "value": 0.6388888888888888,
+              "startedAtMs": 3442.0999999940395,
+              "sources": [
+                {
+                  "node": "footer.relative.overflow-hidden",
+                  "previousRect": {
+                    "x": 0,
+                    "y": 0,
+                    "w": 1440,
+                    "h": 574.703125
+                  },
+                  "currentRect": {
+                    "x": 0,
+                    "y": 0,
+                    "w": 0,
+                    "h": 0
+                  }
+                }
+              ]
+            }
+          ],
+          "fcpMs": 2872,
+          "ttfbMs": 152.5,
+          "dclMs": 2318.9000000059605,
+          "loadMs": 2319.199999988079,
+          "longTasks": 8,
+          "longTaskMs": 1200,
+          "transferBytes": {
+            "script": 325847,
+            "css": 28083,
+            "font": 46788,
+            "image": 9620,
+            "media": 0,
+            "data": 0,
+            "other": 0,
+            "total": 411738
+          },
+          "requestCount": 44,
+          "httpStatus": 200,
+          "consoleErrors": [
+            "Failed to load resource: net::ERR_FAILED",
+            "Failed to load resource: net::ERR_FAILED",
+            "Failed to load resource: net::ERR_FAILED",
+            "Failed to load resource: net::ERR_FAILED",
+            "Failed to load resource: net::ERR_FAILED",
+            "Failed to load resource: net::ERR_FAILED",
+            "Failed to load resource: net::ERR_FAILED",
+            "Failed to load resource: net::ERR_FAILED",
+            "Failed to load resource: net::ERR_FAILED"
+          ],
+          "requestFailures": [
+            "net::ERR_FAILED https://media.wedding.theporadas.com/video/main.mp4",
+            "net::ERR_FAILED https://media.wedding.theporadas.com/video/main.mp4",
+            "net::ERR_FAILED https://media.wedding.theporadas.com/video/main.mp4",
+            "net::ERR_FAILED https://media.wedding.theporadas.com/video/mom.mp4",
+            "net::ERR_FAILED https://media.wedding.theporadas.com/video/melony.mp4",
+            "net::ERR_FAILED https://media.wedding.theporadas.com/video/christine.mp4",
+            "net::ERR_FAILED https://media.wedding.theporadas.com/video/jerame.mp4",
+            "net::ERR_FAILED https://media.wedding.theporadas.com/video/main-film-chapters.vtt",
+            "net::ERR_FAILED https://media.wedding.theporadas.com/video/main.vtt"
+          ],
+          "mocks": {
+            "realAssets": 9,
+            "supabase": 1,
+            "images": 26,
+            "blocked": 9
+          },
+          "finalUrl": "http://127.0.0.1:56548/film"
+        }
+      ],
+      "warmupRuns": [],
+      "median": {
+        "lcpMs": 2872,
+        "cls": 0.6388888888888888,
+        "fcpMs": 2872,
+        "ttfbMs": 152.5,
+        "dclMs": 2318.9000000059605,
+        "loadMs": 2319.199999988079,
+        "longTasks": 8,
+        "longTaskMs": 1200,
+        "requestCount": 44,
+        "transferBytes": {
+          "script": 325847,
+          "css": 28083,
+          "font": 46788,
+          "image": 9620,
+          "media": 0,
+          "data": 0,
+          "other": 0,
+          "total": 411738
+        },
+        "lcpElement": "h2.mt-4.font-display",
+        "clsSources": [
+          {
+            "value": 0.6388888888888888,
+            "startedAtMs": 3442.0999999940395,
+            "sources": [
+              {
+                "node": "footer.relative.overflow-hidden",
+                "previousRect": {
+                  "x": 0,
+                  "y": 0,
+                  "w": 1440,
+                  "h": 574.703125
+                },
+                "currentRect": {
+                  "x": 0,
+                  "y": 0,
+                  "w": 0,
+                  "h": 0
+                }
+              }
+            ]
+          }
+        ],
+        "httpStatus": 200,
+        "consoleErrors": 9,
+        "requestFailures": 9
+      },
+      "budget": {
+        "ok": false,
+        "violations": ["lcp 2872 ms > 2000 ms", "cls 0.6389 > 0.05"]
+      }
+    }
+  ],
+  "summary": {
+    "violations": [
+      {
+        "cell": "/ (mobile)",
+        "reasons": ["lcp 4084 ms > 2000 ms"]
+      },
+      {
+        "cell": "/gallery (mobile)",
+        "reasons": ["lcp 2828 ms > 2000 ms", "cls 1.0000 > 0.05"]
+      },
+      {
+        "cell": "/film (mobile)",
+        "reasons": ["lcp 2728 ms > 2000 ms", "cls 1.0293 > 0.05"]
+      },
+      {
+        "cell": "/ (desktop)",
+        "reasons": ["lcp 2620 ms > 2000 ms", "cls 0.6389 > 0.05"]
+      },
+      {
+        "cell": "/gallery (desktop)",
+        "reasons": ["lcp 2620 ms > 2000 ms", "cls 0.6389 > 0.05"]
+      },
+      {
+        "cell": "/film (desktop)",
+        "reasons": ["lcp 2872 ms > 2000 ms", "cls 0.6389 > 0.05"]
+      }
+    ],
+    "cells": 6,
+    "failingCells": 6
+  }
+}

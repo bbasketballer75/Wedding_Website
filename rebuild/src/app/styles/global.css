@@ -1,0 +1,781 @@
+/* ============================================
+   GLOBAL STYLESHEET — shell + shared surfaces
+   ============================================ */
+
+/*
+ * Faithful port of the frozen app's `src/index.css` (805 lines) at git tag
+ * `legacy-freeze-2026-11-08`. The oracle stays the read-only source of truth;
+ * this file only re-expresses it with the tokens (`./tokens.css`) and web fonts
+ * (`./fonts.css`) split into their own modules for maintainability.
+ *
+ * Intentional deviations from the oracle — all three are documented here and
+ * none of them changes a computed style while `data-theme` is present:
+ *
+ *   1. The rebuild applies the theme through `app/shell/theme.ts`, which sets
+ *      `data-theme` and the legacy `.dark-theme` / `.light-theme` class names
+ *      but does NOT write inline `--ui-*` custom properties the way the legacy
+ *      `ThemeController` did. The theme blocks below therefore also match the
+ *      class names, guarded by `:not([data-theme])` so `data-theme` stays
+ *      authoritative if the two are ever out of sync.
+ *   2. `@source` points only at this app, so legacy class names can never leak
+ *      into the rebuild bundle.
+ *   3. The frozen `index.html` inline critical CSS rules that survive
+ *      `src/index.css` (`body { overflow-x: hidden }`, `#root { min-height:
+ *      100vh }`) are ported here because the rebuild's `index.html` does not
+ *      carry them; they affect layout parity.
+ */
+
+@import './fonts.css';
+@import 'tailwindcss';
+@import './tokens.css';
+
+@source '../../**/*.{ts,tsx}';
+@source '../../../index.html';
+
+/* ============================================
+   BASE STYLES
+   ============================================ */
+
+@layer base {
+  /*
+   * Theme variable contract.
+   * Values: frozen `src/index.css` lines 124-157, identical to
+   * `src/themes/index.ts` dark/light `variables`. The parity harness seeds the
+   * persisted UI store and the app then sets `data-theme` on <html> before
+   * capture, so the oracle's computed values come from the same table.
+   */
+  :root,
+  html[data-theme='light'],
+  html.light-theme:not([data-theme]) {
+    color-scheme: light;
+    --ui-canvas: #fbf8f1;
+    --ui-canvas-soft: #f3ecdf;
+    --ui-surface: rgba(255, 255, 255, 0.74);
+    --ui-surface-elevated: rgba(255, 255, 255, 0.92);
+    --ui-glass: rgba(255, 252, 245, 0.82);
+    --ui-border: rgba(126, 94, 44, 0.22);
+    --ui-text: #17110d;
+    --ui-muted: rgba(23, 17, 13, 0.68);
+    --ui-subtle: rgba(23, 17, 13, 0.48);
+    --ui-accent: #9f7430;
+    --ui-accent-strong: #5e451e;
+    --ui-shadow: 0 22px 60px rgba(75, 49, 21, 0.14);
+    --ui-focus-ring: rgba(159, 116, 48, 0.42);
+  }
+
+  html[data-theme='dark'],
+  html.dark-theme:not([data-theme]) {
+    color-scheme: dark;
+    --ui-canvas: #090605;
+    --ui-canvas-soft: #130d09;
+    --ui-surface: rgba(255, 247, 235, 0.07);
+    --ui-surface-elevated: rgba(255, 247, 235, 0.12);
+    --ui-glass: rgba(15, 10, 7, 0.72);
+    --ui-border: rgba(232, 212, 176, 0.18);
+    --ui-text: #fff7eb;
+    --ui-muted: rgba(255, 247, 235, 0.68);
+    --ui-subtle: rgba(255, 247, 235, 0.48);
+    --ui-accent: #d4af37;
+    --ui-accent-strong: #f5d586;
+    --ui-shadow: 0 24px 70px rgba(0, 0, 0, 0.36);
+    --ui-focus-ring: rgba(245, 213, 134, 0.58);
+  }
+
+  html {
+    scroll-behavior: smooth;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+    background: var(--ui-canvas);
+  }
+
+  body {
+    @apply font-body antialiased;
+    background:
+      radial-gradient(
+        circle at 18% -8%,
+        color-mix(in srgb, var(--ui-accent) 18%, transparent),
+        transparent 36rem
+      ),
+      var(--ui-canvas);
+    color: var(--ui-text);
+    font-feature-settings:
+      'kern' 1,
+      'liga' 1;
+    letter-spacing: 0.005em;
+    text-rendering: optimizeLegibility;
+    transition:
+      background-color 320ms ease,
+      color 320ms ease;
+  }
+
+  /* Selection */
+  ::selection {
+    @apply bg-gold-200 text-charcoal-900;
+  }
+
+  /* Typography Scale */
+  h1,
+  h2,
+  h3,
+  h4,
+  h5,
+  h6 {
+    @apply font-display font-normal tracking-tight text-balance;
+    font-feature-settings:
+      'kern' 1,
+      'liga' 1,
+      'calt' 1,
+      'dlig' 1;
+  }
+
+  h1 {
+    font-size: clamp(2.5rem, 6.5vw, 5.5rem);
+    line-height: 1.08;
+    letter-spacing: -0.01em;
+    color: var(--ui-text);
+  }
+
+  h2 {
+    font-size: clamp(2.1rem, 5vw, 4.2rem);
+    line-height: 1.1;
+    letter-spacing: -0.005em;
+    color: var(--ui-text);
+  }
+
+  h3 {
+    font-size: clamp(1.6rem, 3.2vw, 2.8rem);
+    line-height: 1.18;
+    color: var(--ui-text);
+  }
+
+  p {
+    color: var(--ui-muted);
+    line-height: 1.75;
+  }
+
+  /* Links */
+  a {
+    @apply transition-colors duration-300;
+  }
+
+  /* Focus Styles */
+  :focus-visible {
+    @apply outline-none ring-2 ring-offset-2;
+    --tw-ring-color: var(--ui-focus-ring);
+    --tw-ring-offset-color: var(--ui-canvas);
+  }
+}
+
+/* ============================================
+   FROZEN index.html CRITICAL CSS (unlayered)
+   ============================================ */
+
+/*
+ * PARITY-CRITICAL cascade detail (found by parity run 1, 404 shell).
+ *
+ * The frozen app's `index.html` (source lines 67-89) puts these declarations in
+ * a plain unlayered <style> block. The built stylesheet keeps its rules inside
+ * cascade layers (`@layer base`, `@layer utilities`), and CSS cascade layers
+ * put every *unlayered normal declaration* above every layered one regardless
+ * of source order or specificity. So in the oracle this critical block wins
+ * over `@layer base body` and over the theme variables for the body element.
+ * Measured on the frozen preview (`/people`, dark theme):
+ *
+ *   legacy body: font-family "Inter, sans-serif"; color rgb(255,255,255);
+ *                background-color rgb(0,0,0); overflow-x hidden
+ *   rebuild body before this rule: "Instrument Sans", system-ui, sans-serif;
+ *                color rgb(255,247,235); background-color rgb(9,6,5)
+ *
+ * The inherited font stack was the cause of parity run 1's 1.8% 404 diff: every
+ * wrapping line reflowed because the glyph metrics came from a different face.
+ * `Inter` is referenced by the frozen shell but NEVER loaded — only Instrument
+ * Sans, Cormorant Garamond and Pinyon Script are imported — so the oracle
+ * renders body copy with the generic `sans-serif` fallback. Reproducing the
+ * stack (rather than merely dropping `font-body` from body) is what makes the
+ * text metrics identical on both sides.
+ *
+ * Keep this block unlayered and keep the layered `@layer base body` rule above
+ * it unchanged: the pair mirrors the oracle's structure exactly, so an explicit
+ * `.font-body` utility still works on descendants (as it does in the oracle)
+ * while body copy inherits the same fallback. The body colour/background are
+ * invisible on every current route (the opaque `.theme-canvas` wrapper covers
+ * the body element) but are declared here because they are the oracle's
+ * computed body style and a future route must not inherit a different one.
+ * Restoring Instrument Sans to body copy is a deliberate later product
+ * decision, not part of the faithful port.
+ */
+body {
+  color: #fff;
+  background-color: #000;
+  margin: 0;
+  padding: 0;
+  font-family: 'Inter', sans-serif;
+  overflow-x: hidden;
+}
+
+#root {
+  min-height: 100vh;
+}
+
+/* ============================================
+   UTILITY CLASSES
+   ============================================ */
+
+@layer utilities {
+  .theme-canvas {
+    background:
+      radial-gradient(
+        circle at 18% -8%,
+        color-mix(in srgb, var(--ui-accent) 18%, transparent),
+        transparent 34rem
+      ),
+      linear-gradient(180deg, var(--ui-canvas) 0%, var(--ui-canvas-soft) 100%);
+    color: var(--ui-text);
+  }
+
+  .theme-panel {
+    border: 1px solid var(--ui-border);
+    background: var(--ui-surface);
+    color: var(--ui-text);
+    box-shadow: var(--ui-shadow);
+    backdrop-filter: blur(18px);
+  }
+
+  .theme-card {
+    border: 1px solid var(--ui-border);
+    background: var(--ui-surface-elevated);
+    color: var(--ui-text);
+    box-shadow: var(--ui-shadow);
+  }
+
+  .theme-input {
+    border-color: var(--ui-border);
+    background: var(--ui-surface-elevated);
+    color: var(--ui-text);
+  }
+
+  .theme-input::placeholder {
+    color: var(--ui-subtle);
+  }
+
+  .theme-muted {
+    color: var(--ui-muted);
+  }
+
+  .theme-subtle {
+    color: var(--ui-subtle);
+  }
+
+  .theme-accent {
+    color: var(--ui-accent-strong);
+  }
+
+  .theme-border {
+    border-color: var(--ui-border);
+  }
+
+  .theme-skeleton {
+    position: relative;
+    overflow: hidden;
+    background: color-mix(in srgb, var(--ui-surface-elevated) 78%, transparent);
+  }
+
+  .theme-skeleton::after {
+    position: absolute;
+    inset: 0;
+    content: '';
+    transform: translateX(-100%);
+    background: linear-gradient(
+      90deg,
+      transparent,
+      color-mix(in srgb, var(--ui-text) 10%, transparent),
+      transparent
+    );
+    animation: shimmer 1.8s ease-in-out infinite;
+  }
+
+  .archive-noise {
+    background-image:
+      radial-gradient(
+        circle at 20% 10%,
+        color-mix(in srgb, var(--ui-accent) 12%, transparent),
+        transparent 24rem
+      ),
+      radial-gradient(circle at 85% 15%, rgba(255, 255, 255, 0.05), transparent 18rem),
+      linear-gradient(180deg, var(--ui-canvas) 0%, var(--ui-canvas-soft) 100%);
+  }
+
+  .eyebrow-chip {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
+    border-radius: 9999px;
+    border: 1px solid rgba(219, 184, 128, 0.5);
+    background: rgba(255, 255, 255, 0.76);
+    padding: 0.5rem 0.9rem;
+    font-size: 0.625rem;
+    font-weight: 600;
+    letter-spacing: 0.34em;
+    text-transform: uppercase;
+    color: rgba(133, 99, 59, 0.92);
+    box-shadow: 0 12px 24px -20px rgba(46, 33, 13, 0.28);
+    backdrop-filter: blur(14px);
+  }
+
+  .editorial-panel {
+    position: relative;
+    overflow: hidden;
+    border-radius: 2rem;
+    border: 1px solid rgba(255, 255, 255, 0.78);
+    background: linear-gradient(
+      140deg,
+      rgba(255, 255, 255, 0.94),
+      rgba(250, 248, 244, 0.98) 58%,
+      rgba(245, 242, 236, 0.92)
+    );
+    box-shadow: 0 36px 90px -48px rgba(46, 33, 13, 0.35);
+    backdrop-filter: blur(20px);
+  }
+
+  .editorial-card {
+    position: relative;
+    overflow: hidden;
+    border-radius: 1.5rem;
+    border: 1px solid rgba(255, 255, 255, 0.72);
+    background: rgba(255, 255, 255, 0.78);
+    box-shadow: 0 20px 48px -36px rgba(46, 33, 13, 0.38);
+    backdrop-filter: blur(14px);
+  }
+
+  .cinematic-panel {
+    position: relative;
+    overflow: hidden;
+    border-radius: 2rem;
+    border: 1px solid rgba(232, 212, 176, 0.18);
+    background:
+      radial-gradient(circle at top left, rgba(245, 226, 191, 0.18), transparent 30%),
+      radial-gradient(circle at bottom right, rgba(249, 232, 227, 0.12), transparent 34%),
+      linear-gradient(
+        140deg,
+        rgba(44, 32, 25, 0.98),
+        rgba(58, 42, 33, 0.98) 50%,
+        rgba(77, 58, 44, 0.96)
+      );
+    box-shadow: 0 38px 100px -55px rgba(21, 20, 19, 0.82);
+    backdrop-filter: blur(18px);
+  }
+
+  .cinematic-card {
+    position: relative;
+    overflow: hidden;
+    border-radius: 1.5rem;
+    border: 1px solid rgba(232, 212, 176, 0.14);
+    background: linear-gradient(
+      145deg,
+      rgba(255, 247, 235, 0.09),
+      rgba(255, 255, 255, 0.05) 55%,
+      rgba(244, 213, 180, 0.08)
+    );
+    box-shadow: 0 22px 55px -42px rgba(21, 20, 19, 0.85);
+    backdrop-filter: blur(16px);
+  }
+
+  .cinematic-chip {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
+    border-radius: 9999px;
+    border: 1px solid rgba(232, 212, 176, 0.18);
+    background: rgba(255, 247, 235, 0.08);
+    padding: 0.5rem 0.95rem;
+    font-size: 0.625rem;
+    font-weight: 600;
+    letter-spacing: 0.32em;
+    text-transform: uppercase;
+    color: rgba(245, 226, 191, 0.86);
+    backdrop-filter: blur(12px);
+  }
+
+  .cinematic-overlay-pill {
+    border-radius: 9999px;
+    border: 1px solid rgba(245, 226, 191, 0.18);
+    background: linear-gradient(145deg, rgba(255, 247, 235, 0.14), rgba(255, 247, 235, 0.07));
+    color: rgba(255, 247, 235, 0.88);
+    box-shadow: 0 16px 40px -28px rgba(21, 20, 19, 0.8);
+    backdrop-filter: blur(14px);
+  }
+
+  .cinematic-overlay-button {
+    border-radius: 9999px;
+    border: 1px solid rgba(245, 226, 191, 0.18);
+    background: linear-gradient(145deg, rgba(255, 247, 235, 0.14), rgba(255, 247, 235, 0.07));
+    color: rgba(255, 247, 235, 0.88);
+    box-shadow: 0 20px 46px -28px rgba(21, 20, 19, 0.82);
+    backdrop-filter: blur(14px);
+    transition:
+      background 180ms var(--ease-smooth),
+      color 180ms var(--ease-smooth),
+      border-color 180ms var(--ease-smooth),
+      transform 180ms var(--ease-smooth);
+  }
+
+  .cinematic-overlay-button:hover {
+    border-color: rgba(245, 226, 191, 0.3);
+    background: linear-gradient(145deg, rgba(255, 247, 235, 0.18), rgba(255, 247, 235, 0.1));
+    color: rgba(255, 247, 235, 0.98);
+    transform: translateY(-1px);
+  }
+
+  .cinematic-toggle-active {
+    background: linear-gradient(145deg, rgba(233, 207, 164, 0.95), rgba(201, 160, 92, 0.95));
+    color: #241b16;
+    box-shadow: 0 18px 38px -24px rgba(46, 33, 13, 0.62);
+  }
+
+  .text-cinematic-primary {
+    color: rgba(255, 247, 235, 0.96);
+  }
+
+  .text-cinematic-secondary {
+    color: rgba(250, 243, 232, 0.9);
+  }
+
+  .text-cinematic-muted {
+    color: rgba(245, 236, 221, 0.8);
+  }
+
+  /* Text Gradient */
+  .text-gradient-gold {
+    @apply bg-gradient-to-r from-gold-600 via-gold-400 to-gold-600 bg-clip-text text-transparent;
+    background-size: 200% auto;
+    animation: gradient 8s linear infinite;
+  }
+
+  /* Glass Effect */
+  .glass {
+    @apply bg-white/70 backdrop-blur-xl border border-white/50;
+  }
+
+  /* Section Padding */
+  .section-padding {
+    @apply py-16 md:py-24 lg:py-32;
+  }
+
+  /* Container */
+  .container-custom {
+    @apply max-w-7xl mx-auto px-4 sm:px-6 lg:px-8;
+  }
+
+  /* Hide Scrollbar */
+  .hide-scrollbar {
+    -ms-overflow-style: none;
+    scrollbar-width: none;
+  }
+  .hide-scrollbar::-webkit-scrollbar {
+    display: none;
+  }
+
+  /* Custom Scrollbar */
+  .scrollbar-thin {
+    scrollbar-width: thin;
+    scrollbar-color: rgba(201, 160, 92, 0.3) transparent;
+  }
+  .scrollbar-thin::-webkit-scrollbar {
+    width: 6px;
+  }
+  .scrollbar-thin::-webkit-scrollbar-track {
+    background: transparent;
+  }
+  .scrollbar-thin::-webkit-scrollbar-thumb {
+    background-color: rgba(201, 160, 92, 0.3);
+    border-radius: 20px;
+  }
+
+  /* Aspect Ratios */
+  .aspect-video {
+    aspect-ratio: 16 / 9;
+  }
+  .aspect-square {
+    aspect-ratio: 1 / 1;
+  }
+  .aspect-portrait {
+    aspect-ratio: 3 / 4;
+  }
+
+  /* Line Clamp */
+  .line-clamp-2 {
+    display: -webkit-box;
+    -webkit-line-clamp: 2;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+  }
+  .line-clamp-3 {
+    display: -webkit-box;
+    -webkit-line-clamp: 3;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+  }
+
+  /* Interactive Elements - Touch & Click Targets */
+  .interactive {
+    cursor: pointer;
+    min-height: 44px;
+    min-width: 44px;
+  }
+
+  .touch-target {
+    min-height: 44px;
+    min-width: 44px;
+  }
+}
+
+/* ============================================
+   KEYFRAME ANIMATIONS
+   ============================================ */
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+@keyframes fadeUp {
+  from {
+    opacity: 0;
+    transform: translateY(30px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes scaleIn {
+  from {
+    opacity: 0;
+    transform: scale(0.95);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1);
+  }
+}
+
+@keyframes slideInRight {
+  from {
+    opacity: 0;
+    transform: translateX(30px);
+  }
+  to {
+    opacity: 1;
+    transform: translateX(0);
+  }
+}
+
+@keyframes float {
+  0%,
+  100% {
+    transform: translateY(0);
+  }
+  50% {
+    transform: translateY(-10px);
+  }
+}
+
+@keyframes shimmer {
+  0% {
+    background-position: 200% 0;
+  }
+  100% {
+    background-position: -200% 0;
+  }
+}
+
+@keyframes gradient {
+  0% {
+    background-position: 0% 50%;
+  }
+  50% {
+    background-position: 100% 50%;
+  }
+  100% {
+    background-position: 0% 50%;
+  }
+}
+
+@keyframes pulse-soft {
+  0%,
+  100% {
+    opacity: 1;
+  }
+  50% {
+    opacity: 0.7;
+  }
+}
+
+/* Animation Classes */
+.animate-fade-in {
+  animation: fadeIn 0.8s var(--ease-luxury) forwards;
+}
+
+.animate-fade-up {
+  animation: fadeUp 0.8s var(--ease-luxury) forwards;
+}
+
+.animate-scale-in {
+  animation: scaleIn 0.6s var(--ease-luxury) forwards;
+}
+
+.animate-float {
+  animation: float 6s ease-in-out infinite;
+}
+
+.animate-pulse-soft {
+  animation: pulse-soft 2s ease-in-out infinite;
+}
+
+.animate-shimmer {
+  animation: shimmer 3s linear infinite;
+}
+
+/* Skeleton loading utilities */
+.skeleton-light {
+  background: linear-gradient(
+    90deg,
+    rgba(242, 232, 213, 0.55) 0%,
+    rgba(249, 244, 235, 0.85) 45%,
+    rgba(242, 232, 213, 0.55) 100%
+  );
+  background-size: 300% 100%;
+  animation: shimmer 1.8s ease-in-out infinite;
+}
+
+.skeleton-dark {
+  background: linear-gradient(
+    90deg,
+    rgba(255, 255, 255, 0.05) 0%,
+    rgba(255, 255, 255, 0.12) 45%,
+    rgba(255, 255, 255, 0.05) 100%
+  );
+  background-size: 300% 100%;
+  animation: shimmer 1.8s ease-in-out infinite;
+}
+
+/* ============================================
+   COMPONENT SPECIFIC STYLES
+   ============================================ */
+
+/* Video Player Custom Controls */
+.video-player {
+  @apply relative rounded-xl overflow-hidden bg-black;
+}
+
+.video-player video {
+  @apply w-full h-full object-cover;
+}
+
+/* Photo Gallery Grid */
+.gallery-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+  gap: 1.5rem;
+}
+
+@media (max-width: 640px) {
+  .gallery-grid {
+    grid-template-columns: repeat(2, 1fr);
+    gap: 1rem;
+  }
+}
+
+/* Masonry Support */
+.masonry-grid {
+  display: flex;
+  margin-left: -1.5rem;
+  width: auto;
+}
+
+.masonry-grid-column {
+  padding-left: 1.5rem;
+  background-clip: padding-box;
+}
+
+/* Reduced Motion */
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
+}
+
+/* Touch-friendly targets (WCAG 2.2 AA) */
+@media (hover: none) and (pointer: coarse) {
+  .interactive,
+  button,
+  [role='button'],
+  a,
+  input[type='submit'],
+  input[type='button'] {
+    min-height: 44px;
+    min-width: 44px;
+  }
+}
+
+/* ============================================
+   MOBILE PERFORMANCE OPTIMIZATIONS
+   ============================================ */
+
+@media (max-width: 640px) {
+  /* Reduce backdrop blur for better performance */
+  .editorial-panel {
+    box-shadow: 0 12px 40px -20px rgba(46, 33, 13, 0.25);
+    border-radius: 1.5rem;
+    backdrop-filter: blur(10px);
+  }
+
+  .editorial-card {
+    box-shadow: 0 10px 24px -18px rgba(46, 33, 13, 0.25);
+    border-radius: 1rem;
+    backdrop-filter: blur(8px);
+  }
+
+  .cinematic-panel {
+    box-shadow: 0 16px 50px -30px rgba(21, 20, 19, 0.6);
+    border-radius: 1.5rem;
+    backdrop-filter: blur(10px);
+  }
+
+  .cinematic-card {
+    box-shadow: 0 12px 30px -20px rgba(21, 20, 19, 0.65);
+    border-radius: 1rem;
+    backdrop-filter: blur(8px);
+  }
+
+  .glass {
+    backdrop-filter: blur(10px);
+  }
+
+  .eyebrow-chip {
+    box-shadow: 0 6px 16px -12px rgba(46, 33, 13, 0.22);
+    backdrop-filter: blur(10px);
+  }
+
+  .cinematic-overlay-pill,
+  .cinematic-overlay-button {
+    backdrop-filter: blur(10px);
+  }
+
+  /* Reduce animation complexity on mobile */
+  .animate-fade-in,
+  .animate-fade-up,
+  .animate-scale-in {
+    animation-duration: 0.5s;
+  }
+}

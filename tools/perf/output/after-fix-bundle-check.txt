@@ -1,0 +1,51 @@
+
+> Bundle budgets — C:\Users\bbask\Coding_Projects\Wedding_Website_Clean\rebuild\dist
+## Bundle budgets — `rebuild/dist`
+
+### Initial JS (entry + `modulepreload`)
+
+| File | Raw | gzip | brotli |
+| --- | ---: | ---: | ---: |
+| index-Bri6DjxV.js | 317811 B | 96.96 KiB | 83.54 KiB |
+| createLucideIcon-VjqcKefL.js | 193515 B | 62.96 KiB | 56.35 KiB |
+| **initial JS total** | **511326 B** | **159.92 KiB** | **139.89 KiB** |
+| budget: 180 KiB gzip |  | PASS |  |
+
+### Route chunks (lazy-route incremental JS, transitive static imports)
+
+| Route | Chunk(s) | Incremental gzip | Budget |
+| --- | --- | ---: | --- |
+| / | activity-C5HwlUfg.js, arrow-right-DgFqtAjT.js, Avatar-BHP0qR9s.js, calendar-DTZB1ez6.js, camera-BA6_5mim.js, chevron-right-CunyxtYv.js, guestbook-DXSsV0gC.js, home-Bx54PS5O.js, hooks-BkOF9flP.js, image-CXlbkyS7.js, Label-CzcLKI7B.js, media-9z769FU0.js, mediaReview-BTQSrjsP.js, message-circle-DJmq5WKA.js, schema-BJJ9EXhp.js, Skeleton-D6OTAAbC.js, sparkles-Cb_AkIZ5.js, ui-CyPi05At.js | 113.93 KiB | PASS (<= 120 KiB) |
+| /film | activity-C5HwlUfg.js, arrow-right-DgFqtAjT.js, Avatar-BHP0qR9s.js, chevron-right-CunyxtYv.js, film-z6QxYmV5.js, guestbook-DXSsV0gC.js, hooks-BkOF9flP.js, media-9z769FU0.js, mediaReview-BTQSrjsP.js, schema-BJJ9EXhp.js, Skeleton-D6OTAAbC.js, sparkles-Cb_AkIZ5.js, users-DsvbzSny.js | 108.74 KiB | PASS (<= 120 KiB) |
+| /gallery | activity-C5HwlUfg.js, Avatar-BHP0qR9s.js, gallery-route-BT-wwiP5.js, guestbook-DXSsV0gC.js, hooks-BkOF9flP.js, Label-CzcLKI7B.js, loader-circle-C5-TlK-6.js, media-9z769FU0.js, mediaReview-BTQSrjsP.js, schema-BJJ9EXhp.js, search-Cw4wCXta.js, share-2-p4WlTgQB.js, Skeleton-D6OTAAbC.js, square-check-big-DbtSV02E.js, trash-MzwUcN95.js, ui-CyPi05At.js | 108.65 KiB | PASS (<= 120 KiB) |
+| /upload | arrow-right-DgFqtAjT.js, Avatar-BHP0qR9s.js, check-DeSQNPNO.js, circle-check-big-DcSk_NkN.js, copy-7NBHjrjc.js, image-CXlbkyS7.js, Label-CzcLKI7B.js, loader-circle-C5-TlK-6.js, message-circle-DJmq5WKA.js, share-2-p4WlTgQB.js, shield-check-Bvii2-ky.js, Skeleton-D6OTAAbC.js, sparkles-Cb_AkIZ5.js, ui-CyPi05At.js, upload-ejrNU_Dv.js, UploadPage-Bgezb8z7.js | 21.37 KiB | PASS (<= 120 KiB) |
+| /guestbook | Avatar-BHP0qR9s.js, circle-check-big-DcSk_NkN.js, guestbook-DXSsV0gC.js, guestbook-route-UO0E2BTW.js, Label-CzcLKI7B.js, loader-circle-C5-TlK-6.js, message-square-BhTKLbJl.js, schema-BJJ9EXhp.js, search-Cw4wCXta.js, Skeleton-D6OTAAbC.js, sparkles-Cb_AkIZ5.js, ui-CyPi05At.js | 94.49 KiB | PASS (<= 120 KiB) |
+| /guest-photos | camera-BA6_5mim.js, guest-photos-C3uRCpjr.js, image-CXlbkyS7.js, message-circle-DJmq5WKA.js, upload-ejrNU_Dv.js | 4.40 KiB | PASS (<= 120 KiB) |
+| /activity | activity-C5HwlUfg.js, activity-route-BxEN4oDL.js, Avatar-BHP0qR9s.js, camera-BA6_5mim.js, Label-CzcLKI7B.js, message-circle-DJmq5WKA.js, schema-BJJ9EXhp.js, Skeleton-D6OTAAbC.js, ui-CyPi05At.js | 88.20 KiB | PASS (<= 120 KiB) |
+| /admin/login | admin-routes-Crq1dK0z.js, arrow-right-DgFqtAjT.js, check-DeSQNPNO.js, circle-check-big-DcSk_NkN.js, eye-CIz3HXmC.js, image-CXlbkyS7.js, Label-CzcLKI7B.js, loader-circle-C5-TlK-6.js, media-9z769FU0.js, mediaReview-BTQSrjsP.js, message-circle-DJmq5WKA.js, message-square-BhTKLbJl.js, schema-BJJ9EXhp.js, search-Cw4wCXta.js, shield-check-Bvii2-ky.js, Skeleton-D6OTAAbC.js, sparkles-Cb_AkIZ5.js, square-Bpkri-5q.js, square-check-big-DbtSV02E.js, trash-MzwUcN95.js, upload-ejrNU_Dv.js, users-DsvbzSny.js | 125.43 KiB | FAIL (<= 120 KiB) |
+| /admin | admin-routes-Crq1dK0z.js, arrow-right-DgFqtAjT.js, check-DeSQNPNO.js, circle-check-big-DcSk_NkN.js, eye-CIz3HXmC.js, image-CXlbkyS7.js, Label-CzcLKI7B.js, loader-circle-C5-TlK-6.js, media-9z769FU0.js, mediaReview-BTQSrjsP.js, message-circle-DJmq5WKA.js, message-square-BhTKLbJl.js, schema-BJJ9EXhp.js, search-Cw4wCXta.js, shield-check-Bvii2-ky.js, Skeleton-D6OTAAbC.js, sparkles-Cb_AkIZ5.js, square-Bpkri-5q.js, square-check-big-DbtSV02E.js, trash-MzwUcN95.js, upload-ejrNU_Dv.js, users-DsvbzSny.js | 125.43 KiB | FAIL (<= 120 KiB) |
+| /guest/:token | book-open-DpsceKCZ.js, calendar-DTZB1ez6.js, check-DeSQNPNO.js, copy-7NBHjrjc.js, eye-CIz3HXmC.js, guest-share-U53xZf_A.js, image-CXlbkyS7.js, loader-circle-C5-TlK-6.js, share-2-p4WlTgQB.js | 8.19 KiB | PASS (<= 120 KiB) |
+| /print | book-open-DpsceKCZ.js, guestbook-DXSsV0gC.js, image-CXlbkyS7.js, loader-circle-C5-TlK-6.js, media-9z769FU0.js, message-circle-DJmq5WKA.js, PrintPage-BTYXzVTI.js, schema-BJJ9EXhp.js, square-Bpkri-5q.js, square-check-big-DbtSV02E.js | 83.50 KiB | PASS (<= 120 KiB) |
+
+- Total JS (all chunks): **389.14 KiB gzip** (informational budget 450 KiB) across 45 files
+- CSS: 27.46 KiB gzip across 2 files; fonts: 542.60 KiB raw across 22 files
+- Unattributed non-initial chunks (no route mapping): sw.js (1.20 KiB)
+
+### ❌ Budget violations
+
+- **route-js:admin-login**: 125.43 KiB gzip vs 120 KiB budget (+5.43 KiB)
+- **route-js:admin**: 125.43 KiB gzip vs 120 KiB budget (+5.43 KiB)
+  + initial JS 159.92 KiB (budget 180 KiB) — PASS
+  - / -> 113.93 KiB incremental JS (PASS)
+  - /film -> 108.74 KiB incremental JS (PASS)
+  - /gallery -> 108.65 KiB incremental JS (PASS)
+  - /upload -> 21.37 KiB incremental JS (PASS)
+  - /guestbook -> 94.49 KiB incremental JS (PASS)
+  - /guest-photos -> 4.40 KiB incremental JS (PASS)
+  - /activity -> 88.20 KiB incremental JS (PASS)
+  - /admin/login -> 125.43 KiB incremental JS (FAIL)
+  - /admin -> 125.43 KiB incremental JS (FAIL)
+  - /guest/:token -> 8.19 KiB incremental JS (PASS)
+  - /print -> 83.50 KiB incremental JS (PASS)
+  - JSON: tools/perf/output/after-fix-bundle.json
+  x 2 budget violation(s)

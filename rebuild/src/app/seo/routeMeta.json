@@ -1,0 +1,431 @@
+{
+  "contractVersion": "wave8-1",
+  "generatedFrom": [
+    "contracts/seo-pwa.json",
+    "contracts/routes.json",
+    "contracts/content/rendered/*.json",
+    "src/components/seo/SEOHead.tsx"
+  ],
+  "notes": [
+    "Canonical prerender metadata table. Scripts (scripts/prerender.mjs, scripts/generate-sitemap.mjs) and the src/app/seo contract tests read THIS file, so a contract change only needs to move here once.",
+    "Entries with source 'wave8-fix' deliberately repair the frozen stale-metadata defects recorded in contracts/routes.json (activity, admin/*). The exact frozen values are kept in frozenStale so the Lead can update contracts/seo-pwa.json and the parity allowlist with a documented exception.",
+    "StructuredData is the exact JSON-LD graph the frozen SEOHead presets rendered (structuredDataCount in contracts/content/rendered/*.json); routes whose snapshots recorded structuredDataCount 0 keep structuredData null.",
+    "{{SITE_URL}} is replaced with the production origin at generate time (default: siteUrl below).",
+    "shellHeading is the boot-shell heading rendered inside #root before JS runs (LCP only). Public routes ship a shell; admin/guest-token/404 do not. createRoot replaces the shell on mount, so it never reaches the post-hydration parity capture."
+  ],
+  "siteUrl": "https://www.theporadas.com",
+  "sitemap": [
+    {
+      "path": "/",
+      "changefreq": "weekly",
+      "priority": 1
+    },
+    {
+      "path": "/film",
+      "changefreq": "monthly",
+      "priority": 0.9
+    },
+    {
+      "path": "/gallery",
+      "changefreq": "monthly",
+      "priority": 0.8
+    },
+    {
+      "path": "/guestbook",
+      "changefreq": "weekly",
+      "priority": 0.8
+    },
+    {
+      "path": "/guest-photos",
+      "changefreq": "weekly",
+      "priority": 0.7
+    },
+    {
+      "path": "/upload",
+      "changefreq": "weekly",
+      "priority": 0.7
+    }
+  ],
+  "manifest": {
+    "name": "Austin & Jordyn | Wedding Archive",
+    "short_name": "A&J Archive",
+    "description": "A permanent digital archive of our wedding day. Relive our story, browse the films, and view the galleries.",
+    "start_url": "/",
+    "scope": "/",
+    "display": "standalone",
+    "orientation": "portrait-primary",
+    "theme_color": "#d4af37",
+    "background_color": "#08080a",
+    "lang": "en",
+    "categories": ["lifestyle", "events"],
+    "icons": [
+      {
+        "src": "/images/icons/icon-72x72.png",
+        "sizes": "72x72",
+        "type": "image/png",
+        "purpose": "maskable any"
+      },
+      {
+        "src": "/images/icons/icon-96x96.png",
+        "sizes": "96x96",
+        "type": "image/png",
+        "purpose": "maskable any"
+      },
+      {
+        "src": "/images/icons/icon-128x128.png",
+        "sizes": "128x128",
+        "type": "image/png",
+        "purpose": "maskable any"
+      },
+      {
+        "src": "/images/icons/icon-144x144.png",
+        "sizes": "144x144",
+        "type": "image/png",
+        "purpose": "maskable any"
+      },
+      {
+        "src": "/images/icons/icon-152x152.png",
+        "sizes": "152x152",
+        "type": "image/png",
+        "purpose": "maskable any"
+      },
+      {
+        "src": "/images/icons/icon-192x192.png",
+        "sizes": "192x192",
+        "type": "image/png",
+        "purpose": "maskable any"
+      },
+      {
+        "src": "/images/icons/icon-384x384.png",
+        "sizes": "384x384",
+        "type": "image/png",
+        "purpose": "maskable any"
+      },
+      {
+        "src": "/images/icons/icon-512x512.png",
+        "sizes": "512x512",
+        "type": "image/png",
+        "purpose": "maskable any"
+      }
+    ],
+    "shortcuts": [
+      {
+        "name": "View Gallery",
+        "short_name": "Gallery",
+        "description": "Explore the full wedding collection",
+        "url": "/gallery",
+        "icons": [
+          {
+            "src": "/images/icons/icon-96x96.png",
+            "sizes": "96x96",
+            "type": "image/png"
+          }
+        ]
+      },
+      {
+        "name": "Guest Book",
+        "short_name": "Guest Book",
+        "description": "Leave a message for us",
+        "url": "/guestbook",
+        "icons": [
+          {
+            "src": "/images/icons/icon-96x96.png",
+            "sizes": "96x96",
+            "type": "image/png"
+          }
+        ]
+      }
+    ]
+  },
+  "robots": {
+    "allow": ["/"],
+    "disallow": ["/admin", "/guest/", "/print"],
+    "sitemapPath": "/sitemap.xml"
+  },
+  "serviceWorker": {
+    "version": "v1",
+    "precache": [
+      "/",
+      "/film/",
+      "/gallery/",
+      "/guestbook/",
+      "/upload/",
+      "/guest-photos/",
+      "/print/",
+      "/activity/",
+      "/manifest.webmanifest",
+      "/images/og-image.webp",
+      "/images/icons/icon-192x192.png",
+      "/images/icons/icon-512x512.png"
+    ],
+    "offlineFallback": "/",
+    "excludedPathPrefixes": [
+      "/admin",
+      "/guest/",
+      "/sw.js",
+      "/manifest.webmanifest",
+      "/robots.txt",
+      "/sitemap.xml"
+    ]
+  },
+  "routes": [
+    {
+      "id": "home",
+      "path": "/",
+      "outputPath": "index.html",
+      "kind": "public",
+      "title": "Home | Austin & Jordyn's Wedding",
+      "description": "Join us in celebrating the wedding of Austin and Jordyn. View our story, photos, and share your memories.",
+      "canonicalPath": "/",
+      "ogImage": "https://www.theporadas.com/images/home/intro-video-poster.png",
+      "ogType": "website",
+      "robots": "index, follow",
+      "structuredData": {
+        "@context": "https://schema.org",
+        "@graph": [
+          {
+            "@type": "WebSite",
+            "name": "Austin & Jordyn's Wedding",
+            "url": "{{SITE_URL}}"
+          },
+          {
+            "@type": "Event",
+            "name": "Austin & Jordyn's Wedding",
+            "description": "Relive the ceremony, portraits, guestbook, and shared memories from Austin and Jordyn’s wedding day.",
+            "startDate": "2025-05-10T15:30:00-04:00",
+            "eventStatus": "https://schema.org/EventCompleted",
+            "eventAttendanceMode": "https://schema.org/OfflineEventAttendanceMode",
+            "image": "{{SITE_URL}}/images/home/intro-video-poster.png",
+            "location": {
+              "@type": "Place",
+              "name": "The Lodge at Indian Lake",
+              "address": {
+                "@type": "PostalAddress",
+                "streetAddress": "The Lodge at Indian Lake"
+              }
+            },
+            "organizer": {
+              "@type": "Organization",
+              "name": "Austin & Jordyn's Wedding"
+            },
+            "performer": [
+              {
+                "@type": "Person",
+                "name": "Austin Porada"
+              },
+              {
+                "@type": "Person",
+                "name": "Jordyn Porada"
+              }
+            ]
+          }
+        ]
+      },
+      "shellHeading": "Austin & Jordyn"
+    },
+    {
+      "id": "film",
+      "path": "/film",
+      "outputPath": "film/index.html",
+      "kind": "public",
+      "title": "Wedding Film | Austin & Jordyn's Wedding",
+      "description": "Watch the full wedding film for Austin and Jordyn, from getting ready through the last dance.",
+      "canonicalPath": "/film",
+      "ogImage": "https://www.theporadas.com/images/film/main-film-poster.png",
+      "ogType": "website",
+      "robots": "index, follow",
+      "structuredData": {
+        "@context": "https://schema.org",
+        "@type": "VideoObject",
+        "name": "Austin & Jordyn's Wedding Film",
+        "description": "A feature-length wedding film covering the ceremony, speeches, and celebration.",
+        "thumbnailUrl": "{{SITE_URL}}/images/film/main-film-poster.png",
+        "uploadDate": "2025-05-10",
+        "embedUrl": "{{SITE_URL}}/film"
+      },
+      "shellHeading": "The Wedding Film"
+    },
+    {
+      "id": "gallery",
+      "path": "/gallery",
+      "outputPath": "gallery/index.html",
+      "kind": "public",
+      "title": "Photo Gallery | Austin & Jordyn's Wedding",
+      "description": "Browse our wedding photos and share your own. A collection of memories from our special day.",
+      "canonicalPath": "/gallery",
+      "ogImage": "https://www.theporadas.com/images/home/intro-video-poster.png",
+      "ogType": "website",
+      "robots": "index, follow",
+      "structuredData": {
+        "@context": "https://schema.org",
+        "@type": "ImageGallery",
+        "name": "Wedding Photo Gallery",
+        "description": "A collection of wedding portraits, candids, and guest photos from Austin and Jordyn’s wedding."
+      },
+      "shellHeading": "Photo Gallery"
+    },
+    {
+      "id": "guestbook",
+      "path": "/guestbook",
+      "outputPath": "guestbook/index.html",
+      "kind": "public",
+      "title": "Guestbook | Austin & Jordyn's Wedding",
+      "description": "Leave a message for Austin and Jordyn. Share your favorite memories from our wedding day.",
+      "canonicalPath": "/guestbook",
+      "ogImage": "https://www.theporadas.com/images/home/intro-video-poster.png",
+      "ogType": "website",
+      "robots": "index, follow",
+      "structuredData": {
+        "@context": "https://schema.org",
+        "@type": "CollectionPage",
+        "name": "Austin & Jordyn's Guestbook",
+        "description": "Messages and replies from family and friends."
+      },
+      "shellHeading": "The Guestbook"
+    },
+    {
+      "id": "upload",
+      "path": "/upload",
+      "outputPath": "upload/index.html",
+      "kind": "public",
+      "title": "Share Memories | Austin & Jordyn's Wedding",
+      "description": "Share the wedding site, upload your photos and videos, and help Austin and Jordyn keep the day alive from every angle.",
+      "canonicalPath": "/upload",
+      "ogImage": "https://www.theporadas.com/images/home/intro-video-poster.png",
+      "ogType": "website",
+      "robots": "index, follow",
+      "structuredData": {
+        "@context": "https://schema.org",
+        "@type": "WebPage",
+        "name": "Share Wedding Memories",
+        "description": "A guest sharing page for sending photos, videos, and the wedding site itself to loved ones."
+      },
+      "shellHeading": "Share Memories"
+    },
+    {
+      "id": "guest-photos",
+      "path": "/guest-photos",
+      "outputPath": "guest-photos/index.html",
+      "kind": "public",
+      "title": "Guest Photos | Austin & Jordyn's Wedding",
+      "description": "Browse the photos and notes shared by family and friends from Austin and Jordyn Porada wedding celebrations.",
+      "canonicalPath": "/guest-photos",
+      "ogImage": "https://www.theporadas.com/images/home/intro-video-poster.png",
+      "ogType": "website",
+      "robots": "index, follow",
+      "structuredData": null,
+      "shellHeading": "Guest Photos"
+    },
+    {
+      "id": "print",
+      "path": "/print",
+      "outputPath": "print/index.html",
+      "kind": "print",
+      "title": "Memory Book | Austin & Jordyn's Wedding",
+      "description": "Print a photo book or guestbook keepsake from Austin & Jordyn's wedding archive.",
+      "canonicalPath": "/print",
+      "ogImage": "https://www.theporadas.com/images/home/intro-video-poster.png",
+      "ogType": "website",
+      "robots": "noindex, nofollow",
+      "structuredData": {
+        "@context": "https://schema.org",
+        "@type": "WebPage",
+        "name": "Memory Book — Print & Export",
+        "description": "A print-ready photo book and guestbook keepsake from the wedding archive.",
+        "_prerenderNote": "The frozen page forces a light surface and noindex; prerender keeps the frozen noindex contract."
+      },
+      "shellHeading": "Memory Book"
+    },
+    {
+      "id": "activity",
+      "path": "/activity",
+      "outputPath": "activity/index.html",
+      "kind": "public",
+      "source": "wave8-fix",
+      "fixNote": "Frozen defect (contracts/routes.json): /activity mounted no SEOHead, so a direct load inherited the static index.html title/description/canonical/OG. Wave 8 prerender writes the intended per-route metadata below; the Lead updates contracts/seo-pwa.json + the parity allowlist with this documented exception.",
+      "title": "Activity | Austin & Jordyn's Wedding",
+      "description": "See the latest photos, guestbook notes, and memories added to Austin and Jordyn's wedding archive.",
+      "canonicalPath": "/activity",
+      "ogImage": "https://www.theporadas.com/images/home/intro-video-poster.png",
+      "ogType": "website",
+      "robots": "index, follow",
+      "structuredData": null,
+      "frozenStale": {
+        "title": "Austin & Jordyn | Wedding Archive",
+        "description": "A permanent digital archive of our wedding day. Relive our story, browse the films, and view the galleries.",
+        "canonical": "https://www.theporadas.com/",
+        "ogImage": "https://www.theporadas.com/images/og-image.webp",
+        "robots": "index, follow"
+      },
+      "shellHeading": "Activity"
+    },
+    {
+      "id": "admin-login",
+      "path": "/admin/login",
+      "outputPath": "admin/login/index.html",
+      "kind": "admin",
+      "title": "Admin Login | Austin & Jordyn's Wedding",
+      "description": "Secure admin access for the Austin and Jordyn wedding site.",
+      "canonicalPath": "/admin/login",
+      "ogImage": "https://www.theporadas.com/images/home/intro-video-poster.png",
+      "ogType": "website",
+      "robots": "noindex, nofollow",
+      "structuredData": null
+    },
+    {
+      "id": "admin",
+      "path": "/admin/*",
+      "outputPath": "admin/index.html",
+      "kind": "admin",
+      "source": "wave8-fix",
+      "fixNote": "Frozen defect (contracts/routes.json): no admin page mounted SEOHead, so admin direct loads inherited public index.html metadata (index, follow). Wave 8 prerenders a noindex admin shell used by the /admin/* rewrite; each child page's runtime metadata follows in the admin wave.",
+      "title": "Admin | Austin & Jordyn's Wedding",
+      "description": "Secure admin area for the Austin and Jordyn wedding archive.",
+      "canonicalPath": null,
+      "ogImage": "https://www.theporadas.com/images/home/intro-video-poster.png",
+      "ogType": "website",
+      "robots": "noindex, nofollow",
+      "structuredData": null,
+      "frozenStale": {
+        "title": "Austin & Jordyn | Wedding Archive",
+        "description": "A permanent digital archive of our wedding day. Relive our story, browse the films, and view the galleries.",
+        "canonical": "https://www.theporadas.com/",
+        "robots": "index, follow"
+      }
+    },
+    {
+      "id": "guest-token",
+      "path": "/guest/:token",
+      "outputPath": "guest/index.html",
+      "kind": "guest",
+      "source": "wave8-shell",
+      "fixNote": "The frozen runtime composes the title from the resolved guest name at runtime and noindexes the page. Static prerender ships a generic noindex shell (used by the /guest/* rewrite) because the token cannot be resolved at build time; the client still applies the dynamic <guest name>'s Album title.",
+      "title": "Guest Album | Austin & Jordyn's Wedding",
+      "description": "Explore the photo uploads, photo claims, and handwritten guestbook notes contributed by our guests to the wedding archive.",
+      "canonicalPath": null,
+      "ogImage": "https://www.theporadas.com/images/home/intro-video-poster.png",
+      "ogType": "website",
+      "robots": "noindex, nofollow",
+      "structuredData": null
+    },
+    {
+      "id": "not-found",
+      "path": "/people",
+      "outputPath": "people/index.html",
+      "kind": "error",
+      "title": "Page Not Found | Austin & Jordyn's Wedding",
+      "description": "This page could not be found.",
+      "canonicalPath": "/404",
+      "ogImage": "https://www.theporadas.com/images/home/intro-video-poster.png",
+      "ogType": "website",
+      "robots": "noindex, nofollow",
+      "structuredData": {
+        "@context": "https://schema.org",
+        "@type": "WebPage",
+        "name": "404 Page Not Found",
+        "description": "A missing page on the Austin and Jordyn wedding website."
+      },
+      "note": "matches the frozen NotFoundSEO metadata; serving it for the retired /people route keeps the legacy noindex 404 behavior for crawlers without a server rewrite"
+    }
+  ]
+}

@@ -1,0 +1,43 @@
+{
+  "schemaVersion": 1,
+  "kind": "bundle-budget",
+  "generatedAt": "2026-11-09T19:05:00.000Z",
+  "label": "before-fix (pre route-splitting; router eagerly imported adapters)",
+  "distDir": "rebuild/dist",
+  "entry": "assets/index-eaItMFwQ.js",
+  "budgets": { "initialJsKiB": 180, "routeJsKiB": 120, "totalJsKiB": 450 },
+  "compression": "gzipSync(level 9); KiB = 1024 B",
+  "provenance": "Transcribed from `node tools/perf/bundle.mjs` stdout on the pre-fix build (entry index-eaItMFwQ.js). Current-build numbers live in after-fix-bundle.json.",
+  "initial": {
+    "files": [
+      { "file": "assets/index-eaItMFwQ.js", "rawBytes": 837748, "gzipBytes": 229079 },
+      { "file": "assets/createLucideIcon-VjqcKefL.js", "rawBytes": 193515, "gzipBytes": 64474 },
+      { "file": "assets/cn-FREdMtAG.js", "rawBytes": 27196, "gzipBytes": 8591 }
+    ],
+    "gzipBytes": 302144,
+    "gzipKiB": 295.05
+  },
+  "routes": [
+    { "path": "/", "incrementalGzipKiB": 19.83 },
+    { "path": "/film", "incrementalGzipKiB": 19.29 },
+    { "path": "/gallery", "incrementalGzipKiB": 9.13 },
+    { "path": "/print", "incrementalGzipKiB": 3.58 },
+    { "path": "/upload", "incrementalGzipKiB": 12.47 },
+    { "path": "/guest-photos", "incrementalGzipKiB": 3.39 },
+    { "path": "/guest/:token", "incrementalGzipKiB": 6.93 },
+    { "path": "/activity", "incrementalGzipKiB": 4.48 }
+  ],
+  "totals": {
+    "allJsGzipKiB": 372.15,
+    "allCssGzipKiB": 27.5,
+    "jsFiles": 17
+  },
+  "violations": [
+    {
+      "budget": "initial-js",
+      "limitKiB": 180,
+      "actualKiB": 295.05,
+      "overByKiB": 115.05
+    }
+  ]
+}

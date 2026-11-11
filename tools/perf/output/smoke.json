@@ -1,0 +1,170 @@
+{
+  "schemaVersion": 1,
+  "kind": "runtime-budget",
+  "generatedAt": "2026-11-10T00:21:05.337Z",
+  "label": "rebuild_dist_gzip",
+  "target": {
+    "mode": "internal-static",
+    "url": "http://127.0.0.1:64217",
+    "compression": "gzip",
+    "dist": "rebuild/dist",
+    "fingerprintBefore": {
+      "indexHtmlSha256": "eb7386b57428474fbd144562c8598220232779899db2d3e70c845f7a9e26588f",
+      "assetFiles": 69
+    },
+    "fingerprintAfter": {
+      "indexHtmlSha256": "eb7386b57428474fbd144562c8598220232779899db2d3e70c845f7a9e26588f",
+      "assetFiles": 69
+    },
+    "consistency": "stable"
+  },
+  "url": "http://127.0.0.1:64217",
+  "mockNetwork": "mocked (supabase empty JSON, image stub, media aborted)",
+  "networkProfile": {
+    "name": "slow-4g",
+    "latencyMs": 150,
+    "downloadThroughputBytesPerSecond": 209715,
+    "uploadThroughputBytesPerSecond": 96000,
+    "connectionType": "cellular4g"
+  },
+  "cpuThrottleRate": 4,
+  "settling": {
+    "quietWindowMs": 500,
+    "networkIdleTimeoutMs": 8000
+  },
+  "toolchain": {
+    "node": "v26.8.1",
+    "playwright": "1.65.0",
+    "chromium": "158.0.8127.18"
+  },
+  "budgets": {
+    "lcpMs": 2000,
+    "cls": 0.05
+  },
+  "routes": ["/activity"],
+  "viewports": [
+    {
+      "id": "mobile",
+      "width": 390,
+      "height": 844
+    }
+  ],
+  "warmupRuns": 0,
+  "runs": 1,
+  "cells": [
+    {
+      "route": "/activity",
+      "viewport": "mobile",
+      "viewportPixels": {
+        "width": 390,
+        "height": 844
+      },
+      "runs": [
+        {
+          "lcpMs": 3548,
+          "lcpElement": "p.mb-6.max-w-xs",
+          "lcpSize": 14085,
+          "cls": 0,
+          "shiftCount": 0,
+          "clsShiftSources": [],
+          "fcpMs": 2504,
+          "ttfbMs": 159.59999999403954,
+          "dclMs": 1988.4000000059605,
+          "loadMs": 1991.699999988079,
+          "longTasks": 5,
+          "longTaskMs": 608,
+          "transferBytes": {
+            "script": 257378,
+            "css": 28090,
+            "font": 23176,
+            "image": 0,
+            "media": 0,
+            "data": 0,
+            "other": 0,
+            "total": 310013
+          },
+          "requestCount": 14,
+          "httpStatus": 200,
+          "consoleErrors": [
+            "WebSocket connection to 'wss://placeholder.supabase.co/realtime/v1/websocket?apikey=ci-placeholder-anon-key&eventsPerSecond=10&vsn=2.0.0' failed: Error in connection establishment: net::ERR_NAME_NOT_RESOLVED"
+          ],
+          "requestFailures": [],
+          "mocks": {
+            "realAssets": 14,
+            "supabase": 1,
+            "images": 0,
+            "blocked": 0
+          },
+          "finalUrl": "http://127.0.0.1:64217/activity",
+          "ok": true,
+          "invalidReason": null
+        }
+      ],
+      "warmupRuns": [],
+      "median": {
+        "lcpMs": 3548,
+        "cls": 0,
+        "fcpMs": 2504,
+        "ttfbMs": 159.59999999403954,
+        "dclMs": 1988.4000000059605,
+        "loadMs": 1991.699999988079,
+        "longTasks": 5,
+        "longTaskMs": 608,
+        "requestCount": 14,
+        "transferBytes": {
+          "script": 257378,
+          "css": 28090,
+          "font": 23176,
+          "image": 0,
+          "media": 0,
+          "data": 0,
+          "other": 0,
+          "total": 310013
+        },
+        "lcpElement": "p.mb-6.max-w-xs",
+        "clsSources": [],
+        "httpStatus": 200,
+        "consoleErrors": 1,
+        "requestFailures": 0
+      },
+      "budget": {
+        "ok": false,
+        "violations": ["lcp 3548 ms > 2000 ms"]
+      },
+      "validRuns": 1,
+      "invalidRuns": []
+    }
+  ],
+  "summary": {
+    "violations": [
+      {
+        "cell": "/activity (mobile)",
+        "reasons": ["lcp 3548 ms > 2000 ms"]
+      }
+    ],
+    "cells": 1,
+    "failingCells": 1,
+    "invalidRuns": 0,
+    "distChangedDuringRun": false
+  },
+  "baselineComparison": {
+    "baselinePath": "tools/perf/output/baseline-before-fix-compressed.json",
+    "label": "before-fix (route-splitting + CLS fix not applied)",
+    "capturedAt": "2026-11-09T19:08:00.000Z",
+    "cells": [
+      {
+        "route": "/activity",
+        "viewport": "mobile",
+        "before": null,
+        "after": {
+          "lcpMs": 3548,
+          "cls": 0,
+          "ttfbMs": 159.59999999403954,
+          "transferBytes": 310013,
+          "longTasks": 5
+        },
+        "delta": null
+      }
+    ]
+  }
+}

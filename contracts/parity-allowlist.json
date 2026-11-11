@@ -1,0 +1,44 @@
+{
+  "entries": [
+    {
+      "route": "/film",
+      "viewport": "desktop",
+      "theme": "dark",
+      "reason": "Wave 8/9 Film: text/DOM parity is exact and page heights match; the residual (0.0117% measured desktop dark) is 1px raster phase around the chapter timeline/player chrome on the dark gradient surfaces. Kept as a documented sub-pixel allowance instead of a mask; re-evaluate after the post-cutover video-chrome visual pass.",
+      "expiresAtWave": 9,
+      "maxDiffPixelRatio": 0.0002
+    },
+    {
+      "route": "/",
+      "viewport": "desktop",
+      "theme": "dark",
+      "reason": "Wave 8/9 Home shell: text and layout are exact (0 textDiffs, identical page heights) after the boot-shell + data wiring; the remaining pixel residual is sub-0.02% and is dominated by 1px raster phase on backdrop-blur/gradient surfaces at fractional edges (same class as the solved 404 mobile case). Re-measured on the Wave 8 build with the edge-tolerance harness. Re-evaluate after the post-cutover visual fixes (R25/R27/R28) land.",
+      "expiresAtWave": 9,
+      "maxDiffPixelRatio": 0.003
+    },
+    {
+      "route": "/",
+      "viewport": "mobile",
+      "theme": "dark",
+      "reason": "Wave 8/9 Home shell: text and layout are exact (0 textDiffs, identical page heights) after the boot-shell + data wiring; the remaining pixel residual is sub-0.02% and is dominated by 1px raster phase on backdrop-blur/gradient surfaces at fractional edges (same class as the solved 404 mobile case). Re-measured on the Wave 8 build with the edge-tolerance harness. Re-evaluate after the post-cutover visual fixes (R25/R27/R28) land.",
+      "expiresAtWave": 9,
+      "maxDiffPixelRatio": 0.002
+    },
+    {
+      "route": "/",
+      "viewport": "desktop",
+      "theme": "light",
+      "reason": "Wave 8/9 Home shell: text and layout are exact (0 textDiffs, identical page heights) after the boot-shell + data wiring; the remaining pixel residual is sub-0.02% and is dominated by 1px raster phase on backdrop-blur/gradient surfaces at fractional edges (same class as the solved 404 mobile case). Re-measured on the Wave 8 build with the edge-tolerance harness. Re-evaluate after the post-cutover visual fixes (R25/R27/R28) land.",
+      "expiresAtWave": 9,
+      "maxDiffPixelRatio": 0.003
+    },
+    {
+      "route": "/",
+      "viewport": "mobile",
+      "theme": "light",
+      "reason": "Wave 8/9 Home shell: text and layout are exact (0 textDiffs, identical page heights) after the boot-shell + data wiring; the remaining pixel residual is sub-0.02% and is dominated by 1px raster phase on backdrop-blur/gradient surfaces at fractional edges (same class as the solved 404 mobile case). Re-measured on the Wave 8 build with the edge-tolerance harness. Re-evaluate after the post-cutover visual fixes (R25/R27/R28) land.",
+      "expiresAtWave": 9,
+      "maxDiffPixelRatio": 0.002
+    }
+  ]
+}

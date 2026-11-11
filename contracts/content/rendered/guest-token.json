@@ -1,0 +1,158 @@
+{
+  "id": "guest-token",
+  "route": "/guest/valid-showcase-token",
+  "capturedFrom": "legacy-freeze-2026-11-08",
+  "fixedNow": "2026-11-08T17:00:00.000Z",
+  "capture": {
+    "baseUrl": "http://127.0.0.1:4174",
+    "build": "production build of legacy-freeze-2026-11-08",
+    "reducedMotion": "reduce",
+    "deviceScaleFactor": 1,
+    "colorScheme": "light",
+    "timezone": "America/New_York",
+    "locale": "en-US",
+    "serviceWorkers": "blocked",
+    "mocks": "contracts/fixtures/*.json"
+  },
+  "snapshots": {
+    "desktop": {
+      "viewport": { "width": 1440, "height": 900 },
+      "title": "Jane Miller's Album | Austin & Jordyn's Wedding",
+      "lang": "en",
+      "theme": "dark",
+      "meta": {
+        "description": "Explore the photo uploads, photo claims, and handwritten guestbook notes contributed by Jane Miller to our wedding archive.",
+        "robots": "noindex, nofollow",
+        "canonical": null,
+        "ogTitle": "Jane Miller's Album | Austin & Jordyn's Wedding",
+        "ogDescription": "Explore the photo uploads, photo claims, and handwritten guestbook notes contributed by Jane Miller to our wedding archive.",
+        "ogImage": "https://www.theporadas.com/images/home/intro-video-poster.png",
+        "twitterTitle": "Jane Miller's Album | Austin & Jordyn's Wedding",
+        "twitterImage": "https://www.theporadas.com/images/home/intro-video-poster.png",
+        "structuredDataCount": 0
+      },
+      "headings": [{ "level": 1, "text": "Jane Miller's Showcase" }],
+      "navLinks": [
+        { "text": "A&J", "href": "/" },
+        { "text": "WATCH FILM", "href": "/film" },
+        { "text": "GALLERY", "href": "/gallery" },
+        { "text": "GUESTBOOK", "href": "/guestbook" },
+        { "text": "SHARE", "href": "/upload" },
+        { "text": "MEMORY BOOK", "href": "/print" },
+        {
+          "text": "Watch the film Revisit the ceremony, speeches, and the whole dance floor arc.",
+          "href": "/film"
+        },
+        {
+          "text": "Browse the gallery Portraits, candids, and every little detail we never want to forget.",
+          "href": "/gallery"
+        },
+        {
+          "text": "Leave a note A quiet last stop for one message, blessing, or little memory from the day.",
+          "href": "/guestbook"
+        },
+        {
+          "text": "Memory Book Print a keepsake photo book or guestbook — save as PDF from any browser.",
+          "href": "/print"
+        }
+      ],
+      "images": [
+        "/images/engagement/PoradaProposal-29.webp",
+        "/images/engagement/PoradaProposal-11.webp",
+        "/images/engagement/PoradaProposal-150.webp",
+        "/images/engagement/PoradaProposal-181.webp",
+        "/images/engagement/PoradaProposal-255.webp",
+        "/images/engagement/PoradaProposal-277.webp"
+      ],
+      "mainText": [
+        "BACK TO GALLERY",
+        "GUEST MEMORY ALBUM",
+        "Jane Miller's Showcase",
+        "6 Photos Shared",
+        "•",
+        "3 Messages Written",
+        "Share This Album",
+        "Photos (6)",
+        "Guestbook Note (3)",
+        "First look on the lawn",
+        "24",
+        "Walking toward the ceremony garden",
+        "58",
+        "Quiet vows before the applause",
+        "42",
+        "The first kiss",
+        "89",
+        "A table full of laughter",
+        "36",
+        "First dance under the lights",
+        "67"
+      ]
+    },
+    "mobile": {
+      "viewport": { "width": 390, "height": 844 },
+      "title": "Jane Miller's Album | Austin & Jordyn's Wedding",
+      "lang": "en",
+      "theme": "dark",
+      "meta": {
+        "description": "Explore the photo uploads, photo claims, and handwritten guestbook notes contributed by Jane Miller to our wedding archive.",
+        "robots": "noindex, nofollow",
+        "canonical": null,
+        "ogTitle": "Jane Miller's Album | Austin & Jordyn's Wedding",
+        "ogDescription": "Explore the photo uploads, photo claims, and handwritten guestbook notes contributed by Jane Miller to our wedding archive.",
+        "ogImage": "https://www.theporadas.com/images/home/intro-video-poster.png",
+        "twitterTitle": "Jane Miller's Album | Austin & Jordyn's Wedding",
+        "twitterImage": "https://www.theporadas.com/images/home/intro-video-poster.png",
+        "structuredDataCount": 0
+      },
+      "headings": [{ "level": 1, "text": "Jane Miller's Showcase" }],
+      "navLinks": [
+        { "text": "A&J", "href": "/" },
+        { "text": "FilmWatch Film", "href": "/film" },
+        { "text": "PhotosGallery", "href": "/gallery" },
+        { "text": "GuestsGuestbook", "href": "/guestbook" },
+        { "text": "ShareShare", "href": "/upload" },
+        { "text": "PrintMemory Book", "href": "/print" },
+        { "text": "Watch the film", "href": "/film" },
+        { "text": "Browse the gallery", "href": "/gallery" },
+        { "text": "Leave a note", "href": "/guestbook" },
+        { "text": "Memory Book", "href": "/print" },
+        { "text": "WATCH FILM", "href": "/film" },
+        { "text": "GALLERY", "href": "/gallery" },
+        { "text": "GUESTBOOK", "href": "/guestbook" },
+        { "text": "SHARE", "href": "/upload" },
+        { "text": "MEMORY BOOK", "href": "/print" }
+      ],
+      "images": [
+        "/images/engagement/PoradaProposal-29.webp",
+        "/images/engagement/PoradaProposal-11.webp",
+        "/images/engagement/PoradaProposal-150.webp",
+        "/images/engagement/PoradaProposal-181.webp",
+        "/images/engagement/PoradaProposal-255.webp",
+        "/images/engagement/PoradaProposal-277.webp"
+      ],
+      "mainText": [
+        "BACK TO GALLERY",
+        "GUEST MEMORY ALBUM",
+        "Jane Miller's Showcase",
+        "6 Photos Shared",
+        "•",
+        "3 Messages Written",
+        "Share This Album",
+        "Photos (6)",
+        "Guestbook Note (3)",
+        "First look on the lawn",
+        "24",
+        "Walking toward the ceremony garden",
+        "58",
+        "Quiet vows before the applause",
+        "42",
+        "The first kiss",
+        "89",
+        "A table full of laughter",
+        "36",
+        "First dance under the lights",
+        "67"
+      ]
+    }
+  }
+}

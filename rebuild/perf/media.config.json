@@ -1,0 +1,21 @@
+{
+  "schemaVersion": 1,
+  "sourceDir": "../public/images",
+  "outputDir": "public/images/optimized",
+  "publicPath": "/images/optimized",
+  "manifestPath": "src/shared/media/media-manifest.json",
+  "widths": [320, 480, 640, 768, 1024, 1280, 1600, 1920],
+  "formats": ["avif", "webp", "jpg"],
+  "quality": { "avif": 55, "webp": 80, "jpg": 82 },
+  "generator": "scripts/media-optimize.mjs",
+  "include": [
+    "home/",
+    "film/",
+    "couple/",
+    "engagement/",
+    "parents/",
+    "parent-film-cards/",
+    "wedding-party/"
+  ],
+  "exclude": []
+}

@@ -1,0 +1,138 @@
+{
+  "schemaVersion": 1,
+  "kind": "runtime-budget",
+  "generatedAt": "2026-11-09T19:08:00.000Z",
+  "label": "before-fix (route-splitting + CLS fix not applied)",
+  "url": "http://127.0.0.1:ephemeral (internal-static gzip server)",
+  "target": {
+    "mode": "internal-static",
+    "compression": "gzip",
+    "dist": "rebuild/dist",
+    "entryAsset": "assets/index-eaItMFwQ.js",
+    "note": "Pre-fix build measured for the before/after evidence. One measured run per cell (no warm-up), stable build; captured while the Lead was preparing the route-splitting + CLS fixes."
+  },
+  "mockNetwork": "mocked (supabase empty JSON, image stub, media aborted)",
+  "networkProfile": {
+    "name": "slow-4g",
+    "latencyMs": 150,
+    "downloadThroughputBytesPerSecond": 209715,
+    "uploadThroughputBytesPerSecond": 96000,
+    "connectionType": "cellular4g"
+  },
+  "cpuThrottleRate": 4,
+  "budgets": { "lcpMs": 2000, "cls": 0.05 },
+  "routes": ["/", "/gallery", "/film"],
+  "viewports": [
+    { "id": "mobile", "width": 390, "height": 844 },
+    { "id": "desktop", "width": 1440, "height": 900 }
+  ],
+  "warmupRuns": 0,
+  "runs": 1,
+  "provenance": "Values transcribed from the harness stdout of the pre-fix dry run (1 measured run per cell). Only the fields consumed by --baseline are present.",
+  "cells": [
+    {
+      "route": "/",
+      "viewport": "mobile",
+      "validRuns": 1,
+      "median": {
+        "lcpMs": 4084,
+        "cls": 0.0293,
+        "ttfbMs": 158,
+        "transferBytes": { "total": 380027 },
+        "longTasks": 4,
+        "requestCount": 28,
+        "lcpElement": "h2.mt-4.font-display"
+      },
+      "budget": { "ok": false, "violations": ["lcp 4084 ms > 2000 ms"] }
+    },
+    {
+      "route": "/gallery",
+      "viewport": "mobile",
+      "validRuns": 1,
+      "median": {
+        "lcpMs": 2828,
+        "cls": 1,
+        "ttfbMs": 154,
+        "transferBytes": { "total": 371087 },
+        "longTasks": 6,
+        "requestCount": 15,
+        "lcpElement": "h2.mt-4.font-display"
+      },
+      "budget": { "ok": false, "violations": ["cls 1.0000 > 0.05"] }
+    },
+    {
+      "route": "/film",
+      "viewport": "mobile",
+      "validRuns": 1,
+      "median": {
+        "lcpMs": 2728,
+        "cls": 1.0293,
+        "ttfbMs": 154,
+        "transferBytes": { "total": 411740 },
+        "longTasks": 5,
+        "requestCount": 44,
+        "lcpElement": "h2.mt-4.font-display"
+      },
+      "budget": { "ok": false, "violations": ["cls 1.0293 > 0.05"] }
+    },
+    {
+      "route": "/",
+      "viewport": "desktop",
+      "validRuns": 1,
+      "median": {
+        "lcpMs": 2620,
+        "cls": 0.6389,
+        "ttfbMs": 153,
+        "transferBytes": { "total": 419369 },
+        "longTasks": 8,
+        "requestCount": 32,
+        "lcpElement": "h2.mt-4.font-display"
+      },
+      "budget": { "ok": false, "violations": ["cls 0.6389 > 0.05"] }
+    },
+    {
+      "route": "/gallery",
+      "viewport": "desktop",
+      "validRuns": 1,
+      "median": {
+        "lcpMs": 2620,
+        "cls": 0.6389,
+        "ttfbMs": 154,
+        "transferBytes": { "total": 374047 },
+        "longTasks": 6,
+        "requestCount": 23,
+        "lcpElement": "h2.mt-4.font-display"
+      },
+      "budget": { "ok": false, "violations": ["cls 0.6389 > 0.05"] }
+    },
+    {
+      "route": "/film",
+      "viewport": "desktop",
+      "validRuns": 1,
+      "median": {
+        "lcpMs": 2872,
+        "cls": 0.6389,
+        "ttfbMs": 153,
+        "transferBytes": { "total": 411740 },
+        "longTasks": 8,
+        "requestCount": 44,
+        "lcpElement": "h2.mt-4.font-display"
+      },
+      "budget": { "ok": false, "violations": ["cls 0.6389 > 0.05"] }
+    }
+  ],
+  "summary": {
+    "violations": [
+      { "cell": "/ (mobile)", "reasons": ["lcp 4084 ms > 2000 ms"] },
+      { "cell": "/gallery (mobile)", "reasons": ["cls 1.0000 > 0.05"] },
+      { "cell": "/film (mobile)", "reasons": ["cls 1.0293 > 0.05"] },
+      { "cell": "/ (desktop)", "reasons": ["cls 0.6389 > 0.05"] },
+      { "cell": "/gallery (desktop)", "reasons": ["cls 0.6389 > 0.05"] },
+      { "cell": "/film (desktop)", "reasons": ["cls 0.6389 > 0.05"] }
+    ],
+    "cells": 6,
+    "failingCells": 6,
+    "invalidRuns": 0,
+    "distChangedDuringRun": false
+  }
+}

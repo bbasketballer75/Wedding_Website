@@ -1,0 +1,235 @@
+import { Link, useRouterState } from '@tanstack/react-router'
+import { AnimatePresence, motion } from 'framer-motion'
+import { Menu, X, type LucideIcon } from 'lucide-react'
+import { useEffect, useRef, useState } from 'react'
+import { cn } from '@/shared/lib/cn'
+import { publicNavLinks, type PublicNavPath } from './publicNav'
+import { ThemeToggle } from './ThemeToggle'
+
+interface HeaderLinkProps {
+  path: PublicNavPath
+  name: string
+  mobileName: string
+  icon: LucideIcon
+  isActive: boolean
+  isPrimary?: boolean
+}
+
+/**
+ * One header destination. DOM order and class strings are the frozen
+ * `HeaderLink` verbatim (two responsive label spans, so text parity's
+ * textContent stays `mobileName + name` on both viewports).
+ */
+function HeaderLink({
+  path,
+  name,
+  mobileName,
+  icon: Icon,
+  isActive,
+  isPrimary = false,
+}: HeaderLinkProps) {
+  return (
+    <Link
+      to={path}
+      aria-current={isActive ? 'page' : undefined}
+      className={cn(
+        'flex shrink-0 items-center gap-1 rounded-full px-2 py-2 text-[9px] font-medium leading-none uppercase tracking-[0.16em] transition-all duration-300 max-[360px]:gap-0 max-[360px]:px-1.5 max-[360px]:text-[8px] max-[360px]:tracking-[0.12em] min-[430px]:px-2.5 sm:gap-2 sm:px-4 sm:py-2.5 sm:text-xs sm:tracking-[0.24em]',
+        isActive
+          ? 'border border-[color:var(--ui-accent)] bg-[color:var(--ui-surface-elevated)] text-[color:var(--ui-accent-strong)]'
+          : isPrimary
+            ? 'text-[color:var(--ui-accent-strong)] hover:bg-[color:var(--ui-surface-elevated)]'
+            : 'text-[color:var(--ui-muted)] hover:bg-[color:var(--ui-surface-elevated)] hover:text-[color:var(--ui-text)]'
+      )}
+    >
+      <Icon
+        className={cn(
+          'h-3.5 w-3.5 max-[360px]:h-3 max-[360px]:w-3 sm:h-4 sm:w-4',
+          isActive ? 'text-gold-700' : isPrimary ? 'text-gold-500' : 'text-gold-600'
+        )}
+      />
+      <span className='max-[360px]:hidden sm:hidden'>{mobileName}</span>
+      <span className='hidden sm:inline'>{name}</span>
+    </Link>
+  )
+}
+
+function HeaderContent() {
+  const pathname = useRouterState({ select: state => state.location.pathname })
+  const [isVisible, setIsVisible] = useState(true)
+  const [menuOpenPath, setMenuOpenPath] = useState<string | null>(null)
+  const lastScrollYRef = useRef(0)
+  const menuButtonRef = useRef<HTMLButtonElement>(null)
+  // Derived state instead of a close-on-navigation effect: the menu is open
+  // only for the path it was opened on, which matches the frozen app's
+  // "close mobile menu on route change" effect without a cascading render.
+  const isMobileMenuOpen = menuOpenPath === pathname
+  const toggleMobileMenu = () => setMenuOpenPath(isMobileMenuOpen ? null : pathname)
+
+  useEffect(() => {
+    const handleScroll = () => {
+      const currentScrollY = window.scrollY
+      const shouldAutoHide = window.innerWidth < 1024
+
+      if (!shouldAutoHide) {
+        setIsVisible(true)
+        lastScrollYRef.current = currentScrollY
+        return
+      }
+
+      if (currentScrollY < 40) {
+        setIsVisible(true)
+      } else if (currentScrollY > lastScrollYRef.current) {
+        setIsVisible(false)
+      } else {
+        setIsVisible(true)
+      }
+
+      lastScrollYRef.current = currentScrollY
+    }
+
+    window.addEventListener('scroll', handleScroll, { passive: true })
+    return () => window.removeEventListener('scroll', handleScroll)
+  }, [])
+
+  // Prevent body scroll when mobile menu is open
+  useEffect(() => {
+    if (isMobileMenuOpen) {
+      document.body.style.overflow = 'hidden'
+    } else {
+      document.body.style.overflow = ''
+    }
+    return () => {
+      document.body.style.overflow = ''
+    }
+  }, [isMobileMenuOpen])
+
+  // Wave 2 a11y improvement beyond the frozen header: Escape dismisses the
+  // mobile menu and returns focus to its trigger. Behaviour-only change (no
+  // markup/CSS delta), gated by tests/e2e/shell-a11y.spec.ts.
+  useEffect(() => {
+    if (!isMobileMenuOpen) return
+    const handleKeyDown = (event: KeyboardEvent) => {
+      if (event.key !== 'Escape') return
+      setMenuOpenPath(null)
+      menuButtonRef.current?.focus()
+    }
+    document.addEventListener('keydown', handleKeyDown)
+    return () => document.removeEventListener('keydown', handleKeyDown)
+  }, [isMobileMenuOpen])
+
+  return (
+    <AnimatePresence>
+      {isVisible && (
+        <motion.header
+          initial={{ opacity: 0, y: -16 }}
+          animate={{ opacity: 1, y: 0 }}
+          exit={{ opacity: 0, y: -16 }}
+          transition={{ duration: 0.45, ease: [0.16, 1, 0.3, 1] }}
+          data-testid='public-header'
+          className='fixed left-1/2 top-3 z-50 w-[calc(100vw-0.75rem)] max-w-[40rem] -translate-x-1/2 px-0 sm:top-6 sm:w-[calc(100vw-1rem)] sm:max-w-[42rem]'
+        >
+          <div className='theme-panel flex w-full items-center gap-0.5 overflow-x-auto scroll-smooth rounded-full px-1 py-1.5 hide-scrollbar sm:justify-between sm:gap-0 sm:px-2 sm:py-2'>
+            <Link
+              to='/'
+              className='shrink-0 px-3 py-2 font-display text-lg text-[color:var(--ui-text)] transition-colors hover:text-[color:var(--ui-accent-strong)] max-[360px]:px-2.5 max-[360px]:text-base sm:px-4 sm:text-xl'
+              onClick={() => window.scrollTo({ top: 0, behavior: 'smooth' })}
+            >
+              <span className='text-gold-500'>A</span>&<span className='text-gold-500'>J</span>
+            </Link>
+
+            <div className='hidden h-5 w-px bg-[color:var(--ui-border)] sm:block' />
+
+            {/* Desktop nav links - hidden on mobile */}
+            <div className='hidden sm:flex items-center gap-0.5'>
+              {publicNavLinks.map((link, index) => (
+                <div key={link.path} className='contents'>
+                  <HeaderLink
+                    path={link.path}
+                    name={link.label}
+                    mobileName={link.mobileLabel}
+                    icon={link.icon}
+                    isActive={pathname === link.path}
+                    isPrimary={link.isPrimary}
+                  />
+                  {index < publicNavLinks.length - 1 && (
+                    <div className='hidden h-5 w-px bg-[color:var(--ui-border)]' />
+                  )}
+                </div>
+              ))}
+            </div>
+
+            <ThemeToggle className='hidden sm:inline-flex shadow-none' />
+
+            {/* Mobile hamburger button - hidden on desktop */}
+            <button
+              ref={menuButtonRef}
+              type='button'
+              aria-label={isMobileMenuOpen ? 'Close menu' : 'Open menu'}
+              aria-expanded={isMobileMenuOpen}
+              className='flex sm:hidden items-center justify-center w-10 h-10 rounded-full bg-[color:var(--ui-surface-elevated)] text-[color:var(--ui-text)] hover:bg-[color:var(--ui-surface)] transition-colors'
+              onClick={toggleMobileMenu}
+            >
+              <AnimatePresence mode='wait' initial={false}>
+                {isMobileMenuOpen ? (
+                  <motion.div
+                    key='close'
+                    initial={{ rotate: -90, opacity: 0 }}
+                    animate={{ rotate: 0, opacity: 1 }}
+                    exit={{ rotate: 90, opacity: 0 }}
+                    transition={{ duration: 0.2 }}
+                  >
+                    <X className='w-5 h-5' />
+                  </motion.div>
+                ) : (
+                  <motion.div
+                    key='menu'
+                    initial={{ rotate: -90, opacity: 0 }}
+                    animate={{ rotate: 0, opacity: 1 }}
+                    exit={{ rotate: 90, opacity: 0 }}
+                    transition={{ duration: 0.2 }}
+                  >
+                    <Menu className='w-5 h-5' />
+                  </motion.div>
+                )}
+              </AnimatePresence>
+            </button>
+          </div>
+
+          {/* Mobile menu overlay - hidden on desktop */}
+          <AnimatePresence>
+            {isMobileMenuOpen && (
+              <motion.div
+                initial={{ opacity: 0, y: -8 }}
+                animate={{ opacity: 1, y: 0 }}
+                exit={{ opacity: 0, y: -8 }}
+                transition={{ duration: 0.25, ease: [0.16, 1, 0.3, 1] }}
+                className='theme-panel sm:hidden mt-2 rounded-2xl px-4 py-4'
+              >
+                <nav className='flex flex-col gap-1'>
+                  {publicNavLinks.map(link => (
+                    <HeaderLink
+                      key={link.path}
+                      path={link.path}
+                      name={link.label}
+                      mobileName={link.mobileLabel}
+                      icon={link.icon}
+                      isActive={pathname === link.path}
+                      isPrimary={link.isPrimary}
+                    />
+                  ))}
+                  <div className='mt-2 border-t border-[color:var(--ui-border)] pt-3'>
+                    <ThemeToggle label className='w-full justify-center shadow-none' />
+                  </div>
+                </nav>
+              </motion.div>
+            )}
+          </AnimatePresence>
+        </motion.header>
+      )}
+    </AnimatePresence>
+  )
+}
+
+export function Header() {
+  return <HeaderContent />
+}

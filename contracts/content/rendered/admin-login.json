@@ -1,0 +1,103 @@
+{
+  "id": "admin-login",
+  "route": "/admin/login",
+  "capturedFrom": "legacy-freeze-2026-11-08",
+  "fixedNow": "2026-11-08T17:00:00.000Z",
+  "capture": {
+    "baseUrl": "http://127.0.0.1:4174",
+    "build": "production build of legacy-freeze-2026-11-08",
+    "reducedMotion": "reduce",
+    "deviceScaleFactor": 1,
+    "colorScheme": "light",
+    "timezone": "America/New_York",
+    "locale": "en-US",
+    "serviceWorkers": "blocked",
+    "mocks": "contracts/fixtures/*.json"
+  },
+  "snapshots": {
+    "desktop": {
+      "viewport": { "width": 1440, "height": 900 },
+      "title": "Admin Login | Austin & Jordyn's Wedding",
+      "lang": "en",
+      "theme": "dark",
+      "meta": {
+        "description": "Secure admin access for the Austin and Jordyn wedding site.",
+        "robots": "noindex, nofollow",
+        "canonical": "https://www.theporadas.com/admin/login",
+        "ogTitle": "Admin Login | Austin & Jordyn's Wedding",
+        "ogDescription": "Secure admin access for the Austin and Jordyn wedding site.",
+        "ogImage": "https://www.theporadas.com/images/home/intro-video-poster.png",
+        "twitterTitle": "Admin Login | Austin & Jordyn's Wedding",
+        "twitterImage": "https://www.theporadas.com/images/home/intro-video-poster.png",
+        "structuredDataCount": 0
+      },
+      "headings": [
+        { "level": 1, "text": "Admin sign in" },
+        { "level": 2, "text": "Sign in to continue" }
+      ],
+      "navLinks": [],
+      "images": [],
+      "mainText": [
+        "PROTECTED ACCESS",
+        "Admin sign in",
+        "Use the Supabase email and password for your admin account to review uploads, moderate the guestbook, and manage the wedding archive.",
+        "WHAT THIS USES",
+        "The same Supabase authentication already wired into the app. There are no hardcoded admin credentials in the codebase.",
+        "ADMIN ROLE CHECK",
+        "Access is granted only when the signed-in user has `role: admin` in Supabase user metadata.",
+        "Next configuration step",
+        "Once you can sign in here, we can set your Supabase user metadata so this page upgrades from “authenticated” to full admin access.",
+        "BACK TO SITE",
+        "GO TO REQUESTED ADMIN PAGE",
+        "ACCOUNT ACCESS",
+        "Sign in to continue",
+        "Enter the email and password for the Supabase user you just created.",
+        "EMAIL",
+        "PASSWORD",
+        "SIGN IN"
+      ]
+    },
+    "mobile": {
+      "viewport": { "width": 390, "height": 844 },
+      "title": "Admin Login | Austin & Jordyn's Wedding",
+      "lang": "en",
+      "theme": "dark",
+      "meta": {
+        "description": "Secure admin access for the Austin and Jordyn wedding site.",
+        "robots": "noindex, nofollow",
+        "canonical": "https://www.theporadas.com/admin/login",
+        "ogTitle": "Admin Login | Austin & Jordyn's Wedding",
+        "ogDescription": "Secure admin access for the Austin and Jordyn wedding site.",
+        "ogImage": "https://www.theporadas.com/images/home/intro-video-poster.png",
+        "twitterTitle": "Admin Login | Austin & Jordyn's Wedding",
+        "twitterImage": "https://www.theporadas.com/images/home/intro-video-poster.png",
+        "structuredDataCount": 0
+      },
+      "headings": [
+        { "level": 1, "text": "Admin sign in" },
+        { "level": 2, "text": "Sign in to continue" }
+      ],
+      "navLinks": [],
+      "images": [],
+      "mainText": [
+        "PROTECTED ACCESS",
+        "Admin sign in",
+        "Use the Supabase email and password for your admin account to review uploads, moderate the guestbook, and manage the wedding archive.",
+        "WHAT THIS USES",
+        "The same Supabase authentication already wired into the app. There are no hardcoded admin credentials in the codebase.",
+        "ADMIN ROLE CHECK",
+        "Access is granted only when the signed-in user has `role: admin` in Supabase user metadata.",
+        "Next configuration step",
+        "Once you can sign in here, we can set your Supabase user metadata so this page upgrades from “authenticated” to full admin access.",
+        "BACK TO SITE",
+        "GO TO REQUESTED ADMIN PAGE",
+        "ACCOUNT ACCESS",
+        "Sign in to continue",
+        "Enter the email and password for the Supabase user you just created.",
+        "EMAIL",
+        "PASSWORD",
+        "SIGN IN"
+      ]
+    }
+  }
+}
