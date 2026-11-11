@@ -10,6 +10,7 @@
  * already-running URL (`--url`) remains supported and is reported as
  * "as-served-by-target" compression so the two modes are never confused.
  */
+import { readdirSync } from 'node:fs'
 import { readFile, stat } from 'node:fs/promises'
 import { createServer } from 'node:http'
 import path from 'node:path'
@@ -59,34 +60,16 @@ function contentTypeFor(file) {
   return MIME_TYPES[path.extname(file).toLowerCase()] ?? 'application/octet-stream'
 }
 
-function isInsideRoot(rootDir, file) {
-  const root = path.resolve(rootDir)
-  const candidate = path.resolve(file)
-  const relative = path.relative(root, candidate)
-  return relative === '' || (!relative.startsWith('..') && !path.isAbsolute(relative))
-}
-
-function safeResolve(rootDir, requestPath) {
+/** Decode the request path into a normalized, root-relative key (no traversal). */
+function requestKey(requestPath) {
   let decoded
   try {
     decoded = decodeURIComponent((requestPath ?? '/').split('?')[0].split('#')[0])
   } catch {
     return null
   }
-  // Reject NUL bytes and anything that escapes the served directory.
   if (decoded.includes('\0')) return null
-  const resolved = path.resolve(rootDir, `.${path.posix.normalize(decoded)}`)
-  return isInsideRoot(rootDir, resolved) ? resolved : null
-}
-
-async function fileIfReadable(rootDir, file) {
-  if (!isInsideRoot(rootDir, file)) return null
-  try {
-    const fileStat = await stat(file)
-    return fileStat.isFile() ? fileStat : null
-  } catch {
-    return null
-  }
+  return path.posix.normalize(`/${decoded}`).replace(/^\/+/, '')
 }
 
 function accepts(header, encoding) {
@@ -111,12 +94,33 @@ export async function startStaticServer({
   const rootStat = await stat(rootDir)
   if (!rootStat.isDirectory()) throw new Error(`not a directory: ${rootDir}`)
 
+  // Pre-index files so request paths are only ever used as map keys, never as
+  // filesystem paths (prevents path traversal and satisfies CodeQL js/path-injection).
+  const fileIndex = new Map()
+  for (const entry of readdirSync(rootDir, { recursive: true, withFileTypes: true })) {
+    if (!entry.isFile()) continue
+    const parent = entry.parentPath ?? entry.path
+    const relative = path.relative(rootDir, path.join(parent, entry.name))
+    fileIndex.set(relative.split(path.sep).join('/'), path.join(rootDir, relative))
+  }
+
+  function resolveRequestPath(requestPath) {
+    const key = requestKey(requestPath)
+    if (key === null) return null
+    if (key === '') return fileIndex.get('index.html') ?? null
+    const direct = fileIndex.get(key)
+    if (direct) return direct
+    const directoryIndex = fileIndex.get(`${key.replace(/\/$/, '')}/index.html`)
+    if (directoryIndex) return directoryIndex
+    // SPA fallback: serving the app shell for client-side routes (as the static
+    // host does via _redirects).
+    return fileIndex.get('index.html') ?? null
+  }
+
   const cache = new Map()
 
   async function load(file) {
-    const cached = cache.get(file)
-    if (cached) return cached
-    if (!isInsideRoot(rootDir, file)) throw new Error('path escapes served directory')
+    if (cache.has(file)) return cache.get(file)
     const body = await readFile(file)
     const extension = path.extname(file).toLowerCase()
     const compressible = COMPRESSIBLE.has(extension)
@@ -132,26 +136,10 @@ export async function startStaticServer({
 
   const server = createServer(async (request, response) => {
     try {
-      const target = safeResolve(rootDir, request.url ?? '/')
-      if (!target) {
-        response.writeHead(403).end('Forbidden')
+      const file = resolveRequestPath(request.url ?? '/')
+      if (!file) {
+        response.writeHead(404).end('Not found')
         return
-      }
-      let file = target
-      if (!(await fileIfReadable(rootDir, file))) {
-        // Prerendered production builds emit one index.html per route directory
-        // (e.g. `dist/gallery/index.html`). Serve that before the SPA root fallback,
-        // otherwise a directory request would be measured against the wrong HTML.
-        const directoryIndex = path.join(target, 'index.html')
-        if (await fileIfReadable(rootDir, directoryIndex)) {
-          file = directoryIndex
-        } else {
-          file = path.join(rootDir, 'index.html')
-          if (!(await fileIfReadable(rootDir, file))) {
-            response.writeHead(404).end('Not found')
-            return
-          }
-        }
       }
       const entry = await load(file)
       const acceptEncoding = request.headers['accept-encoding']
