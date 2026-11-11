@@ -55,6 +55,7 @@ const ALLOWED_PREFIXES = ['contracts/', 'docs/rebuild/', 'tools/', 'rebuild/', '
 const ALLOWED_FILES = new Set([
   '.github/workflows/rebuild.yml',
   '.github/workflows/visual-prod.yml',
+  '.github/dependabot.yml',
 ])
 
 const normalize = value => value.replace(/\\/g, '/').replace(/^"|"$/g, '').trim()
