@@ -451,3 +451,41 @@ export async function publishGuestUploadPhotosToAlbum(
 
   return { published: (inserted ?? []).length }
 }
+
+/**
+ * Create a guest upload row from the public Upload page.
+ *
+ * The cutover RLS bundle enables RLS on `guest_uploads`; PostgREST's
+ * `Prefer: return=representation` (RETURNING) needs a SELECT policy the anon
+ * uploader does not have, so the row id is generated client-side and the insert
+ * is performed WITHOUT `.select()`. The id is then used as the ownership proof
+ * for `get_or_create_share_token(p_email, p_upload_id)`.
+ */
+export async function createGuestUpload(
+  input: {
+    guestName: string
+    guestEmail: string
+    message: string | null
+    photoUrls: readonly string[]
+    photoFingerprints: readonly string[]
+    videoUrls: readonly string[]
+    videoFingerprints: readonly string[]
+  },
+  client: TypedSupabaseClient = getSupabaseClient()
+): Promise<{ id: string }> {
+  const id = crypto.randomUUID()
+  const { error } = await client.from('guest_uploads').insert({
+    id,
+    guest_name: input.guestName,
+    guest_email: input.guestEmail,
+    message: input.message,
+    photo_urls: [...input.photoUrls],
+    video_urls: [...input.videoUrls],
+    photo_fingerprints: [...input.photoFingerprints],
+    video_fingerprints: [...input.videoFingerprints],
+    status: 'pending',
+  })
+
+  if (error) throw toDataError(error, GUEST_UPLOAD_WRITE_ERROR ?? 'Upload could not be saved.')
+  return { id }
+}

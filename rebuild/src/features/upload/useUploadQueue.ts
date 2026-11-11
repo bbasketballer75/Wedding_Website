@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
-import { createStubUploadApi } from './data'
+import { createDefaultUploadApi } from './data'
 import { compressImage as defaultCompressImage } from './imageCompressor'
 import { putFileToR2 } from './uploadTransport'
 import { resolveUploadErrorMessage } from './uploadErrors'
@@ -72,7 +72,7 @@ export function useUploadQueue(dependencies: UploadQueueDependencies = {}): UseU
     () => dependencies.storage ?? browserUploadStorage(),
     [dependencies.storage]
   )
-  const api = useMemo(() => dependencies.api ?? createStubUploadApi(), [dependencies.api])
+  const api = useMemo(() => dependencies.api ?? createDefaultUploadApi(), [dependencies.api])
   const compressImage = dependencies.compressImage ?? defaultCompressImage
   const createPreview = dependencies.createPreview ?? defaultCreatePreview
   const now = dependencies.now ?? Date.now

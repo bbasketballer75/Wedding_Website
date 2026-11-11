@@ -17,6 +17,7 @@ import tseslint from 'typescript-eslint'
 export default tseslint.config(
   {
     ignores: [
+      'supabase/functions/**',
       'dist',
       'coverage',
       'playwright-report',

@@ -12,8 +12,18 @@
  *   lookupClaimIdentity -> claims identity lookup seam (ClaimModal/claims wizard is W5-2 scope)
  */
 import type { ClaimIdentityLookup, UploadApi, UploadSlotRequest } from './types'
+import { createSupabaseUploadApi } from './supabase-api'
 
 /** Deterministic stub used by the page until the real route supplies the API. */
+export function isLiveUploadMode(): boolean {
+  return import.meta.env.VITE_UPLOAD_MODE === 'live'
+}
+
+/** Real adapter when VITE_UPLOAD_MODE=live, deterministic stub otherwise. */
+export function createDefaultUploadApi(): UploadApi {
+  return isLiveUploadMode() ? createSupabaseUploadApi() : createStubUploadApi()
+}
+
 export function createStubUploadApi(): UploadApi {
   let slotCount = 0
   let insertCount = 0

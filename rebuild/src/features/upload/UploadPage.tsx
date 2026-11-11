@@ -2,7 +2,7 @@ import { useCallback, useState } from 'react'
 import { motion } from 'framer-motion'
 import { AlertCircle } from 'lucide-react'
 import { usePageMeta } from '@/app/seo/usePageMeta'
-import { createStubUploadApi } from './data'
+import { createDefaultUploadApi } from './data'
 import { ShareSiteSection } from './ShareSiteSection'
 import { UploadDropzone } from './UploadDropzone'
 import { UploadHero } from './UploadHero'
@@ -60,7 +60,7 @@ export function UploadPage({
   siteShareUrl,
   shareOrigin,
 }: UploadPageProps) {
-  const client = api ?? createStubUploadApi()
+  const client = api ?? createDefaultUploadApi()
   const [name, setName] = useState('')
   const [email, setEmail] = useState('')
   const [message, setMessage] = useState('')
