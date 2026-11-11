@@ -45,3 +45,23 @@ updates:
         patterns:
           - "minor"
           - "patch"
+  # The rebuild is a separate npm package (rebuild/package.json). Dependabot
+  # security updates auto-discover it; the minimatch advisory is only reachable
+  # through typescript-eslint in the dev lint stack (never shipped in the
+  # browser bundle) and has no patched version compatible with the current
+  # typescript-eslint range, so the update attempt fails. Tracked for the next
+  # lint-stack upgrade instead of failing the Dependabot updater weekly.
+  - package-ecosystem: "npm"
+    directory: "/rebuild"
+    schedule:
+      interval: "weekly"
+      day: "monday"
+      time: "07:00"
+      timezone: "America/New_York"
+    open-pull-requests-limit: 5
+    labels:
+      - "dependencies"
+    commit-message:
+      prefix: "chore(deps-rebuild)"
+    ignore:
+      - dependency-name: "minimatch"
