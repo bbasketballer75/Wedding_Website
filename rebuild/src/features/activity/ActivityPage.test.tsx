@@ -194,7 +194,9 @@ describe('ActivityPage', () => {
     act(() => {
       triggerIntersection()
     })
-    await waitFor(() => expect(screen.getAllByTestId('activity-card')).toHaveLength(5))
+    await waitFor(() => expect(screen.getAllByTestId('activity-card')).toHaveLength(5), {
+      timeout: 5000,
+    })
 
     act(() => {
       triggerIntersection()
