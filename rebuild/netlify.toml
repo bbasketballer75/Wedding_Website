@@ -72,12 +72,24 @@ Security headers and cache policy mirror the frozen `public/_headers` contract
   NODE_VERSION = "22"
   # Production-only PWA/install layer gate. Parity/preview builds leave it unset.
   VITE_ENABLE_PWA = "1"
+  # Browser-safe runtime configuration for the dedicated Supabase project
+  # (anon key only — never place the service-role key here).
+  VITE_SUPABASE_URL = "https://  # Production-only PWA/install layer gate. Parity/preview builds leave it unset.
+  VITE_ENABLE_PWA = "1"
+  # Browser-safe runtime configuration for the dedicated Supabase project
+  # (anon key only — never place the service-role key here).
+  VITE_SUPABASE_URL = "https://SUPABASE_REF.supabase.co"
+  VITE_eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImZhdXJ2cmNrdmF0ZmNzd3N5b2JjIiwicm9sZSI6ImFub24iLCJpYXQiOjE3OTQzNjY0NjMsImV4cCI6MjEwOTk0MjQ2M30.iwmHUmNsQyO0wlDRdi9CU-roCqD6mWdZUnN4Aas9Xlc_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImZhdXJ2cmNrdmF0ZmNzd3N5b2JjIiwicm9sZSI6ImFub24iLCJpYXQiOjE3OTQzNjY0NjMsImV4cCI6MjEwOTk0MjQ2M30.iwmHUmNsQyO0wlDRdi9CU-roCqD6mWdZUnN4Aas9Xlc"
+  VITE_SITE_URL = "https://www.theporadas.com"
+  VITE_MEDIA_BASE_URL = "https://media.wedding.theporadas.com"
+  VITE_UPLOAD_MODE = "live"
+  VITE_SENTRY_DSN = "https://a3e91a8bb1d2fe48c19cb84944dea8f7@o4509754165755904.ingest.us.sentry.io/4512409698369536".supabase.co"
+  VITE_eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImZhdXJ2cmNrdmF0ZmNzd3N5b2JjIiwicm9sZSI6ImFub24iLCJpYXQiOjE3OTQzNjY0NjMsImV4cCI6MjEwOTk0MjQ2M30.iwmHUmNsQyO0wlDRdi9CU-roCqD6mWdZUnN4Aas9Xlc_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImZhdXJ2cmNrdmF0ZmNzd3N5b2JjIiwicm9sZSI6ImFub24iLCJpYXQiOjE3OTQzNjY0NjMsImV4cCI6MjEwOTk0MjQ2M30.iwmHUmNsQyO0wlDRdi9CU-roCqD6mWdZUnN4Aas9Xlc"
+  VITE_SITE_URL = "https://www.theporadas.com"
+  VITE_MEDIA_BASE_URL = "https://media.wedding.theporadas.com"
+  VITE_UPLOAD_MODE = "live"
+  VITE_SENTRY_DSN = "https://a3e91a8bb1d2fe48c19cb84944dea8f7@o4509754165755904.ingest.us.sentry.io/4512409698369536"
 
-[[redirects]]
-  from = "/*"
-  to = "https://www.theporadas.com/:splat"
-  status = 301
-  force = true
   conditions = {Host = ["wedding.theporadas.com"]}
 
 [[redirects]]
