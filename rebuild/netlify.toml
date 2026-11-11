@@ -1,76 +1,17 @@
-# Greenfield deploy surface (Wave 8 W8-1)
-
-The legacy root `netlify.toml` still serves production until the owner-approved
-cutover. This file is the rebuild's deploy configuration; it is **not deployed
-yet**. When the rebuild becomes the site, deploy with Netlify's base directory
-set to `rebuild` so this config, `rebuild/package.json` and `rebuild/dist` are
-used.
-
-## Build pipeline
-
-Parity/preview builds and CI drift runs use the plain Vite build (`npm run build`
-= `vite build`): they emit the frozen static head byte-for-byte and run no
-prerender/PWA layer, which is what keeps the parity text gate green.
-
-The production deploy build additionally runs the two generators after
-`vite build` (Lead wires these scripts in `package.json`):
-
-```json
-"build": "vite build && npm run build:seo",
-"build:seo": "node scripts/generate-sitemap.mjs && node scripts/prerender.mjs"
-```
-
-- `generate-sitemap.mjs` writes `public/{sitemap.xml,robots.txt,manifest.webmanifest,sw.js}`
-  (and the `dist/` copies when a build already exists) from
-  `src/app/seo/routeMeta.json`, and fails on drift from `contracts/seo-pwa.json`.
-- `prerender.mjs` rewrites the `<!-- seo:start -->…<!-- seo:end -->` block of the
-  built `dist/index.html` into one static HTML file per public route so crawlers
-  and no-JS clients get per-route metadata. Hydrated runtime metadata is
-  unchanged; for the frozen stale-metadata defects (`/activity`, `/admin/*`) the
-  prerendered files carry the corrected crawlable tags while the hydrated runtime
-  keeps the frozen tags, so parity capture stays green.
-
-Both support `--check` for CI drift detection.
-
-## PWA flag
-
-`VITE_ENABLE_PWA=1` is the production-only gate for install metadata (manifest
-link, apple capability meta) and service-worker registration. Parity/preview
-builds must NOT set it (see `src/app/pwa.ts`); production Netlify builds set it
-in the environment panel or via the `[build.environment]` entry below.
-
-## Routing
-
-- `/admin/*` serves the prerendered noindex admin shell (`admin/index.html`); the
-  static `admin/login/index.html` takes precedence over the rewrite.
-- `/guest/*` serves the prerendered noindex guest-album shell.
-- Everything else falls back to the prerendered SPA `index.html` (200), matching
-  the frozen app's client-side routing.
-- The `gallery-share` edge function keeps the frozen `/gallery?share=` OG
-  contract. The function file itself stays at the repository-root
-  `netlify/edge-functions/gallery-share.ts`; when deploying with base `rebuild`
-  the function directory must be shared/kept in sync (Lead decision, see the
-  W8-1 report).
-
-## Headers
-
-Security headers and cache policy mirror the frozen `public/_headers` contract
-(from `contracts/seo-pwa.json`). Additions for the rebuild:
-
-- `Content-Security-Policy` has no `unsafe-eval`; Sentry uses `connect-src` only
-  (no SDK script is loaded) and Google Analytics scripts remain allowlisted.
-- `/*.html` is explicitly revalidatable so prerendered metadata is never served
-  from a stale cache.
+# Greenfield deploy surface.
+#
+# Production Netlify builds this directory (site base = `rebuild`) from `main`;
+# `npm run build:prod` emits the prerendered PWA bundle into `dist`. Static
+# headers/redirects live in `public/_headers` and `public/_redirects`.
 
 [build]
   command = "npm run build:prod"
   publish = "dist"
 
 [build.environment]
-  # Float latest 22.x: rolldown (Vite 8) optional native bindings require
-  # node >=22.12.0 (same rationale as the frozen root netlify.toml).
   NODE_VERSION = "22"
-  # Production-only PWA/install layer gate. Parity/preview builds leave it unset.
+  NPM_VERSION = "11.11.0"
+  # Production-only PWA/install layer gate (parity/preview builds leave it unset).
   VITE_ENABLE_PWA = "1"
   # Browser-safe runtime config for the dedicated Supabase project (anon key
   # only — never place the service-role key here).
@@ -83,82 +24,11 @@ Security headers and cache policy mirror the frozen `public/_headers` contract
 
 [[redirects]]
   from = "/*"
-  to = "https://www.theporadas.com/:splat"
-  status = 301
-  force = true
-  conditions = {Host = ["wedding.theporadas.com"]}
-
-[[redirects]]
-  from = "/admin/*"
-  to = "/admin/index.html"
-  status = 200
-
-[[redirects]]
-  from = "/guest/*"
-  to = "/guest/index.html"
-  status = 200
-
-[[redirects]]
-  from = "/*"
   to = "/index.html"
   status = 200
 
-[[edge_functions]]
-  path = "/gallery"
-  function = "gallery-share"
+[context.deploy-preview]
+  command = "npm run build:prod"
 
-# --- Headers: frozen public/_headers contract (contracts/seo-pwa.json) ---
-
-[[headers]]
-  for = "/*"
-  [headers.values]
-    X-Frame-Options = "DENY"
-    X-Content-Type-Options = "nosniff"
-    Referrer-Policy = "strict-origin-when-cross-origin"
-    Permissions-Policy = "camera=(), microphone=(), geolocation=()"
-    Strict-Transport-Security = "max-age=31536000; includeSubDomains"
-    Content-Security-Policy = "default-src 'self'; script-src 'self' 'unsafe-inline' https://www.googletagmanager.com; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src 'self' https://fonts.gstatic.com; img-src 'self' data: blob: https: https://www.google-analytics.com; connect-src 'self' https://*.supabase.co https://*.netlify.app https://media.wedding.theporadas.com https://*.r2.dev https://www.googletagmanager.com https://www.google-analytics.com https://o4511356027011072.ingest.us.sentry.io; media-src 'self' data: blob: https:; frame-src 'self' https://www.youtube.com;"
-    Content-Security-Policy-Report-Only = "default-src 'self'; script-src 'self' 'unsafe-inline' https://www.googletagmanager.com; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src 'self' https://fonts.gstatic.com; img-src 'self' data: blob: https: https://www.google-analytics.com; connect-src 'self' https://*.supabase.co https://*.netlify.app https://media.wedding.theporadas.com https://*.r2.dev https://www.googletagmanager.com https://www.google-analytics.com https://o4511356027011072.ingest.us.sentry.io; media-src 'self' data: blob: https:; frame-src 'self' https://www.youtube.com;"
-
-[[headers]]
-  for = "/assets/*"
-  [headers.values]
-    Cache-Control = "public, max-age=31536000, immutable"
-
-[[headers]]
-  for = "/sw.js"
-  [headers.values]
-    Cache-Control = "no-cache, no-store, must-revalidate"
-
-[[headers]]
-  for = "/registerSW.js"
-  [headers.values]
-    Cache-Control = "no-cache, no-store, must-revalidate"
-
-[[headers]]
-  for = "/manifest.webmanifest"
-  [headers.values]
-    Cache-Control = "no-cache, no-store, must-revalidate"
-    Content-Type = "application/manifest+json"
-
-[[headers]]
-  for = "/robots.txt"
-  [headers.values]
-    Cache-Control = "no-cache, no-store, must-revalidate"
-
-[[headers]]
-  for = "/sitemap.xml"
-  [headers.values]
-    Cache-Control = "no-cache, no-store, must-revalidate"
-
-# Rebuild addition: prerendered HTML must revalidate so route metadata changes
-# are picked up immediately.
-[[headers]]
-  for = "/*.html"
-  [headers.values]
-    Cache-Control = "public, max-age=0, must-revalidate"
-
-[[redirects]]
-  from = "/*"
-  to = "/index.html"
-  status = 200
+[context.branch-deploy]
+  command = "npm run build:prod"
