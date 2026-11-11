@@ -71,6 +71,13 @@ export default tseslint.config(
   },
 
   {
+    // Plain-JS build/maintenance scripts run under Node (console, process).
+    files: ['**/*.mjs'],
+    languageOptions: { globals: { ...globals.node } },
+    rules: { 'no-console': 'off' },
+  },
+
+  {
     files: ['**/*.test.{ts,tsx}', 'tests/**/*.{ts,tsx}'],
     rules: {
       '@typescript-eslint/no-non-null-assertion': 'off',
