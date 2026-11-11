@@ -71,8 +71,8 @@ export default tseslint.config(
   },
 
   {
-    // Plain-JS build/maintenance scripts run under Node (console, process).
-    files: ['**/*.mjs'],
+    // New deploy guard runs under Node; other .mjs scripts declare their own globals.
+    files: ['scripts/check-deploy-assets.mjs'],
     languageOptions: { globals: { ...globals.node } },
     rules: { 'no-console': 'off' },
   },
