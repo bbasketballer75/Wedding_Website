@@ -45,6 +45,11 @@ updates:
         patterns:
           - "minor"
           - "patch"
+    # Dependabot's actions updater returns an unknown_error for
+    # github/codeql-action (the CodeQL action versions are managed by GitHub's
+    # code-scanning setup); ignore it so the weekly updater job does not fail.
+    ignore:
+      - dependency-name: "github/codeql-action"
   # The rebuild is a separate npm package (rebuild/package.json). Dependabot
   # security updates auto-discover it; the minimatch advisory is only reachable
   # through typescript-eslint in the dev lint stack (never shipped in the
