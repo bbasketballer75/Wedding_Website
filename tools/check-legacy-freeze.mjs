@@ -18,6 +18,13 @@
  * Allowed new paths (prefixes):
  *   contracts/  docs/rebuild/  tools/  rebuild/
  *   .github/workflows/rebuild.yml
+ * Post-cutover exceptions (2026-11-11, production now serves the rebuild):
+ *   .github/workflows/visual-prod.yml
+ *   tests/e2e-live/
+ *   — the nightly production visual workflow had no committed baselines, so it
+ *   failed every scheduled run after the cutover. Baselines are captured from
+ *   the live rebuilt site (win32 a local + linux for CI) and the workflow now
+ *   self-seeds them if absent. The frozen legacy app source is still untouched.
  *
  * Usage:
  *   node tools/check-legacy-freeze.mjs           # exit 1 on violations
@@ -43,9 +50,12 @@ const ALLOWED_EXACT = new Set([
   'supabase/migrations/20260624000000_fix_guestbook_rpc_drop_type.sql',
 ])
 
-const ALLOWED_PREFIXES = ['contracts/', 'docs/rebuild/', 'tools/', 'rebuild/']
+const ALLOWED_PREFIXES = ['contracts/', 'docs/rebuild/', 'tools/', 'rebuild/', 'tests/e2e-live/']
 
-const ALLOWED_FILES = new Set(['.github/workflows/rebuild.yml'])
+const ALLOWED_FILES = new Set([
+  '.github/workflows/rebuild.yml',
+  '.github/workflows/visual-prod.yml',
+])
 
 const normalize = value => value.replace(/\\/g, '/').replace(/^"|"$/g, '').trim()
 
