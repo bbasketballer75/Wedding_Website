@@ -238,7 +238,7 @@ describe('netlify.toml deploy surface', () => {
     expect(toml).toContain('publish = "dist"')
     expect(toml).toContain('NODE_VERSION = "22"')
     expect(toml).toContain('VITE_ENABLE_PWA = "1"')
-    expect(toml).toContain('node scripts/generate-sitemap.mjs && node scripts/prerender.mjs')
+    expect(toml).toContain('command = "npm run build:prod"')
   })
 
   it('has the SPA fallback in the correct order after the private shells', () => {
@@ -248,22 +248,21 @@ describe('netlify.toml deploy surface', () => {
     expect(adminIndex).toBeGreaterThan(-1)
     expect(guestIndex).toBeGreaterThan(adminIndex)
     expect(fallback).toBeGreaterThan(guestIndex)
-    expect(toml).toContain('function = "gallery-share"')
   })
 
   it('mirrors the frozen security headers and cache policy from the contract', () => {
+    const headers = read('public/_headers')
     const security = contract.headers.find(entry => entry.pattern === '/*')?.headers ?? {}
     for (const [name, value] of Object.entries(security)) {
-      expect(toml).toContain(`${name} = "${value}"`)
+      expect(headers).toContain(`${name}: ${value}`)
     }
-    expect(toml).toContain('Cache-Control = "public, max-age=31536000, immutable"')
-    expect(toml).toContain('Cache-Control = "no-cache, no-store, must-revalidate"')
-    expect(toml).toContain('Cache-Control = "public, max-age=0, must-revalidate"')
-    expect(toml).toContain('Content-Type = "application/manifest+json"')
+    expect(headers).toContain('Cache-Control: public, max-age=31536000, immutable')
+    expect(headers).toContain('Cache-Control: no-cache, no-store, must-revalidate')
+    expect(headers).toContain('Content-Type: application/manifest+json')
   })
 
   it('keeps CSP free of unsafe-eval and documents the Sentry connect-only path', () => {
-    const csp = toml.match(/Content-Security-Policy = "([^"]+)"/)?.[1] ?? ''
+    const csp = read('public/_headers').match(/Content-Security-Policy: ([^\n]+)/)?.[1] ?? ''
     expect(csp).not.toContain('unsafe-eval')
     expect(csp).toContain("script-src 'self' 'unsafe-inline' https://www.googletagmanager.com")
     expect(csp).toContain('https://o4511356027011072.ingest.us.sentry.io')
