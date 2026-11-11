@@ -59,15 +59,28 @@ function contentTypeFor(file) {
   return MIME_TYPES[path.extname(file).toLowerCase()] ?? 'application/octet-stream'
 }
 
-function safeResolve(rootDir, requestPath) {
-  const decoded = decodeURIComponent(requestPath.split('?')[0].split('#')[0])
-  const resolved = path.resolve(rootDir, `.${path.posix.normalize(decoded)}`)
+function isInsideRoot(rootDir, file) {
   const root = path.resolve(rootDir)
-  if (resolved !== root && !resolved.startsWith(`${root}${path.sep}`)) return null
-  return resolved
+  const candidate = path.resolve(file)
+  const relative = path.relative(root, candidate)
+  return relative === '' || (!relative.startsWith('..') && !path.isAbsolute(relative))
 }
 
-async function fileIfReadable(file) {
+function safeResolve(rootDir, requestPath) {
+  let decoded
+  try {
+    decoded = decodeURIComponent((requestPath ?? '/').split('?')[0].split('#')[0])
+  } catch {
+    return null
+  }
+  // Reject NUL bytes and anything that escapes the served directory.
+  if (decoded.includes('\0')) return null
+  const resolved = path.resolve(rootDir, `.${path.posix.normalize(decoded)}`)
+  return isInsideRoot(rootDir, resolved) ? resolved : null
+}
+
+async function fileIfReadable(rootDir, file) {
+  if (!isInsideRoot(rootDir, file)) return null
   try {
     const fileStat = await stat(file)
     return fileStat.isFile() ? fileStat : null
@@ -103,6 +116,7 @@ export async function startStaticServer({
   async function load(file) {
     const cached = cache.get(file)
     if (cached) return cached
+    if (!isInsideRoot(rootDir, file)) throw new Error('path escapes served directory')
     const body = await readFile(file)
     const extension = path.extname(file).toLowerCase()
     const compressible = COMPRESSIBLE.has(extension)
@@ -124,16 +138,16 @@ export async function startStaticServer({
         return
       }
       let file = target
-      if (!(await fileIfReadable(file))) {
+      if (!(await fileIfReadable(rootDir, file))) {
         // Prerendered production builds emit one index.html per route directory
         // (e.g. `dist/gallery/index.html`). Serve that before the SPA root fallback,
         // otherwise a directory request would be measured against the wrong HTML.
         const directoryIndex = path.join(target, 'index.html')
-        if (await fileIfReadable(directoryIndex)) {
+        if (await fileIfReadable(rootDir, directoryIndex)) {
           file = directoryIndex
         } else {
           file = path.join(rootDir, 'index.html')
-          if (!(await fileIfReadable(file))) {
+          if (!(await fileIfReadable(rootDir, file))) {
             response.writeHead(404).end('Not found')
             return
           }

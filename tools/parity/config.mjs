@@ -339,7 +339,7 @@ export function resolveRoutePath(route, { guestToken } = {}) {
     if (!guestToken) fail(`route "${route.id}" needs a guest token fixture but none is available`)
     routePath = routePath.replace(':token', encodeURIComponent(guestToken))
   }
-  if (routePath.includes('*')) routePath = routePath.replace('*', '__parity-missing__')
+  if (routePath.includes('*')) routePath = routePath.replaceAll('*', '__parity-missing__')
   return routePath
 }
 

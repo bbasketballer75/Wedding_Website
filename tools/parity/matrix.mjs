@@ -203,13 +203,14 @@ function extractTag(html, pattern) {
   return match ? match[1] : null
 }
 
+const HTML_ENTITIES = { amp: '&', quot: '"', '#39': "'", lt: '<', gt: '>' }
+
 function decodeHtml(value) {
-  return String(value ?? '')
-    .replace(/&amp;/g, '&')
-    .replace(/&quot;/g, '"')
-    .replace(/&#39;/g, "'")
-    .replace(/&lt;/g, '<')
-    .replace(/&gt;/g, '>')
+  // Single pass: sequential replaces would double-unescape inputs like `&amp;lt;`.
+  return String(value ?? '').replace(
+    /&(amp|quot|#39|lt|gt);/g,
+    (_, entity) => HTML_ENTITIES[entity]
+  )
 }
 
 async function fetchServedHtml(url) {
@@ -396,7 +397,7 @@ function markdownTable(rows) {
       row.changedPixels ?? '—'
     } | ${row.ratio === null ? '—' : formatRatio(row.ratio)} | ${row.textDiffs} | ${
       row.legacyHeight ?? '—'
-    } / ${row.rebuildHeight ?? '—'} | ${detail.replace(/\|/g, '\\|')} |`
+    } / ${row.rebuildHeight ?? '—'} | ${detail.replaceAll('\\', '\\\\').replaceAll('|', '\\|')} |`
   })
   return header + lines.join('\n')
 }
