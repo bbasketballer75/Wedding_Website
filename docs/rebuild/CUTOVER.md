@@ -311,3 +311,31 @@ sign-off record (the formal A1–A8 authorisation is still a separate step):
 
 **Still NO production action.** The next concrete steps are the staging site + staging-database apply, the
 backup/restore + rollback drills, and the owner's A1–A8 signature with the window start/end.
+
+---
+
+## Dedicated Supabase project — owner decision (2026-11-10, supersedes in-place migration)
+
+The owner decided the wedding archive must **not** share the business Supabase project. Executed and verified
+(record: [cutover/DEDICATED_PROJECT.md](./cutover/DEDICATED_PROJECT.md)):
+
+- New project **`theporadas-archive`** (`faurvrckvatfcswsyobc`, org "Wedding Website", us-east-1, free) created.
+- `halloween-displays` paused by owner approval to free the free-tier slot (data retained; resumable later,
+  which then needs Pro or another slot).
+- 31 baseline migrations + both cutover migrations applied to the new project; **18 tables / 206 columns**;
+  security invariants verified (RLS on guest_uploads, anon identity/token reads denied, admin RPCs denied).
+- Wedding data migrated read-only from the shared project and reconciled: photos 1320, uploads 5,
+  guestbook 2, likes 3, editorial 1, audit 4, activity 14 — exact equality per table; empty tables stay empty.
+- Both admin accounts recreated in the new project with `app_metadata.role=admin` (temporary passwords in the
+  gitignored `.env.cutover.local`; owner must reset them).
+- Staging repointed to the new project and redeployed; all routes render live data from it.
+
+**Revised cutover (simpler):** no DDL on the business project. At the window: freeze legacy writes → final
+delta sync old→new → set the rebuild's Netlify production env to the new project → DNS switch (A1). The old
+project keeps its wedding tables frozen for the 30-day rollback, then they are dropped as owner-approved
+cleanup (business project remains for the print-shop app). **A2 now means "final data delta sync"], not
+"migration on the production business DB".**
+
+Remaining blockers before the window: real `/upload` wiring (R2 presign + RETURNING-safe insert), final delta
+sync script + verification, admin password reset, backup/restore drill against the new project, and the signed
+A1/A4 authorisations.

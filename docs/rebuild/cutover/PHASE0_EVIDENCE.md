@@ -23,7 +23,9 @@ chain restored from the local drill dump. Artifacts: `tmp/staging/phase0-prod.js
 
 ### F1 — Production Supabase project is co-tenanted with a print-shop app (High, owner decision)
 Six extra tables — `customers`, `orders`, `order_files`, `order_proofs`, `order_activity`, `vendors` — plus
-`update_updated_at()` live in the same project/database as the wedding app. All six currently have **0 rows**,
+`update_updated_at()` live in the same project/database as the wedding app. **RESOLVED 2026-11-10:** owner
+ordered a dedicated project; the wedding app now runs on `theporadas-archive` (see DEDICATED_PROJECT.md) and
+the shared project returns to business-only use. All six currently have **0 rows**,
 RLS enabled and a permissive `Allow all` policy, and **anon has no table grants** (so they are not publicly
 readable today). They are outside the wedding cutover scope but must not be ignored:
 - decide: leave them, move the wedding app to a dedicated project, or drop them after owner confirmation;
