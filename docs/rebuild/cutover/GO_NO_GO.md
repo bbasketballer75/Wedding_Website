@@ -32,3 +32,47 @@ Reviewed routes: `/`, `/film`, `/gallery`, `/guestbook`, `/upload` (real upload)
 
 ## Cutover sequence (once 1–6 are green)
 freeze writes → final delta sync + verify → deploy prod env build → DNS switch (A1) → smoke `/`, `/gallery`, `/guestbook`, one upload → announce. Rollback: restore DNS + old deploy within 30-day window; old project stays frozen.
+
+---
+
+# CUTOVER EXECUTED — 2026-11-10 ~23:30 ET
+
+Owner instruction at 23:21 ET: "i want to do it asap or now if we can" — treated as in-session authorisation
+(A1 DNS/publish + A4 write freeze) to execute the swich immediately. No DNS change was required: the rebuild
+was published to the existing production Netlify site `austin-jordyn-wedding` (`www.theporadas.com`).
+
+## Executed sequence (all verified)
+
+1. **Freeze (A4):** revoked anon INSERT/UPDATE/DELETE on guestbook_messages, guest_uploads, photo_likes,
+   photo_comments, photo_claims, guest_identities, guest_share_tokens and revoked execute of the legacy
+   guestbook submit RPC — on the old shared project. Public reads unaffected; rollback can restore grants.
+2. **Final delta sync:** cleared the dedicated project's wedding tables and re-copied the frozen legacy snapshot
+   table-by-table; counts verified equal (photos 1320, guest_uploads 5, guestbook 2, photo_likes 3,
+   editorial 1, audit 4, activity 14; empties 0). activity_log trigger side-effects removed → 14 = 14.
+3. **Admin passwords:** reset for `bbasketballer75@gmail.com` and `admin-smoke@theporadas.com` on the dedicated
+   project; stored only in `.env.cutover.local` (`ADMIN_PASSWORD_*`).
+4. **Production build + publish:** `build:prod` with the dedicated project URL/anon key, `VITE_UPLOAD_MODE=live`,
+   Sentry DSN, site URL `https://www.theporadas.com`; published via Netlify deploy API.
+   New production deploy: **`6af3ed9d1c516a64aba25527`** (state ready, context production).
+5. **Production smoke (browser, live www):** `/` 200 "Home | Austin & Jordyn's Wedding", `/guestbook` 200 with
+   copy, `/gallery` 200, `/upload` 200, `/admin/login` 200; apex 301 → www; guestbook data served from the
+   dedicated project. No JS request failures to Supabase/functions.
+
+## Rollback (30-day window)
+
+- Restore the previous production deploy: **`6add764deeb33d037b6cf092`** (`austin-jordyn-wedding`).
+- Old shared project is frozen read-only for public inputs; re-grant anon INSERT/DELETE and the submit RPC
+  execute to resume legacy writes if rolled back.
+- Dedicated project stays untouched as the new source of truth (data diverges after cutover; use the delta
+  script restored copies if needed).
+
+## Post-cutover reminders
+
+- Revoke temporary R2 tokens created during setup (keep `theporadas-upload-*`; revoke the first accidental
+  `theporadas-upload-2026-11-10` and the `theporadas-*r2-admin*` CORS token) and rotate the Cloudflare/Netlify/
+  Supabase PATs.
+- Delete the smoke admin user if unwanted; change the owner admin password.
+- Keep the old project's wedding tables frozen for 30 days, then drop them (owner-approved cleanup; old project
+  remains the business backend).
+- `halloween-displays` remains paused (resuming needs a free-tier slot or Pro).
+- Optional follow-ups: dedicated Cloudflare Worker/domain for guest media if egress grows; uptime monitor.
