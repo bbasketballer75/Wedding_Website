@@ -1,5 +1,4 @@
 #!/usr/bin/env node
-/* eslint-disable no-undef -- Node CLI script; the app's ESLint flat config declares browser/node globals only for TS files. */
 /**
  * tools/cutover/apply-forward-migrations.mjs — apply/verify the cutover
  * migrations against a database, in order, with a manifest and hard checks.

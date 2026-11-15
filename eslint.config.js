@@ -17,6 +17,13 @@ export default [
       'coverage',
       'playwright-report',
       'test-results',
+      // Local build/perf output. Gitignored (.gitignore: 'tmp/'), so it is
+      // never committed - but ESLint 9+ flat config does NOT read .gitignore
+      // the way Prettier 3 does, so 'eslint .' walked into it and reported
+      // 7712 errors in generated bundles. ESLint ignores are gitignore-style
+      // patterns relative to this config file, so a bare 'tmp' matches the
+      // root-level directory only - nested tmp/ dirs are still linted.
+      'tmp',
       '*.config.js',
       '.github/**/*.yml',
       '.github/**/*.yaml',
