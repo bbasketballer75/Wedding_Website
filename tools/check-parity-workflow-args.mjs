@@ -42,8 +42,25 @@ import {
   parseCompareArgs,
   resolveSelection,
 } from './parity/config.mjs'
-import { parseArgs as parseMatrixArgs } from './parity/matrix.mjs'
 import { repoPath } from './lib/paths.mjs'
+
+/**
+ * `matrix.mjs` is imported LAZILY, inside the branch that needs it.
+ *
+ * A static import here drags in `matrix.mjs -> compare.mjs -> diff.mjs`, and
+ * `diff.mjs` statically imports `sharp`. This guard is a pure text check over
+ * workflow files, so it must not be able to die because a native image library
+ * is absent — reproduced as `ERR_MODULE_NOT_FOUND: Cannot find package 'sharp'`
+ * with exit 1 before any invocation was read. That fails closed, but it reports
+ * nothing about the workflow arguments it exists to check.
+ */
+let matrixParseArgs = null
+async function loadMatrixParser() {
+  if (matrixParseArgs === null) {
+    matrixParseArgs = (await import('./parity/matrix.mjs')).parseArgs
+  }
+  return matrixParseArgs
+}
 
 const argv = process.argv.slice(2)
 const args = new Set(argv)
@@ -83,11 +100,11 @@ function findInvocations(workflowText) {
 }
 
 /** Resolve one invocation the way its harness resolves it, and report the first failure. */
-function checkInvocation(invocation, ui, routesContract) {
+async function checkInvocation(invocation, ui, routesContract) {
   try {
     const parsed =
       invocation.harness === 'matrix'
-        ? parseMatrixArgs(invocation.tokens)
+        ? (await loadMatrixParser())(invocation.tokens)
         : parseCompareArgs(invocation.tokens)
     resolveSelection({ ui, routesContract, options: parsed.options })
     return null
@@ -112,7 +129,7 @@ for (const file of files) {
       file: `.github/workflows/${file}`,
       harness: invocation.harness,
       snippet: invocation.snippet,
-      error: checkInvocation(invocation, ui, routesContract),
+      error: await checkInvocation(invocation, ui, routesContract),
     })
   }
 }

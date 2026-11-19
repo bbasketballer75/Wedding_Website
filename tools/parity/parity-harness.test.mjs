@@ -90,10 +90,19 @@ test('the workflow guard resolves matrix.mjs with matrix.mjs own parser', () => 
     /tools\\\/parity\\\/\(compare\|matrix\)/.test(guard),
     'the guard must match both harnesses'
   )
-  assert.ok(guard.includes('parseMatrixArgs'), 'the guard must use matrix.mjs own parser')
   assert.ok(
-    guard.includes("from './parity/matrix.mjs'"),
+    guard.includes('matrixParseArgs') && guard.includes('.parseArgs'),
+    'the guard must use matrix.mjs own parser'
+  )
+  assert.ok(
+    // Lazily imported so the guard cannot die on a missing native `sharp`;
+    // it must still come from matrix.mjs itself, never a copied flag list.
+    /await import\('\.\/parity\/matrix\.mjs'\)/.test(guard),
     'parseMatrixArgs must be imported from matrix.mjs, not a copied flag list'
+  )
+  assert.ok(
+    !/^import\s*\{[^}]*parseArgs[^}]*\}\s*from\s*'\.\/parity\/matrix\.mjs'/m.test(guard),
+    'matrix.mjs must not be imported statically (that path pulls in sharp)'
   )
 })
 
@@ -286,5 +295,92 @@ test('CI flags still reject an unauthenticated protected route', async () => {
       source
     ),
     "protectedRouteIds must key on the route's own `auth`, not on includeAdmin"
+  )
+})
+
+test('login detection parses the pathname, so URL variants cannot slip through', async () => {
+  const { buildRows } = await import(new URL('./matrix.mjs', import.meta.url).href)
+  const { loadRoutesContract } = await import(new URL('./config.mjs', import.meta.url).href)
+  const contract = await loadRoutesContract()
+  const protectedRoutes = new Set(
+    contract.routes.filter(route => route.auth === 'admin').map(route => route.id)
+  )
+  const shot = path => ({
+    route: 'admin',
+    status: 'pass',
+    failureReasons: [],
+    legacy: { finalUrl: `http://127.0.0.1:4174${path}` },
+    rebuild: { finalUrl: `http://127.0.0.1:4175${path}` },
+  })
+
+  // Every one of these IS the unmeasured login state. A suffix test reports the
+  // last four as genuine captures, which is the same fail-open class as the
+  // includeAdmin gate.
+  for (const path of [
+    '/admin/login',
+    '/admin/login/',
+    '/admin/login?next=%2Fadmin%2Fphotos',
+    '/admin/login#form',
+  ]) {
+    const [row] = buildRows([shot(path)], { includeAdmin: false, protectedRoutes })
+    assert.equal(row.status, 'error', `login state must not pass: ${path}`)
+  }
+
+  // A real admin page must still pass — the detector must not over-fire.
+  for (const path of ['/admin', '/admin/photos', '/admin/login-help']) {
+    const [row] = buildRows([shot(path)], { includeAdmin: false, protectedRoutes })
+    assert.equal(row.status, 'pass', `a genuine admin page must pass: ${path}`)
+  }
+})
+
+test('the uploaded receipt names every flag the invocation used', async () => {
+  const { describeInvocation } = await import(new URL('./matrix.mjs', import.meta.url).href)
+  const options = {
+    legacyUrl: 'http://127.0.0.1:4174',
+    rebuildUrl: 'http://127.0.0.1:4175',
+    routes: 'all',
+    matrix: 'all',
+    themes: 'dark,light',
+    maxDiffRatio: 0.001,
+    pixelThreshold: 0.12,
+    edgeTolerance: 1,
+    includeAdmin: false,
+    prerender: true,
+    resume: false,
+    wave: 9,
+  }
+  const text = describeInvocation(options)
+  for (const flag of [
+    '--routes all',
+    '--matrix all',
+    '--themes dark,light',
+    '--edge-tolerance 1',
+    '--no-admin',
+    '--prerender',
+    '--wave 9',
+  ]) {
+    assert.ok(text.includes(flag), `receipt must record ${flag} (got: ${text})`)
+  }
+  assert.ok(!text.includes('--resume'), 'an unused flag must not be claimed')
+
+  // With admin sections included, the receipt must NOT claim --no-admin.
+  const expanded = describeInvocation({ ...options, includeAdmin: true })
+  assert.ok(
+    !expanded.includes('--no-admin'),
+    'must not claim --no-admin when sections were included'
+  )
+})
+
+test('the workflow guard does not need the native image library', () => {
+  // A static import of matrix.mjs pulls sharp via diff.mjs and kills the whole
+  // guard with ERR_MODULE_NOT_FOUND before it reads any workflow.
+  const guard = readFileSync(GUARD, 'utf8')
+  assert.ok(
+    !/^import\s*\{[^}]*parseArgs[^}]*\}\s*from\s*'\.\/parity\/matrix\.mjs'/m.test(guard),
+    'matrix.mjs must not be imported statically (it pulls sharp)'
+  )
+  assert.ok(
+    /await import\('\.\/parity\/matrix\.mjs'\)/.test(guard),
+    'matrix.mjs must be imported lazily inside the matrix branch'
   )
 })

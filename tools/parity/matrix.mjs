@@ -321,6 +321,56 @@ function protectedRouteIds(routes) {
   return new Set(routes.filter(route => route.auth === 'admin').map(route => route.id))
 }
 
+/**
+ * True when a capture ended on the admin sign-in screen.
+ *
+ * Compares the URL's PATHNAME, not a string suffix: `/admin/login/`,
+ * `/admin/login?next=/admin/photos` and `/admin/login#form` are all the same
+ * unmeasured state, and an `endsWith('/admin/login')` test reports every one of
+ * them as a genuine capture. That is the same fail-open class as keying the
+ * exemption on `includeAdmin`, one layer down.
+ */
+function isAdminLoginUrl(url) {
+  if (!url) return false
+  const value = String(url)
+  let pathname
+  try {
+    pathname = new URL(value).pathname
+  } catch {
+    // Not an absolute URL — fall back to the path before any query/fragment.
+    pathname = value.split(/[?#]/)[0]
+  }
+  return pathname.replace(/\/+$/, '') === '/admin/login'
+}
+
+/**
+ * The invocation actually used, for the uploaded receipt.
+ *
+ * The artifact is what a reviewer reads to confirm the signed-off baseline ran,
+ * so it must name every flag the job passed. Recording only `--wave` (the
+ * previous behaviour) silently dropped `--routes`, `--matrix`, `--themes`,
+ * `--edge-tolerance`, `--no-admin` and `--prerender` — i.e. exactly the options
+ * that distinguish the signed-off run from a strict default one.
+ */
+export function describeInvocation(options) {
+  const flags = [
+    `--routes ${options.routes}`,
+    `--matrix ${options.matrix}`,
+    ...(options.themes ? [`--themes ${options.themes}`] : []),
+    `--max-diff-ratio ${options.maxDiffRatio}`,
+    `--pixel-threshold ${options.pixelThreshold}`,
+    `--edge-tolerance ${options.edgeTolerance}`,
+    ...(options.includeAdmin ? [] : ['--no-admin']),
+    ...(options.prerender ? ['--prerender'] : []),
+    ...(options.resume ? ['--resume'] : []),
+    `--wave ${options.wave}`,
+  ]
+  return (
+    `node tools/parity/matrix.mjs --legacy-url ${options.legacyUrl} ` +
+    `--rebuild-url ${options.rebuildUrl} ${flags.join(' ')}`
+  )
+}
+
 function firstFailureDetail(shot) {
   if (shot.textDiff?.status === 'fail') {
     const firstField = shot.textDiff.differences?.[0]?.field ?? 'text'
@@ -348,8 +398,8 @@ function firstFailureDetail(shot) {
 export function buildRows(shots, { includeAdmin, protectedRoutes = new Set() }) {
   return shots.map(shot => {
     const admin = isAdminRow(shot, includeAdmin)
-    const legacyLogin = String(shot.legacy?.finalUrl ?? '').endsWith('/admin/login')
-    const rebuildLogin = String(shot.rebuild?.finalUrl ?? '').endsWith('/admin/login')
+    const legacyLogin = isAdminLoginUrl(shot.legacy?.finalUrl)
+    const rebuildLogin = isAdminLoginUrl(shot.rebuild?.finalUrl)
     let captureClass = 'captured'
     let exemptReason = null
     // A row for an `auth: 'admin'` route was not measured if either side ended on
@@ -601,7 +651,7 @@ async function runMatrix(options) {
     prerender,
     outDir: options.outDir,
   })
-  overview.command = `node tools/parity/matrix.mjs --legacy-url ${options.legacyUrl} --rebuild-url ${options.rebuildUrl} --wave ${options.wave}`
+  overview.command = describeInvocation(options)
   overview.durationMs = Date.now() - startedMs
 
   const summaryPath = path.join(options.outDir, 'matrix-summary.json')
