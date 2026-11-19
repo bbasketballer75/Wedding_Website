@@ -254,6 +254,31 @@ test('the production path refuses to publish a summary whose tally does not add 
   )
 })
 
+test('the published guide renders the tally line exactly once', async () => {
+  // The guide is a deliverable a reviewer reads. Composing the tally line
+  // from a helper that already prefixes it produced "- rows: rows: 46 (...)"
+  // in the published README — the helper was asserted in isolation, so the
+  // composed artifact line was never checked.
+  const { readmeTallyLine } = await import(new URL('./matrix.mjs', import.meta.url).href)
+  const counts = { rows: 46, pass: 41, allowed: 5, fail: 0, error: 0, exempt: 0 }
+  const line = readmeTallyLine(counts)
+  assert.equal(line, '- rows: 46 (41 pass, 5 allowed, 0 fail, 0 error)')
+  assert.equal(
+    line.match(/rows:/g)?.length,
+    1,
+    'the tally line must name the row count exactly once'
+  )
+  assert.doesNotMatch(line, /rows:\s*rows:/, 'the tally line must not repeat its own prefix')
+  // The exempt suffix is a SUBSET of error, not a fifth peer bucket.
+  const withExempt = readmeTallyLine({ ...counts, error: 1, exempt: 1 })
+  assert.match(withExempt, /of which 1 are exempt\/unmeasured admin rows/)
+  assert.equal(
+    withExempt.match(/rows:/g)?.length,
+    1,
+    'the exempt suffix must not introduce a second "rows:" token'
+  )
+})
+
 test('the published waiver line appears ONLY when the prerender gate was waived', async () => {
   // The waiver is a claim about the gate. Rendering it unconditionally would
   // tell a reviewer that a prerender gate which PASSED or FAILED was
@@ -1660,6 +1685,21 @@ test('the matrix CLI forwards the override and publishes an unmeasured row as an
     out.readme,
     /of which 1 are exempt\/unmeasured admin rows/,
     'the published README tally must treat exempt as a subset of error'
+  )
+  // The COMPOSED published line, read off disk. The helper was asserted in
+  // isolation, so a doubled prefix ("- rows: rows: 46 (...)") in the guide a
+  // reviewer opens went unnoticed.
+  const publishedTally = (out.readme ?? '').split('\n').find(line => line.includes('rows:'))
+  assert.ok(publishedTally, 'the published README must carry a tally line')
+  assert.doesNotMatch(
+    publishedTally,
+    /rows:\s*rows:/,
+    `the published tally line must not repeat its own prefix (got: ${publishedTally})`
+  )
+  assert.match(
+    publishedTally,
+    /^- rows: \d+ \(\d+ pass, \d+ allowed, \d+ fail, \d+ error/,
+    `the published tally line must read as one tally (got: ${publishedTally})`
   )
 
   // Under the signed-off flags, --no-admin excludes added sections, not
