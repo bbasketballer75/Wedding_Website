@@ -1417,6 +1417,16 @@ test('the matrix CLI forwards the override and publishes an unmeasured row as an
   assert.equal(out.received.supabaseUrl, 'https://override-check.supabase.co')
   assert.equal(out.received.themes, null, 'omitting --themes uses the UI contract defaults')
   assert.ok(out.received.extraRoutes.some(route => route.id === 'admin-photos'))
+  // The bag the ENGINE receives must carry the fields that decide WHAT is
+  // measured. A call site that reached the engine directly could drop them,
+  // and `compare.mjs` would apply its own defaults: `routes` falls back to
+  // `'priority'` (a 24-row subset of a 46-row matrix), `wave` to `1`, and
+  // `adminLogin` to the defaults. Each of those narrows the measurement
+  // while the job still exits 0, so the values are asserted HERE, at the
+  // production entry point, rather than only on the exported helper.
+  assert.equal(out.received.routes, 'all', 'the engine must receive the full route selector')
+  assert.equal(out.received.wave, 9, 'the engine must receive the signed-off wave')
+  assert.ok(out.received.adminLogin, 'the engine must receive the sign-in configuration')
   assert.equal(
     out.code,
     1,

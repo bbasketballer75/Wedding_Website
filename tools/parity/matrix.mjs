@@ -46,7 +46,7 @@ import {
   probeUrl,
   resolveRoutePath,
 } from './config.mjs'
-import { runCompare, SCHEMA_VERSION } from './compare.mjs'
+import { runCompare as rawRunCompare, SCHEMA_VERSION } from './compare.mjs'
 import { guestShareToken, loadFixtures } from './mocks/fixtures.mjs'
 import {
   HarnessError,
@@ -484,8 +484,27 @@ export function compareOptions(options, extraRoutes = []) {
  * bypasses the mapping hop, and the harness then measures a narrower matrix
  * (or an unauthenticated admin run) while the job still exits 0.
  */
-export async function matrixCompare(options, extraRoutes = [], compare = runCompare) {
+export async function matrixCompare(options, extraRoutes = [], compare = rawRunCompare) {
   const bag = compareOptions(options, extraRoutes)
+  return runParityComparison(bag, compare)
+}
+
+/**
+ * The comparison engine's own entry point, with the required-field contract
+ * applied to the bag that is ACTUALLY handed over.
+ *
+ * The contract must not live only inside `matrixCompare`: a call site that
+ * reaches the engine directly (`runCompare(options)`) would skip a check
+ * living there, and `compare.mjs` then applies its own defaults — `routes`
+ * falls back to `'priority'`, `wave` to `1`, `adminLogin` to the defaults.
+ * The result is a silently narrowed matrix that still exits 0.
+ *
+ * So the check is applied HERE, at the boundary the engine is entered
+ * through. `runCompare` is imported under a private name, so no other call
+ * site in this module can reach the engine unchecked: every path into it
+ * passes this function.
+ */
+export async function runParityComparison(bag, compare = rawRunCompare) {
   const missing = REQUIRED_COMPARE_FIELDS.filter(field => {
     const value = bag[field]
     // Null deliberately selects the themes declared by the UI contract.
