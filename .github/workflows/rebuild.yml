@@ -8,6 +8,12 @@ name: Rebuild Workbench
 on:
   pull_request:
     branches: [main, rebuild/greenfield]
+    # `labeled` is what makes the documented parity opt-in reachable: the parity
+    # job's `if:` gates on the `run-parity` label, but without this event a label
+    # added AFTER the PR opened never fires the workflow, so the only ways to run
+    # parity were the nightly schedule or a manual dispatch. The other three are
+    # the `pull_request` defaults, so nothing else changes.
+    types: [opened, synchronize, reopened, labeled]
     paths:
       - 'contracts/**'
       - 'tools/**'
