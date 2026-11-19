@@ -96,7 +96,7 @@ jobs:
       # or PR script is executed with the workflow's PR-comment-write token.
       - name: Checkout trusted main helpers
         id: trusted_helpers
-        uses: actions/checkout@v7
+        uses: actions/checkout@v7.0.1
         with:
           ref: main
           path: .
@@ -117,7 +117,7 @@ jobs:
 
       - name: Checkout resolved PR source as read-only review input
         id: source
-        uses: actions/checkout@v7
+        uses: actions/checkout@v7.0.1
         with:
           ref: ${{ steps.target.outputs.head_sha }}
           path: pr-source

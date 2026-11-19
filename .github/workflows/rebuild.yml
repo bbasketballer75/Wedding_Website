@@ -47,7 +47,7 @@ jobs:
       FREEZE_TAG: legacy-freeze-2026-11-08
     steps:
       - name: Checkout
-        uses: actions/checkout@v7
+        uses: actions/checkout@v7.0.1
         with:
           fetch-depth: 0 # the legacy-freeze audit diffs against the tag
           fetch-tags: true
@@ -94,7 +94,7 @@ jobs:
         working-directory: rebuild
     steps:
       - name: Checkout
-        uses: actions/checkout@v7
+        uses: actions/checkout@v7.0.1
 
       - name: Detect greenfield scaffold
         id: scaffold
@@ -191,7 +191,7 @@ jobs:
       FREEZE_TAG: legacy-freeze-2026-11-08
     steps:
       - name: Checkout
-        uses: actions/checkout@v7
+        uses: actions/checkout@v7.0.1
         with:
           fetch-depth: 0
 
