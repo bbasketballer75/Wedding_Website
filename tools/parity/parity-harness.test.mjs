@@ -66,16 +66,51 @@ test('admin session key falls back to the contract fixture without a URL', () =>
   }
 })
 
-test('an un-authenticated admin row is an error, not a pass', () => {
+test('an un-authenticated admin row is an error, not a pass', async () => {
+  // BEHAVIOURAL, not a source-text check: a source-shape assertion passes on
+  // a mapping that is present but not wired to the value a caller consumes.
+  // Assert the value: an exempt row must come back as an error, with its
+  // reason, and the exit signal must follow it.
+  const { buildRows } = await import(new URL('./matrix.mjs', import.meta.url).href)
+  const protectedRoutes = new Set(['admin'])
+  const exemptShot = {
+    route: 'admin',
+    status: 'pass',
+    failureReasons: [],
+    legacy: { finalUrl: 'http://127.0.0.1:4174/admin/login' },
+    rebuild: { finalUrl: 'http://127.0.0.1:4174/admin/login' },
+  }
+  const [row] = buildRows([exemptShot], { includeAdmin: false, protectedRoutes })
+  assert.equal(row.status, 'error', 'an un-authenticated admin row must be an error')
+  assert.equal(row.captureClass, 'exempt', 'the row must record that it was exempt')
+  assert.ok(
+    row.failureReasons.some(reason => reason.includes('admin row not measured')),
+    `the exemption reason must survive into the failure reasons (got: ${JSON.stringify(row.failureReasons)})`
+  )
+
+  // A row that WAS measured must still be allowed to pass — the error mapping
+  // must not swallow genuine captures.
+  const [good] = buildRows(
+    [
+      {
+        route: 'admin',
+        status: 'pass',
+        failureReasons: [],
+        legacy: { finalUrl: 'http://127.0.0.1:4174/admin' },
+        rebuild: { finalUrl: 'http://127.0.0.1:4175/admin' },
+      },
+    ],
+    { includeAdmin: false, protectedRoutes }
+  )
+  assert.equal(good.status, 'pass', 'a genuinely captured admin row must still pass')
+
   const source = readFileSync(join(PARITY, 'matrix.mjs'), 'utf8')
   assert.ok(
     source.includes("const status = captureClass === 'exempt' ? 'error' : shot.status"),
     'buildRows must report an exempt (un-authenticated) admin row as an error'
   )
   assert.ok(
-    source.includes(
-      "if (rows.some(row => row.status === 'error')) exitCode = Math.max(exitCode, 1)"
-    ),
+    source.includes('exitCode = exitCodeForRows(rows, exitCode)'),
     'the job exit code must reflect an unmeasured row'
   )
   assert.ok(
@@ -191,14 +226,14 @@ test('every pauseAt jumps forward from its install, so the capture clock cannot 
     assert.ok(installIdx !== -1, 'a pause must be preceded by an install')
     const installExpr = before.slice(installIdx).replace(/\s+/g, ' ')
     assert.ok(
-      /FIXED_NOW_LEAD_MS/.test(installExpr),
+      /CLOCK_LEAD_MS|clockInstallTime/.test(installExpr),
       'the install immediately before a pause must lead by a named margin'
     )
   }
 
-  const lead = source.match(/FIXED_NOW_LEAD_MS\s*=\s*(\d+)/)
-  assert.ok(lead, 'FIXED_NOW_LEAD_MS must be a numeric literal')
-  assert.ok(Number(lead[1]) >= 100, `FIXED_NOW_LEAD_MS must be >= 100 ms (got ${lead[1]})`)
+  const lead = source.match(/CLOCK_LEAD_MS\s*=\s*(\d+)/)
+  assert.ok(lead, 'CLOCK_LEAD_MS must be a numeric literal')
+  assert.ok(Number(lead[1]) >= 100, `CLOCK_LEAD_MS must be >= 100 ms (got ${lead[1]})`)
 })
 
 test('CI flags still reject an unauthenticated protected route', async () => {
@@ -622,4 +657,100 @@ test('no parity module statically imports the native image library', () => {
     )
     assert.ok(/await import\('sharp'\)/.test(source), `${file} must import sharp lazily`)
   }
+})
+
+test('the guard resolves matrix.mjs lazily and only when it must', () => {
+  // The guard must run on a machine where `matrix.mjs` cannot be loaded at
+  // all — its module graph pulls in the native image library. The import must
+  // therefore be LAZY: evaluated only when a matrix.mjs invocation actually
+  // has to be parsed, and never when the guard has no matrix invocation to
+  // check. Assert that BEHAVIOURALLY: point the guard at a scratch
+  // workflows directory holding only a compare.mjs invocation, and remove the
+  // module's resolvability, so a STATIC import would die.
+  const scratch = mkdtempSync(join(tmpdir(), 'parity-guard-lazy-'))
+  try {
+    writeFileSync(
+      join(scratch, 'only-compare.yml'),
+      'jobs:\n  build:\n    steps:\n      - run: node tools/parity/compare.mjs --legacy-url http://127.0.0.1:4174 --rebuild-url http://127.0.0.1:4175 --routes all --matrix all\n'
+    )
+    const stdout = execFileSync('node', [GUARD, '--workflows-dir', scratch], {
+      cwd: ROOT,
+      encoding: 'utf8',
+    })
+    assert.match(
+      stdout,
+      /parity workflow invocations valid/,
+      `the guard must accept a compare-only workflows directory (got: ${stdout})`
+    )
+  } finally {
+    rmSync(scratch, { recursive: true, force: true })
+  }
+
+  // And when a matrix.mjs invocation IS present, the guard must resolve it
+  // with matrix.mjs's own parser: a bad matrix flag must be rejected.
+  const scratch2 = mkdtempSync(join(tmpdir(), 'parity-guard-matrix-'))
+  try {
+    writeFileSync(
+      join(scratch2, 'bad-matrix.yml'),
+      'jobs:\n  build:\n    steps:\n      - run: node tools/parity/matrix.mjs --legacy-url http://127.0.0.1:4174 --rebuild-url http://127.0.0.1:4175 --all\n'
+    )
+    let failed = false
+    try {
+      execFileSync('node', [GUARD, '--workflows-dir', scratch2], { cwd: ROOT, encoding: 'utf8' })
+    } catch (error) {
+      failed = true
+      assert.match(String(error.stderr ?? ''), /unknown argument/, 'the bad flag must be named')
+    }
+    assert.ok(failed, 'the guard must reject a bad matrix.mjs flag')
+  } finally {
+    rmSync(scratch2, { recursive: true, force: true })
+  }
+})
+
+test('the capture clock is installed before the parked time', async () => {
+  // The lead is what stops `pauseAt` throwing "Cannot fast-forward to the
+  // past". Assert it on the VALUE: the install instant must be strictly
+  // BEFORE the parked time, by a lead large enough to absorb the real time
+  // that elapses between the two awaited calls.
+  const { clockInstallTime, CLOCK_LEAD_MS } = await import(
+    new URL('./capture.mjs', import.meta.url).href
+  )
+  const parked = '2026-11-08T17:00:00.000Z'
+  const install = clockInstallTime(parked)
+
+  assert.ok(
+    install.getTime() < new Date(parked).getTime(),
+    'the clock must be installed BEFORE the parked time'
+  )
+  assert.equal(
+    install.getTime(),
+    new Date(parked).getTime() - CLOCK_LEAD_MS,
+    'the install instant must be exactly the lead before the parked time'
+  )
+  assert.ok(
+    CLOCK_LEAD_MS >= 100,
+    `the lead must absorb more than 1 ms of real time (got ${CLOCK_LEAD_MS})`
+  )
+})
+
+test('the job exit code reflects an unmeasured row', async () => {
+  // The signal a caller consumes, asserted on the VALUE. A source-text check
+  // on the mapping passes even when the exit code is never raised — which is
+  // the fail-open this gate exists to close.
+  const { exitCodeForRows } = await import(new URL('./matrix.mjs', import.meta.url).href)
+  assert.equal(
+    exitCodeForRows([{ status: 'error' }], 0),
+    1,
+    'an unmeasured row must raise the exit code'
+  )
+  assert.equal(
+    exitCodeForRows([{ status: 'pass' }, { status: 'allowed' }], 0),
+    0,
+    'measured rows must leave the exit code alone'
+  )
+  assert.equal(
+    exitCodeForRows([{ status: 'error' }], 1),
+    1,
+    'an existing failure must not be lowered'
+  )
 })

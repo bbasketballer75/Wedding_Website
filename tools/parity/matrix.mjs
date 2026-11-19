@@ -776,9 +776,21 @@ async function runMatrix(options) {
   // A row that could not be measured is not a pass. `buildRows` reports an
   // un-authenticated admin row as `error`; make the job's exit code reflect it
   // so CI cannot go green having compared two login screens.
-  if (rows.some(row => row.status === 'error')) exitCode = Math.max(exitCode, 1)
+  exitCode = exitCodeForRows(rows, exitCode)
   if (options.prerender && prerender?.status === 'fail') exitCode = Math.max(exitCode, 1)
   return { overview, exitCode, summaryPath, matrixMarkdownPath, readmePath }
+}
+
+/**
+ * The job's exit code must reflect an unmeasured row.
+ *
+ * Exported so the signal a caller actually consumes can be asserted on the
+ * VALUE. A source-text check on the mapping passes even if the exit code is
+ * never raised — which is the fail-open this gate exists to close: CI going
+ * green having compared two login screens.
+ */
+export function exitCodeForRows(rows, exitCode = 0) {
+  return rows.some(row => row.status === 'error') ? Math.max(exitCode, 1) : exitCode
 }
 
 export async function main(argv) {

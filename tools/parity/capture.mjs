@@ -267,6 +267,28 @@ export function preparePageOptions({ theme, mode, fixtures, supabaseUrl }) {
 }
 
 /**
+ * How far BEFORE the parked time the fake clock is installed.
+ *
+ * Playwright's `install()` starts the clock ticking with real time and
+ * `pauseAt()` only jumps forward, so pausing at `fixedNow + 1` throws
+ * "Cannot fast-forward to the past" whenever more than 1 ms elapses between
+ * the two awaited calls. Installing one second before the parked time and
+ * pausing AT it makes the jump always forward, and still lands exactly on
+ * `fixedNow`.
+ *
+ * Exported so the lead can be asserted on the VALUE. Without that, removing
+ * the subtraction leaves the harness throwing "Cannot fast-forward to the
+ * past" at capture time — a runtime failure in the capture path, not a parse
+ * error, and invisible to a source-text check.
+ */
+export const CLOCK_LEAD_MS = 1000
+
+/** The instant the fake clock is installed at: the parked time minus the lead. */
+export function clockInstallTime(fixedNow, leadMs = CLOCK_LEAD_MS) {
+  return new Date(new Date(fixedNow).getTime() - leadMs)
+}
+
+/**
  * Warm up the context: one navigation with the fake timer clock running so the
  * app fully mounts and the HTTP cache holds chunks + mocked data responses.
  */
@@ -420,9 +442,8 @@ export async function captureShot(
     // pause AT it: the jump is then always forward and still lands exactly on
     // `ui.fixedNow`. The page is still about:blank at this point, so the
     // forward jump fires no page timers and cannot move the animation phase.
-    const FIXED_NOW_LEAD_MS = 1000
     await page.clock.install({
-      time: new Date(new Date(ui.fixedNow).getTime() - FIXED_NOW_LEAD_MS),
+      time: clockInstallTime(ui.fixedNow),
     })
     await page.clock.pauseAt(new Date(ui.fixedNow))
 
