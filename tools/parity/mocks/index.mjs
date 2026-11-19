@@ -97,7 +97,14 @@ export async function loadMediaStub({ root = ROOT } = {}) {
  * unauthenticated — it read a different localStorage entry — so every admin row
  * compared an unauthenticated login page and failed on text diffs. The harness
  * must seed the key the app will actually look up, which is derived from the
- * served URL.
+ * URL the app was BUILT with.
+ *
+ * That is `process.env.VITE_SUPABASE_URL` in the harness process, so it equals
+ * the app's key only when the preview was built in this same environment. The
+ * CI parity job builds both sides in one job with one env block, so it holds
+ * there; a local run against a preview built with a different URL would derive
+ * the wrong key and silently reproduce the original defect. Pass `supabaseUrl`
+ * explicitly in that case rather than relying on the ambient env.
  */
 export function adminSessionStorageKey({ fixtures, root = ROOT, supabaseUrl } = {}) {
   const url = supabaseUrl ?? process.env.VITE_SUPABASE_URL ?? ''
