@@ -84,7 +84,32 @@ export async function loadMediaStub({ root = ROOT } = {}) {
   return mediaStubCache
 }
 
-export function adminSessionStorageKey({ fixtures, root = ROOT } = {}) {
+/**
+ * The localStorage key the app under test will read its Supabase session from.
+ *
+ * `@supabase/supabase-js` derives the key from the URL the app was BUILT with:
+ *   `sb-${new URL(supabaseUrl).hostname.split('.')[0]}-auth-token`
+ * so with `VITE_SUPABASE_URL=https://placeholder.supabase.co` the app looks for
+ * `sb-placeholder-auth-token`.
+ *
+ * The contract fixture carries the REAL project's key
+ * (`sb-zaczcyzvavetgfuucljf-auth-token`). Seeding THAT key left the app
+ * unauthenticated — it read a different localStorage entry — so every admin row
+ * compared an unauthenticated login page and failed on text diffs. The harness
+ * must seed the key the app will actually look up, which is derived from the
+ * served URL.
+ */
+export function adminSessionStorageKey({ fixtures, root = ROOT, supabaseUrl } = {}) {
+  const url = supabaseUrl ?? process.env.VITE_SUPABASE_URL ?? ''
+  if (url) {
+    try {
+      const hostname = new URL(url).hostname
+      const projectRef = hostname.split('.')[0]
+      if (projectRef) return `sb-${projectRef}-auth-token`
+    } catch {
+      // Not a parseable URL — fall through to the contract fixture.
+    }
+  }
   const fromFixture = fixtures?.admin?.storageKey
   if (fromFixture) return fromFixture
   return `sb-${supabaseProjectRef({ root })}-auth-token`

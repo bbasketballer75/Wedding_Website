@@ -241,10 +241,11 @@ jobs:
       - name: Compare legacy vs rebuild
         if: steps.harness.outputs.ready == 'true' && hashFiles('rebuild/package.json') != ''
         run: |
-          node tools/parity/compare.mjs \
+          node tools/parity/matrix.mjs \
             --legacy-url http://127.0.0.1:4174 \
             --rebuild-url http://127.0.0.1:4175 \
-            --routes all --matrix all \
+            --routes all --matrix all --themes dark,light \
+            --edge-tolerance 1 --no-admin --prerender --wave 9 \
             --out tools/parity/output/ci
 
       - name: Upload parity report

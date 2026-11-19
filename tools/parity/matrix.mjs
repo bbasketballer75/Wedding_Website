@@ -86,7 +86,12 @@ function fail(message) {
   throw new HarnessError(message)
 }
 
-function parseArgs(argv) {
+/**
+ * Parse the matrix CLI arguments. Exported so the workflow guard can resolve a
+ * `matrix.mjs` invocation with the harness's OWN parser rather than a second
+ * copy of the flag list.
+ */
+export function parseArgs(argv) {
   const options = {
     legacyUrl: null,
     rebuildUrl: null,
@@ -345,6 +350,16 @@ function buildRows(shots, { includeAdmin }) {
       }
     }
     const detail = firstFailureDetail(shot)
+    // An admin row that could not be authenticated is NOT evidence of parity. It
+    // is reported as an `error`, never as a `pass`: two sides that both landed on
+    // the login screen would otherwise compare as equal and the job would exit
+    // green having measured nothing. The exemption is still recorded, with its
+    // reason, so the receipt says why the row was not measured.
+    const status = captureClass === 'exempt' ? 'error' : shot.status
+    const failureReasons =
+      captureClass === 'exempt'
+        ? [...(shot.failureReasons ?? []), `admin row not measured: ${exemptReason}`]
+        : shot.failureReasons ?? []
     return {
       key: shot.key,
       route: shot.route,
@@ -354,14 +369,14 @@ function buildRows(shots, { includeAdmin }) {
       admin,
       captureClass,
       exemptReason,
-      status: shot.status,
+      status,
       ratio: shot.pixelDiff?.ratio ?? null,
       changedPixels: shot.pixelDiff?.changedPixels ?? null,
       totalPixels: shot.pixelDiff?.totalPixels ?? null,
       textDiffs: shot.textDiff?.status === 'fail' ? (shot.textDiff.differences?.length ?? 0) : 0,
       legacyHeight: shot.legacy?.pageHeightPx ?? null,
       rebuildHeight: shot.rebuild?.pageHeightPx ?? null,
-      failureReasons: shot.failureReasons ?? [],
+      failureReasons,
       firstFailure: detail,
       legacyFinalUrl: shot.legacy?.finalUrl ?? null,
       rebuildFinalUrl: shot.rebuild?.finalUrl ?? null,
@@ -624,6 +639,10 @@ async function runMatrix(options) {
   log.out(`Output README:  ${readmePath}`)
 
   let exitCode = compareResult.exitCode
+  // A row that could not be measured is not a pass. `buildRows` reports an
+  // un-authenticated admin row as `error`; make the job's exit code reflect it
+  // so CI cannot go green having compared two login screens.
+  if (rows.some(row => row.status === 'error')) exitCode = Math.max(exitCode, 1)
   if (options.prerender && prerender?.status === 'fail') exitCode = Math.max(exitCode, 1)
   return { overview, exitCode, summaryPath, matrixMarkdownPath, readmePath }
 }

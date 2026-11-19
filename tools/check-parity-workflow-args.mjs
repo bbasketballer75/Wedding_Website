@@ -28,41 +28,68 @@
  * Usage:
  *   node tools/check-parity-workflow-args.mjs           # exit 1 on violations
  *   node tools/check-parity-workflow-args.mjs --json
+ *   node tools/check-parity-workflow-args.mjs --workflows-dir <dir>
+ *
+ * `--workflows-dir` points the scan at another directory of workflow files.
+ * The contracts are still read from this repo, so the guard keeps resolving
+ * selectors against the same contract files the harness will use.
  */
 import { readFileSync, readdirSync } from 'node:fs'
+import path from 'node:path'
 import {
   loadRoutesContract,
   loadUiContract,
   parseCompareArgs,
   resolveSelection,
 } from './parity/config.mjs'
+import { parseArgs as parseMatrixArgs } from './parity/matrix.mjs'
 import { repoPath } from './lib/paths.mjs'
 
-const args = new Set(process.argv.slice(2))
+const argv = process.argv.slice(2)
+const args = new Set(argv)
 const JSON_OUTPUT = args.has('--json')
+const WORKFLOWS_DIR_FLAG = argv.indexOf('--workflows-dir')
+const workflowsDir =
+  WORKFLOWS_DIR_FLAG === -1
+    ? repoPath('.github/workflows')
+    : path.resolve(argv[WORKFLOWS_DIR_FLAG + 1] ?? repoPath('.github/workflows'))
 
-/** Every `node tools/parity/compare.mjs …` invocation in a workflow file. */
+/**
+ * Every `node tools/parity/compare.mjs …` / `node tools/parity/matrix.mjs …`
+ * invocation in a workflow file.
+ *
+ * Both harnesses are matched: `matrix.mjs` is the harness the signed-off
+ * cutover baseline was recorded with, so a workflow may legitimately invoke
+ * either. Matching only `compare.mjs` would let a broken `matrix.mjs`
+ * invocation sit in the file until the next nightly run reported it — the
+ * exact failure mode this guard exists to prevent.
+ */
 function findInvocations(workflowText) {
   const invocations = []
-  const pattern = /node\s+tools\/parity\/compare\.mjs((?:[^\n]*\\\r?\n)*[^\n]*)/g
+  const pattern =
+    /node\s+tools\/parity\/(compare|matrix)\.mjs((?:[^\n]*\\\r?\n)*[^\n]*)/g
   let match
   while ((match = pattern.exec(workflowText)) !== null) {
-    const raw = match[1]
+    const harness = match[1]
+    const raw = match[2]
     // A trailing backslash continues the command onto the next line.
     const tokens = raw
       .replace(/\\\r?\n/g, ' ')
       .trim()
       .split(/\s+/)
       .filter(Boolean)
-    invocations.push({ snippet: raw.replace(/\r?\n/g, ' ').trim(), tokens })
+    invocations.push({ harness, snippet: raw.replace(/\r?\n/g, ' ').trim(), tokens })
   }
   return invocations
 }
 
-/** Resolve one invocation the way the harness resolves it, and report the first failure. */
+/** Resolve one invocation the way its harness resolves it, and report the first failure. */
 function checkInvocation(invocation, ui, routesContract) {
   try {
-    const parsed = parseCompareArgs(invocation.tokens)
+    const parsed =
+      invocation.harness === 'matrix'
+        ? parseMatrixArgs(invocation.tokens)
+        : parseCompareArgs(invocation.tokens)
     resolveSelection({ ui, routesContract, options: parsed.options })
     return null
   } catch (error) {
@@ -70,7 +97,7 @@ function checkInvocation(invocation, ui, routesContract) {
   }
 }
 
-const workflowDir = repoPath('.github/workflows')
+const workflowDir = workflowsDir
 const files = readdirSync(workflowDir)
   .filter(file => file.endsWith('.yml') || file.endsWith('.yaml'))
   .sort()
@@ -80,10 +107,11 @@ const routesContract = await loadRoutesContract()
 
 const results = []
 for (const file of files) {
-  const text = readFileSync(repoPath('.github/workflows', file), 'utf8')
+  const text = readFileSync(path.join(workflowDir, file), 'utf8')
   for (const invocation of findInvocations(text)) {
     results.push({
       file: `.github/workflows/${file}`,
+      harness: invocation.harness,
       snippet: invocation.snippet,
       error: checkInvocation(invocation, ui, routesContract),
     })
@@ -104,7 +132,9 @@ if (JSON_OUTPUT) {
   console.error(`  x ${violations.length} parity invocation(s) the harness will reject:`)
   for (const violation of violations) {
     console.error(`      ${violation.file}: ${violation.error}`)
-    console.error(`      invoked as: node tools/parity/compare.mjs${violation.snippet}`)
+    console.error(
+      `      invoked as: node tools/parity/${violation.harness}.mjs${violation.snippet}`
+    )
   }
 } else {
   console.log(
