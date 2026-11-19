@@ -149,3 +149,45 @@ test('the guard rejects a bad matrix flag and a bad selector', () => {
   // The repo's workflow file must be byte-identical to how it started.
   assert.equal(readFileSync(REBUILD_WORKFLOW, 'utf8'), original)
 })
+
+test('every pauseAt jumps forward from its install, so the capture clock cannot stall', () => {
+  const source = readFileSync(join(PARITY, 'capture.mjs'), 'utf8')
+
+  // A warmup page installs a clock and never pauses it, so target the PAUSE
+  // sites rather than the first `install(` in the file. `[^\n]*` (greedy, one
+  // line) is deliberate: a non-greedy `[\s\S]*?` stops at the FIRST `)` —
+  // the one closing `new Date(...)` — and would hide a trailing `.getTime()+1`
+  // from every assertion below, so the guard would pass on the bug.
+  const pauses = [...source.matchAll(/page\.clock\.pauseAt\(([^\n]*)\)/g)]
+  assert.ok(pauses.length >= 1, 'capture.mjs must pause the fake clock somewhere')
+
+  for (const pause of pauses) {
+    const pauseExpr = pause[1].replace(/\s+/g, ' ').trim()
+    // Playwright's pauseAt only jumps FORWARD. Pausing at the install time plus
+    // an offset throws "Cannot fast-forward to the past" as soon as more than
+    // that offset of real time elapses between the two awaited calls, which
+    // made `gallery__mobile__dark` error and took the whole matrix to exit 2.
+    assert.ok(
+      !/\.getTime\(\)\s*\+/.test(pauseExpr),
+      `pauseAt must not use an offset (got ${pauseExpr})`
+    )
+    assert.ok(
+      !/LEAD_MS/.test(pauseExpr),
+      `pauseAt must land exactly on the parked time (got ${pauseExpr})`
+    )
+
+    // The install that arms this pause must lead the parked time.
+    const before = source.slice(0, pause.index)
+    const installIdx = before.lastIndexOf('page.clock.install(')
+    assert.ok(installIdx !== -1, 'a pause must be preceded by an install')
+    const installExpr = before.slice(installIdx).replace(/\s+/g, ' ')
+    assert.ok(
+      /FIXED_NOW_LEAD_MS/.test(installExpr),
+      'the install immediately before a pause must lead by a named margin'
+    )
+  }
+
+  const lead = source.match(/FIXED_NOW_LEAD_MS\s*=\s*(\d+)/)
+  assert.ok(lead, 'FIXED_NOW_LEAD_MS must be a numeric literal')
+  assert.ok(Number(lead[1]) >= 100, `FIXED_NOW_LEAD_MS must be >= 100 ms (got ${lead[1]})`)
+})

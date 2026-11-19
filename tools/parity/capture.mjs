@@ -399,8 +399,18 @@ export async function captureShot(
       mediaStub,
       state: createMockState(),
     })
-    await page.clock.install({ time: new Date(ui.fixedNow) })
-    await page.clock.pauseAt(new Date(ui.fixedNow).getTime() + 1)
+    // Playwright's `pauseAt` only jumps FORWARD, and `install()` starts the
+    // clock ticking with real time, so pausing at `fixedNow + 1` throws
+    // "Cannot fast-forward to the past" whenever more than 1 ms elapses
+    // between the two calls. Install one second BEFORE the parked time and
+    // pause AT it: the jump is then always forward and still lands exactly on
+    // `ui.fixedNow`. The page is still about:blank at this point, so the
+    // forward jump fires no page timers and cannot move the animation phase.
+    const FIXED_NOW_LEAD_MS = 1000
+    await page.clock.install({
+      time: new Date(new Date(ui.fixedNow).getTime() - FIXED_NOW_LEAD_MS),
+    })
+    await page.clock.pauseAt(new Date(ui.fixedNow))
 
     const response = await page.goto(`${baseUrl}${routePath}`, {
       waitUntil: 'load',
