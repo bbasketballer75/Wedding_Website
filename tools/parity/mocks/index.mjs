@@ -103,8 +103,10 @@ export async function loadMediaStub({ root = ROOT } = {}) {
  * the app's key only when the preview was built in this same environment. The
  * CI parity job builds both sides in one job with one env block, so it holds
  * there; a local run against a preview built with a different URL would derive
- * the wrong key and silently reproduce the original defect. Pass `supabaseUrl`
- * explicitly in that case rather than relying on the ambient env.
+ * the wrong key and silently reproduce the original defect. `preparePage`
+ * forwards a `supabaseUrl` override for that case, and `captureShot` takes it
+ * from the harness options, so a caller that knows the preview's build URL can
+ * state it rather than relying on the ambient env.
  */
 export function adminSessionStorageKey({ fixtures, root = ROOT, supabaseUrl } = {}) {
   const url = supabaseUrl ?? process.env.VITE_SUPABASE_URL ?? ''
@@ -217,8 +219,11 @@ function browserInitScript(input) {
   }
 }
 
-export async function preparePage(page, { theme, mode = 'public', fixtures, root = ROOT } = {}) {
-  const storageKey = mode === 'admin' ? adminSessionStorageKey({ fixtures, root }) : ''
+export async function preparePage(
+  page,
+  { theme, mode = 'public', fixtures, root = ROOT, supabaseUrl } = {}
+) {
+  const storageKey = mode === 'admin' ? adminSessionStorageKey({ fixtures, root, supabaseUrl }) : ''
   const session = fixtures?.admin?.session ?? null
   await page.addInitScript(browserInitScript, {
     theme,

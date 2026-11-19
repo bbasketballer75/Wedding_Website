@@ -67,6 +67,8 @@ Options:
   --matrix <selector>      all (default) or comma list of viewports (desktop,mobile)
   --themes <selector>      comma list of themes (default: the route's contract themes)
   --out <dir>              output directory (default: tools/parity/output/matrix)
+  --supabase-url <url>     Supabase URL the preview was BUILT with (overrides
+                            VITE_SUPABASE_URL for the admin session key)
   --wave <n>               rebuild wave for allowlist expiry (default: 9)
   --max-diff-ratio <n>     changed-pixel ratio tolerance (default: 0.001)
   --pixel-threshold <n>    per-pixel colour threshold (default: 0.12)
@@ -109,7 +111,17 @@ export function parseArgs(argv) {
     resume: false,
     json: false,
     help: false,
+    // The Supabase URL the preview under test was BUILT with. When it is not
+    // set the harness uses its own `VITE_SUPABASE_URL`, which only derives
+    // the right session key when both previews were built in this same
+    // environment.
+    supabaseUrl: null,
   }
+  // Flags the caller actually passed, in the order they appeared. The receipt
+  // must distinguish "the run used --edge-tolerance 1" from "the harness
+  // defaulted edgeTolerance to 1" — printing a default as if it were passed
+  // makes the receipt a claim the invocation never made.
+  options.passedFlags = []
   const args = [...argv]
   let index = 0
   const readValue = flag => {
@@ -132,6 +144,7 @@ export function parseArgs(argv) {
   }
   while (index < args.length) {
     const arg = args[index]
+    if (arg.startsWith('--')) options.passedFlags.push(arg)
     switch (arg) {
       case '--help':
       case '-h':
@@ -153,7 +166,14 @@ export function parseArgs(argv) {
         options.themes = readValue(arg)
         break
       case '--out':
-        options.outDir = path.resolve(readValue(arg))
+        // Keep the argument AS PASSED for the receipt, and the resolved path
+        // for the filesystem. The receipt names the invocation; a resolved
+        // absolute path would not match the flag on any platform.
+        options.outDirArg = readValue(arg)
+        options.outDir = path.resolve(options.outDirArg)
+        break
+      case '--supabase-url':
+        options.supabaseUrl = readValue(arg)
         break
       case '--wave':
         options.wave = readNumber(arg, 1, 1000, true)
@@ -353,18 +373,23 @@ function isAdminLoginUrl(url) {
  * that distinguish the signed-off run from a strict default one.
  */
 export function describeInvocation(options) {
-  const flags = [
-    `--routes ${options.routes}`,
-    `--matrix ${options.matrix}`,
-    ...(options.themes ? [`--themes ${options.themes}`] : []),
-    `--max-diff-ratio ${options.maxDiffRatio}`,
-    `--pixel-threshold ${options.pixelThreshold}`,
-    `--edge-tolerance ${options.edgeTolerance}`,
-    ...(options.includeAdmin ? [] : ['--no-admin']),
-    ...(options.prerender ? ['--prerender'] : []),
-    ...(options.resume ? ['--resume'] : []),
-    `--wave ${options.wave}`,
-  ]
+  // Only the flags the caller actually passed, with their effective values.
+  // A default the harness supplied is NOT a flag the run used, and the
+  // resolved tolerance values are recorded separately in the summary's own
+  // `tolerance` field.
+  const passed = new Set(options.passedFlags ?? [])
+  const flags = []
+  if (passed.has('--routes')) flags.push(`--routes ${options.routes}`)
+  if (passed.has('--matrix')) flags.push(`--matrix ${options.matrix}`)
+  if (passed.has('--themes')) flags.push(`--themes ${options.themes}`)
+  if (passed.has('--max-diff-ratio')) flags.push(`--max-diff-ratio ${options.maxDiffRatio}`)
+  if (passed.has('--pixel-threshold')) flags.push(`--pixel-threshold ${options.pixelThreshold}`)
+  if (passed.has('--edge-tolerance')) flags.push(`--edge-tolerance ${options.edgeTolerance}`)
+  if (passed.has('--no-admin')) flags.push('--no-admin')
+  if (passed.has('--prerender')) flags.push('--prerender')
+  if (passed.has('--resume')) flags.push('--resume')
+  if (passed.has('--wave')) flags.push(`--wave ${options.wave}`)
+  if (passed.has('--out')) flags.push(`--out ${options.outDirArg ?? options.outDir}`)
   return (
     `node tools/parity/matrix.mjs --legacy-url ${options.legacyUrl} ` +
     `--rebuild-url ${options.rebuildUrl} ${flags.join(' ')}`
@@ -395,17 +420,34 @@ function firstFailureDetail(shot) {
   return { kind: null, field: null, path: null }
 }
 
-export function buildRows(shots, { includeAdmin, protectedRoutes = new Set() }) {
+export function buildRows(shots, { includeAdmin, protectedRoutes }) {
+  // The protected set is REQUIRED. Defaulting it to an empty set would
+  // silently disable the auth gate for any caller that forgets it — the same
+  // fail-open this gate exists to prevent. Fail loudly instead.
+  if (!(protectedRoutes instanceof Set)) {
+    throw new Error(
+      'buildRows requires protectedRoutes: derive it with protectedRouteIds() from the route contract'
+    )
+  }
   return shots.map(shot => {
     const admin = isAdminRow(shot, includeAdmin)
     const legacyLogin = isAdminLoginUrl(shot.legacy?.finalUrl)
     const rebuildLogin = isAdminLoginUrl(shot.rebuild?.finalUrl)
+    // A protected route with no recorded final URL was not measured. Treating
+    // it as a genuine capture is the same fail-open as the login-redirect case:
+    // `isAdminLoginUrl(null)` is false, so an unmeasured row would compare
+    // as equal.
+    const legacyUrlMissing = !shot.legacy?.finalUrl
+    const rebuildUrlMissing = !shot.rebuild?.finalUrl
     let captureClass = 'captured'
     let exemptReason = null
     // A row for an `auth: 'admin'` route was not measured if either side ended on
     // the login screen — regardless of `--no-admin`.
     if (admin || protectedRoutes.has(shot.route)) {
-      if (legacyLogin && rebuildLogin) {
+      if (legacyUrlMissing || rebuildUrlMissing) {
+        captureClass = 'exempt'
+        exemptReason = 'a protected route recorded no final URL — the row was not measured'
+      } else if (legacyLogin && rebuildLogin) {
         captureClass = 'exempt'
         exemptReason = 'both sides redirected to /admin/login (admin session/login not accepted)'
       } else if (legacyLogin) {
@@ -640,6 +682,7 @@ async function runMatrix(options) {
     resume: options.resume,
     report: true,
     adminLogin: options.adminLogin,
+    supabaseUrl: options.supabaseUrl,
   })
 
   const rows = buildRows(compareResult.summary.shots ?? [], {

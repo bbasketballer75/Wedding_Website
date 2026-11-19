@@ -404,6 +404,7 @@ export async function runCompare(rawOptions) {
         masks,
         injectCss: options.injectCss.legacy ?? '',
         adminLogin: options.adminLogin,
+        supabaseUrl: options.supabaseUrl,
       })
       logCaptureSummary(legacy)
       log.step(`capture ${entry.key} (rebuild)`)
@@ -422,6 +423,7 @@ export async function runCompare(rawOptions) {
         masks,
         injectCss: options.injectCss.rebuild ?? '',
         adminLogin: options.adminLogin,
+        supabaseUrl: options.supabaseUrl,
       })
       logCaptureSummary(rebuild)
 

@@ -260,7 +260,7 @@ export async function browserVersionInfo(browser) {
  */
 async function warmUpContext(
   browser,
-  { fixedNow, baseUrl, routePath, viewport, theme, mode, fixtures, mediaStub }
+  { fixedNow, baseUrl, routePath, viewport, theme, mode, fixtures, mediaStub, supabaseUrl }
 ) {
   const context = await browser.newContext({
     viewport: { width: viewport.width, height: viewport.height },
@@ -272,7 +272,7 @@ async function warmUpContext(
     serviceWorkers: 'block',
   })
   const page = await context.newPage()
-  await preparePage(page, { theme, mode, fixtures })
+  await preparePage(page, { theme, mode, fixtures, supabaseUrl })
   await installNetworkMocks(page, { baseUrl, mode, fixtures, mediaStub, state: createMockState() })
   await page.clock.install({ time: new Date(fixedNow) })
   const response = await page.goto(`${baseUrl}${routePath}`, { waitUntil: 'load', timeout: 30000 })
@@ -356,6 +356,7 @@ export async function captureShot(
     masks = [],
     injectCss = '',
     adminLogin = null,
+    supabaseUrl,
   }
 ) {
   const key = `${sanitizeKey(route.id)}__${viewport.name}__${theme}`
@@ -382,6 +383,7 @@ export async function captureShot(
       mode,
       fixtures,
       mediaStub,
+      supabaseUrl,
     })
     context = warm.context
     await warm.page.close()
@@ -391,7 +393,7 @@ export async function captureShot(
       if (message.type() === 'error') consoleErrors.push(message.text().slice(0, 500))
     })
     page.on('pageerror', error => pageErrors.push(String(error.message ?? error).slice(0, 500)))
-    await preparePage(page, { theme, mode, fixtures })
+    await preparePage(page, { theme, mode, fixtures, supabaseUrl })
     await installNetworkMocks(page, {
       baseUrl,
       mode,
