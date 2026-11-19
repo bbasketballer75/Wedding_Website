@@ -85,7 +85,7 @@
     "typecheck:legacy": "tsc6 --noEmit",
     "test:visual:prod": "playwright test --config playwright.config.visual-prod.ts",
     "test:visual:prod:update": "playwright test --config playwright.config.visual-prod.ts --update-snapshots",
-    "workbench:verify": "node tools/verify-contracts.mjs && node tools/check-parity-workflow-args.mjs && node tools/check-legacy-freeze.mjs",
+    "workbench:verify": "node tools/verify-contracts.mjs && node tools/check-parity-workflow-args.mjs && node --test tools/parity/parity-harness.test.mjs && node tools/check-legacy-freeze.mjs",
     "workbench:freeze": "node tools/check-legacy-freeze.mjs",
     "inventory:capture": "node tools/inventory/capture.mjs",
     "content:extract": "node tools/extract-content/extract.mjs",
