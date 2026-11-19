@@ -476,11 +476,18 @@ test('the capture path threads the build-URL override through every hop', () => 
   )
 
   // Every preparePage call site must pass it.
-  const calls = [...capture.matchAll(/preparePage\(\s*page,\s*\{([^}]*)\}\s*\)/g)]
+  const calls = [...capture.matchAll(/preparePage\(\s*page,\s*preparePageOptions\(/g)]
   assert.ok(calls.length >= 2, `expected both preparePage call sites, found ${calls.length}`)
-  for (const call of calls) {
-    assert.match(call[1], /supabaseUrl/, 'every preparePage call must forward supabaseUrl')
-  }
+
+  // The seam that builds those options must carry the value.
+  const seam = capture.match(/export function preparePageOptions\(\{([^}]*)\}\)\s*\{([\s\S]*?)\n\}/)
+  assert.ok(seam, 'preparePageOptions must exist as the single place the capture options are built')
+  assert.match(
+    seam[1],
+    /supabaseUrl/,
+    'preparePageOptions must bind supabaseUrl — it forwards it to preparePage'
+  )
+  assert.match(seam[2], /supabaseUrl/, 'preparePageOptions must return supabaseUrl')
 
   // compare.mjs must hand it to each captureShot call.
   const compare = readFileSync(join(PARITY, 'compare.mjs'), 'utf8')
@@ -513,6 +520,79 @@ test('the option-normalization hop preserves the build-URL override', async () =
   // Absent by default, so a caller that passes nothing gets no override and the
   // harness falls back to the ambient env exactly as before.
   assert.equal(normalizeOptions({}).supabaseUrl, null)
+})
+
+test('every hop of the build-URL override is covered behaviourally', async () => {
+  // Two hops of the chain survived mutation with the suite green: the
+  // matrix -> runCompare option mapping, and the capture-side binding. A
+  // source-text check cannot see either one. Each hop now has an exported
+  // seam that is asserted on the VALUE, not on the source text.
+  const { compareOptions, parseArgs } = await import(new URL('./matrix.mjs', import.meta.url).href)
+  const { preparePageOptions } = await import(new URL('./capture.mjs', import.meta.url).href)
+
+  const URL_OVERRIDE = 'https://other-project.supabase.co'
+  const parsed = parseArgs([
+    '--legacy-url',
+    'http://127.0.0.1:4174',
+    '--rebuild-url',
+    'http://127.0.0.1:4175',
+    '--supabase-url',
+    URL_OVERRIDE,
+  ]).options
+
+  // Hop 1: matrix CLI options -> the comparison harness's option bag.
+  const compareOpts = compareOptions(parsed, [])
+  assert.equal(
+    compareOpts.supabaseUrl,
+    URL_OVERRIDE,
+    'the matrix -> runCompare hop must carry supabaseUrl'
+  )
+
+  // Hop 2: the capture-side binding -> the options preparePage receives.
+  const pageOpts = preparePageOptions({
+    theme: 'dark',
+    mode: 'admin',
+    fixtures: {},
+    supabaseUrl: compareOpts.supabaseUrl,
+  })
+  assert.equal(pageOpts.supabaseUrl, URL_OVERRIDE, 'the capture-side hop must carry supabaseUrl')
+})
+
+test('the receipt names the build-URL override but never a credential', async () => {
+  const { describeInvocation, parseArgs } = await import(
+    new URL('./matrix.mjs', import.meta.url).href
+  )
+  const base = [
+    '--legacy-url',
+    'http://127.0.0.1:4174',
+    '--rebuild-url',
+    'http://127.0.0.1:4175',
+    '--supabase-url',
+    'https://other-project.supabase.co',
+  ]
+  const text = describeInvocation(parseArgs(base).options)
+  assert.ok(
+    text.includes('--supabase-url https://other-project.supabase.co'),
+    `the receipt must name the build-URL override (got: ${text})`
+  )
+
+  // The receipt is published as an uploaded CI artifact, so a credential must
+  // never appear in it — but the receipt must still say whether the app's own
+  // sign-in flow was attempted.
+  const withSecret = describeInvocation(
+    parseArgs([...base, '--admin-email', 'admin@test.wedding', '--admin-password', 'hunter2'])
+      .options
+  )
+  assert.ok(!withSecret.includes('hunter2'), 'the receipt must never name the admin password')
+  assert.ok(
+    !withSecret.includes('admin@test.wedding'),
+    'the receipt must never name the admin email'
+  )
+  const noLogin = describeInvocation(parseArgs([...base, '--no-admin-login']).options)
+  assert.ok(
+    noLogin.includes('--no-admin-login'),
+    'the receipt must record that the sign-in flow was disabled'
+  )
 })
 
 test('the workflow guard does not need the native image library', () => {

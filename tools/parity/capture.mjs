@@ -255,6 +255,18 @@ export async function browserVersionInfo(browser) {
 }
 
 /**
+ * Build the options `preparePage` is called with.
+ *
+ * Exported so the capture-side hop can be asserted BEHAVIOURALLY. A hop that
+ * drops a field is invisible to a source-text check: the capture path is a
+ * runtime `ReferenceError` or a silent fallback to the ambient env, and either
+ * way a source-text test passes on the broken code.
+ */
+export function preparePageOptions({ theme, mode, fixtures, supabaseUrl }) {
+  return { theme, mode, fixtures, supabaseUrl }
+}
+
+/**
  * Warm up the context: one navigation with the fake timer clock running so the
  * app fully mounts and the HTTP cache holds chunks + mocked data responses.
  */
@@ -272,7 +284,7 @@ async function warmUpContext(
     serviceWorkers: 'block',
   })
   const page = await context.newPage()
-  await preparePage(page, { theme, mode, fixtures, supabaseUrl })
+  await preparePage(page, preparePageOptions({ theme, mode, fixtures, supabaseUrl }))
   await installNetworkMocks(page, { baseUrl, mode, fixtures, mediaStub, state: createMockState() })
   await page.clock.install({ time: new Date(fixedNow) })
   const response = await page.goto(`${baseUrl}${routePath}`, { waitUntil: 'load', timeout: 30000 })
@@ -393,7 +405,7 @@ export async function captureShot(
       if (message.type() === 'error') consoleErrors.push(message.text().slice(0, 500))
     })
     page.on('pageerror', error => pageErrors.push(String(error.message ?? error).slice(0, 500)))
-    await preparePage(page, { theme, mode, fixtures, supabaseUrl })
+    await preparePage(page, preparePageOptions({ theme, mode, fixtures, supabaseUrl }))
     await installNetworkMocks(page, {
       baseUrl,
       mode,

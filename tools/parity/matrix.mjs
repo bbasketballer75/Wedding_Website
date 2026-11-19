@@ -390,10 +390,45 @@ export function describeInvocation(options) {
   if (passed.has('--resume')) flags.push('--resume')
   if (passed.has('--wave')) flags.push(`--wave ${options.wave}`)
   if (passed.has('--out')) flags.push(`--out ${options.outDirArg ?? options.outDir}`)
+  if (passed.has('--supabase-url')) flags.push(`--supabase-url ${options.supabaseUrl}`)
+  // `--admin-email` / `--admin-password` are deliberately NOT printed here.
+  // The receipt is published as an uploaded CI artifact, so naming a
+  // credential in it would leak it. `--no-admin-login` is a boolean switch
+  // with no secret value and IS printed, so the receipt still says whether
+  // the app's own sign-in flow was attempted.
+  if (passed.has('--no-admin-login')) flags.push('--no-admin-login')
   return (
     `node tools/parity/matrix.mjs --legacy-url ${options.legacyUrl} ` +
     `--rebuild-url ${options.rebuildUrl} ${flags.join(' ')}`
   )
+}
+
+/**
+ * Map the matrix CLI options onto the comparison harness's option bag.
+ *
+ * Exported so the mapping can be asserted BEHAVIOURALLY. A hop that quietly
+ * drops a field is invisible to a source-text check and survives mutation with
+ * the suite green; `runCompare` normalizes whatever this returns, so a field
+ * missing here is missing for the whole capture.
+ */
+export function compareOptions(options, extraRoutes = []) {
+  return {
+    legacyUrl: options.legacyUrl,
+    rebuildUrl: options.rebuildUrl,
+    routes: options.routes,
+    matrix: options.matrix,
+    themes: options.themes,
+    outDir: options.outDir,
+    maxDiffRatio: options.maxDiffRatio,
+    pixelThreshold: options.pixelThreshold,
+    edgeTolerance: options.edgeTolerance,
+    wave: options.wave,
+    extraRoutes,
+    resume: options.resume,
+    report: true,
+    adminLogin: options.adminLogin,
+    supabaseUrl: options.supabaseUrl,
+  }
 }
 
 function firstFailureDetail(shot) {
@@ -667,23 +702,7 @@ async function runMatrix(options) {
     )
   }
 
-  const compareResult = await runCompare({
-    legacyUrl: options.legacyUrl,
-    rebuildUrl: options.rebuildUrl,
-    routes: options.routes,
-    matrix: options.matrix,
-    themes: options.themes,
-    outDir: options.outDir,
-    maxDiffRatio: options.maxDiffRatio,
-    pixelThreshold: options.pixelThreshold,
-    edgeTolerance: options.edgeTolerance,
-    wave: options.wave,
-    extraRoutes,
-    resume: options.resume,
-    report: true,
-    adminLogin: options.adminLogin,
-    supabaseUrl: options.supabaseUrl,
-  })
+  const compareResult = await runCompare(compareOptions(options, extraRoutes))
 
   const rows = buildRows(compareResult.summary.shots ?? [], {
     includeAdmin: options.includeAdmin,
@@ -698,6 +717,7 @@ async function runMatrix(options) {
   overview.durationMs = Date.now() - startedMs
 
   const summaryPath = path.join(options.outDir, 'matrix-summary.json')
+
   await writeJsonFile(summaryPath, overview)
   const matrixMarkdownPath = path.join(options.outDir, 'MATRIX.md')
   await writeTextFile(
