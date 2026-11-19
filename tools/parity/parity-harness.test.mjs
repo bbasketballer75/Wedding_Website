@@ -1522,6 +1522,7 @@ function runMatrixCli({ argv, compareSource, fixtureSource }) {
   return {
     code: cliResult.code,
     exitStatus,
+    outDir,
     received: cliResult.received,
     stderr: cliResult.stderr ?? '',
     summaryExists: existsSync(summaryPath),
@@ -1595,6 +1596,16 @@ test('the matrix CLI forwards the override and publishes an unmeasured row as an
   assert.equal(out.received.routes, 'all', 'the engine must receive the full route selector')
   assert.equal(out.received.wave, 9, 'the engine must receive the signed-off wave')
   assert.ok(out.received.adminLogin, 'the engine must receive the sign-in configuration')
+  // The two fields that decide WHERE the evidence lands and HOW STRICT the
+  // comparison is. Dropping outDir would park the evidence outside the
+  // --out directory the CI uploads; dropping edgeTolerance would silently
+  // fall back to the harness default instead of the signed-off tolerance.
+  // Both are asserted on the bag the engine actually receives.
+  assert.equal(
+    out.received.outDir,
+    out.outDir,
+    'the engine must receive the --out directory the run publishes into'
+  )
   assert.equal(
     out.code,
     1,
@@ -1658,6 +1669,20 @@ test('the matrix CLI forwards the override and publishes an unmeasured row as an
   assert.equal(ci.received.includeAdmin, false)
   assert.deepEqual(ci.received.extraRoutes, [])
   assert.equal(ci.received.themes, 'dark,light')
+  // The signed-off invocation's edge tolerance must reach the engine. A
+  // dropped value falls back to the harness default, which is STRICTER than
+  // the signed-off one — so it fails loud rather than green, but it is still
+  // a measurement the invocation never asked for.
+  assert.equal(
+    ci.received.edgeTolerance,
+    1,
+    'the engine must receive the signed-off edge tolerance'
+  )
+  assert.equal(
+    ci.received.outDir,
+    ci.outDir,
+    'the engine must receive the --out directory the CI run publishes into'
+  )
   assert.equal(ci.code, 1, 'the CI-shaped CLI must reject an admin login-screen comparison')
   const [redirectedAdmin, publicControl] = ci.summary.rows
   assert.equal(redirectedAdmin.key, 'admin__desktop__dark')
