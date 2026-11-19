@@ -255,12 +255,46 @@ export async function browserVersionInfo(browser) {
 }
 
 /**
+ * Build the options `preparePage` is called with.
+ *
+ * Exported so the capture-side hop can be asserted BEHAVIOURALLY. A hop that
+ * drops a field is invisible to a source-text check: the capture path is a
+ * runtime `ReferenceError` or a silent fallback to the ambient env, and either
+ * way a source-text test passes on the broken code.
+ */
+export function preparePageOptions({ theme, mode, fixtures, supabaseUrl }) {
+  return { theme, mode, fixtures, supabaseUrl }
+}
+
+/**
+ * How far BEFORE the parked time the fake clock is installed.
+ *
+ * Playwright's `install()` starts the clock ticking with real time and
+ * `pauseAt()` only jumps forward, so pausing at `fixedNow + 1` throws
+ * "Cannot fast-forward to the past" whenever more than 1 ms elapses between
+ * the two awaited calls. Installing one second before the parked time and
+ * pausing AT it makes the jump always forward, and still lands exactly on
+ * `fixedNow`.
+ *
+ * Exported so the lead can be asserted on the VALUE. Without that, removing
+ * the subtraction leaves the harness throwing "Cannot fast-forward to the
+ * past" at capture time — a runtime failure in the capture path, not a parse
+ * error, and invisible to a source-text check.
+ */
+export const CLOCK_LEAD_MS = 1000
+
+/** The instant the fake clock is installed at: the parked time minus the lead. */
+export function clockInstallTime(fixedNow, leadMs = CLOCK_LEAD_MS) {
+  return new Date(new Date(fixedNow).getTime() - leadMs)
+}
+
+/**
  * Warm up the context: one navigation with the fake timer clock running so the
  * app fully mounts and the HTTP cache holds chunks + mocked data responses.
  */
 async function warmUpContext(
   browser,
-  { fixedNow, baseUrl, routePath, viewport, theme, mode, fixtures, mediaStub }
+  { fixedNow, baseUrl, routePath, viewport, theme, mode, fixtures, mediaStub, supabaseUrl }
 ) {
   const context = await browser.newContext({
     viewport: { width: viewport.width, height: viewport.height },
@@ -272,7 +306,7 @@ async function warmUpContext(
     serviceWorkers: 'block',
   })
   const page = await context.newPage()
-  await preparePage(page, { theme, mode, fixtures })
+  await preparePage(page, preparePageOptions({ theme, mode, fixtures, supabaseUrl }))
   await installNetworkMocks(page, { baseUrl, mode, fixtures, mediaStub, state: createMockState() })
   await page.clock.install({ time: new Date(fixedNow) })
   const response = await page.goto(`${baseUrl}${routePath}`, { waitUntil: 'load', timeout: 30000 })
@@ -339,9 +373,8 @@ async function maybeAdminLogin(page, adminLogin = {}, { routePath } = {}) {
  *   meta: object, text: object|null, textFile: string|null, shotFiles: string[]
  * }}
  */
-export async function captureShot(
-  browser,
-  {
+export async function captureShot(browser, options) {
+  const {
     baseUrl,
     side,
     route,
@@ -356,8 +389,8 @@ export async function captureShot(
     masks = [],
     injectCss = '',
     adminLogin = null,
-  }
-) {
+    supabaseUrl,
+  } = options
   const key = `${sanitizeKey(route.id)}__${viewport.name}__${theme}`
   const mode = route.auth === 'admin' || route.kind === 'admin' ? 'admin' : 'public'
   const started = Date.now()
@@ -382,6 +415,7 @@ export async function captureShot(
       mode,
       fixtures,
       mediaStub,
+      supabaseUrl,
     })
     context = warm.context
     await warm.page.close()
@@ -391,7 +425,7 @@ export async function captureShot(
       if (message.type() === 'error') consoleErrors.push(message.text().slice(0, 500))
     })
     page.on('pageerror', error => pageErrors.push(String(error.message ?? error).slice(0, 500)))
-    await preparePage(page, { theme, mode, fixtures })
+    await preparePage(page, preparePageOptions({ theme, mode, fixtures, supabaseUrl }))
     await installNetworkMocks(page, {
       baseUrl,
       mode,
@@ -399,8 +433,17 @@ export async function captureShot(
       mediaStub,
       state: createMockState(),
     })
-    await page.clock.install({ time: new Date(ui.fixedNow) })
-    await page.clock.pauseAt(new Date(ui.fixedNow).getTime() + 1)
+    // Playwright's `pauseAt` only jumps FORWARD, and `install()` starts the
+    // clock ticking with real time, so pausing at `fixedNow + 1` throws
+    // "Cannot fast-forward to the past" whenever more than 1 ms elapses
+    // between the two calls. Install one second BEFORE the parked time and
+    // pause AT it: the jump is then always forward and still lands exactly on
+    // `ui.fixedNow`. The page is still about:blank at this point, so the
+    // forward jump fires no page timers and cannot move the animation phase.
+    await page.clock.install({
+      time: clockInstallTime(ui.fixedNow),
+    })
+    await page.clock.pauseAt(new Date(ui.fixedNow))
 
     const response = await page.goto(`${baseUrl}${routePath}`, {
       waitUntil: 'load',

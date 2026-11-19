@@ -1,0 +1,950 @@
+/**
+ * Focused regression tests for the parity harness changes.
+ *
+ * Covers the behaviours that were wrong:
+ *
+ *  1. The admin session key the harness seeds must be the key the app actually
+ *     reads — derived from the served VITE_SUPABASE_URL, not the contract
+ *     fixture's real-project key.
+ *
+ *  2. An admin row that could not be authenticated must be reported as an
+ *     `error`, never as a `pass`. Two sides that both landed on the login
+ *     screen would otherwise compare as equal and the job would exit green
+ *     having measured nothing.
+ *
+ *  3. The job's exit code must reflect that error.
+ *
+ *  4. The workflow guard must resolve a `matrix.mjs` invocation with matrix.mjs's
+ *     OWN parser (a bad flag / bad selector must be rejected), and accept the
+ *     exact invocation the workflow now uses.
+ *
+ * Run:  node --test tools/parity/parity-harness.test.mjs
+ */
+import assert from 'node:assert/strict'
+import { execFileSync } from 'node:child_process'
+import { mkdtempSync, readFileSync, writeFileSync, rmSync, existsSync } from 'node:fs'
+import { tmpdir } from 'node:os'
+import { join } from 'node:path'
+import { test } from 'node:test'
+import { fileURLToPath, pathToFileURL } from 'node:url'
+
+const ROOT = fileURLToPath(new URL('../..', import.meta.url))
+const PARITY = join(ROOT, 'tools', 'parity')
+const GUARD = join(ROOT, 'tools', 'check-parity-workflow-args.mjs')
+const REBUILD_WORKFLOW = join(ROOT, '.github', 'workflows', 'rebuild.yml')
+
+const { adminSessionStorageKey } = await import(new URL('./mocks/index.mjs', import.meta.url).href)
+
+test('admin session key follows the served URL, not the fixture', () => {
+  const fixtures = { admin: { storageKey: 'sb-zaczcyzvavetgfuucljf-auth-token' } }
+  const saved = process.env.VITE_SUPABASE_URL
+  try {
+    process.env.VITE_SUPABASE_URL = 'https://placeholder.supabase.co'
+    assert.equal(
+      adminSessionStorageKey({ fixtures }),
+      'sb-placeholder-auth-token',
+      'must seed the key @supabase/supabase-js reads from the URL it was built with'
+    )
+    process.env.VITE_SUPABASE_URL = 'https://faurvrckvatfcswsyobc.supabase.co'
+    assert.equal(adminSessionStorageKey({ fixtures }), 'sb-faurvrckvatfcswsyobc-auth-token')
+  } finally {
+    if (saved === undefined) delete process.env.VITE_SUPABASE_URL
+    else process.env.VITE_SUPABASE_URL = saved
+  }
+})
+
+test('admin session key falls back to the contract fixture without a URL', () => {
+  const saved = process.env.VITE_SUPABASE_URL
+  try {
+    delete process.env.VITE_SUPABASE_URL
+    assert.equal(
+      adminSessionStorageKey({ fixtures: { admin: { storageKey: 'sb-fallback-auth-token' } } }),
+      'sb-fallback-auth-token'
+    )
+  } finally {
+    if (saved !== undefined) process.env.VITE_SUPABASE_URL = saved
+  }
+})
+
+test('an un-authenticated admin row is an error, not a pass', async () => {
+  // BEHAVIOURAL, not a source-text check: a source-shape assertion passes on
+  // a mapping that is present but not wired to the value a caller consumes.
+  // Assert the value: an exempt row must come back as an error, with its
+  // reason, and the exit signal must follow it.
+  const { buildRows } = await import(new URL('./matrix.mjs', import.meta.url).href)
+  const protectedRoutes = new Set(['admin'])
+  const exemptShot = {
+    route: 'admin',
+    status: 'pass',
+    failureReasons: [],
+    legacy: { finalUrl: 'http://127.0.0.1:4174/admin/login' },
+    rebuild: { finalUrl: 'http://127.0.0.1:4174/admin/login' },
+  }
+  const [row] = buildRows([exemptShot], { includeAdmin: false, protectedRoutes })
+  assert.equal(row.status, 'error', 'an un-authenticated admin row must be an error')
+  assert.equal(row.captureClass, 'exempt', 'the row must record that it was exempt')
+  assert.ok(
+    row.failureReasons.some(reason => reason.includes('admin row not measured')),
+    `the exemption reason must survive into the failure reasons (got: ${JSON.stringify(row.failureReasons)})`
+  )
+
+  // A row that WAS measured must still be allowed to pass — the error mapping
+  // must not swallow genuine captures.
+  const [good] = buildRows(
+    [
+      {
+        route: 'admin',
+        status: 'pass',
+        failureReasons: [],
+        legacy: { finalUrl: 'http://127.0.0.1:4174/admin' },
+        rebuild: { finalUrl: 'http://127.0.0.1:4175/admin' },
+      },
+    ],
+    { includeAdmin: false, protectedRoutes }
+  )
+  assert.equal(good.status, 'pass', 'a genuinely captured admin row must still pass')
+
+  const source = readFileSync(join(PARITY, 'matrix.mjs'), 'utf8')
+  assert.ok(
+    source.includes("const status = captureClass === 'exempt' ? 'error' : shot.status"),
+    'buildRows must report an exempt (un-authenticated) admin row as an error'
+  )
+  assert.ok(
+    source.includes('exitCode = matrixExitCode(rows, exitCode, { prerender, options })'),
+    'the job exit code must reflect an unmeasured row'
+  )
+  assert.ok(
+    source.includes('admin row not measured: ${exemptReason}'),
+    'the exemption reason must survive into the failure reasons'
+  )
+})
+
+test('the workflow guard resolves matrix.mjs with matrix.mjs own parser', () => {
+  const guard = readFileSync(GUARD, 'utf8')
+  assert.ok(
+    /tools\\\/parity\\\/\(compare\|matrix\)/.test(guard),
+    'the guard must match both harnesses'
+  )
+  assert.ok(
+    guard.includes('matrixParseArgs') && guard.includes('.parseArgs'),
+    'the guard must use matrix.mjs own parser'
+  )
+  assert.ok(
+    // Lazily imported so the guard cannot die on a missing native `sharp`;
+    // it must still come from matrix.mjs itself, never a copied flag list.
+    /await import\('\.\/parity\/matrix\.mjs'\)/.test(guard),
+    'parseMatrixArgs must be imported from matrix.mjs, not a copied flag list'
+  )
+  assert.ok(
+    !/^import\s*\{[^}]*parseArgs[^}]*\}\s*from\s*'\.\/parity\/matrix\.mjs'/m.test(guard),
+    'matrix.mjs must not be imported statically (that path pulls in sharp)'
+  )
+})
+
+test('the guard accepts the invocation the workflow now uses', () => {
+  const stdout = execFileSync('node', [GUARD], { cwd: ROOT, encoding: 'utf8' })
+  assert.match(stdout, /parity workflow invocations valid/)
+})
+
+test('the guard rejects a bad matrix flag and a bad selector', () => {
+  const original = readFileSync(REBUILD_WORKFLOW, 'utf8')
+  const scratch = mkdtempSync(join(tmpdir(), 'parity-guard-'))
+  try {
+    // The guard scans a directory of workflow files; point it at a scratch copy
+    // so the repo's own workflow file is never mutated by a test.
+    const run = () =>
+      execFileSync('node', [GUARD, '--workflows-dir', scratch], {
+        cwd: ROOT,
+        encoding: 'utf8',
+        stdio: ['ignore', 'pipe', 'pipe'],
+      })
+
+    // The repo's own invocation must pass.
+    writeFileSync(join(scratch, 'rebuild.yml'), original, 'utf8')
+    assert.match(run(), /parity workflow invocations valid/)
+
+    // An unknown flag must be rejected by the harness's own parser.
+    writeFileSync(
+      join(scratch, 'rebuild.yml'),
+      original.replace('--wave 9', '--wave 9 --all'),
+      'utf8'
+    )
+    assert.throws(() => run(), /unknown argument "--all"/)
+
+    // An unknown selector must be rejected against the routes contract.
+    writeFileSync(
+      join(scratch, 'rebuild.yml'),
+      original.replace('--routes all', '--routes priortiy'),
+      'utf8'
+    )
+    assert.throws(() => run(), /unknown route "priortiy"/)
+
+    // A compare.mjs invocation with an unknown flag must be rejected too.
+    writeFileSync(
+      join(scratch, 'rebuild.yml'),
+      original.replace('tools/parity/matrix.mjs', 'tools/parity/compare.mjs'),
+      'utf8'
+    )
+    assert.throws(() => run(), /unknown argument "--no-admin"/)
+  } finally {
+    rmSync(scratch, { recursive: true, force: true })
+  }
+
+  // The repo's workflow file must be byte-identical to how it started.
+  assert.equal(readFileSync(REBUILD_WORKFLOW, 'utf8'), original)
+})
+
+test('every pauseAt jumps forward from its install, so the capture clock cannot stall', () => {
+  const source = readFileSync(join(PARITY, 'capture.mjs'), 'utf8')
+
+  // A warmup page installs a clock and never pauses it, so target the PAUSE
+  // sites rather than the first `install(` in the file. `[^\n]*` (greedy, one
+  // line) is deliberate: a non-greedy `[\s\S]*?` stops at the FIRST `)` —
+  // the one closing `new Date(...)` — and would hide a trailing `.getTime()+1`
+  // from every assertion below, so the guard would pass on the bug.
+  const pauses = [...source.matchAll(/page\.clock\.pauseAt\(([^\n]*)\)/g)]
+  assert.ok(pauses.length >= 1, 'capture.mjs must pause the fake clock somewhere')
+
+  for (const pause of pauses) {
+    const pauseExpr = pause[1].replace(/\s+/g, ' ').trim()
+    // Playwright's pauseAt only jumps FORWARD. Pausing at the install time plus
+    // an offset throws "Cannot fast-forward to the past" as soon as more than
+    // that offset of real time elapses between the two awaited calls, which
+    // made `gallery__mobile__dark` error and took the whole matrix to exit 2.
+    assert.ok(
+      !/\.getTime\(\)\s*\+/.test(pauseExpr),
+      `pauseAt must not use an offset (got ${pauseExpr})`
+    )
+    assert.ok(
+      !/LEAD_MS/.test(pauseExpr),
+      `pauseAt must land exactly on the parked time (got ${pauseExpr})`
+    )
+
+    // The install that arms this pause must lead the parked time.
+    const before = source.slice(0, pause.index)
+    const installIdx = before.lastIndexOf('page.clock.install(')
+    assert.ok(installIdx !== -1, 'a pause must be preceded by an install')
+    const installExpr = before.slice(installIdx).replace(/\s+/g, ' ')
+    assert.ok(
+      /CLOCK_LEAD_MS|clockInstallTime/.test(installExpr),
+      'the install immediately before a pause must lead by a named margin'
+    )
+  }
+
+  const lead = source.match(/CLOCK_LEAD_MS\s*=\s*(\d+)/)
+  assert.ok(lead, 'CLOCK_LEAD_MS must be a numeric literal')
+  assert.ok(Number(lead[1]) >= 100, `CLOCK_LEAD_MS must be >= 100 ms (got ${lead[1]})`)
+})
+
+test('CI flags still reject an unauthenticated protected route', async () => {
+  // The CI invocation passes `--no-admin`, which only removes the synthetic admin
+  // child sections. The `auth: admin` CONTRACT route stays in the matrix, so its
+  // authentication must still be verified. Keying the exemption on `includeAdmin`
+  // made this exact configuration report `pass` for two login screens.
+  const { buildRows } = await import(new URL('./matrix.mjs', import.meta.url).href)
+  const { loadRoutesContract, adminCaptureRoutes } = await import(
+    new URL('./config.mjs', import.meta.url).href
+  )
+  const contract = await loadRoutesContract()
+  const protectedRoutes = new Set(
+    [...contract.routes, ...adminCaptureRoutes()]
+      .filter(route => route.auth === 'admin')
+      .map(route => route.id)
+  )
+
+  const shot = (route, legacyPath, rebuildPath) => ({
+    key: `${route}__desktop__dark`,
+    route,
+    urlPath: '/',
+    viewport: 'desktop',
+    theme: 'dark',
+    status: 'pass',
+    failureReasons: [],
+    legacy: { finalUrl: `http://127.0.0.1:4174${legacyPath}` },
+    rebuild: { finalUrl: `http://127.0.0.1:4175${rebuildPath}` },
+  })
+
+  // CI covers the protected contract route even though it excludes the synthetic sections.
+  const ciShots = [
+    shot('admin', '/admin/login', '/admin/login'),
+    shot('admin', '/admin', '/admin'),
+    shot('admin-login', '/admin/login', '/admin/login'),
+  ]
+  const rows = buildRows(ciShots, { includeAdmin: false, protectedRoutes })
+  const byKey = index => rows[index]
+
+  assert.equal(byKey(0).status, 'error', 'a protected route that never authenticated must not pass')
+  assert.equal(byKey(0).captureClass, 'exempt')
+  assert.ok(
+    byKey(0).failureReasons.some(reason => String(reason).includes('admin row not measured')),
+    'the exemption reason must be recorded'
+  )
+  assert.equal(byKey(1).status, 'pass', 'an authenticated protected row must still pass')
+  assert.equal(byKey(1).captureClass, 'captured')
+  assert.equal(
+    byKey(2).status,
+    'pass',
+    'admin-login is auth: none — a login screen is its correct capture'
+  )
+
+  // One-sided redirects are just as unmeasured as a double redirect.
+  for (const pair of [
+    ['/admin/login', '/admin'],
+    ['/admin', '/admin/login'],
+  ]) {
+    const [row] = buildRows([shot('admin', pair[0], pair[1])], {
+      includeAdmin: false,
+      protectedRoutes,
+    })
+    assert.equal(
+      row.status,
+      'error',
+      `one-sided login redirect must not pass (${pair.join(' vs ')})`
+    )
+  }
+
+  // The contract really does mark a retained route auth: admin — the guard above
+  // would be vacuous if it did not.
+  assert.ok(
+    contract.routes.some(route => route.auth === 'admin'),
+    'at least one contract route must require admin auth'
+  )
+
+  // Calling buildRows directly cannot detect a regression at the CALL SITE: drop
+  // `protectedRoutes` from the production wiring and every assertion above still
+  // passes. The production path is `assembleRows`, which derives the protected
+  // set from the contract's own `auth` — so pin THAT, and require the wiring
+  // to use it.
+  const source = readFileSync(join(PARITY, 'matrix.mjs'), 'utf8')
+  assert.ok(
+    /buildRows\(summary\?\.shots \?\? \[\],\s*\{[^}]*protectedRoutes/s.test(source),
+    'assembleRows must pass the derived protected set into buildRows'
+  )
+  assert.ok(
+    /protectedRouteIds\(\[\.\.\.routesContract\.routes, \.\.\.extraRoutes\]\)/.test(
+      source.replace(/\s+/g, ' ')
+    ),
+    'the protected set must be derived from the contract routes plus generated ones'
+  )
+  assert.ok(
+    /function protectedRouteIds\(routes\)\s*\{\s*return new Set\(routes\.filter\(route => route\.auth === 'admin'\)/s.test(
+      source
+    ),
+    "protectedRouteIds must key on the route's own `auth`, not on includeAdmin"
+  )
+  // And the production call site must USE that function, so the derived set
+  // cannot be swapped for an empty one at the seam.
+  assert.ok(
+    /const rows = assembleRows\(compareResult\.summary,\s*\{[^}]*routesContract/s.test(
+      source.replace(/\s+/g, ' ')
+    ),
+    'runMatrix must build its rows through assembleRows'
+  )
+})
+
+test('login detection parses the pathname, so URL variants cannot slip through', async () => {
+  const { buildRows } = await import(new URL('./matrix.mjs', import.meta.url).href)
+  const { loadRoutesContract } = await import(new URL('./config.mjs', import.meta.url).href)
+  const contract = await loadRoutesContract()
+  const protectedRoutes = new Set(
+    contract.routes.filter(route => route.auth === 'admin').map(route => route.id)
+  )
+  const shot = path => ({
+    route: 'admin',
+    status: 'pass',
+    failureReasons: [],
+    legacy: { finalUrl: `http://127.0.0.1:4174${path}` },
+    rebuild: { finalUrl: `http://127.0.0.1:4175${path}` },
+  })
+
+  // Every one of these IS the unmeasured login state. A suffix test reports the
+  // last four as genuine captures, which is the same fail-open class as the
+  // includeAdmin gate.
+  for (const path of [
+    '/admin/login',
+    '/admin/login/',
+    '/admin/login?next=%2Fadmin%2Fphotos',
+    '/admin/login#form',
+  ]) {
+    const [row] = buildRows([shot(path)], { includeAdmin: false, protectedRoutes })
+    assert.equal(row.status, 'error', `login state must not pass: ${path}`)
+  }
+
+  // A real admin page must still pass — the detector must not over-fire.
+  for (const path of ['/admin', '/admin/photos', '/admin/login-help']) {
+    const [row] = buildRows([shot(path)], { includeAdmin: false, protectedRoutes })
+    assert.equal(row.status, 'pass', `a genuine admin page must pass: ${path}`)
+  }
+})
+
+test('the uploaded receipt names every flag the invocation used', async () => {
+  const { describeInvocation, parseArgs } = await import(
+    new URL('./matrix.mjs', import.meta.url).href
+  )
+
+  // The receipt must describe the invocation the CI job ACTUALLY makes. Parse
+  // the real argv so the receipt cannot drift from the invocation, and assert
+  // the signed-off flags are present and the unpassed ones are absent.
+  const argv = [
+    '--legacy-url',
+    'http://127.0.0.1:4174',
+    '--rebuild-url',
+    'http://127.0.0.1:4175',
+    '--routes',
+    'all',
+    '--matrix',
+    'all',
+    '--themes',
+    'dark,light',
+    '--edge-tolerance',
+    '1',
+    '--no-admin',
+    '--prerender',
+    '--wave',
+    '9',
+    '--out',
+    'tools/parity/output/ci',
+  ]
+  const text = describeInvocation(parseArgs(argv).options)
+  for (const flag of [
+    '--routes all',
+    '--matrix all',
+    '--themes dark,light',
+    '--edge-tolerance 1',
+    '--no-admin',
+    '--prerender',
+    '--wave 9',
+  ]) {
+    assert.ok(text.includes(flag), `receipt must record ${flag} (got: ${text})`)
+  }
+
+  // The output directory IS part of the invocation and must be named, so the
+  // receipt identifies the artifacts it describes.
+  assert.ok(
+    text.includes('--out ') && text.includes('tools/parity/output/ci'),
+    `receipt must record the --out directory (got: ${text})`
+  )
+
+  // These were NOT passed by the CI invocation. The harness defaults them, and
+  // printing a default as if it were passed makes the receipt a claim the
+  // invocation never made.
+  for (const flag of ['--max-diff-ratio', '--pixel-threshold', '--resume']) {
+    assert.ok(!text.includes(flag), `an unpassed flag must not be claimed: ${flag} (got: ${text})`)
+  }
+
+  // When the flag IS passed, the receipt must name it with its effective value.
+  const withTolerances = describeInvocation(
+    parseArgs([...argv, '--max-diff-ratio', '0.002', '--pixel-threshold', '0.2']).options
+  )
+  assert.ok(
+    withTolerances.includes('--max-diff-ratio 0.002'),
+    `receipt must record a passed tolerance (got: ${withTolerances})`
+  )
+  assert.ok(
+    withTolerances.includes('--pixel-threshold 0.2'),
+    `receipt must record a passed threshold (got: ${withTolerances})`
+  )
+})
+
+test('buildRows refuses to run without the protected-route set', async () => {
+  const { buildRows } = await import(new URL('./matrix.mjs', import.meta.url).href)
+  // A default of `new Set()` would silently disable the auth gate for any
+  // caller that forgot it — the same fail-open this gate exists to prevent.
+  assert.throws(
+    () => buildRows([], { includeAdmin: false }),
+    /requires protectedRoutes/,
+    'buildRows must fail loudly rather than default the protected set to empty'
+  )
+})
+
+test('a protected row with no recorded final URL is an error, not a pass', async () => {
+  const { buildRows } = await import(new URL('./matrix.mjs', import.meta.url).href)
+  const { loadRoutesContract } = await import(new URL('./config.mjs', import.meta.url).href)
+  const contract = await loadRoutesContract()
+  const protectedRoutes = new Set(
+    contract.routes.filter(route => route.auth === 'admin').map(route => route.id)
+  )
+  const shot = {
+    route: 'admin',
+    status: 'pass',
+    failureReasons: [],
+    legacy: { finalUrl: null },
+    rebuild: { finalUrl: null },
+  }
+  const [row] = buildRows([shot], { includeAdmin: false, protectedRoutes })
+  assert.equal(row.status, 'error', 'an unmeasured protected row must not pass')
+  assert.match(row.exemptReason, /no final URL/)
+})
+
+test('the admin session key honours an explicit build-URL override', async () => {
+  const { parseArgs } = await import(new URL('./matrix.mjs', import.meta.url).href)
+  const saved = process.env.VITE_SUPABASE_URL
+  try {
+    // The ambient env says one project; the preview under test was BUILT with
+    // another. The override must win, or the harness seeds a key the app never
+    // reads and the admin rows silently degrade to the login screen.
+    process.env.VITE_SUPABASE_URL = 'https://placeholder.supabase.co'
+    const options = parseArgs([
+      '--legacy-url',
+      'http://127.0.0.1:4174',
+      '--rebuild-url',
+      'http://127.0.0.1:4175',
+      '--supabase-url',
+      'https://other-project.supabase.co',
+    ]).options
+    assert.equal(
+      adminSessionStorageKey({ fixtures: {}, supabaseUrl: options.supabaseUrl }),
+      'sb-other-project-auth-token',
+      'the explicit build URL must override the ambient env'
+    )
+  } finally {
+    if (saved === undefined) delete process.env.VITE_SUPABASE_URL
+    else process.env.VITE_SUPABASE_URL = saved
+  }
+})
+
+test('the capture path threads the build-URL override through every hop', () => {
+  // A half-wired override is a runtime ReferenceError in the capture path, not
+  // a parse error: `warmUpContext` referenced `supabaseUrl` without ever
+  // binding it, and every row failed with "supabaseUrl is not defined".
+  // Assert the plumbing statically so the next hop cannot be left unwired.
+  const capture = readFileSync(join(PARITY, 'capture.mjs'), 'utf8')
+
+  // `warmUpContext` must bind the value it forwards.
+  const warm = capture.match(/async function warmUpContext\(\s*browser,\s*\{([^}]*)\}\s*\)/)
+  assert.ok(warm, 'warmUpContext must still take an options bag')
+  assert.match(
+    warm[1],
+    /supabaseUrl/,
+    'warmUpContext must bind supabaseUrl — it forwards it to preparePage'
+  )
+
+  // Every preparePage call site must pass it.
+  const calls = [...capture.matchAll(/preparePage\(\s*page,\s*preparePageOptions\(/g)]
+  assert.ok(calls.length >= 2, `expected both preparePage call sites, found ${calls.length}`)
+
+  // The seam that builds those options must carry the value.
+  const seam = capture.match(/export function preparePageOptions\(\{([^}]*)\}\)\s*\{([\s\S]*?)\n\}/)
+  assert.ok(seam, 'preparePageOptions must exist as the single place the capture options are built')
+  assert.match(
+    seam[1],
+    /supabaseUrl/,
+    'preparePageOptions must bind supabaseUrl — it forwards it to preparePage'
+  )
+  assert.match(seam[2], /supabaseUrl/, 'preparePageOptions must return supabaseUrl')
+
+  // compare.mjs must hand it to each captureShot call.
+  const compare = readFileSync(join(PARITY, 'compare.mjs'), 'utf8')
+  const shots = [...compare.matchAll(/captureShot\(\s*browser,\s*\{([^}]*)\}\s*\)/g)]
+  assert.ok(shots.length >= 2, `expected both captureShot call sites, found ${shots.length}`)
+  for (const shot of shots) {
+    assert.match(shot[1], /supabaseUrl/, 'every captureShot call must forward supabaseUrl')
+  }
+})
+
+test('the option-normalization hop preserves the build-URL override', async () => {
+  // A source-text regex cannot see this hop: `compare.mjs` builds its options
+  // through `normalizeOptions`, a closed literal. If that literal omits the
+  // key, the override is parsed, documented and forwarded — then silently
+  // dropped, and the caller falls back to the ambient VITE_SUPABASE_URL, which
+  // is exactly the failure this flag exists to prevent. Assert it BEHAVIOURALLY.
+  const { normalizeOptions } = await import(new URL('./compare.mjs', import.meta.url).href)
+
+  const normalized = normalizeOptions({ supabaseUrl: 'https://other-project.supabase.co' })
+  assert.ok(
+    'supabaseUrl' in normalized,
+    'normalizeOptions must carry supabaseUrl — otherwise the override never reaches capture'
+  )
+  assert.equal(
+    normalized.supabaseUrl,
+    'https://other-project.supabase.co',
+    'the override must survive normalization unchanged'
+  )
+
+  // Absent by default, so a caller that passes nothing gets no override and the
+  // harness falls back to the ambient env exactly as before.
+  assert.equal(normalizeOptions({}).supabaseUrl, null)
+})
+
+test('every hop of the build-URL override is covered behaviourally', async () => {
+  // Two hops of the chain survived mutation with the suite green: the
+  // matrix -> runCompare option mapping, and the capture-side binding. A
+  // source-text check cannot see either one. Each hop now has an exported
+  // seam that is asserted on the VALUE, not on the source text.
+  const { compareOptions, parseArgs } = await import(new URL('./matrix.mjs', import.meta.url).href)
+  const { preparePageOptions } = await import(new URL('./capture.mjs', import.meta.url).href)
+
+  const URL_OVERRIDE = 'https://other-project.supabase.co'
+  const parsed = parseArgs([
+    '--legacy-url',
+    'http://127.0.0.1:4174',
+    '--rebuild-url',
+    'http://127.0.0.1:4175',
+    '--supabase-url',
+    URL_OVERRIDE,
+  ]).options
+
+  // Hop 1: matrix CLI options -> the comparison harness's option bag.
+  const compareOpts = compareOptions(parsed, [])
+  assert.equal(
+    compareOpts.supabaseUrl,
+    URL_OVERRIDE,
+    'the matrix -> runCompare hop must carry supabaseUrl'
+  )
+
+  // Hop 2: the capture-side binding -> the options preparePage receives.
+  const pageOpts = preparePageOptions({
+    theme: 'dark',
+    mode: 'admin',
+    fixtures: {},
+    supabaseUrl: compareOpts.supabaseUrl,
+  })
+  assert.equal(pageOpts.supabaseUrl, URL_OVERRIDE, 'the capture-side hop must carry supabaseUrl')
+})
+
+test('the receipt names the build-URL override but never a credential', async () => {
+  const { describeInvocation, parseArgs } = await import(
+    new URL('./matrix.mjs', import.meta.url).href
+  )
+  const base = [
+    '--legacy-url',
+    'http://127.0.0.1:4174',
+    '--rebuild-url',
+    'http://127.0.0.1:4175',
+    '--supabase-url',
+    'https://other-project.supabase.co',
+  ]
+  const text = describeInvocation(parseArgs(base).options)
+  assert.ok(
+    text.includes('--supabase-url https://other-project.supabase.co'),
+    `the receipt must name the build-URL override (got: ${text})`
+  )
+
+  // The receipt is published as an uploaded CI artifact, so a credential must
+  // never appear in it — but the receipt must still say whether the app's own
+  // sign-in flow was attempted.
+  const withSecret = describeInvocation(
+    parseArgs([...base, '--admin-email', 'admin@test.wedding', '--admin-password', 'hunter2'])
+      .options
+  )
+  assert.ok(!withSecret.includes('hunter2'), 'the receipt must never name the admin password')
+  assert.ok(
+    !withSecret.includes('admin@test.wedding'),
+    'the receipt must never name the admin email'
+  )
+  const noLogin = describeInvocation(parseArgs([...base, '--no-admin-login']).options)
+  assert.ok(
+    noLogin.includes('--no-admin-login'),
+    'the receipt must record that the sign-in flow was disabled'
+  )
+})
+
+test('the workflow guard does not need the native image library', () => {
+  // A static import of matrix.mjs pulls sharp via diff.mjs and kills the whole
+  // guard with ERR_MODULE_NOT_FOUND before it reads any workflow.
+  const guard = readFileSync(GUARD, 'utf8')
+  assert.ok(
+    !/^import\s*\{[^}]*parseArgs[^}]*\}\s*from\s*'\.\/parity\/matrix\.mjs'/m.test(guard),
+    'matrix.mjs must not be imported statically (it pulls sharp)'
+  )
+  assert.ok(
+    /await import\('\.\/parity\/matrix\.mjs'\)/.test(guard),
+    'matrix.mjs must be imported lazily inside the matrix branch'
+  )
+})
+
+test('no parity module statically imports the native image library', () => {
+  // The guard's module graph reaches sharp through matrix.mjs -> compare.mjs ->
+  // {diff,report}.mjs. A static import there meant a missing native binary
+  // killed the guard with ERR_MODULE_NOT_FOUND before it read a workflow file;
+  // the guard must work on a machine without the binary.
+  for (const file of ['diff.mjs', 'report.mjs']) {
+    const source = readFileSync(join(PARITY, file), 'utf8')
+    assert.ok(
+      !/^import\s+sharp\s+from\s+'sharp'/m.test(source),
+      `${file} must not statically import sharp`
+    )
+    assert.ok(/await import\('sharp'\)/.test(source), `${file} must import sharp lazily`)
+  }
+})
+
+test('the guard resolves matrix.mjs lazily and only when it must', () => {
+  // The guard must run on a machine where `matrix.mjs` cannot be loaded at
+  // all — its module graph pulls in the native image library. The import must
+  // therefore be LAZY: evaluated only when a matrix.mjs invocation actually
+  // has to be parsed, and never when the guard has no matrix invocation to
+  // check.
+  //
+  // Prove that BEHAVIOURALLY: run the guard under a module loader that
+  // RECORDS every load of `parity/matrix.mjs`. A compare-only workflows
+  // directory must record NOTHING (the module was never evaluated); a
+  // directory with a matrix.mjs invocation must record a load. A STATIC
+  // import would record a load in both cases and fail the first assertion.
+  const scratch = mkdtempSync(join(tmpdir(), 'parity-guard-lazy-'))
+  try {
+    const recorder = join(scratch, 'loaded.txt')
+    const loader = join(scratch, 'record-load.mjs')
+    writeFileSync(
+      loader,
+      "import { register } from 'node:module'\n" +
+        "register(new URL('hook.mjs', import.meta.url))\n"
+    )
+    writeFileSync(
+      join(scratch, 'hook.mjs'),
+      "import { appendFileSync } from 'node:fs'\n" +
+        'export function resolve(specifier, context, next) {\n' +
+        "  if (specifier.endsWith('parity/matrix.mjs')) {\n" +
+        `    appendFileSync(${JSON.stringify(recorder)}, 'loaded\\n')\n` +
+        '  }\n' +
+        '  return next(specifier, context)\n' +
+        '}\n'
+    )
+    writeFileSync(
+      join(scratch, 'only-compare.yml'),
+      'jobs:\n  build:\n    steps:\n      - run: node tools/parity/compare.mjs --legacy-url http://127.0.0.1:4174 --rebuild-url http://127.0.0.1:4175 --routes all --matrix all\n'
+    )
+    const stdout = execFileSync(
+      'node',
+      ['--import', pathToFileURL(loader).href, GUARD, '--workflows-dir', scratch],
+      {
+        cwd: ROOT,
+        encoding: 'utf8',
+      }
+    )
+    assert.match(
+      stdout,
+      /parity workflow invocations valid/,
+      `the guard must accept a compare-only workflows directory (got: ${stdout})`
+    )
+    assert.ok(
+      !existsSync(recorder),
+      'the guard must not evaluate matrix.mjs when there is no matrix.mjs invocation to check'
+    )
+  } finally {
+    rmSync(scratch, { recursive: true, force: true })
+  }
+
+  // And when a matrix.mjs invocation IS present, the guard must resolve it
+  // with matrix.mjs's own parser: a bad matrix flag must be rejected.
+  const scratch2 = mkdtempSync(join(tmpdir(), 'parity-guard-matrix-'))
+  try {
+    const recorder2 = join(scratch2, 'loaded.txt')
+    const loader2 = join(scratch2, 'record-load.mjs')
+    writeFileSync(
+      loader2,
+      "import { register } from 'node:module'\n" +
+        "register(new URL('hook.mjs', import.meta.url))\n"
+    )
+    writeFileSync(
+      join(scratch2, 'hook.mjs'),
+      "import { appendFileSync } from 'node:fs'\n" +
+        'export function resolve(specifier, context, next) {\n' +
+        "  if (specifier.endsWith('parity/matrix.mjs')) {\n" +
+        `    appendFileSync(${JSON.stringify(recorder2)}, 'loaded\\n')\n` +
+        '  }\n' +
+        '  return next(specifier, context)\n' +
+        '}\n'
+    )
+    writeFileSync(
+      join(scratch2, 'bad-matrix.yml'),
+      'jobs:\n  build:\n    steps:\n      - run: node tools/parity/matrix.mjs --legacy-url http://127.0.0.1:4174 --rebuild-url http://127.0.0.1:4175 --all\n'
+    )
+    let failed = false
+    try {
+      execFileSync(
+        'node',
+        ['--import', pathToFileURL(loader2).href, GUARD, '--workflows-dir', scratch2],
+        {
+          cwd: ROOT,
+          encoding: 'utf8',
+        }
+      )
+    } catch (error) {
+      failed = true
+      assert.match(String(error.stderr ?? ''), /unknown argument/, 'the bad flag must be named')
+    }
+    assert.ok(failed, 'the guard must reject a bad matrix.mjs flag')
+    assert.ok(
+      existsSync(recorder2),
+      'the guard must evaluate matrix.mjs when there IS a matrix.mjs invocation to check'
+    )
+  } finally {
+    rmSync(scratch2, { recursive: true, force: true })
+  }
+})
+
+test('the capture clock is installed before the parked time', async () => {
+  // The lead is what stops `pauseAt` throwing "Cannot fast-forward to the
+  // past". Assert it on the VALUE: the install instant must be strictly
+  // BEFORE the parked time, by a lead large enough to absorb the real time
+  // that elapses between the two awaited calls.
+  const { clockInstallTime, CLOCK_LEAD_MS } = await import(
+    new URL('./capture.mjs', import.meta.url).href
+  )
+  const parked = '2026-11-08T17:00:00.000Z'
+  const install = clockInstallTime(parked)
+
+  assert.ok(
+    install.getTime() < new Date(parked).getTime(),
+    'the clock must be installed BEFORE the parked time'
+  )
+  assert.equal(
+    install.getTime(),
+    new Date(parked).getTime() - CLOCK_LEAD_MS,
+    'the install instant must be exactly the lead before the parked time'
+  )
+  assert.ok(
+    CLOCK_LEAD_MS >= 100,
+    `the lead must absorb more than 1 ms of real time (got ${CLOCK_LEAD_MS})`
+  )
+})
+
+test('the job exit code reflects an unmeasured row', async () => {
+  // The signal a caller consumes, asserted on the VALUE. A source-text check
+  // on the mapping passes even when the exit code is never raised — which is
+  // the fail-open this gate exists to close.
+  const { exitCodeForRows } = await import(new URL('./matrix.mjs', import.meta.url).href)
+  assert.equal(
+    exitCodeForRows([{ status: 'error' }], 0),
+    1,
+    'an unmeasured row must raise the exit code'
+  )
+  assert.equal(
+    exitCodeForRows([{ status: 'pass' }, { status: 'allowed' }], 0),
+    0,
+    'measured rows must leave the exit code alone'
+  )
+  assert.equal(
+    exitCodeForRows([{ status: 'error' }], 1),
+    1,
+    'an existing failure must not be lowered'
+  )
+})
+
+test('the production row wiring protects the admin route from the contract', async () => {
+  // The PRODUCTION path, not a copy of its logic: `assembleRows` derives the
+  // protected set from the route contract, so the call site cannot hand
+  // `buildRows` an empty or `includeAdmin`-conditioned set and silently
+  // disable the auth gate.
+  const { assembleRows } = await import(new URL('./matrix.mjs', import.meta.url).href)
+  const { loadRoutesContract } = await import(new URL('./config.mjs', import.meta.url).href)
+  const contract = await loadRoutesContract()
+
+  const adminRoute = contract.routes.find(route => route.auth === 'admin')
+  assert.ok(adminRoute, 'the contract must declare an auth: admin route')
+
+  // The shot the gate exists for: both sides landed on the login screen.
+  const loginShot = {
+    key: `${adminRoute.id}__desktop__dark`,
+    route: adminRoute.id,
+    urlPath: adminRoute.path,
+    viewport: 'desktop',
+    theme: 'dark',
+    status: 'pass',
+    failureReasons: [],
+    legacy: { finalUrl: 'http://127.0.0.1:4174/admin/login' },
+    rebuild: { finalUrl: 'http://127.0.0.1:4175/admin/login' },
+  }
+
+  // `--no-admin` removes the synthetic admin child sections. It must NOT
+  // remove the contract route's protection.
+  const rows = assembleRows(
+    { shots: [loginShot] },
+    { includeAdmin: false, routesContract: contract, extraRoutes: [] }
+  )
+  assert.equal(rows.length, 1)
+  assert.equal(
+    rows[0].status,
+    'error',
+    'the production wiring must report an unauthenticated admin row as an error'
+  )
+
+  // And a genuinely captured admin row must still pass through it.
+  const okRows = assembleRows(
+    {
+      shots: [
+        {
+          ...loginShot,
+          legacy: { finalUrl: 'http://127.0.0.1:4174/admin' },
+          rebuild: { finalUrl: 'http://127.0.0.1:4175/admin' },
+        },
+      ],
+    },
+    { includeAdmin: false, routesContract: contract, extraRoutes: [] }
+  )
+  assert.equal(okRows[0].status, 'pass', 'a genuinely captured admin row must still pass')
+})
+
+test('the production exit-code wiring raises on an unmeasured row', async () => {
+  // The PRODUCTION path: `matrixExitCode` owns BOTH the row check and the
+  // prerender check, so emptying the rows before the call — or dropping the
+  // prerender check — changes the job's verdict.
+  const { matrixExitCode } = await import(new URL('./matrix.mjs', import.meta.url).href)
+  assert.equal(
+    matrixExitCode([{ status: 'error' }], 0),
+    1,
+    'an unmeasured row must raise the production exit code'
+  )
+  assert.equal(
+    matrixExitCode([{ status: 'pass' }], 0),
+    0,
+    'measured rows must leave the production exit code alone'
+  )
+  assert.equal(
+    matrixExitCode([{ status: 'pass' }], 0, {
+      prerender: { status: 'fail' },
+      options: { prerender: true },
+    }),
+    1,
+    'a failed prerender check must raise the production exit code'
+  )
+  assert.equal(
+    matrixExitCode([{ status: 'pass' }], 0, {
+      prerender: { status: 'fail' },
+      options: { prerender: false },
+    }),
+    0,
+    'a prerender result must not raise the code when prerender was not requested'
+  )
+})
+
+test('the capture-side and storage-key hops carry the override', async () => {
+  const { preparePageOptions } = await import(new URL('./capture.mjs', import.meta.url).href)
+  const { prepareStorageKey } = await import(new URL('./mocks/index.mjs', import.meta.url).href)
+
+  const URL_OVERRIDE = 'https://other-project.supabase.co'
+
+  // The capture-side hop: the options preparePage receives must carry it.
+  const pageOpts = preparePageOptions({
+    theme: 'dark',
+    mode: 'admin',
+    fixtures: {},
+    supabaseUrl: URL_OVERRIDE,
+  })
+  assert.equal(pageOpts.supabaseUrl, URL_OVERRIDE, 'the capture-side hop must carry the override')
+
+  // The LAST hop: the key actually seeded into localStorage must be derived
+  // from the override, not from the ambient env.
+  const saved = process.env.VITE_SUPABASE_URL
+  try {
+    process.env.VITE_SUPABASE_URL = 'https://placeholder.supabase.co'
+    assert.equal(
+      prepareStorageKey({ mode: 'admin', fixtures: {}, supabaseUrl: URL_OVERRIDE }),
+      'sb-other-project-auth-token',
+      'the seeded key must come from the explicit build URL'
+    )
+    assert.equal(
+      prepareStorageKey({ mode: 'admin', fixtures: {} }),
+      'sb-placeholder-auth-token',
+      'without an override the ambient env still applies'
+    )
+    assert.equal(
+      prepareStorageKey({ mode: 'public', fixtures: {}, supabaseUrl: URL_OVERRIDE }),
+      '',
+      'a public capture seeds no admin session at all'
+    )
+  } finally {
+    if (saved === undefined) delete process.env.VITE_SUPABASE_URL
+    else process.env.VITE_SUPABASE_URL = saved
+  }
+})

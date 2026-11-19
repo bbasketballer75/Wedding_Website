@@ -67,6 +67,8 @@ Options:
   --matrix <selector>      all (default) or comma list of viewports (desktop,mobile)
   --themes <selector>      comma list of themes (default: the route's contract themes)
   --out <dir>              output directory (default: tools/parity/output/matrix)
+  --supabase-url <url>     Supabase URL the preview was BUILT with (overrides
+                            VITE_SUPABASE_URL for the admin session key)
   --wave <n>               rebuild wave for allowlist expiry (default: 9)
   --max-diff-ratio <n>     changed-pixel ratio tolerance (default: 0.001)
   --pixel-threshold <n>    per-pixel colour threshold (default: 0.12)
@@ -86,7 +88,12 @@ function fail(message) {
   throw new HarnessError(message)
 }
 
-function parseArgs(argv) {
+/**
+ * Parse the matrix CLI arguments. Exported so the workflow guard can resolve a
+ * `matrix.mjs` invocation with the harness's OWN parser rather than a second
+ * copy of the flag list.
+ */
+export function parseArgs(argv) {
   const options = {
     legacyUrl: null,
     rebuildUrl: null,
@@ -104,7 +111,17 @@ function parseArgs(argv) {
     resume: false,
     json: false,
     help: false,
+    // The Supabase URL the preview under test was BUILT with. When it is not
+    // set the harness uses its own `VITE_SUPABASE_URL`, which only derives
+    // the right session key when both previews were built in this same
+    // environment.
+    supabaseUrl: null,
   }
+  // Flags the caller actually passed, in the order they appeared. The receipt
+  // must distinguish "the run used --edge-tolerance 1" from "the harness
+  // defaulted edgeTolerance to 1" — printing a default as if it were passed
+  // makes the receipt a claim the invocation never made.
+  options.passedFlags = []
   const args = [...argv]
   let index = 0
   const readValue = flag => {
@@ -127,6 +144,7 @@ function parseArgs(argv) {
   }
   while (index < args.length) {
     const arg = args[index]
+    if (arg.startsWith('--')) options.passedFlags.push(arg)
     switch (arg) {
       case '--help':
       case '-h':
@@ -148,7 +166,14 @@ function parseArgs(argv) {
         options.themes = readValue(arg)
         break
       case '--out':
-        options.outDir = path.resolve(readValue(arg))
+        // Keep the argument AS PASSED for the receipt, and the resolved path
+        // for the filesystem. The receipt names the invocation; a resolved
+        // absolute path would not match the flag on any platform.
+        options.outDirArg = readValue(arg)
+        options.outDir = path.resolve(options.outDirArg)
+        break
+      case '--supabase-url':
+        options.supabaseUrl = readValue(arg)
         break
       case '--wave':
         options.wave = readNumber(arg, 1, 1000, true)
@@ -301,6 +326,103 @@ function isAdminRow(shot, includeAdmin) {
   return ADMIN_ROUTE_ID_PATTERN.test(shot.route) && shot.route !== 'admin-login'
 }
 
+/**
+ * Route ids the CONTRACT (or a generated admin section) marks `auth: 'admin'`.
+ *
+ * This is deliberately separate from `includeAdmin`. That flag only decides
+ * whether the synthetic admin child sections are ADDED to the matrix; it must
+ * not decide whether an `auth: 'admin'` route that is in the matrix anyway gets
+ * its authentication verified. Keying the exemption on `includeAdmin` meant the
+ * CI invocation — which passes `--no-admin` to match the signed-off 46-row
+ * scope, and which still captures the `auth: admin` contract route — skipped the
+ * check entirely and could report `pass` for two unauthenticated login screens.
+ */
+function protectedRouteIds(routes) {
+  return new Set(routes.filter(route => route.auth === 'admin').map(route => route.id))
+}
+
+/**
+ * True when a capture ended on the admin sign-in screen.
+ *
+ * Compares the URL's PATHNAME, not a string suffix: `/admin/login/`,
+ * `/admin/login?next=/admin/photos` and `/admin/login#form` are all the same
+ * unmeasured state, and an `endsWith('/admin/login')` test reports every one of
+ * them as a genuine capture. That is the same fail-open class as keying the
+ * exemption on `includeAdmin`, one layer down.
+ */
+function isAdminLoginUrl(url) {
+  if (!url) return false
+  const value = String(url)
+  let pathname
+  try {
+    pathname = new URL(value).pathname
+  } catch {
+    // Not an absolute URL — fall back to the path before any query/fragment.
+    pathname = value.split(/[?#]/)[0]
+  }
+  return pathname.replace(/\/+$/, '') === '/admin/login'
+}
+
+/**
+ * The invocation actually used, for the uploaded receipt.
+ *
+ * The artifact is what a reviewer reads to confirm the signed-off baseline ran,
+ * so it must name every flag the job passed. Recording only `--wave` (the
+ * previous behaviour) silently dropped `--routes`, `--matrix`, `--themes`,
+ * `--edge-tolerance`, `--no-admin` and `--prerender` — i.e. exactly the options
+ * that distinguish the signed-off run from a strict default one.
+ */
+export function describeInvocation(options) {
+  // Only the flags the caller actually passed, with their effective values.
+  // A default the harness supplied is NOT a flag the run used, and the
+  // resolved tolerance values are recorded separately in the summary's own
+  // `tolerance` field.
+  const passed = new Set(options.passedFlags ?? [])
+  const flags = []
+  if (passed.has('--routes')) flags.push(`--routes ${options.routes}`)
+  if (passed.has('--matrix')) flags.push(`--matrix ${options.matrix}`)
+  if (passed.has('--themes')) flags.push(`--themes ${options.themes}`)
+  if (passed.has('--max-diff-ratio')) flags.push(`--max-diff-ratio ${options.maxDiffRatio}`)
+  if (passed.has('--pixel-threshold')) flags.push(`--pixel-threshold ${options.pixelThreshold}`)
+  if (passed.has('--edge-tolerance')) flags.push(`--edge-tolerance ${options.edgeTolerance}`)
+  if (passed.has('--no-admin')) flags.push('--no-admin')
+  if (passed.has('--prerender')) flags.push('--prerender')
+  if (passed.has('--resume')) flags.push('--resume')
+  if (passed.has('--wave')) flags.push(`--wave ${options.wave}`)
+  if (passed.has('--out')) flags.push(`--out ${options.outDirArg ?? options.outDir}`)
+  if (passed.has('--supabase-url')) flags.push(`--supabase-url ${options.supabaseUrl}`)
+  // `--admin-email` / `--admin-password` are deliberately NOT printed here.
+  // The receipt is published as an uploaded CI artifact, so naming a
+  // credential in it would leak it. `--no-admin-login` is a boolean switch
+  // with no secret value and IS printed, so the receipt still says whether
+  // the app's own sign-in flow was attempted.
+  if (passed.has('--no-admin-login')) flags.push('--no-admin-login')
+  return (
+    `node tools/parity/matrix.mjs --legacy-url ${options.legacyUrl} ` +
+    `--rebuild-url ${options.rebuildUrl} ${flags.join(' ')}`
+  )
+}
+
+/**
+ * Map the matrix CLI options onto the comparison harness's option bag.
+ *
+ * Exported so the mapping can be asserted BEHAVIOURALLY. A hop that quietly
+ * drops a field is invisible to a source-text check and survives mutation with
+ * the suite green; `runCompare` normalizes whatever this returns, so a field
+ * missing here is missing for the whole capture.
+ */
+export function compareOptions(options, extraRoutes = []) {
+  return {
+    // Spread FIRST, so the explicit fields below win. Spreading the whole
+    // option bag means a NEW option cannot be dropped by forgetting to list
+    // it here — the failure mode the previous explicit list had.
+    ...options,
+    extraRoutes,
+    resume: options.resume,
+    report: true,
+  }
+}
+
 function firstFailureDetail(shot) {
   if (shot.textDiff?.status === 'fail') {
     const firstField = shot.textDiff.differences?.[0]?.field ?? 'text'
@@ -325,15 +447,34 @@ function firstFailureDetail(shot) {
   return { kind: null, field: null, path: null }
 }
 
-function buildRows(shots, { includeAdmin }) {
+export function buildRows(shots, { includeAdmin, protectedRoutes }) {
+  // The protected set is REQUIRED. Defaulting it to an empty set would
+  // silently disable the auth gate for any caller that forgets it — the same
+  // fail-open this gate exists to prevent. Fail loudly instead.
+  if (!(protectedRoutes instanceof Set)) {
+    throw new Error(
+      'buildRows requires protectedRoutes: derive it with protectedRouteIds() from the route contract'
+    )
+  }
   return shots.map(shot => {
     const admin = isAdminRow(shot, includeAdmin)
-    const legacyLogin = String(shot.legacy?.finalUrl ?? '').endsWith('/admin/login')
-    const rebuildLogin = String(shot.rebuild?.finalUrl ?? '').endsWith('/admin/login')
+    const legacyLogin = isAdminLoginUrl(shot.legacy?.finalUrl)
+    const rebuildLogin = isAdminLoginUrl(shot.rebuild?.finalUrl)
+    // A protected route with no recorded final URL was not measured. Treating
+    // it as a genuine capture is the same fail-open as the login-redirect case:
+    // `isAdminLoginUrl(null)` is false, so an unmeasured row would compare
+    // as equal.
+    const legacyUrlMissing = !shot.legacy?.finalUrl
+    const rebuildUrlMissing = !shot.rebuild?.finalUrl
     let captureClass = 'captured'
     let exemptReason = null
-    if (admin) {
-      if (legacyLogin && rebuildLogin) {
+    // A row for an `auth: 'admin'` route was not measured if either side ended on
+    // the login screen — regardless of `--no-admin`.
+    if (admin || protectedRoutes.has(shot.route)) {
+      if (legacyUrlMissing || rebuildUrlMissing) {
+        captureClass = 'exempt'
+        exemptReason = 'a protected route recorded no final URL — the row was not measured'
+      } else if (legacyLogin && rebuildLogin) {
         captureClass = 'exempt'
         exemptReason = 'both sides redirected to /admin/login (admin session/login not accepted)'
       } else if (legacyLogin) {
@@ -345,6 +486,16 @@ function buildRows(shots, { includeAdmin }) {
       }
     }
     const detail = firstFailureDetail(shot)
+    // An admin row that could not be authenticated is NOT evidence of parity. It
+    // is reported as an `error`, never as a `pass`: two sides that both landed on
+    // the login screen would otherwise compare as equal and the job would exit
+    // green having measured nothing. The exemption is still recorded, with its
+    // reason, so the receipt says why the row was not measured.
+    const status = captureClass === 'exempt' ? 'error' : shot.status
+    const failureReasons =
+      captureClass === 'exempt'
+        ? [...(shot.failureReasons ?? []), `admin row not measured: ${exemptReason}`]
+        : (shot.failureReasons ?? [])
     return {
       key: shot.key,
       route: shot.route,
@@ -354,14 +505,14 @@ function buildRows(shots, { includeAdmin }) {
       admin,
       captureClass,
       exemptReason,
-      status: shot.status,
+      status,
       ratio: shot.pixelDiff?.ratio ?? null,
       changedPixels: shot.pixelDiff?.changedPixels ?? null,
       totalPixels: shot.pixelDiff?.totalPixels ?? null,
       textDiffs: shot.textDiff?.status === 'fail' ? (shot.textDiff.differences?.length ?? 0) : 0,
       legacyHeight: shot.legacy?.pageHeightPx ?? null,
       rebuildHeight: shot.rebuild?.pageHeightPx ?? null,
-      failureReasons: shot.failureReasons ?? [],
+      failureReasons,
       firstFailure: detail,
       legacyFinalUrl: shot.legacy?.finalUrl ?? null,
       rebuildFinalUrl: shot.rebuild?.finalUrl ?? null,
@@ -375,6 +526,22 @@ function buildRows(shots, { includeAdmin }) {
       },
     }
   })
+}
+
+/**
+ * Assemble the matrix rows from a comparison result — the PRODUCTION path.
+ *
+ * The protected set is derived HERE, from the route contract, rather than
+ * being passed in. A caller that hands `buildRows` an empty or
+ * `includeAdmin`-conditioned set silently disables the auth gate — the exact
+ * fail-open where CI goes green having compared two login screens. Deriving
+ * it inside this function means the production call site cannot get it
+ * wrong, and a test can assert on the real function instead of on a copy of
+ * its logic.
+ */
+export function assembleRows(summary, { includeAdmin, routesContract, extraRoutes = [] }) {
+  const protectedRoutes = protectedRouteIds([...routesContract.routes, ...extraRoutes])
+  return buildRows(summary?.shots ?? [], { includeAdmin, protectedRoutes })
 }
 
 function markdownTable(rows) {
@@ -542,33 +709,23 @@ async function runMatrix(options) {
     )
   }
 
-  const compareResult = await runCompare({
-    legacyUrl: options.legacyUrl,
-    rebuildUrl: options.rebuildUrl,
-    routes: options.routes,
-    matrix: options.matrix,
-    themes: options.themes,
-    outDir: options.outDir,
-    maxDiffRatio: options.maxDiffRatio,
-    pixelThreshold: options.pixelThreshold,
-    edgeTolerance: options.edgeTolerance,
-    wave: options.wave,
-    extraRoutes,
-    resume: options.resume,
-    report: true,
-    adminLogin: options.adminLogin,
-  })
+  const compareResult = await runCompare(compareOptions(options, extraRoutes))
 
-  const rows = buildRows(compareResult.summary.shots ?? [], { includeAdmin: options.includeAdmin })
+  const rows = assembleRows(compareResult.summary, {
+    includeAdmin: options.includeAdmin,
+    routesContract,
+    extraRoutes,
+  })
   const overview = matrixOverview(compareResult.summary, rows, {
     includeAdmin: options.includeAdmin,
     prerender,
     outDir: options.outDir,
   })
-  overview.command = `node tools/parity/matrix.mjs --legacy-url ${options.legacyUrl} --rebuild-url ${options.rebuildUrl} --wave ${options.wave}`
+  overview.command = describeInvocation(options)
   overview.durationMs = Date.now() - startedMs
 
   const summaryPath = path.join(options.outDir, 'matrix-summary.json')
+
   await writeJsonFile(summaryPath, overview)
   const matrixMarkdownPath = path.join(options.outDir, 'MATRIX.md')
   await writeTextFile(
@@ -624,8 +781,37 @@ async function runMatrix(options) {
   log.out(`Output README:  ${readmePath}`)
 
   let exitCode = compareResult.exitCode
-  if (options.prerender && prerender?.status === 'fail') exitCode = Math.max(exitCode, 1)
+  // A row that could not be measured is not a pass. `buildRows` reports an
+  // un-authenticated admin row as `error`; make the job's exit code reflect it
+  // so CI cannot go green having compared two login screens.
+  exitCode = matrixExitCode(rows, exitCode, { prerender, options })
   return { overview, exitCode, summaryPath, matrixMarkdownPath, readmePath }
+}
+
+/**
+ * The job's exit code must reflect an unmeasured row.
+ *
+ * Exported so the signal a caller actually consumes can be asserted on the
+ * VALUE. A source-text check on the mapping passes even if the exit code is
+ * never raised — which is the fail-open this gate exists to close: CI going
+ * green having compared two login screens.
+ */
+export function exitCodeForRows(rows, exitCode = 0) {
+  return rows.some(row => row.status === 'error') ? Math.max(exitCode, 1) : exitCode
+}
+
+/**
+ * The matrix job's exit code — the PRODUCTION path.
+ *
+ * Wraps the row check AND the prerender check, so a test can assert on the
+ * decision the job actually makes. Asserting on `exitCodeForRows` alone left
+ * the call site unpinned: emptying `rows` before the call, or dropping the
+ * prerender check, left the suite green while the job's verdict changed.
+ */
+export function matrixExitCode(rows, exitCode = 0, { prerender = null, options = null } = {}) {
+  let code = exitCodeForRows(rows, exitCode)
+  if (options?.prerender && prerender?.status === 'fail') code = Math.max(code, 1)
+  return code
 }
 
 export async function main(argv) {

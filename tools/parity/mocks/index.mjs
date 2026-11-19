@@ -84,7 +84,41 @@ export async function loadMediaStub({ root = ROOT } = {}) {
   return mediaStubCache
 }
 
-export function adminSessionStorageKey({ fixtures, root = ROOT } = {}) {
+/**
+ * The localStorage key the app under test will read its Supabase session from.
+ *
+ * `@supabase/supabase-js` derives the key from the URL the app was BUILT with:
+ *   `sb-${new URL(supabaseUrl).hostname.split('.')[0]}-auth-token`
+ * so with `VITE_SUPABASE_URL=https://placeholder.supabase.co` the app looks for
+ * `sb-placeholder-auth-token`.
+ *
+ * The contract fixture carries the REAL project's key
+ * (`sb-zaczcyzvavetgfuucljf-auth-token`). Seeding THAT key left the app
+ * unauthenticated — it read a different localStorage entry — so every admin row
+ * compared an unauthenticated login page and failed on text diffs. The harness
+ * must seed the key the app will actually look up, which is derived from the
+ * URL the app was BUILT with.
+ *
+ * That is `process.env.VITE_SUPABASE_URL` in the harness process, so it equals
+ * the app's key only when the preview was built in this same environment. The
+ * CI parity job builds both sides in one job with one env block, so it holds
+ * there; a local run against a preview built with a different URL would derive
+ * the wrong key and silently reproduce the original defect. `preparePage`
+ * forwards a `supabaseUrl` override for that case, and `captureShot` takes it
+ * from the harness options, so a caller that knows the preview's build URL can
+ * state it rather than relying on the ambient env.
+ */
+export function adminSessionStorageKey({ fixtures, root = ROOT, supabaseUrl } = {}) {
+  const url = supabaseUrl ?? process.env.VITE_SUPABASE_URL ?? ''
+  if (url) {
+    try {
+      const hostname = new URL(url).hostname
+      const projectRef = hostname.split('.')[0]
+      if (projectRef) return `sb-${projectRef}-auth-token`
+    } catch {
+      // Not a parseable URL — fall through to the contract fixture.
+    }
+  }
   const fromFixture = fixtures?.admin?.storageKey
   if (fromFixture) return fromFixture
   return `sb-${supabaseProjectRef({ root })}-auth-token`
@@ -185,8 +219,11 @@ function browserInitScript(input) {
   }
 }
 
-export async function preparePage(page, { theme, mode = 'public', fixtures, root = ROOT } = {}) {
-  const storageKey = mode === 'admin' ? adminSessionStorageKey({ fixtures, root }) : ''
+export async function preparePage(
+  page,
+  { theme, mode = 'public', fixtures, root = ROOT, supabaseUrl } = {}
+) {
+  const storageKey = prepareStorageKey({ mode, fixtures, root, supabaseUrl })
   const session = fixtures?.admin?.session ?? null
   await page.addInitScript(browserInitScript, {
     theme,
@@ -198,6 +235,18 @@ export async function preparePage(page, { theme, mode = 'public', fixtures, root
     reducedMotion: 'reduce',
     colorScheme: theme === 'light' ? 'light' : 'dark',
   })
+}
+
+/**
+ * The localStorage key the admin session is seeded under.
+ *
+ * Exported so the LAST hop of the chain can be asserted BEHAVIOURALLY: a
+ * caller that forwarded `supabaseUrl` incompletely left the override
+ * `undefined`, and the harness silently fell back to the ambient
+ * `VITE_SUPABASE_URL` — the exact failure the override exists to prevent.
+ */
+export function prepareStorageKey({ mode = 'public', fixtures, root = ROOT, supabaseUrl } = {}) {
+  return mode === 'admin' ? adminSessionStorageKey({ fixtures, root, supabaseUrl }) : ''
 }
 
 function fulfillJson(route, payload, status = 200) {
