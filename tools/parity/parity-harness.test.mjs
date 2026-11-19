@@ -1351,14 +1351,19 @@ function runMatrixCli({ argv, compareSource, fixtureSource }) {
   const cliResult = JSON.parse(marker.slice('__CLI_RESULT__'.length))
   const summaryPath = join(outDir, 'matrix-summary.json')
   const readmePath = join(outDir, 'README.md')
+  const matrixMarkdownPath = join(outDir, 'MATRIX.md')
   return {
     code: cliResult.code,
     received: cliResult.received,
     stderr: cliResult.stderr ?? '',
     summaryExists: existsSync(summaryPath),
     readmeExists: existsSync(readmePath),
+    matrixMarkdownExists: existsSync(matrixMarkdownPath),
     summary: existsSync(summaryPath) ? JSON.parse(readFileSync(summaryPath, 'utf8')) : null,
     readme: existsSync(readmePath) ? readFileSync(readmePath, 'utf8') : null,
+    matrixMarkdown: existsSync(matrixMarkdownPath)
+      ? readFileSync(matrixMarkdownPath, 'utf8')
+      : null,
   }
 }
 
@@ -1441,6 +1446,19 @@ test('the matrix CLI forwards the override and publishes an unmeasured row as an
   )
   // The generated README must carry the same tally the summary does.
   assert.ok(out.readme, 'the CLI must publish its README')
+  // MATRIX.md is a PUBLISHED artifact a reviewer reads, so the prerender
+  // verdict and its waiver must survive into it.
+  assert.ok(out.matrixMarkdown, 'the CLI must publish MATRIX.md')
+  assert.match(
+    out.matrixMarkdown,
+    /Prerender \(W8-1\): pending/,
+    'MATRIX.md must carry the prerender verdict'
+  )
+  assert.match(
+    out.matrixMarkdown,
+    /Prerender gate waived/,
+    'MATRIX.md must carry the explicit prerender waiver'
+  )
   assert.match(
     out.readme,
     /of which 1 are exempt\/unmeasured admin rows/,
