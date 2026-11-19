@@ -25,6 +25,14 @@
  *   failed every scheduled run after the cutover. Baselines are captured from
  *   the live rebuilt site (win32 a local + linux for CI) and the workflow now
  *   self-seeds them if absent. The frozen legacy app source is still untouched.
+ *   .github/workflows/codeql.yml
+ *   — the security-scanning workflow. Its action pins are the repo's own
+ *   supply-chain posture (the CodeQL steps must all use the SAME action
+ *   version, or CodeQL refuses to run: "All steps in a workflow that use
+ *   github/codeql-action must use the same version"), and Dependabot cannot
+ *   propose that move — it opens one PR per action, so each PR alone leaves the
+ *   workflow broken. The file never enters the client bundle and never runs
+ *   in the parity path, so the frozen oracle is unaffected.
  *
  * Usage:
  *   node tools/check-legacy-freeze.mjs           # exit 1 on violations
@@ -55,6 +63,7 @@ const ALLOWED_PREFIXES = ['contracts/', 'docs/rebuild/', 'tools/', 'rebuild/', '
 const ALLOWED_FILES = new Set([
   '.github/workflows/rebuild.yml',
   '.github/workflows/visual-prod.yml',
+  '.github/workflows/codeql.yml',
   '.github/dependabot.yml',
 ])
 
