@@ -1348,6 +1348,8 @@ test('the matrix CLI forwards the override and publishes an unmeasured row as an
   const planned = ['admin__desktop__dark', 'home__desktop__dark']
   const fixtureSource = `bag => {
     const planned = ${JSON.stringify(planned)}
+    const legacyAdminUrl = bag.includeAdmin ? null : bag.legacyUrl + '/admin/login/'
+    const rebuildAdminUrl = bag.rebuildUrl + (bag.includeAdmin ? '/admin' : '/admin/login?next=%2Fadmin')
     const shot = (key, route, urlPath, legacyUrl, rebuildUrl) => ({
       key,
       route,
@@ -1365,7 +1367,7 @@ test('the matrix CLI forwards the override and publishes an unmeasured row as an
         oracle: { legacyUrl: bag.legacyUrl, rebuildUrl: bag.rebuildUrl },
         selection: { plannedShots: planned },
         shots: [
-          shot(planned[0], 'admin', '/admin', null, bag.rebuildUrl + '/admin'),
+          shot(planned[0], 'admin', '/admin', legacyAdminUrl, rebuildAdminUrl),
           shot(planned[1], 'home', '/', bag.legacyUrl + '/', bag.rebuildUrl + '/'),
         ],
       },
@@ -1424,6 +1426,20 @@ test('the matrix CLI forwards the override and publishes an unmeasured row as an
     /of which 1 are exempt\/unmeasured admin rows/,
     'the published README tally must treat exempt as a subset of error'
   )
+
+  // Under the signed-off flags, --no-admin excludes added sections, not
+  // protection for the contract's admin route. Two login screens must not pass.
+  const ci = runMatrixCli({ argv: CI_ARGV, compareSource, fixtureSource })
+  assert.ok(ci.received, `the CI-shaped CLI must reach the comparison engine: ${ci.stderr}`)
+  assert.equal(ci.received.includeAdmin, false)
+  assert.deepEqual(ci.received.extraRoutes, [])
+  assert.equal(ci.received.themes, 'dark,light')
+  assert.equal(ci.code, 1, 'the CI-shaped CLI must reject an admin login-screen comparison')
+  const [redirectedAdmin, publicControl] = ci.summary.rows
+  assert.equal(redirectedAdmin.key, 'admin__desktop__dark')
+  assert.equal(redirectedAdmin.status, 'error')
+  assert.match(redirectedAdmin.exemptReason, /both sides redirected to \/admin\/login/)
+  assert.equal(publicControl.status, 'pass')
 })
 
 test('the matrix CLI refuses a run that measured nothing', () => {
