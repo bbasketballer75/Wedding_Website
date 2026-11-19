@@ -9,9 +9,24 @@
 import fs from 'node:fs/promises'
 import path from 'node:path'
 import { fileURLToPath } from 'node:url'
-import sharp from 'sharp'
 import { DEFAULT_OUT_DIR } from './util.mjs'
 import { HarnessError, escapeHtml, formatRatio, log, pathExists, readJsonFile } from './util.mjs'
+
+/**
+ * `sharp` is a NATIVE module, so it is imported LAZILY — see the same note in
+ * `diff.mjs`. `compare.mjs` imports this module, and `compare.mjs` is imported
+ * by `matrix.mjs`, which the pure workflow-argument guard loads. A static import
+ * here put the native binary in the guard's module graph, so a missing `sharp`
+ * killed the guard before it read a workflow file. The single call site below is
+ * already async.
+ */
+let sharpModule = null
+async function loadSharp() {
+  if (sharpModule === null) {
+    sharpModule = (await import('sharp')).default
+  }
+  return sharpModule
+}
 
 const THUMB_WIDTH = 420
 const THUMB_CACHE = new Map()
@@ -24,6 +39,7 @@ async function thumbDataUri(outDir, relativeFile) {
     THUMB_CACHE.set(absolute, null)
     return null
   }
+  const sharp = await loadSharp()
   const buffer = await sharp(absolute)
     .resize({ width: THUMB_WIDTH, withoutEnlargement: true })
     .webp({ quality: 70 })

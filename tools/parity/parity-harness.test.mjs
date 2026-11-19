@@ -384,3 +384,18 @@ test('the workflow guard does not need the native image library', () => {
     'matrix.mjs must be imported lazily inside the matrix branch'
   )
 })
+
+test('no parity module statically imports the native image library', () => {
+  // The guard's module graph reaches sharp through matrix.mjs -> compare.mjs ->
+  // {diff,report}.mjs. A static import there meant a missing native binary
+  // killed the guard with ERR_MODULE_NOT_FOUND before it read a workflow file;
+  // the guard must work on a machine without the binary.
+  for (const file of ['diff.mjs', 'report.mjs']) {
+    const source = readFileSync(join(PARITY, file), 'utf8')
+    assert.ok(
+      !/^import\s+sharp\s+from\s+'sharp'/m.test(source),
+      `${file} must not statically import sharp`
+    )
+    assert.ok(/await import\('sharp'\)/.test(source), `${file} must import sharp lazily`)
+  }
+})

@@ -15,13 +15,33 @@
  */
 import fs from 'node:fs/promises'
 import path from 'node:path'
-import sharp from 'sharp'
 import { HarnessError, formatRatio, normalizeText } from './util.mjs'
+
+/**
+ * `sharp` is a NATIVE module, so it is imported LAZILY.
+ *
+ * A static import here put `sharp` in the module graph of everything that
+ * imports this file — `compare.mjs`, then `matrix.mjs`, then the pure
+ * `tools/check-parity-workflow-args.mjs` guard, which only reads workflow text.
+ * With the native binary absent, that guard died with
+ * `ERR_MODULE_NOT_FOUND` before it had read a single workflow file.
+ *
+ * Both call sites below are already async, so the import is awaited at the
+ * point of use and no PNG operation is affected.
+ */
+let sharpModule = null
+async function loadSharp() {
+  if (sharpModule === null) {
+    sharpModule = (await import('sharp')).default
+  }
+  return sharpModule
+}
 
 /** pixelmatch's maximum possible squared delta, used to normalise the threshold. */
 const MAX_DELTA = 35215
 
 export async function decodePng(file) {
+  const sharp = await loadSharp()
   let result
   try {
     result = await sharp(file)
@@ -171,6 +191,7 @@ export function buildDiffRaw(legacy, rebuild, { pixelThreshold = 0.12, edgeToler
 }
 
 async function writeRawPng({ data, width, height }, file) {
+  const sharp = await loadSharp()
   await fs.mkdir(path.dirname(file), { recursive: true })
   await sharp(data, { raw: { width, height, channels: 3 } })
     .png({ compressionLevel: 6 })
