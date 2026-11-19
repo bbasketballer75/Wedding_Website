@@ -637,6 +637,63 @@ test('the receipt names the build-URL override but never a credential', async ()
     noLogin.includes('--no-admin-login'),
     'the receipt must record that the sign-in flow was disabled'
   )
+  // `--json` changes what the harness prints, so it belongs in the receipt.
+  const withJson = describeInvocation(parseArgs([...base, '--json']).options)
+  assert.ok(withJson.includes('--json'), 'the receipt must name --json when it was passed')
+})
+
+test('the receipt records every flag except the two that carry a secret', async () => {
+  const { describeInvocation, parseArgs } = await import(
+    new URL('./matrix.mjs', import.meta.url).href
+  )
+  // The contract: the receipt names every flag the invocation used, EXCEPT the
+  // two that carry a credential (publishing the receipt would leak them).
+  const all = [
+    '--legacy-url',
+    'http://127.0.0.1:4174',
+    '--rebuild-url',
+    'http://127.0.0.1:4175',
+    '--routes',
+    'all',
+    '--matrix',
+    'all',
+    '--themes',
+    'dark,light',
+    '--edge-tolerance',
+    '1',
+    '--no-admin',
+    '--prerender',
+    '--wave',
+    '9',
+    '--out',
+    'tools/parity/output/ci',
+    '--json',
+    '--no-admin-login',
+    '--admin-email',
+    'admin@test.wedding',
+    '--admin-password',
+    'hunter2',
+  ]
+  const text = describeInvocation(parseArgs(all).options)
+  const omitted = ['--admin-email', '--admin-password']
+  for (const flag of omitted) {
+    assert.ok(!text.includes(flag), `${flag} carries a secret and must not be in the receipt`)
+  }
+  // Everything else that was passed must be named.
+  for (const flag of [
+    '--routes all',
+    '--matrix all',
+    '--themes dark,light',
+    '--edge-tolerance 1',
+    '--no-admin',
+    '--prerender',
+    '--wave 9',
+    '--out tools/parity/output/ci',
+    '--json',
+    '--no-admin-login',
+  ]) {
+    assert.ok(text.includes(flag), `the receipt must record ${flag} (got: ${text})`)
+  }
 })
 
 test('the workflow guard does not need the native image library', () => {
@@ -892,7 +949,7 @@ test('the production exit-code wiring raises on an unmeasured row', async () => 
   )
   assert.equal(
     matrixExitCode([{ status: 'pass' }], 0, {
-      prerender: { status: 'fail' },
+      prerender: { status: 'fail', verdict: 'fail' },
       options: { prerender: true },
     }),
     1,
@@ -947,4 +1004,574 @@ test('the capture-side and storage-key hops carry the override', async () => {
     if (saved === undefined) delete process.env.VITE_SUPABASE_URL
     else process.env.VITE_SUPABASE_URL = saved
   }
+})
+
+/* ------------------------------------------------------------------ */
+/* Round 6 — the sixth reviewer's five conditions                      */
+/* ------------------------------------------------------------------ */
+
+const CI_ARGV = [
+  '--legacy-url',
+  'http://127.0.0.1:4174',
+  '--rebuild-url',
+  'http://127.0.0.1:4175',
+  '--routes',
+  'all',
+  '--matrix',
+  'all',
+  '--themes',
+  'dark,light',
+  '--edge-tolerance',
+  '1',
+  '--no-admin',
+  '--prerender',
+  '--wave',
+  '9',
+  '--out',
+  'tools/parity/output/ci',
+]
+
+test('condition 1 — the published summary CARRIES the invocation receipt', async () => {
+  const { matrixOverview, describeInvocation, parseArgs } = await import(
+    new URL('./matrix.mjs', import.meta.url).href
+  )
+  const options = parseArgs(CI_ARGV).options
+  const overview = matrixOverview(
+    { generatedAt: 'T', oracle: {}, tolerance: {}, determinism: {}, selection: {} },
+    [],
+    { includeAdmin: false, prerender: null, outDir: 'out', options }
+  )
+  assert.equal(
+    overview.command,
+    describeInvocation(options),
+    'the summary artifact must carry the receipt of the invocation that produced it'
+  )
+  assert.ok(
+    overview.command.includes('--out tools/parity/output/ci'),
+    `the receipt must name the output dir (got: ${overview.command})`
+  )
+  assert.ok(
+    !overview.command.includes('--max-diff-ratio'),
+    'the receipt must not claim a flag the invocation never passed'
+  )
+})
+
+test('condition 1 — the summary carries the prerender block it was given', async () => {
+  const { matrixOverview, parseArgs } = await import(new URL('./matrix.mjs', import.meta.url).href)
+  const options = parseArgs(CI_ARGV).options
+  const prerender = {
+    status: 'pending',
+    verdict: 'pending',
+    waived: true,
+    waiverReason: 'W8-1 prerendering has not landed',
+    expectedRoutes: 9,
+    rebuildPrerendered: 0,
+  }
+  const overview = matrixOverview(
+    { generatedAt: 'T', oracle: {}, tolerance: {}, determinism: {}, selection: {} },
+    [],
+    { includeAdmin: false, prerender, outDir: 'out', options }
+  )
+  assert.deepEqual(
+    overview.prerender,
+    prerender,
+    'the published summary must carry the prerender block verbatim'
+  )
+})
+
+test('condition 2 — the comparison receives every field its measurement depends on', async () => {
+  const { matrixCompare, REQUIRED_COMPARE_FIELDS, parseArgs } = await import(
+    new URL('./matrix.mjs', import.meta.url).href
+  )
+  const options = parseArgs(CI_ARGV).options
+  let received = null
+  await matrixCompare(options, [], async bag => {
+    received = bag
+    return { summary: { shots: [] } }
+  })
+  assert.ok(received, 'the comparison must be invoked')
+  for (const field of REQUIRED_COMPARE_FIELDS) {
+    assert.ok(
+      received[field] !== undefined && received[field] !== null,
+      `the comparison option bag must carry ${field} (got: ${received[field]})`
+    )
+  }
+  assert.equal(received.routes, 'all', 'routes selects the full matrix')
+  assert.equal(received.matrix, 'all', 'matrix selects the full matrix')
+  assert.equal(received.themes, 'dark,light')
+  assert.equal(received.wave, 9)
+  assert.equal(received.edgeTolerance, 1)
+  assert.ok(received.adminLogin, 'the sign-in flow must reach the comparison')
+})
+
+test('condition 2 — the production compare step FAILS CLOSED on a dropped field', async () => {
+  const { matrixCompare, parseArgs } = await import(new URL('./matrix.mjs', import.meta.url).href)
+  const options = parseArgs(CI_ARGV).options
+  // `routes` gone => the harness would measure the priority subset (24 rows)
+  // and still exit 0. The production step must refuse instead.
+  const broken = { ...options }
+  delete broken.routes
+  await assert.rejects(
+    () => matrixCompare(broken, [], async () => ({ summary: { shots: [] } })),
+    /missing required field\(s\): routes/,
+    'a narrowed option bag must be refused, not measured'
+  )
+})
+
+test('condition 2 — the production compare step carries the admin sections', async () => {
+  const { matrixCompare, parseArgs } = await import(new URL('./matrix.mjs', import.meta.url).href)
+  const options = parseArgs(CI_ARGV).options
+  const extraRoutes = [{ id: 'admin-photos', path: '/admin/photos' }]
+  let received = null
+  await matrixCompare(options, extraRoutes, async bag => {
+    received = bag
+    return { summary: { shots: [] } }
+  })
+  assert.deepEqual(
+    received.extraRoutes,
+    extraRoutes,
+    'the generated admin sections must reach the comparison'
+  )
+})
+
+test('condition 3 — the prerender ladder classifies every state', async () => {
+  const { classifyPrerender } = await import(new URL('./matrix.mjs', import.meta.url).href)
+  const pass = classifyPrerender({ expectedRoutes: 9, rebuildPrerendered: 9 })
+  assert.equal(pass.verdict, 'pass')
+  assert.equal(pass.waived, false)
+
+  const fail = classifyPrerender({ expectedRoutes: 9, rebuildPrerendered: 3 })
+  assert.equal(fail.verdict, 'fail', 'partial prerendering is inconsistent output')
+  assert.equal(fail.waived, false)
+
+  const none = classifyPrerender({ expectedRoutes: 9, rebuildPrerendered: 0 })
+  assert.equal(none.verdict, 'pending')
+  assert.equal(
+    none.waived,
+    true,
+    'the pre-W8-1 pending state must be an EXPLICIT waiver, not a silent pass'
+  )
+  assert.match(none.waiverReason, /0 of 9/, 'the waiver must record what was measured')
+
+  const na = classifyPrerender({ expectedRoutes: 0, rebuildPrerendered: 0 })
+  assert.equal(na.verdict, 'not-applicable')
+  assert.equal(na.waived, false)
+})
+
+test('condition 3 — a failed prerender raises the job exit code', async () => {
+  const { matrixExitCode, classifyPrerender, parseArgs } = await import(
+    new URL('./matrix.mjs', import.meta.url).href
+  )
+  const options = parseArgs(CI_ARGV).options
+  const rows = [{ status: 'pass' }]
+  const fail = classifyPrerender({ expectedRoutes: 9, rebuildPrerendered: 3 })
+  assert.equal(
+    matrixExitCode(rows, 0, { prerender: fail, options }),
+    1,
+    'an inconsistent prerender output must not pass the job'
+  )
+  // A pending (waived) prerender must not redden today's CI, but it must not
+  // silently claim to have asserted anything either.
+  const pending = classifyPrerender({ expectedRoutes: 9, rebuildPrerendered: 0 })
+  assert.equal(matrixExitCode(rows, 0, { prerender: pending, options }), 0)
+  assert.equal(pending.waived, true)
+})
+
+test('condition 4 — an EMPTY matrix is not green', async () => {
+  const { assertRowsComplete } = await import(new URL('./matrix.mjs', import.meta.url).href)
+  assert.throws(
+    () => assertRowsComplete([], null),
+    /assembled 0 rows/,
+    'a run that measured nothing must be refused'
+  )
+  assert.throws(
+    () => assertRowsComplete([], []),
+    /assembled 0 rows/,
+    'an empty plan with no rows is still an empty measurement'
+  )
+  assert.throws(
+    () => assertRowsComplete([{ status: 'pass' }], ['a', 'b']),
+    /2 shots were planned/,
+    'a row count that contradicts the plan must be refused'
+  )
+  // A matching plan passes.
+  const rows = [{ status: 'pass' }]
+  assert.deepEqual(assertRowsComplete(rows, ['a']), rows)
+})
+
+test('condition 2 — dropping ANY required field from the bag is refused', async () => {
+  const { matrixCompare, REQUIRED_COMPARE_FIELDS, parseArgs } = await import(
+    new URL('./matrix.mjs', import.meta.url).href
+  )
+  const options = parseArgs(CI_ARGV).options
+  // The EXPECTED contract is written out here, independently of the exported
+  // list. Iterating the exported list would let a field dropped FROM that
+  // list go untested — the test would quietly stop covering it.
+  const EXPECTED_FIELDS = [
+    'routes',
+    'matrix',
+    'themes',
+    'wave',
+    'edgeTolerance',
+    'maxDiffRatio',
+    'pixelThreshold',
+    'adminLogin',
+    'outDir',
+    'extraRoutes',
+  ]
+  assert.deepEqual(
+    [...REQUIRED_COMPARE_FIELDS].sort(),
+    [...EXPECTED_FIELDS].sort(),
+    'the required-field contract must not lose a field — a dropped field is a silent measurement gap'
+  )
+  // Every field in the contract must be load-bearing: removing it from the
+  // bag has to make the production step refuse, not measure a narrower run.
+  for (const field of EXPECTED_FIELDS) {
+    if (field === 'extraRoutes') {
+      // `extraRoutes` is not a CLI option — it is the generated admin
+      // section list, passed separately. A malformed one must be refused.
+      await assert.rejects(
+        () => matrixCompare(options, 'not-an-array', async () => ({ summary: { shots: [] } })),
+        /missing required field\(s\): extraRoutes/,
+        'a malformed extraRoutes must be refused, not measured'
+      )
+      continue
+    }
+    const broken = { ...options }
+    delete broken[field]
+    await assert.rejects(
+      () => matrixCompare(broken, [], async () => ({ summary: { shots: [] } })),
+      new RegExp(`missing required field\\(s\\): ${field}`),
+      `dropping ${field} must be refused, not measured`
+    )
+  }
+})
+
+test('condition 2 — the mapping hop is the ONLY way to build the comparison bag', async () => {
+  const { compareOptions, parseArgs } = await import(new URL('./matrix.mjs', import.meta.url).href)
+  const options = parseArgs(CI_ARGV).options
+  const extraRoutes = [{ id: 'admin-photos', path: '/admin/photos' }]
+  const bag = compareOptions(options, extraRoutes)
+  // `compareOptions` must SPREAD the whole option bag, so a new option cannot
+  // be dropped by forgetting to list it. If it built an explicit list
+  // instead, `report` and every future field would silently vanish.
+  assert.equal(bag.report, true, 'the comparison must be told to write its report')
+  for (const key of Object.keys(options)) {
+    assert.ok(key in bag, `the mapping hop must carry ${key}`)
+  }
+  assert.deepEqual(bag.extraRoutes, extraRoutes)
+})
+
+function runMatrixCli({ argv, compareSource, fixtureSource }) {
+  const outDir = mkdtempSync(join(tmpdir(), 'matrix-cli-'))
+  const compareUrl = pathToFileURL(join(PARITY, 'compare.mjs')).href
+  const matrixUrl = pathToFileURL(join(PARITY, 'matrix.mjs')).href
+  // The CLI must write into the directory the parent reads back. Only the
+  // VALUE after `--out` is replaced; replacing every occurrence of the flag
+  // would also rewrite the value that follows it.
+  const cliArgv = []
+  for (let index = 0; index < argv.length; index += 1) {
+    if (argv[index] === '--out') {
+      cliArgv.push('--out', outDir)
+      index += 1
+      continue
+    }
+    cliArgv.push(argv[index])
+  }
+  // The driver runs as its own FILE. Inlining it as a template literal nests
+  // three levels of escaping, and a mistake there reads as a harness failure
+  // rather than as the defect under test.
+  const driverDir = mkdtempSync(join(tmpdir(), 'matrix-cli-driver-'))
+  const driverPath = join(driverDir, 'driver.mjs')
+  const driverSource = [
+    "import { registerHooks } from 'node:module'",
+    'let received',
+    'globalThis.fixtureCompare = bag => {',
+    '  received = bag',
+    `  return (${fixtureSource})(bag)`,
+    '}',
+    'const hook = registerHooks({',
+    '  load(url, context, next) {',
+    `    if (url !== ${JSON.stringify(compareUrl)}) return next(url, context)`,
+    `    return { shortCircuit: true, format: 'module', source: ${JSON.stringify(compareSource)} }`,
+    '  },',
+    '})',
+    "globalThis.fetch = async () => new Response('<html><head><title>ready</title></head><body></body></html>')",
+    'const captured = []',
+    'const realWrite = process.stderr.write.bind(process.stderr)',
+    'process.stderr.write = chunk => { captured.push(String(chunk)); return true }',
+    'try {',
+    `  const { main } = await import(${JSON.stringify(matrixUrl)})`,
+    `  const code = await main(${JSON.stringify(cliArgv)})`,
+    '  process.stderr.write = realWrite',
+    "  process.stdout.write('__CLI_RESULT__' + JSON.stringify({ code, received, stderr: captured.join('') }))",
+    '} finally {',
+    '  process.stderr.write = realWrite',
+    '  hook.deregister()',
+    '}',
+  ].join('\n')
+  writeFileSync(driverPath, driverSource)
+  let stdout = ''
+  let stderr = ''
+  try {
+    stdout = execFileSync(process.execPath, [driverPath], {
+      encoding: 'utf8',
+      stdio: ['ignore', 'pipe', 'pipe'],
+      timeout: 15_000,
+    })
+  } catch (error) {
+    stdout = error.stdout ?? ''
+    stderr = error.stderr ?? ''
+    throw new Error(`the CLI driver failed: ${stderr.slice(0, 800)}\n${stdout.slice(0, 400)}`)
+  } finally {
+    rmSync(driverDir, { recursive: true, force: true })
+  }
+  const marker = stdout.split('\n').find(line => line.startsWith('__CLI_RESULT__'))
+  assert.ok(marker, `the CLI must report its result (stdout: ${stdout.slice(0, 500)})`)
+  const cliResult = JSON.parse(marker.slice('__CLI_RESULT__'.length))
+  const summaryPath = join(outDir, 'matrix-summary.json')
+  const readmePath = join(outDir, 'README.md')
+  return {
+    code: cliResult.code,
+    received: cliResult.received,
+    stderr: cliResult.stderr ?? '',
+    summaryExists: existsSync(summaryPath),
+    readmeExists: existsSync(readmePath),
+    summary: existsSync(summaryPath) ? JSON.parse(readFileSync(summaryPath, 'utf8')) : null,
+    readme: existsSync(readmePath) ? readFileSync(readmePath, 'utf8') : null,
+  }
+}
+
+test('the matrix CLI forwards the override and publishes an unmeasured row as an error', () => {
+  const compareSource =
+    'export const SCHEMA_VERSION = 1; export const runCompare = bag => globalThis.fixtureCompare(bag);'
+  const planned = ['admin__desktop__dark', 'home__desktop__dark']
+  const fixtureSource = `bag => {
+    const planned = ${JSON.stringify(planned)}
+    const shot = (key, route, urlPath, legacyUrl, rebuildUrl) => ({
+      key,
+      route,
+      urlPath,
+      viewport: 'desktop',
+      theme: 'dark',
+      status: 'pass',
+      legacy: { finalUrl: legacyUrl },
+      rebuild: { finalUrl: rebuildUrl },
+    })
+    return {
+      exitCode: 0,
+      summary: {
+        generatedAt: '2026-01-01T00:00:00.000Z',
+        oracle: { legacyUrl: bag.legacyUrl, rebuildUrl: bag.rebuildUrl },
+        selection: { plannedShots: planned },
+        shots: [
+          shot(planned[0], 'admin', '/admin', null, bag.rebuildUrl + '/admin'),
+          shot(planned[1], 'home', '/', bag.legacyUrl + '/', bag.rebuildUrl + '/'),
+        ],
+      },
+    }
+  }`
+  const out = runMatrixCli({
+    argv: [
+      '--legacy-url',
+      'http://127.0.0.1:4174',
+      '--rebuild-url',
+      'http://127.0.0.1:4175',
+      '--supabase-url',
+      'https://override-check.supabase.co',
+      '--prerender',
+      '--out',
+      mkdtempSync(join(tmpdir(), 'matrix-cli-out-')),
+    ],
+    compareSource,
+    fixtureSource,
+  })
+  assert.ok(out.received, `the CLI must reach the comparison engine (stderr: ${out.stderr ?? ''})`)
+  assert.equal(out.received.supabaseUrl, 'https://override-check.supabase.co')
+  assert.equal(out.received.themes, null, 'omitting --themes uses the UI contract defaults')
+  assert.ok(out.received.extraRoutes.some(route => route.id === 'admin-photos'))
+  assert.equal(
+    out.code,
+    1,
+    `an unmeasured protected row must make the real CLI fail (stderr: ${out.stderr ?? ''})`
+  )
+  assert.ok(out.summary, 'the CLI must publish its summary')
+  assert.deepEqual(
+    out.summary.rows.map(row => row.key),
+    planned,
+    'the published receipt must retain the unmeasured row'
+  )
+  assert.equal(out.summary.counts.rows, out.summary.rows.length)
+  const [admin, home] = out.summary.rows
+  assert.equal(admin.status, 'error')
+  assert.equal(admin.captureClass, 'exempt')
+  assert.equal(admin.legacyFinalUrl, null)
+  assert.match(admin.exemptReason, /no final URL/)
+  assert.equal(home.status, 'pass')
+  // The published summary must carry the receipt and the prerender block.
+  assert.ok(
+    typeof out.summary.command === 'string' && out.summary.command.includes('--legacy-url'),
+    `the published summary must carry the receipt (got: ${out.summary.command})`
+  )
+  assert.ok(
+    out.summary.prerender && typeof out.summary.prerender.status === 'string',
+    'the published summary must carry the prerender block'
+  )
+  // The generated README must carry the same tally the summary does.
+  assert.ok(out.readme, 'the CLI must publish its README')
+  assert.match(
+    out.readme,
+    /of which 1 are exempt\/unmeasured admin rows/,
+    'the published README tally must treat exempt as a subset of error'
+  )
+})
+
+test('the matrix CLI refuses a run that measured nothing', () => {
+  const compareSource =
+    'export const SCHEMA_VERSION = 1; export const runCompare = bag => globalThis.fixtureCompare(bag);'
+  const fixtureSource = `() => ({
+    exitCode: 0,
+    summary: {
+      generatedAt: '2026-01-01T00:00:00.000Z',
+      oracle: { legacyUrl: 'http://127.0.0.1:4174', rebuildUrl: 'http://127.0.0.1:4175' },
+      selection: { plannedShots: [] },
+      shots: [],
+    },
+  })`
+  const out = runMatrixCli({
+    argv: [
+      '--legacy-url',
+      'http://127.0.0.1:4174',
+      '--rebuild-url',
+      'http://127.0.0.1:4175',
+      '--out',
+      mkdtempSync(join(tmpdir(), 'matrix-cli-empty-')),
+    ],
+    compareSource,
+    fixtureSource,
+  })
+  assert.notEqual(out.code, 0, 'a run that measured nothing must not exit green')
+  assert.equal(out.summaryExists, false, 'no summary may be published for an empty measurement')
+})
+
+test('the matrix CLI refuses a run whose row count contradicts the plan', () => {
+  const compareSource =
+    'export const SCHEMA_VERSION = 1; export const runCompare = bag => globalThis.fixtureCompare(bag);'
+  // Two shots were planned but only ONE was measured. A row count that
+  // contradicts the plan means shots were silently dropped, so the run must be
+  // refused rather than published as a narrower green matrix.
+  const fixtureSource = `bag => {
+    const shot = (key, route, urlPath, legacyUrl, rebuildUrl) => ({
+      key, route, urlPath, viewport: 'desktop', theme: 'dark', status: 'pass',
+      legacy: { finalUrl: legacyUrl }, rebuild: { finalUrl: rebuildUrl },
+    })
+    return {
+      exitCode: 0,
+      summary: {
+        generatedAt: '2026-01-01T00:00:00.000Z',
+        oracle: { legacyUrl: bag.legacyUrl, rebuildUrl: bag.rebuildUrl },
+        selection: { plannedShots: ['home__desktop__dark', 'film__desktop__dark'] },
+        shots: [
+          shot('home__desktop__dark', 'home', '/', bag.legacyUrl + '/', bag.rebuildUrl + '/'),
+        ],
+      },
+    }
+  }`
+  const out = runMatrixCli({
+    argv: [
+      '--legacy-url',
+      'http://127.0.0.1:4174',
+      '--rebuild-url',
+      'http://127.0.0.1:4175',
+      '--out',
+      mkdtempSync(join(tmpdir(), 'matrix-cli-plan-')),
+    ],
+    compareSource,
+    fixtureSource,
+  })
+  assert.notEqual(out.code, 0, 'a run that dropped a planned shot must not exit green')
+  assert.equal(out.summaryExists, false, 'no summary may be published for a partial run')
+})
+
+test('captureShot seeds both pages with the override and installs the clock before parking', async () => {
+  const { captureShot } = await import(new URL('./capture.mjs', import.meta.url).href)
+  const seeded = []
+  const clockEvents = []
+  const noop = async () => {}
+  const warmPage = {
+    async addInitScript(_script, { storageKey }) {
+      seeded.push(storageKey)
+    },
+    emulateMedia: noop,
+    route: noop,
+    clock: { install: noop },
+    goto: async () => ({ status: () => 200 }),
+    waitForLoadState: noop,
+    evaluate: async () => true,
+    waitForTimeout: noop,
+    close: noop,
+  }
+  const capturePage = {
+    on() {},
+    async addInitScript(_script, { storageKey }) {
+      seeded.push(storageKey)
+    },
+    emulateMedia: noop,
+    route: noop,
+    clock: {
+      async install({ time }) {
+        clockEvents.push(['install', time.toISOString()])
+      },
+      async pauseAt(time) {
+        clockEvents.push(['pauseAt', time.toISOString()])
+        throw new Error('stop after capturing the clock inputs')
+      },
+    },
+  }
+  const pages = [warmPage, capturePage]
+  const browser = {
+    newContext: async () => ({ newPage: async () => pages.shift(), close: noop }),
+  }
+  const result = await captureShot(browser, {
+    baseUrl: 'http://127.0.0.1:4174',
+    side: 'legacy',
+    route: { id: 'admin', auth: 'admin' },
+    routePath: '/admin',
+    viewport: { name: 'desktop', width: 1280, height: 720 },
+    theme: 'dark',
+    ui: { fixedNow: '2026-01-01T00:00:00.000Z' },
+    fixtures: { admin: { storageKey: 'fixture-key-must-not-be-used' } },
+    mediaStub: Buffer.alloc(0),
+    supabaseUrl: 'https://override-check.supabase.co',
+  })
+  assert.equal(result.error?.message, 'stop after capturing the clock inputs')
+  assert.deepEqual(seeded, ['sb-override-check-auth-token', 'sb-override-check-auth-token'])
+  assert.deepEqual(clockEvents, [
+    ['install', '2025-12-31T23:59:59.000Z'],
+    ['pauseAt', '2026-01-01T00:00:00.000Z'],
+  ])
+})
+
+test('the published README line is the one the summary builder writes', async () => {
+  const { matrixOverview, readmeTallyLine, tallyIsConsistent } = await import(
+    new URL('./matrix.mjs', import.meta.url).href
+  )
+  const rows = [
+    { status: 'pass', captureClass: 'captured' },
+    { status: 'error', captureClass: 'exempt' },
+  ]
+  const overview = matrixOverview(
+    { generatedAt: 'T', oracle: {}, tolerance: {}, determinism: {}, selection: {} },
+    rows,
+    { includeAdmin: false, prerender: null, outDir: 'out', options: null }
+  )
+  assert.ok(tallyIsConsistent(overview.counts), 'the summary tally must be internally consistent')
+  assert.equal(
+    overview.counts.error,
+    1,
+    'an exempt row is an error row, so it is counted once in error'
+  )
+  assert.equal(overview.counts.exempt, 1, 'and separately annotated as a subset')
+  const line = readmeTallyLine(overview.counts)
+  assert.match(line, /of which 1 are exempt\/unmeasured admin rows/)
 })

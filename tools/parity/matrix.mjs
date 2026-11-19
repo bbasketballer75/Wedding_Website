@@ -16,8 +16,11 @@
  *    flow with documented synthetic fixture credentials and records captured vs
  *    exempt admin rows with the reason;
  *  - `--prerender`: asserts the *served* (pre-hydration) HTML already carries
- *    per-route metadata on the rebuild side (Wave 8 W8-1), reporting
- *    pass/pending/fail without touching the parity verdict of the capture.
+ *    per-route metadata on the rebuild side (Wave 8 W8-1). It reports
+ *    pass/fail/pending/not-applicable and DOES affect the job's verdict: a
+ *    `fail` raises the exit code, and a `pending` result — the flag was
+ *    requested but nothing was measured — is recorded in the summary as an
+ *    explicit waiver rather than passing silently.
  *
  * It never edits contracts and never auto-allowlists: failures are reported to
  * the Lead with their first text diff / diff slice path.
@@ -258,6 +261,59 @@ async function fetchServedHtml(url) {
 }
 
 /**
+ * Classify the prerender check into a VERDICT.
+ *
+ * The verdict is what the job's exit code consumes, and it is deliberately
+ * separate from the raw counts so the ladder can be asserted on its own.
+ *
+ *  - `pass`           — every checked route was prerendered on the rebuild side.
+ *  - `fail`           — SOME routes were prerendered and some were not, i.e. the
+ *                       output is inconsistent. This raises the exit code.
+ *  - `pending`        — the flag was requested but NOTHING was prerendered,
+ *                       because W8-1 prerendering has not landed on the rebuild
+ *                       side yet. This is a KNOWN pre-W8-1 state, so it is
+ *                       recorded as an explicit WAIVER rather than silently
+ *                       passing: the summary says `waived: true` and names the
+ *                       reason, and the matrix still measures the hydrated DOM.
+ *  - `not-applicable` — the contract gave no per-route metadata to check.
+ *
+ * Exporting this makes the ladder testable without a live server, which is
+ * the point: `checkPrerender` was unexported and untested, so the half of the
+ * verdict that could report green while measuring nothing was unpinned.
+ */
+export function classifyPrerender({ expectedRoutes = 0, rebuildPrerendered = 0 }) {
+  if (expectedRoutes === 0) {
+    return {
+      status: 'not-applicable',
+      verdict: 'not-applicable',
+      waived: false,
+      note: 'The contract gives no per-route metadata to check.',
+    }
+  }
+  if (rebuildPrerendered === expectedRoutes) {
+    return { status: 'pass', verdict: 'pass', waived: false, note: null }
+  }
+  if (rebuildPrerendered > 0) {
+    return {
+      status: 'fail',
+      verdict: 'fail',
+      waived: false,
+      note: 'Some routes are prerendered and some are not — inconsistent prerender output.',
+    }
+  }
+  return {
+    status: 'pending',
+    verdict: 'pending',
+    waived: true,
+    waiverReason:
+      'W8-1 prerendering has not landed on the rebuild side yet: 0 of ' +
+      `${expectedRoutes} routes are prerendered. The prerender half of this gate ` +
+      'measured nothing, so it asserts nothing; the capture still asserts the hydrated DOM.',
+    note: 'No per-route served metadata found yet — W8-1 prerendering has not landed.',
+  }
+}
+
+/**
  * Assert the served HTML (before hydration) carries per-route metadata on the
  * rebuild side, for every route the SEO contract gives a per-route title.
  * Legacy is an SPA and is recorded for reference only.
@@ -296,21 +352,15 @@ async function checkPrerender({ routes, legacyUrl, rebuildUrl, guestToken }) {
     })
   }
   const rebuildDone = results.filter(result => result.rebuild.prerendered).length
-  let status = 'pending'
-  if (results.length === 0) status = 'not-applicable'
-  else if (rebuildDone === results.length) status = 'pass'
-  else if (rebuildDone > 0) status = 'fail'
-  return {
-    checkedAt: nowIso(),
-    status,
+  const verdict = classifyPrerender({
     expectedRoutes: results.length,
     rebuildPrerendered: rebuildDone,
-    note:
-      status === 'pending'
-        ? 'No per-route served metadata found yet — W8-1 prerendering has not landed. Captures still assert the hydrated DOM.'
-        : status === 'fail'
-          ? 'Some routes are prerendered and some are not — inconsistent prerender output.'
-          : null,
+  })
+  return {
+    checkedAt: nowIso(),
+    ...verdict,
+    expectedRoutes: results.length,
+    rebuildPrerendered: rebuildDone,
     routes: results,
   }
 }
@@ -391,11 +441,14 @@ export function describeInvocation(options) {
   if (passed.has('--wave')) flags.push(`--wave ${options.wave}`)
   if (passed.has('--out')) flags.push(`--out ${options.outDirArg ?? options.outDir}`)
   if (passed.has('--supabase-url')) flags.push(`--supabase-url ${options.supabaseUrl}`)
-  // `--admin-email` / `--admin-password` are deliberately NOT printed here.
-  // The receipt is published as an uploaded CI artifact, so naming a
-  // credential in it would leak it. `--no-admin-login` is a boolean switch
-  // with no secret value and IS printed, so the receipt still says whether
-  // the app's own sign-in flow was attempted.
+  if (passed.has('--json')) flags.push('--json')
+  // `--admin-email` and `--admin-password` are deliberately NOT printed here:
+  // the receipt is published as an uploaded CI artifact, so naming a credential
+  // in it would leak it. They are the ONLY flags the receipt omits, and they
+  // are omitted because they carry a secret — not because they do not change
+  // the comparison. `--no-admin-login` is a boolean switch with no secret value
+  // and IS printed, so the receipt still says whether the app's own sign-in
+  // flow was attempted.
   if (passed.has('--no-admin-login')) flags.push('--no-admin-login')
   return (
     `node tools/parity/matrix.mjs --legacy-url ${options.legacyUrl} ` +
@@ -422,6 +475,85 @@ export function compareOptions(options, extraRoutes = []) {
     report: true,
   }
 }
+
+/**
+ * The matrix's comparison step — the PRODUCTION path.
+ *
+ * Exported so the option bag handed to the comparison harness can be asserted
+ * on the value that is actually passed. Calling `runCompare(options)` directly
+ * bypasses the mapping hop, and the harness then measures a narrower matrix
+ * (or an unauthenticated admin run) while the job still exits 0.
+ */
+export async function matrixCompare(options, extraRoutes = [], compare = runCompare) {
+  const bag = compareOptions(options, extraRoutes)
+  const missing = REQUIRED_COMPARE_FIELDS.filter(field => {
+    const value = bag[field]
+    // Null deliberately selects the themes declared by the UI contract.
+    if (value === undefined || (value === null && field !== 'themes')) return true
+    if (field === 'extraRoutes') return !Array.isArray(value)
+    return false
+  })
+  if (missing.length > 0) {
+    throw new Error(
+      `parity: the comparison option bag is missing required field(s): ${missing.join(', ')}`
+    )
+  }
+  return compare(bag)
+}
+
+/**
+ * Refuse a run that measured nothing, or measured something other than what
+ * was planned.
+ *
+ * Exported so the guard can be asserted on its behaviour. Publishing
+ * "rows 0" and exiting 0 is a green verdict on an empty measurement, and a
+ * row count that contradicts the plan means some shots were silently
+ * dropped.
+ */
+export function assertRowsComplete(rows, plannedShots = null) {
+  if (!Array.isArray(rows) || rows.length === 0) {
+    throw new Error('parity: the matrix assembled 0 rows — nothing was measured')
+  }
+  if (Array.isArray(plannedShots) && plannedShots.length !== rows.length) {
+    throw new Error(
+      `parity: the matrix assembled ${rows.length} rows but ${plannedShots.length} shots were planned`
+    )
+  }
+  return rows
+}
+
+/**
+ * The option bag the comparison harness MUST receive.
+ *
+ * This is the effective contract between the matrix and `runCompare`, and it
+ * is asserted on the VALUE rather than on the source text. The fields listed
+ * here are the ones whose absence changes what is MEASURED:
+ *
+ *  - `routes` / `matrix` / `themes` select which shots exist at all. Dropping
+ *    `routes` silently narrows a run from the full matrix to the priority
+ *    subset — a 24-row run that exits 0 and looks green.
+ *  - `wave` selects the wave's route set.
+ *  - `edgeTolerance` / `maxDiffRatio` / `pixelThreshold` are the tolerances.
+ *  - `adminLogin` carries the app's own sign-in flow; dropping it leaves the
+ *    admin rows unauthenticated (and therefore exempt/error).
+ *  - `outDir` is where the evidence is written.
+ *  - `extraRoutes` are the generated admin sections.
+ *
+ * A field dropped from `compareOptions` is missing for the whole capture, so
+ * this list is asserted directly rather than inferred.
+ */
+export const REQUIRED_COMPARE_FIELDS = Object.freeze([
+  'routes',
+  'matrix',
+  'themes',
+  'wave',
+  'edgeTolerance',
+  'maxDiffRatio',
+  'pixelThreshold',
+  'adminLogin',
+  'outDir',
+  'extraRoutes',
+])
 
 function firstFailureDetail(shot) {
   if (shot.textDiff?.status === 'fail') {
@@ -569,13 +701,27 @@ function markdownTable(rows) {
   return header + lines.join('\n')
 }
 
-function matrixOverview(summary, rows, { includeAdmin, prerender, outDir }) {
+/**
+ * Build the machine-readable matrix summary — the artifact CI publishes.
+ *
+ * Exported so the receipt and the prerender block are asserted on the VALUE
+ * the artifact actually carries. Assigning `overview.command` at the call
+ * site left it unpinned: deleting that assignment kept the suite green while
+ * the uploaded artifact lost its receipt. Building the whole summary in one
+ * place means the receipt is part of what the function returns.
+ */
+export function matrixOverview(summary, rows, { includeAdmin, prerender, outDir, options }) {
   const counts = {
     rows: rows.length,
     pass: rows.filter(row => row.status === 'pass').length,
     allowed: rows.filter(row => row.status === 'allowed').length,
     fail: rows.filter(row => row.status === 'fail').length,
     error: rows.filter(row => row.status === 'error').length,
+    // Exempt rows are ALSO error rows (an unmeasured row is reported as an
+    // error, never as a pass), so the two buckets OVERLAP: an exempt row is
+    // counted in both, and pass + allowed + fail + error + exempt exceeds the
+    // row count. exempt is therefore a SUBSET annotation of error, not a
+    // separate bucket, and the tally line reports it that way.
     exempt: rows.filter(row => row.captureClass === 'exempt').length,
     textDiffRows: rows.filter(row => row.textDiffs > 0).length,
     changedPixels: rows.reduce((sum, row) => sum + (row.changedPixels ?? 0), 0),
@@ -608,6 +754,8 @@ function matrixOverview(summary, rows, { includeAdmin, prerender, outDir }) {
         .map(row => ({ key: row.key, reason: row.exemptReason })),
     },
     prerender: prerender ?? null,
+    // The invocation receipt travels WITH the summary it describes.
+    command: options ? describeInvocation(options) : null,
     rows,
     compare: {
       summaryPath: path.join(path.relative(ROOT, outDir).split(path.sep).join('/'), 'summary.json'),
@@ -616,6 +764,33 @@ function matrixOverview(summary, rows, { includeAdmin, prerender, outDir }) {
     tolerance: summary.tolerance,
     determinism: summary.determinism,
   }
+}
+
+/**
+ * The published tally must be internally consistent.
+ *
+ * Every `exempt` row is ALSO an `error` row, so the two are not disjoint
+ * buckets. A summary that lists them as two peers makes
+ * `pass + allowed + fail + error + exempt` exceed the row count, so a reader
+ * who sums the published line is reading a number about a set that does not
+ * exist. Exempt is a SUBSET annotation of error.
+ */
+export function tallyIsConsistent(counts) {
+  const buckets = counts.pass + counts.allowed + counts.fail + counts.error
+  if (buckets !== counts.rows) return false
+  return counts.exempt <= counts.error
+}
+
+/**
+ * The published README tally line.
+ *
+ * Exported so the ARTIFACT a reviewer reads is asserted on its text. The
+ * stdout tally was fixed while the generated README kept listing `exempt` as a
+ * fifth peer bucket, so the published line still exceeded the row count.
+ */
+export function readmeTallyLine(counts) {
+  const suffix = counts.exempt ? `, of which ${counts.exempt} are exempt/unmeasured admin rows` : ''
+  return `- rows: ${counts.rows} (${counts.pass} pass, ${counts.allowed} allowed, ${counts.fail} fail, ${counts.error} error${suffix})`
 }
 
 function outputReadme(overview, options) {
@@ -629,7 +804,7 @@ Generated by \`tools/parity/matrix.mjs\` — do not hand-edit; re-run the matrix
 - oracle (legacy): ${overview.oracle.legacyUrl}
 - rebuild: ${overview.oracle.rebuildUrl}
 - wave: ${options.wave} · tolerances: maxDiffRatio=${options.maxDiffRatio}, pixelThreshold=${options.pixelThreshold}, edgeTolerance=${options.edgeTolerance}
-- rows: ${counts.rows} (${counts.pass} pass, ${counts.allowed} allowed, ${counts.fail} fail, ${counts.error} error, ${counts.exempt} exempt admin rows)
+- rows: ${readmeTallyLine(counts).slice(2)}
 
 ## Files
 
@@ -709,19 +884,22 @@ async function runMatrix(options) {
     )
   }
 
-  const compareResult = await runCompare(compareOptions(options, extraRoutes))
+  const compareResult = await matrixCompare(options, extraRoutes)
 
   const rows = assembleRows(compareResult.summary, {
     includeAdmin: options.includeAdmin,
     routesContract,
     extraRoutes,
   })
+  // A run that assembled no rows measured nothing. Publishing "rows 0" and
+  // exiting 0 is a green verdict on an empty measurement.
+  assertRowsComplete(rows, compareResult.summary?.selection?.plannedShots)
   const overview = matrixOverview(compareResult.summary, rows, {
     includeAdmin: options.includeAdmin,
     prerender,
     outDir: options.outDir,
+    options,
   })
-  overview.command = describeInvocation(options)
   overview.durationMs = Date.now() - startedMs
 
   const summaryPath = path.join(options.outDir, 'matrix-summary.json')
@@ -734,7 +912,10 @@ async function runMatrix(options) {
       `Oracle: ${options.legacyUrl} → rebuild: ${options.rebuildUrl} (wave ${options.wave})\n\n` +
       `${markdownTable(rows)}\n\n${
         prerender
-          ? `Prerender (W8-1): ${prerender.status} — ${prerender.rebuildPrerendered}/${prerender.expectedRoutes} rebuild routes served per-route metadata.\n\n`
+          ? [
+              `Prerender (W8-1): ${prerender.status} — ${prerender.rebuildPrerendered}/${prerender.expectedRoutes} rebuild routes served per-route metadata.\n\n`,
+              prerender.waived ? `> **Prerender gate waived** — ${prerender.waiverReason}\n\n` : '',
+            ].join('')
           : ''
       }${
         overview.admin.exempt.length > 0
@@ -773,8 +954,14 @@ async function runMatrix(options) {
   }
   log.out('')
   log.out(
-    `Matrix: ${overview.counts.rows} rows — ${overview.counts.pass} pass, ${overview.counts.allowed} allowed, ` +
-      `${overview.counts.fail} fail, ${overview.counts.error} error, ${overview.counts.exempt} exempt`
+    [
+      `Matrix: ${overview.counts.rows} rows — ${overview.counts.pass} pass,`,
+      `${overview.counts.allowed} allowed, ${overview.counts.fail} fail,`,
+      `${overview.counts.error} error`,
+      overview.counts.exempt
+        ? ` (${overview.counts.exempt} of the errors are exempt/unmeasured rows)`
+        : '',
+    ].join(' ')
   )
   log.out(`Matrix summary: ${summaryPath}`)
   log.out(`Markdown:       ${matrixMarkdownPath}`)
@@ -810,7 +997,7 @@ export function exitCodeForRows(rows, exitCode = 0) {
  */
 export function matrixExitCode(rows, exitCode = 0, { prerender = null, options = null } = {}) {
   let code = exitCodeForRows(rows, exitCode)
-  if (options?.prerender && prerender?.status === 'fail') code = Math.max(code, 1)
+  if (options?.prerender && prerender?.verdict === 'fail') code = Math.max(code, 1)
   return code
 }
 
