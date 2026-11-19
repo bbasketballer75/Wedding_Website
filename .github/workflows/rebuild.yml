@@ -216,7 +216,11 @@ jobs:
       - name: Guard — harness must exist before servers start
         id: harness
         run: |
-          if [ -f tools/parity/compare.mjs ]; then
+          # The signed-off baseline invokes `matrix.mjs`, which is the harness
+          # this job actually runs. Gating on `compare.mjs` was legacy
+          # coupling: if that file were ever removed, the job would skip
+          # silently while still reporting green.
+          if [ -f tools/parity/matrix.mjs ]; then
             echo "ready=true" >> "$GITHUB_OUTPUT"
           else
             echo "ready=false" >> "$GITHUB_OUTPUT"
