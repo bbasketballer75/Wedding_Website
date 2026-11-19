@@ -180,9 +180,12 @@ test('the guard rejects a bad matrix flag and a bad selector', () => {
     assert.throws(() => run(), /unknown route "priortiy"/)
 
     // A compare.mjs invocation with an unknown flag must be rejected too.
+    // Target the INVOCATION line specifically: `matrix.mjs` now also appears
+    // in the job's readiness guard, and a bare first-occurrence replace would
+    // rewrite that instead and leave the invocation valid.
     writeFileSync(
       join(scratch, 'rebuild.yml'),
-      original.replace('tools/parity/matrix.mjs', 'tools/parity/compare.mjs'),
+      original.replace('node tools/parity/matrix.mjs', 'node tools/parity/compare.mjs'),
       'utf8'
     )
     assert.throws(() => run(), /unknown argument "--no-admin"/)
@@ -192,6 +195,23 @@ test('the guard rejects a bad matrix flag and a bad selector', () => {
 
   // The repo's workflow file must be byte-identical to how it started.
   assert.equal(readFileSync(REBUILD_WORKFLOW, 'utf8'), original)
+})
+
+test("the parity job's readiness guard checks the harness it actually runs", () => {
+  const workflow = readFileSync(REBUILD_WORKFLOW, 'utf8')
+  // The signed-off baseline invokes `matrix.mjs`. Gating readiness on
+  // `compare.mjs` was legacy coupling: if that file were removed the job
+  // would skip silently and still report green.
+  assert.match(
+    workflow,
+    /if \[ -f tools\/parity\/matrix\.mjs \]/,
+    'the readiness guard must check matrix.mjs, the harness the job invokes'
+  )
+  assert.doesNotMatch(
+    workflow,
+    /if \[ -f tools\/parity\/compare\.mjs \]/,
+    'the readiness guard must not gate on compare.mjs'
+  )
 })
 
 test('every pauseAt jumps forward from its install, so the capture clock cannot stall', () => {
