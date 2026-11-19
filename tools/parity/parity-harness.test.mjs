@@ -637,6 +637,63 @@ test('the receipt names the build-URL override but never a credential', async ()
     noLogin.includes('--no-admin-login'),
     'the receipt must record that the sign-in flow was disabled'
   )
+  // `--json` changes what the harness prints, so it belongs in the receipt.
+  const withJson = describeInvocation(parseArgs([...base, '--json']).options)
+  assert.ok(withJson.includes('--json'), 'the receipt must name --json when it was passed')
+})
+
+test('the receipt records every flag except the two that carry a secret', async () => {
+  const { describeInvocation, parseArgs } = await import(
+    new URL('./matrix.mjs', import.meta.url).href
+  )
+  // The contract: the receipt names every flag the invocation used, EXCEPT the
+  // two that carry a credential (publishing the receipt would leak them).
+  const all = [
+    '--legacy-url',
+    'http://127.0.0.1:4174',
+    '--rebuild-url',
+    'http://127.0.0.1:4175',
+    '--routes',
+    'all',
+    '--matrix',
+    'all',
+    '--themes',
+    'dark,light',
+    '--edge-tolerance',
+    '1',
+    '--no-admin',
+    '--prerender',
+    '--wave',
+    '9',
+    '--out',
+    'tools/parity/output/ci',
+    '--json',
+    '--no-admin-login',
+    '--admin-email',
+    'admin@test.wedding',
+    '--admin-password',
+    'hunter2',
+  ]
+  const text = describeInvocation(parseArgs(all).options)
+  const omitted = ['--admin-email', '--admin-password']
+  for (const flag of omitted) {
+    assert.ok(!text.includes(flag), `${flag} carries a secret and must not be in the receipt`)
+  }
+  // Everything else that was passed must be named.
+  for (const flag of [
+    '--routes all',
+    '--matrix all',
+    '--themes dark,light',
+    '--edge-tolerance 1',
+    '--no-admin',
+    '--prerender',
+    '--wave 9',
+    '--out tools/parity/output/ci',
+    '--json',
+    '--no-admin-login',
+  ]) {
+    assert.ok(text.includes(flag), `the receipt must record ${flag} (got: ${text})`)
+  }
 })
 
 test('the workflow guard does not need the native image library', () => {
@@ -892,7 +949,7 @@ test('the production exit-code wiring raises on an unmeasured row', async () => 
   )
   assert.equal(
     matrixExitCode([{ status: 'pass' }], 0, {
-      prerender: { status: 'fail' },
+      prerender: { status: 'fail', verdict: 'fail' },
       options: { prerender: true },
     }),
     1,
@@ -947,4 +1004,260 @@ test('the capture-side and storage-key hops carry the override', async () => {
     if (saved === undefined) delete process.env.VITE_SUPABASE_URL
     else process.env.VITE_SUPABASE_URL = saved
   }
+})
+
+/* ------------------------------------------------------------------ */
+/* Round 6 — the sixth reviewer's five conditions                      */
+/* ------------------------------------------------------------------ */
+
+const CI_ARGV = [
+  '--legacy-url',
+  'http://127.0.0.1:4174',
+  '--rebuild-url',
+  'http://127.0.0.1:4175',
+  '--routes',
+  'all',
+  '--matrix',
+  'all',
+  '--themes',
+  'dark,light',
+  '--edge-tolerance',
+  '1',
+  '--no-admin',
+  '--prerender',
+  '--wave',
+  '9',
+  '--out',
+  'tools/parity/output/ci',
+]
+
+test('condition 1 — the published summary CARRIES the invocation receipt', async () => {
+  const { matrixOverview, describeInvocation, parseArgs } = await import(
+    new URL('./matrix.mjs', import.meta.url).href
+  )
+  const options = parseArgs(CI_ARGV).options
+  const overview = matrixOverview(
+    { generatedAt: 'T', oracle: {}, tolerance: {}, determinism: {}, selection: {} },
+    [],
+    { includeAdmin: false, prerender: null, outDir: 'out', options }
+  )
+  assert.equal(
+    overview.command,
+    describeInvocation(options),
+    'the summary artifact must carry the receipt of the invocation that produced it'
+  )
+  assert.ok(
+    overview.command.includes('--out tools/parity/output/ci'),
+    `the receipt must name the output dir (got: ${overview.command})`
+  )
+  assert.ok(
+    !overview.command.includes('--max-diff-ratio'),
+    'the receipt must not claim a flag the invocation never passed'
+  )
+})
+
+test('condition 1 — the summary carries the prerender block it was given', async () => {
+  const { matrixOverview, parseArgs } = await import(new URL('./matrix.mjs', import.meta.url).href)
+  const options = parseArgs(CI_ARGV).options
+  const prerender = {
+    status: 'pending',
+    verdict: 'pending',
+    waived: true,
+    waiverReason: 'W8-1 prerendering has not landed',
+    expectedRoutes: 9,
+    rebuildPrerendered: 0,
+  }
+  const overview = matrixOverview(
+    { generatedAt: 'T', oracle: {}, tolerance: {}, determinism: {}, selection: {} },
+    [],
+    { includeAdmin: false, prerender, outDir: 'out', options }
+  )
+  assert.deepEqual(
+    overview.prerender,
+    prerender,
+    'the published summary must carry the prerender block verbatim'
+  )
+})
+
+test('condition 2 — the comparison receives every field its measurement depends on', async () => {
+  const { matrixCompare, REQUIRED_COMPARE_FIELDS, parseArgs } = await import(
+    new URL('./matrix.mjs', import.meta.url).href
+  )
+  const options = parseArgs(CI_ARGV).options
+  let received = null
+  await matrixCompare(options, [], async bag => {
+    received = bag
+    return { summary: { shots: [] } }
+  })
+  assert.ok(received, 'the comparison must be invoked')
+  for (const field of REQUIRED_COMPARE_FIELDS) {
+    assert.ok(
+      received[field] !== undefined && received[field] !== null,
+      `the comparison option bag must carry ${field} (got: ${received[field]})`
+    )
+  }
+  assert.equal(received.routes, 'all', 'routes selects the full matrix')
+  assert.equal(received.matrix, 'all', 'matrix selects the full matrix')
+  assert.equal(received.themes, 'dark,light')
+  assert.equal(received.wave, 9)
+  assert.equal(received.edgeTolerance, 1)
+  assert.ok(received.adminLogin, 'the sign-in flow must reach the comparison')
+})
+
+test('condition 2 — the production compare step FAILS CLOSED on a dropped field', async () => {
+  const { matrixCompare, parseArgs } = await import(new URL('./matrix.mjs', import.meta.url).href)
+  const options = parseArgs(CI_ARGV).options
+  // `routes` gone => the harness would measure the priority subset (24 rows)
+  // and still exit 0. The production step must refuse instead.
+  const broken = { ...options }
+  delete broken.routes
+  await assert.rejects(
+    () => matrixCompare(broken, [], async () => ({ summary: { shots: [] } })),
+    /missing required field\(s\): routes/,
+    'a narrowed option bag must be refused, not measured'
+  )
+})
+
+test('condition 2 — the production compare step carries the admin sections', async () => {
+  const { matrixCompare, parseArgs } = await import(new URL('./matrix.mjs', import.meta.url).href)
+  const options = parseArgs(CI_ARGV).options
+  const extraRoutes = [{ id: 'admin-photos', path: '/admin/photos' }]
+  let received = null
+  await matrixCompare(options, extraRoutes, async bag => {
+    received = bag
+    return { summary: { shots: [] } }
+  })
+  assert.deepEqual(
+    received.extraRoutes,
+    extraRoutes,
+    'the generated admin sections must reach the comparison'
+  )
+})
+
+test('condition 3 — the prerender ladder classifies every state', async () => {
+  const { classifyPrerender } = await import(new URL('./matrix.mjs', import.meta.url).href)
+  const pass = classifyPrerender({ expectedRoutes: 9, rebuildPrerendered: 9 })
+  assert.equal(pass.verdict, 'pass')
+  assert.equal(pass.waived, false)
+
+  const fail = classifyPrerender({ expectedRoutes: 9, rebuildPrerendered: 3 })
+  assert.equal(fail.verdict, 'fail', 'partial prerendering is inconsistent output')
+  assert.equal(fail.waived, false)
+
+  const none = classifyPrerender({ expectedRoutes: 9, rebuildPrerendered: 0 })
+  assert.equal(none.verdict, 'pending')
+  assert.equal(
+    none.waived,
+    true,
+    'the pre-W8-1 pending state must be an EXPLICIT waiver, not a silent pass'
+  )
+  assert.match(none.waiverReason, /0 of 9/, 'the waiver must record what was measured')
+
+  const na = classifyPrerender({ expectedRoutes: 0, rebuildPrerendered: 0 })
+  assert.equal(na.verdict, 'not-applicable')
+  assert.equal(na.waived, false)
+})
+
+test('condition 3 — a failed prerender raises the job exit code', async () => {
+  const { matrixExitCode, classifyPrerender, parseArgs } = await import(
+    new URL('./matrix.mjs', import.meta.url).href
+  )
+  const options = parseArgs(CI_ARGV).options
+  const rows = [{ status: 'pass' }]
+  const fail = classifyPrerender({ expectedRoutes: 9, rebuildPrerendered: 3 })
+  assert.equal(
+    matrixExitCode(rows, 0, { prerender: fail, options }),
+    1,
+    'an inconsistent prerender output must not pass the job'
+  )
+  // A pending (waived) prerender must not redden today's CI, but it must not
+  // silently claim to have asserted anything either.
+  const pending = classifyPrerender({ expectedRoutes: 9, rebuildPrerendered: 0 })
+  assert.equal(matrixExitCode(rows, 0, { prerender: pending, options }), 0)
+  assert.equal(pending.waived, true)
+})
+
+test('condition 4 — an EMPTY matrix is not green', async () => {
+  const { assertRowsComplete } = await import(new URL('./matrix.mjs', import.meta.url).href)
+  assert.throws(
+    () => assertRowsComplete([], null),
+    /assembled 0 rows/,
+    'a run that measured nothing must be refused'
+  )
+  assert.throws(
+    () => assertRowsComplete([], []),
+    /assembled 0 rows/,
+    'an empty plan with no rows is still an empty measurement'
+  )
+  assert.throws(
+    () => assertRowsComplete([{ status: 'pass' }], ['a', 'b']),
+    /2 shots were planned/,
+    'a row count that contradicts the plan must be refused'
+  )
+  // A matching plan passes.
+  const rows = [{ status: 'pass' }]
+  assert.deepEqual(assertRowsComplete(rows, ['a']), rows)
+})
+
+test('condition 2 — dropping ANY required field from the bag is refused', async () => {
+  const { matrixCompare, REQUIRED_COMPARE_FIELDS, parseArgs } = await import(
+    new URL('./matrix.mjs', import.meta.url).href
+  )
+  const options = parseArgs(CI_ARGV).options
+  // The EXPECTED contract is written out here, independently of the exported
+  // list. Iterating the exported list would let a field dropped FROM that
+  // list go untested — the test would quietly stop covering it.
+  const EXPECTED_FIELDS = [
+    'routes',
+    'matrix',
+    'themes',
+    'wave',
+    'edgeTolerance',
+    'maxDiffRatio',
+    'pixelThreshold',
+    'adminLogin',
+    'outDir',
+    'extraRoutes',
+  ]
+  assert.deepEqual(
+    [...REQUIRED_COMPARE_FIELDS].sort(),
+    [...EXPECTED_FIELDS].sort(),
+    'the required-field contract must not lose a field — a dropped field is a silent measurement gap'
+  )
+  // Every field in the contract must be load-bearing: removing it from the
+  // bag has to make the production step refuse, not measure a narrower run.
+  for (const field of EXPECTED_FIELDS) {
+    if (field === 'extraRoutes') {
+      // `extraRoutes` is not a CLI option — it is the generated admin
+      // section list, passed separately. A malformed one must be refused.
+      await assert.rejects(
+        () => matrixCompare(options, 'not-an-array', async () => ({ summary: { shots: [] } })),
+        /missing required field\(s\): extraRoutes/,
+        'a malformed extraRoutes must be refused, not measured'
+      )
+      continue
+    }
+    const broken = { ...options }
+    delete broken[field]
+    await assert.rejects(
+      () => matrixCompare(broken, [], async () => ({ summary: { shots: [] } })),
+      new RegExp(`missing required field\\(s\\): ${field}`),
+      `dropping ${field} must be refused, not measured`
+    )
+  }
+})
+
+test('condition 2 — the mapping hop is the ONLY way to build the comparison bag', async () => {
+  const { compareOptions, parseArgs } = await import(new URL('./matrix.mjs', import.meta.url).href)
+  const options = parseArgs(CI_ARGV).options
+  const extraRoutes = [{ id: 'admin-photos', path: '/admin/photos' }]
+  const bag = compareOptions(options, extraRoutes)
+  // `compareOptions` must SPREAD the whole option bag, so a new option cannot
+  // be dropped by forgetting to list it. If it built an explicit list
+  // instead, `report` and every future field would silently vanish.
+  assert.equal(bag.report, true, 'the comparison must be told to write its report')
+  for (const key of Object.keys(options)) {
+    assert.ok(key in bag, `the mapping hop must carry ${key}`)
+  }
+  assert.deepEqual(bag.extraRoutes, extraRoutes)
 })
