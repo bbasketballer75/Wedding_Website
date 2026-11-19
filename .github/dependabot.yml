@@ -51,11 +51,13 @@ updates:
     ignore:
       - dependency-name: "github/codeql-action"
   # The rebuild is a separate npm package (rebuild/package.json). Dependabot
-  # security updates auto-discover it; the minimatch advisory is only reachable
-  # through typescript-eslint in the dev lint stack (never shipped in the
-  # browser bundle) and has no patched version compatible with the current
-  # typescript-eslint range, so the update attempt fails. Tracked for the next
-  # lint-stack upgrade instead of failing the Dependabot updater weekly.
+  # security updates auto-discover it. The minimatch advisory
+  # (GHSA-g3hv-75wg-m249, vulnerable >= 7.0.0 < 11.0.1) is reachable only
+  # through typescript-eslint in the dev lint stack and is never shipped in the
+  # browser bundle. It is now cleared at the dependency path instead of being
+  # ignored: typescript-eslint 8.73.0 requires minimatch ^11.0.1, which is
+  # above the vulnerable range, so the advisory no longer applies to this
+  # package and there is nothing left for the updater to fail on.
   - package-ecosystem: "npm"
     directory: "/rebuild"
     schedule:
@@ -68,5 +70,3 @@ updates:
       - "dependencies"
     commit-message:
       prefix: "chore(deps-rebuild)"
-    ignore:
-      - dependency-name: "minimatch"
