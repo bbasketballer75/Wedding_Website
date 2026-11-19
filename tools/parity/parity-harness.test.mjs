@@ -197,6 +197,63 @@ test('the guard rejects a bad matrix flag and a bad selector', () => {
   assert.equal(readFileSync(REBUILD_WORKFLOW, 'utf8'), original)
 })
 
+test('the production path refuses to publish a summary whose tally does not add up', () => {
+  const compareSource =
+    'export const SCHEMA_VERSION = 1; export const runCompare = bag => globalThis.fixtureCompare(bag);'
+  // A row whose status is not one of the four tally buckets makes
+  // pass + allowed + fail + error come to LESS than the row count. The
+  // summary must then be REFUSED rather than published: an artifact whose
+  // buckets do not sum to its own row count is a claim about a set that
+  // does not exist, and it is the artifact a reviewer reads.
+  const fixtureSource = `bag => ({
+    exitCode: 0,
+    summary: {
+      generatedAt: '2026-01-01T00:00:00.000Z',
+      oracle: { legacyUrl: bag.legacyUrl, rebuildUrl: bag.rebuildUrl },
+      selection: { plannedShots: ['home__desktop__dark', 'home__desktop__light'] },
+      shots: [
+        {
+          key: 'home__desktop__dark', route: 'home', urlPath: '/', viewport: 'desktop', theme: 'dark',
+          status: 'pass',
+          legacy: { finalUrl: bag.legacyUrl + '/' }, rebuild: { finalUrl: bag.rebuildUrl + '/' },
+        },
+        {
+          key: 'home__desktop__light', route: 'home', urlPath: '/', viewport: 'desktop', theme: 'light',
+          status: 'not-a-bucket',
+          legacy: { finalUrl: bag.legacyUrl + '/' }, rebuild: { finalUrl: bag.rebuildUrl + '/' },
+        },
+      ],
+    },
+  })`
+  const out = runMatrixCli({
+    argv: [
+      '--legacy-url',
+      'http://127.0.0.1:4174',
+      '--rebuild-url',
+      'http://127.0.0.1:4175',
+      '--out',
+      mkdtempSync(join(tmpdir(), 'matrix-tally-')),
+    ],
+    compareSource,
+    fixtureSource,
+  })
+  assert.notEqual(
+    out.exitStatus,
+    0,
+    'an inconsistent tally must fail the run, not publish a summary that does not add up'
+  )
+  assert.equal(
+    out.summaryExists,
+    false,
+    'no summary may be published when the tally does not sum to the row count'
+  )
+  assert.match(
+    out.stderr,
+    /tally is inconsistent/,
+    `the refusal must say why (stderr: ${out.stderr ?? ''})`
+  )
+})
+
 test("the parity job's readiness guard checks the harness it actually runs", () => {
   const workflow = readFileSync(REBUILD_WORKFLOW, 'utf8')
   // The signed-off baseline invokes `matrix.mjs`. Gating readiness on
@@ -1285,7 +1342,8 @@ test('condition 2 — the mapping hop is the ONLY way to build the comparison ba
 function runMatrixCli({ argv, compareSource, fixtureSource }) {
   const outDir = mkdtempSync(join(tmpdir(), 'matrix-cli-'))
   const compareUrl = pathToFileURL(join(PARITY, 'compare.mjs')).href
-  const matrixUrl = pathToFileURL(join(PARITY, 'matrix.mjs')).href
+  const matrixPath = join(PARITY, 'matrix.mjs')
+  const matrixUrl = pathToFileURL(matrixPath).href
   // The CLI must write into the directory the parent reads back. Only the
   // VALUE after `--out` is replaced; replacing every occurrence of the flag
   // would also rewrite the value that follows it.
@@ -1308,31 +1366,43 @@ function runMatrixCli({ argv, compareSource, fixtureSource }) {
     'let received',
     'globalThis.fixtureCompare = bag => {',
     '  received = bag',
-    `  return (${fixtureSource})(bag)`,
+    '  return globalThis.fixtureResult(bag)',
     '}',
+    // The fixture is defined in the PARENT, so it must be handed to the
+    // driver explicitly — a function cannot cross a process boundary.
+    `globalThis.fixtureResult = ${fixtureSource}`,
     'const hook = registerHooks({',
     '  load(url, context, next) {',
     `    if (url !== ${JSON.stringify(compareUrl)}) return next(url, context)`,
-    `    return { shortCircuit: true, format: 'module', source: ${JSON.stringify(compareSource)} }`,
+    '    return {',
+    "      shortCircuit: true, format: 'module',",
+    `      source: ${JSON.stringify(compareSource)},`,
+    '    }',
     '  },',
     '})',
     "globalThis.fetch = async () => new Response('<html><head><title>ready</title></head><body></body></html>')",
     'const captured = []',
     'const realWrite = process.stderr.write.bind(process.stderr)',
     'process.stderr.write = chunk => { captured.push(String(chunk)); return true }',
+    // Run matrix.mjs AS A FILE, with argv shaped so its own
+    // `invokedDirectly` wrapper executes. Importing it and calling main()
+    // would bypass that wrapper, so the process exit status would never be
+    // exercised — and a wrapper that dropped the verdict would go unseen.
+    `process.argv = [process.execPath, ${JSON.stringify(matrixPath)}, ...${JSON.stringify(cliArgv)}]`,
     'try {',
-    `  const { main } = await import(${JSON.stringify(matrixUrl)})`,
-    `  const code = await main(${JSON.stringify(cliArgv)})`,
-    '  process.stderr.write = realWrite',
-    "  process.stdout.write('__CLI_RESULT__' + JSON.stringify({ code, received, stderr: captured.join('') }))",
+    `  await import(${JSON.stringify(matrixUrl)})`,
     '} finally {',
     '  process.stderr.write = realWrite',
     '  hook.deregister()',
     '}',
+    'process.stdout.write(',
+    "  '__CLI_RESULT__' + JSON.stringify({ code: process.exitCode ?? 0, received, stderr: captured.join('') })",
+    ')',
   ].join('\n')
   writeFileSync(driverPath, driverSource)
   let stdout = ''
   let stderr = ''
+  let exitStatus = 0
   try {
     stdout = execFileSync(process.execPath, [driverPath], {
       encoding: 'utf8',
@@ -1342,18 +1412,22 @@ function runMatrixCli({ argv, compareSource, fixtureSource }) {
   } catch (error) {
     stdout = error.stdout ?? ''
     stderr = error.stderr ?? ''
-    throw new Error(`the CLI driver failed: ${stderr.slice(0, 800)}\n${stdout.slice(0, 400)}`)
+    exitStatus = error.status ?? -1
   } finally {
     rmSync(driverDir, { recursive: true, force: true })
   }
   const marker = stdout.split('\n').find(line => line.startsWith('__CLI_RESULT__'))
-  assert.ok(marker, `the CLI must report its result (stdout: ${stdout.slice(0, 500)})`)
+  assert.ok(
+    marker,
+    `the CLI must report its result (exit ${exitStatus}, stdout: ${stdout.slice(0, 400)}, stderr: ${stderr.slice(0, 400)})`
+  )
   const cliResult = JSON.parse(marker.slice('__CLI_RESULT__'.length))
   const summaryPath = join(outDir, 'matrix-summary.json')
   const readmePath = join(outDir, 'README.md')
   const matrixMarkdownPath = join(outDir, 'MATRIX.md')
   return {
     code: cliResult.code,
+    exitStatus,
     received: cliResult.received,
     stderr: cliResult.stderr ?? '',
     summaryExists: existsSync(summaryPath),
@@ -1431,6 +1505,14 @@ test('the matrix CLI forwards the override and publishes an unmeasured row as an
     out.code,
     1,
     `an unmeasured protected row must make the real CLI fail (stderr: ${out.stderr ?? ''})`
+  )
+  // The PROCESS must exit with the verdict, not merely return it. The CLI
+  // driver runs matrix.mjs as a file, so its own `process.exitCode` wrapper
+  // is what runs here.
+  assert.equal(
+    out.exitStatus,
+    1,
+    'the process exit status must carry the CLI verdict (a green job on a red verdict)'
   )
   assert.ok(out.summary, 'the CLI must publish its summary')
   assert.deepEqual(
