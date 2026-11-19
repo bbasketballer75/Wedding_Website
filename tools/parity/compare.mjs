@@ -49,7 +49,7 @@ import { renderReport } from './report.mjs'
 
 export const SCHEMA_VERSION = 1
 
-function normalizeOptions(rawOptions = {}) {
+export function normalizeOptions(rawOptions = {}) {
   return {
     legacyUrl: rawOptions.legacyUrl,
     rebuildUrl: rawOptions.rebuildUrl,
@@ -74,6 +74,11 @@ function normalizeOptions(rawOptions = {}) {
     resume: Boolean(rawOptions.resume ?? false),
     progress: rawOptions.progress !== false,
     adminLogin: { ...ADMIN_LOGIN_DEFAULTS, ...(rawOptions.adminLogin ?? {}) },
+    // The Supabase URL the preview under test was BUILT with. It must survive
+    // this hop: the admin session key is derived from it, and dropping it here
+    // makes the documented escape hatch inert (the caller would silently fall
+    // back to the ambient VITE_SUPABASE_URL instead).
+    supabaseUrl: rawOptions.supabaseUrl ?? null,
   }
 }
 

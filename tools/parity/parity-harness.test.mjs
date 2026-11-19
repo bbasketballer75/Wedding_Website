@@ -491,6 +491,30 @@ test('the capture path threads the build-URL override through every hop', () => 
   }
 })
 
+test('the option-normalization hop preserves the build-URL override', async () => {
+  // A source-text regex cannot see this hop: `compare.mjs` builds its options
+  // through `normalizeOptions`, a closed literal. If that literal omits the
+  // key, the override is parsed, documented and forwarded — then silently
+  // dropped, and the caller falls back to the ambient VITE_SUPABASE_URL, which
+  // is exactly the failure this flag exists to prevent. Assert it BEHAVIOURALLY.
+  const { normalizeOptions } = await import(new URL('./compare.mjs', import.meta.url).href)
+
+  const normalized = normalizeOptions({ supabaseUrl: 'https://other-project.supabase.co' })
+  assert.ok(
+    'supabaseUrl' in normalized,
+    'normalizeOptions must carry supabaseUrl — otherwise the override never reaches capture'
+  )
+  assert.equal(
+    normalized.supabaseUrl,
+    'https://other-project.supabase.co',
+    'the override must survive normalization unchanged'
+  )
+
+  // Absent by default, so a caller that passes nothing gets no override and the
+  // harness falls back to the ambient env exactly as before.
+  assert.equal(normalizeOptions({}).supabaseUrl, null)
+})
+
 test('the workflow guard does not need the native image library', () => {
   // A static import of matrix.mjs pulls sharp via diff.mjs and kills the whole
   // guard with ERR_MODULE_NOT_FOUND before it reads any workflow.
