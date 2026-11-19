@@ -22,7 +22,7 @@
  */
 import assert from 'node:assert/strict'
 import { execFileSync } from 'node:child_process'
-import { mkdtempSync, readFileSync, writeFileSync, rmSync, existsSync } from 'node:fs'
+import { mkdtempSync, readFileSync, writeFileSync, rmSync, existsSync, statSync } from 'node:fs'
 import { tmpdir } from 'node:os'
 import { join } from 'node:path'
 import { test } from 'node:test'
@@ -252,6 +252,100 @@ test('the production path refuses to publish a summary whose tally does not add 
     /tally is inconsistent/,
     `the refusal must say why (stderr: ${out.stderr ?? ''})`
   )
+})
+
+test('the published waiver line appears ONLY when the prerender gate was waived', async () => {
+  // The waiver is a claim about the gate. Rendering it unconditionally would
+  // tell a reviewer that a prerender gate which PASSED or FAILED was
+  // "waived" — an artifact asserting something the run never earned.
+  const { classifyPrerender, prerenderMarkdown } = await import(
+    new URL('./matrix.mjs', import.meta.url).href
+  )
+  const pending = classifyPrerender({ expectedRoutes: 9, rebuildPrerendered: 0 })
+  assert.equal(pending.waived, true)
+  assert.match(
+    prerenderMarkdown(pending),
+    /Prerender gate waived/,
+    'a waived gate must publish its waiver'
+  )
+  assert.match(
+    prerenderMarkdown(pending),
+    /0 of 9 routes are prerendered/,
+    'the waiver must name the measurement it did not make'
+  )
+
+  for (const [label, verdict] of [
+    ['passed', classifyPrerender({ expectedRoutes: 9, rebuildPrerendered: 9 })],
+    ['failed', classifyPrerender({ expectedRoutes: 9, rebuildPrerendered: 3 })],
+    ['not applicable', classifyPrerender({ expectedRoutes: 0, rebuildPrerendered: 0 })],
+  ]) {
+    assert.equal(verdict.waived, false, `${label} must not be waived`)
+    const markdown = prerenderMarkdown(verdict)
+    assert.doesNotMatch(
+      markdown,
+      /Prerender gate waived/,
+      `a ${label} prerender gate must not publish a waiver line`
+    )
+    assert.match(
+      markdown,
+      /Prerender \(W8-1\): /,
+      `a ${label} prerender gate must still publish its verdict`
+    )
+  }
+  assert.equal(prerenderMarkdown(null), '', 'no prerender check means no prerender block')
+})
+
+test('a run that publishes outside the output tree does not overwrite the published guide', () => {
+  // tools/parity/output/README.md is a deliverable a reviewer opens. The
+  // committed suite runs the CLI against a temp directory with FIXTURE data;
+  // if that run also refreshed the output-root guide, the published guide
+  // would describe a two-row stub instead of the real matrix.
+  const guidePath = join(ROOT, 'tools', 'parity', 'output', 'README.md')
+  const before = existsSync(guidePath) ? readFileSync(guidePath, 'utf8') : null
+  const beforeStat = existsSync(guidePath) ? statSync(guidePath).mtimeMs : null
+
+  const compareSource =
+    'export const SCHEMA_VERSION = 1; export const runCompare = bag => globalThis.fixtureCompare(bag);'
+  const fixtureSource = `bag => ({
+    exitCode: 0,
+    summary: {
+      generatedAt: '2026-01-01T00:00:00.000Z',
+      oracle: { legacyUrl: bag.legacyUrl, rebuildUrl: bag.rebuildUrl },
+      selection: { plannedShots: ['home__desktop__dark'] },
+      shots: [{
+        key: 'home__desktop__dark', route: 'home', urlPath: '/', viewport: 'desktop', theme: 'dark',
+        status: 'pass',
+        legacy: { finalUrl: bag.legacyUrl + '/' }, rebuild: { finalUrl: bag.rebuildUrl + '/' },
+      }],
+    },
+  })`
+  const out = runMatrixCli({
+    argv: [
+      '--legacy-url',
+      'http://127.0.0.1:4174',
+      '--rebuild-url',
+      'http://127.0.0.1:4175',
+      '--out',
+      mkdtempSync(join(tmpdir(), 'matrix-outside-')),
+    ],
+    compareSource,
+    fixtureSource,
+  })
+  assert.ok(out.summaryExists, 'the run must publish its own summary')
+
+  const after = existsSync(guidePath) ? readFileSync(guidePath, 'utf8') : null
+  assert.equal(
+    after,
+    before,
+    'a run that publishes outside the output tree must not rewrite the published guide'
+  )
+  if (beforeStat !== null) {
+    assert.equal(
+      statSync(guidePath).mtimeMs,
+      beforeStat,
+      'the published guide must not even be touched by an out-of-tree run'
+    )
+  }
 })
 
 test("the parity job's readiness guard checks the harness it actually runs", () => {

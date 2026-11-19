@@ -314,6 +314,24 @@ export function classifyPrerender({ expectedRoutes = 0, rebuildPrerendered = 0 }
 }
 
 /**
+ * Render the prerender block of the published MATRIX.md.
+ *
+ * The waiver line is only meaningful when the gate was actually waived.
+ * Printing it unconditionally would tell a reviewer that a prerender gate
+ * which PASSED or FAILED was "waived" — a published artifact making a claim
+ * the run never earned. So the condition is rendered here, as an exported
+ * seam, and asserted in both directions: the line appears when the gate is
+ * waived, and it is ABSENT when the gate passed, failed, or did not apply.
+ */
+export function prerenderMarkdown(prerender) {
+  if (!prerender) return ''
+  return [
+    `Prerender (W8-1): ${prerender.status} — ${prerender.rebuildPrerendered}/${prerender.expectedRoutes} rebuild routes served per-route metadata.\n\n`,
+    prerender.waived ? `> **Prerender gate waived** — ${prerender.waiverReason}\n\n` : '',
+  ].join('')
+}
+
+/**
  * Assert the served HTML (before hydration) carries per-route metadata on the
  * rebuild side, for every route the SEO contract gives a per-route title.
  * Legacy is an SPA and is recorded for reference only.
@@ -950,14 +968,7 @@ async function runMatrix(options) {
     matrixMarkdownPath,
     `# Parity matrix — ${overview.generatedAt}\n\n` +
       `Oracle: ${options.legacyUrl} → rebuild: ${options.rebuildUrl} (wave ${options.wave})\n\n` +
-      `${markdownTable(rows)}\n\n${
-        prerender
-          ? [
-              `Prerender (W8-1): ${prerender.status} — ${prerender.rebuildPrerendered}/${prerender.expectedRoutes} rebuild routes served per-route metadata.\n\n`,
-              prerender.waived ? `> **Prerender gate waived** — ${prerender.waiverReason}\n\n` : '',
-            ].join('')
-          : ''
-      }${
+      `${markdownTable(rows)}\n\n${prerenderMarkdown(prerender)}${
         overview.admin.exempt.length > 0
           ? `Admin exempt rows:\n${overview.admin.exempt.map(item => `- ${item.key}: ${item.reason}`).join('\n')}\n`
           : ''
@@ -967,10 +978,19 @@ async function runMatrix(options) {
   await writeTextFile(readmePath, outputReadme(overview, options))
   // Deliverable convenience: also refresh the output-root guide so a reader who
   // opens tools/parity/output/ first finds the latest matrix status + how-to.
-  await writeTextFile(
-    path.join(ROOT, 'tools', 'parity', 'output', 'README.md'),
-    outputReadme(overview, options)
-  )
+  //
+  // Only a run that publishes INTO the output tree may refresh it. A run that
+  // wrote somewhere else (a test's temp directory, a scratch out-dir) must not
+  // overwrite the published guide with its own fixture data — the guide is a
+  // deliverable a reviewer reads, and a stubbed run's tally is not a result.
+  const OUTPUT_ROOT = path.join(ROOT, 'tools', 'parity', 'output')
+  const publishesIntoOutputTree = (() => {
+    const relative = path.relative(OUTPUT_ROOT, path.resolve(options.outDir))
+    return relative !== '' && !relative.startsWith('..') && !path.isAbsolute(relative)
+  })()
+  if (publishesIntoOutputTree) {
+    await writeTextFile(path.join(OUTPUT_ROOT, 'README.md'), outputReadme(overview, options))
+  }
 
   // Human-readable status table + failure routing, on stdout.
   log.out('')
