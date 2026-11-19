@@ -1261,3 +1261,317 @@ test('condition 2 — the mapping hop is the ONLY way to build the comparison ba
   }
   assert.deepEqual(bag.extraRoutes, extraRoutes)
 })
+
+function runMatrixCli({ argv, compareSource, fixtureSource }) {
+  const outDir = mkdtempSync(join(tmpdir(), 'matrix-cli-'))
+  const compareUrl = pathToFileURL(join(PARITY, 'compare.mjs')).href
+  const matrixUrl = pathToFileURL(join(PARITY, 'matrix.mjs')).href
+  // The CLI must write into the directory the parent reads back. Only the
+  // VALUE after `--out` is replaced; replacing every occurrence of the flag
+  // would also rewrite the value that follows it.
+  const cliArgv = []
+  for (let index = 0; index < argv.length; index += 1) {
+    if (argv[index] === '--out') {
+      cliArgv.push('--out', outDir)
+      index += 1
+      continue
+    }
+    cliArgv.push(argv[index])
+  }
+  // The driver runs as its own FILE. Inlining it as a template literal nests
+  // three levels of escaping, and a mistake there reads as a harness failure
+  // rather than as the defect under test.
+  const driverDir = mkdtempSync(join(tmpdir(), 'matrix-cli-driver-'))
+  const driverPath = join(driverDir, 'driver.mjs')
+  const driverSource = [
+    "import { registerHooks } from 'node:module'",
+    'let received',
+    'globalThis.fixtureCompare = bag => {',
+    '  received = bag',
+    `  return (${fixtureSource})(bag)`,
+    '}',
+    'const hook = registerHooks({',
+    '  load(url, context, next) {',
+    `    if (url !== ${JSON.stringify(compareUrl)}) return next(url, context)`,
+    `    return { shortCircuit: true, format: 'module', source: ${JSON.stringify(compareSource)} }`,
+    '  },',
+    '})',
+    "globalThis.fetch = async () => new Response('<html><head><title>ready</title></head><body></body></html>')",
+    'const captured = []',
+    'const realWrite = process.stderr.write.bind(process.stderr)',
+    'process.stderr.write = chunk => { captured.push(String(chunk)); return true }',
+    'try {',
+    `  const { main } = await import(${JSON.stringify(matrixUrl)})`,
+    `  const code = await main(${JSON.stringify(cliArgv)})`,
+    '  process.stderr.write = realWrite',
+    "  process.stdout.write('__CLI_RESULT__' + JSON.stringify({ code, received, stderr: captured.join('') }))",
+    '} finally {',
+    '  process.stderr.write = realWrite',
+    '  hook.deregister()',
+    '}',
+  ].join('\n')
+  writeFileSync(driverPath, driverSource)
+  let stdout = ''
+  let stderr = ''
+  try {
+    stdout = execFileSync(process.execPath, [driverPath], {
+      encoding: 'utf8',
+      stdio: ['ignore', 'pipe', 'pipe'],
+      timeout: 15_000,
+    })
+  } catch (error) {
+    stdout = error.stdout ?? ''
+    stderr = error.stderr ?? ''
+    throw new Error(`the CLI driver failed: ${stderr.slice(0, 800)}\n${stdout.slice(0, 400)}`)
+  } finally {
+    rmSync(driverDir, { recursive: true, force: true })
+  }
+  const marker = stdout.split('\n').find(line => line.startsWith('__CLI_RESULT__'))
+  assert.ok(marker, `the CLI must report its result (stdout: ${stdout.slice(0, 500)})`)
+  const cliResult = JSON.parse(marker.slice('__CLI_RESULT__'.length))
+  const summaryPath = join(outDir, 'matrix-summary.json')
+  const readmePath = join(outDir, 'README.md')
+  return {
+    code: cliResult.code,
+    received: cliResult.received,
+    stderr: cliResult.stderr ?? '',
+    summaryExists: existsSync(summaryPath),
+    readmeExists: existsSync(readmePath),
+    summary: existsSync(summaryPath) ? JSON.parse(readFileSync(summaryPath, 'utf8')) : null,
+    readme: existsSync(readmePath) ? readFileSync(readmePath, 'utf8') : null,
+  }
+}
+
+test('the matrix CLI forwards the override and publishes an unmeasured row as an error', () => {
+  const compareSource =
+    'export const SCHEMA_VERSION = 1; export const runCompare = bag => globalThis.fixtureCompare(bag);'
+  const planned = ['admin__desktop__dark', 'home__desktop__dark']
+  const fixtureSource = `bag => {
+    const planned = ${JSON.stringify(planned)}
+    const shot = (key, route, urlPath, legacyUrl, rebuildUrl) => ({
+      key,
+      route,
+      urlPath,
+      viewport: 'desktop',
+      theme: 'dark',
+      status: 'pass',
+      legacy: { finalUrl: legacyUrl },
+      rebuild: { finalUrl: rebuildUrl },
+    })
+    return {
+      exitCode: 0,
+      summary: {
+        generatedAt: '2026-01-01T00:00:00.000Z',
+        oracle: { legacyUrl: bag.legacyUrl, rebuildUrl: bag.rebuildUrl },
+        selection: { plannedShots: planned },
+        shots: [
+          shot(planned[0], 'admin', '/admin', null, bag.rebuildUrl + '/admin'),
+          shot(planned[1], 'home', '/', bag.legacyUrl + '/', bag.rebuildUrl + '/'),
+        ],
+      },
+    }
+  }`
+  const out = runMatrixCli({
+    argv: [
+      '--legacy-url',
+      'http://127.0.0.1:4174',
+      '--rebuild-url',
+      'http://127.0.0.1:4175',
+      '--supabase-url',
+      'https://override-check.supabase.co',
+      '--prerender',
+      '--out',
+      mkdtempSync(join(tmpdir(), 'matrix-cli-out-')),
+    ],
+    compareSource,
+    fixtureSource,
+  })
+  assert.ok(out.received, `the CLI must reach the comparison engine (stderr: ${out.stderr ?? ''})`)
+  assert.equal(out.received.supabaseUrl, 'https://override-check.supabase.co')
+  assert.equal(out.received.themes, null, 'omitting --themes uses the UI contract defaults')
+  assert.ok(out.received.extraRoutes.some(route => route.id === 'admin-photos'))
+  assert.equal(
+    out.code,
+    1,
+    `an unmeasured protected row must make the real CLI fail (stderr: ${out.stderr ?? ''})`
+  )
+  assert.ok(out.summary, 'the CLI must publish its summary')
+  assert.deepEqual(
+    out.summary.rows.map(row => row.key),
+    planned,
+    'the published receipt must retain the unmeasured row'
+  )
+  assert.equal(out.summary.counts.rows, out.summary.rows.length)
+  const [admin, home] = out.summary.rows
+  assert.equal(admin.status, 'error')
+  assert.equal(admin.captureClass, 'exempt')
+  assert.equal(admin.legacyFinalUrl, null)
+  assert.match(admin.exemptReason, /no final URL/)
+  assert.equal(home.status, 'pass')
+  // The published summary must carry the receipt and the prerender block.
+  assert.ok(
+    typeof out.summary.command === 'string' && out.summary.command.includes('--legacy-url'),
+    `the published summary must carry the receipt (got: ${out.summary.command})`
+  )
+  assert.ok(
+    out.summary.prerender && typeof out.summary.prerender.status === 'string',
+    'the published summary must carry the prerender block'
+  )
+  // The generated README must carry the same tally the summary does.
+  assert.ok(out.readme, 'the CLI must publish its README')
+  assert.match(
+    out.readme,
+    /of which 1 are exempt\/unmeasured admin rows/,
+    'the published README tally must treat exempt as a subset of error'
+  )
+})
+
+test('the matrix CLI refuses a run that measured nothing', () => {
+  const compareSource =
+    'export const SCHEMA_VERSION = 1; export const runCompare = bag => globalThis.fixtureCompare(bag);'
+  const fixtureSource = `() => ({
+    exitCode: 0,
+    summary: {
+      generatedAt: '2026-01-01T00:00:00.000Z',
+      oracle: { legacyUrl: 'http://127.0.0.1:4174', rebuildUrl: 'http://127.0.0.1:4175' },
+      selection: { plannedShots: [] },
+      shots: [],
+    },
+  })`
+  const out = runMatrixCli({
+    argv: [
+      '--legacy-url',
+      'http://127.0.0.1:4174',
+      '--rebuild-url',
+      'http://127.0.0.1:4175',
+      '--out',
+      mkdtempSync(join(tmpdir(), 'matrix-cli-empty-')),
+    ],
+    compareSource,
+    fixtureSource,
+  })
+  assert.notEqual(out.code, 0, 'a run that measured nothing must not exit green')
+  assert.equal(out.summaryExists, false, 'no summary may be published for an empty measurement')
+})
+
+test('the matrix CLI refuses a run whose row count contradicts the plan', () => {
+  const compareSource =
+    'export const SCHEMA_VERSION = 1; export const runCompare = bag => globalThis.fixtureCompare(bag);'
+  // Two shots were planned but only ONE was measured. A row count that
+  // contradicts the plan means shots were silently dropped, so the run must be
+  // refused rather than published as a narrower green matrix.
+  const fixtureSource = `bag => {
+    const shot = (key, route, urlPath, legacyUrl, rebuildUrl) => ({
+      key, route, urlPath, viewport: 'desktop', theme: 'dark', status: 'pass',
+      legacy: { finalUrl: legacyUrl }, rebuild: { finalUrl: rebuildUrl },
+    })
+    return {
+      exitCode: 0,
+      summary: {
+        generatedAt: '2026-01-01T00:00:00.000Z',
+        oracle: { legacyUrl: bag.legacyUrl, rebuildUrl: bag.rebuildUrl },
+        selection: { plannedShots: ['home__desktop__dark', 'film__desktop__dark'] },
+        shots: [
+          shot('home__desktop__dark', 'home', '/', bag.legacyUrl + '/', bag.rebuildUrl + '/'),
+        ],
+      },
+    }
+  }`
+  const out = runMatrixCli({
+    argv: [
+      '--legacy-url',
+      'http://127.0.0.1:4174',
+      '--rebuild-url',
+      'http://127.0.0.1:4175',
+      '--out',
+      mkdtempSync(join(tmpdir(), 'matrix-cli-plan-')),
+    ],
+    compareSource,
+    fixtureSource,
+  })
+  assert.notEqual(out.code, 0, 'a run that dropped a planned shot must not exit green')
+  assert.equal(out.summaryExists, false, 'no summary may be published for a partial run')
+})
+
+test('captureShot seeds both pages with the override and installs the clock before parking', async () => {
+  const { captureShot } = await import(new URL('./capture.mjs', import.meta.url).href)
+  const seeded = []
+  const clockEvents = []
+  const noop = async () => {}
+  const warmPage = {
+    async addInitScript(_script, { storageKey }) {
+      seeded.push(storageKey)
+    },
+    emulateMedia: noop,
+    route: noop,
+    clock: { install: noop },
+    goto: async () => ({ status: () => 200 }),
+    waitForLoadState: noop,
+    evaluate: async () => true,
+    waitForTimeout: noop,
+    close: noop,
+  }
+  const capturePage = {
+    on() {},
+    async addInitScript(_script, { storageKey }) {
+      seeded.push(storageKey)
+    },
+    emulateMedia: noop,
+    route: noop,
+    clock: {
+      async install({ time }) {
+        clockEvents.push(['install', time.toISOString()])
+      },
+      async pauseAt(time) {
+        clockEvents.push(['pauseAt', time.toISOString()])
+        throw new Error('stop after capturing the clock inputs')
+      },
+    },
+  }
+  const pages = [warmPage, capturePage]
+  const browser = {
+    newContext: async () => ({ newPage: async () => pages.shift(), close: noop }),
+  }
+  const result = await captureShot(browser, {
+    baseUrl: 'http://127.0.0.1:4174',
+    side: 'legacy',
+    route: { id: 'admin', auth: 'admin' },
+    routePath: '/admin',
+    viewport: { name: 'desktop', width: 1280, height: 720 },
+    theme: 'dark',
+    ui: { fixedNow: '2026-01-01T00:00:00.000Z' },
+    fixtures: { admin: { storageKey: 'fixture-key-must-not-be-used' } },
+    mediaStub: Buffer.alloc(0),
+    supabaseUrl: 'https://override-check.supabase.co',
+  })
+  assert.equal(result.error?.message, 'stop after capturing the clock inputs')
+  assert.deepEqual(seeded, ['sb-override-check-auth-token', 'sb-override-check-auth-token'])
+  assert.deepEqual(clockEvents, [
+    ['install', '2025-12-31T23:59:59.000Z'],
+    ['pauseAt', '2026-01-01T00:00:00.000Z'],
+  ])
+})
+
+test('the published README line is the one the summary builder writes', async () => {
+  const { matrixOverview, readmeTallyLine, tallyIsConsistent } = await import(
+    new URL('./matrix.mjs', import.meta.url).href
+  )
+  const rows = [
+    { status: 'pass', captureClass: 'captured' },
+    { status: 'error', captureClass: 'exempt' },
+  ]
+  const overview = matrixOverview(
+    { generatedAt: 'T', oracle: {}, tolerance: {}, determinism: {}, selection: {} },
+    rows,
+    { includeAdmin: false, prerender: null, outDir: 'out', options: null }
+  )
+  assert.ok(tallyIsConsistent(overview.counts), 'the summary tally must be internally consistent')
+  assert.equal(
+    overview.counts.error,
+    1,
+    'an exempt row is an error row, so it is counted once in error'
+  )
+  assert.equal(overview.counts.exempt, 1, 'and separately annotated as a subset')
+  const line = readmeTallyLine(overview.counts)
+  assert.match(line, /of which 1 are exempt\/unmeasured admin rows/)
+})
