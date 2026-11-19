@@ -306,6 +306,21 @@ function isAdminRow(shot, includeAdmin) {
   return ADMIN_ROUTE_ID_PATTERN.test(shot.route) && shot.route !== 'admin-login'
 }
 
+/**
+ * Route ids the CONTRACT (or a generated admin section) marks `auth: 'admin'`.
+ *
+ * This is deliberately separate from `includeAdmin`. That flag only decides
+ * whether the synthetic admin child sections are ADDED to the matrix; it must
+ * not decide whether an `auth: 'admin'` route that is in the matrix anyway gets
+ * its authentication verified. Keying the exemption on `includeAdmin` meant the
+ * CI invocation — which passes `--no-admin` to match the signed-off 46-row
+ * scope, and which still captures the `auth: admin` contract route — skipped the
+ * check entirely and could report `pass` for two unauthenticated login screens.
+ */
+function protectedRouteIds(routes) {
+  return new Set(routes.filter(route => route.auth === 'admin').map(route => route.id))
+}
+
 function firstFailureDetail(shot) {
   if (shot.textDiff?.status === 'fail') {
     const firstField = shot.textDiff.differences?.[0]?.field ?? 'text'
@@ -330,14 +345,16 @@ function firstFailureDetail(shot) {
   return { kind: null, field: null, path: null }
 }
 
-function buildRows(shots, { includeAdmin }) {
+export function buildRows(shots, { includeAdmin, protectedRoutes = new Set() }) {
   return shots.map(shot => {
     const admin = isAdminRow(shot, includeAdmin)
     const legacyLogin = String(shot.legacy?.finalUrl ?? '').endsWith('/admin/login')
     const rebuildLogin = String(shot.rebuild?.finalUrl ?? '').endsWith('/admin/login')
     let captureClass = 'captured'
     let exemptReason = null
-    if (admin) {
+    // A row for an `auth: 'admin'` route was not measured if either side ended on
+    // the login screen — regardless of `--no-admin`.
+    if (admin || protectedRoutes.has(shot.route)) {
       if (legacyLogin && rebuildLogin) {
         captureClass = 'exempt'
         exemptReason = 'both sides redirected to /admin/login (admin session/login not accepted)'
@@ -535,6 +552,7 @@ async function runMatrix(options) {
   await Promise.all([probeUrl(options.legacyUrl), probeUrl(options.rebuildUrl)])
 
   const extraRoutes = options.includeAdmin ? adminCaptureRoutes() : []
+  const protectedRoutes = protectedRouteIds([...routesContract.routes, ...extraRoutes])
   log.info(
     `matrix: ${routesContract.routes.length} contract route(s)` +
       `${options.includeAdmin ? ` + ${extraRoutes.length} admin section(s)` : ''} × viewports × themes`
@@ -574,7 +592,10 @@ async function runMatrix(options) {
     adminLogin: options.adminLogin,
   })
 
-  const rows = buildRows(compareResult.summary.shots ?? [], { includeAdmin: options.includeAdmin })
+  const rows = buildRows(compareResult.summary.shots ?? [], {
+    includeAdmin: options.includeAdmin,
+    protectedRoutes,
+  })
   const overview = matrixOverview(compareResult.summary, rows, {
     includeAdmin: options.includeAdmin,
     prerender,

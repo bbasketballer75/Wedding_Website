@@ -191,3 +191,100 @@ test('every pauseAt jumps forward from its install, so the capture clock cannot 
   assert.ok(lead, 'FIXED_NOW_LEAD_MS must be a numeric literal')
   assert.ok(Number(lead[1]) >= 100, `FIXED_NOW_LEAD_MS must be >= 100 ms (got ${lead[1]})`)
 })
+
+test('CI flags still reject an unauthenticated protected route', async () => {
+  // The CI invocation passes `--no-admin`, which only removes the synthetic admin
+  // child sections. The `auth: admin` CONTRACT route stays in the matrix, so its
+  // authentication must still be verified. Keying the exemption on `includeAdmin`
+  // made this exact configuration report `pass` for two login screens.
+  const { buildRows } = await import(new URL('./matrix.mjs', import.meta.url).href)
+  const { loadRoutesContract, adminCaptureRoutes } = await import(
+    new URL('./config.mjs', import.meta.url).href
+  )
+  const contract = await loadRoutesContract()
+  const protectedRoutes = new Set(
+    [...contract.routes, ...adminCaptureRoutes()]
+      .filter(route => route.auth === 'admin')
+      .map(route => route.id)
+  )
+
+  const shot = (route, legacyPath, rebuildPath) => ({
+    key: `${route}__desktop__dark`,
+    route,
+    urlPath: '/',
+    viewport: 'desktop',
+    theme: 'dark',
+    status: 'pass',
+    failureReasons: [],
+    legacy: { finalUrl: `http://127.0.0.1:4174${legacyPath}` },
+    rebuild: { finalUrl: `http://127.0.0.1:4175${rebuildPath}` },
+  })
+
+  // CI covers the protected contract route even though it excludes the synthetic sections.
+  const ciShots = [
+    shot('admin', '/admin/login', '/admin/login'),
+    shot('admin', '/admin', '/admin'),
+    shot('admin-login', '/admin/login', '/admin/login'),
+  ]
+  const rows = buildRows(ciShots, { includeAdmin: false, protectedRoutes })
+  const byKey = index => rows[index]
+
+  assert.equal(byKey(0).status, 'error', 'a protected route that never authenticated must not pass')
+  assert.equal(byKey(0).captureClass, 'exempt')
+  assert.ok(
+    byKey(0).failureReasons.some(reason => String(reason).includes('admin row not measured')),
+    'the exemption reason must be recorded'
+  )
+  assert.equal(byKey(1).status, 'pass', 'an authenticated protected row must still pass')
+  assert.equal(byKey(1).captureClass, 'captured')
+  assert.equal(
+    byKey(2).status,
+    'pass',
+    'admin-login is auth: none — a login screen is its correct capture'
+  )
+
+  // One-sided redirects are just as unmeasured as a double redirect.
+  for (const pair of [
+    ['/admin/login', '/admin'],
+    ['/admin', '/admin/login'],
+  ]) {
+    const [row] = buildRows([shot('admin', pair[0], pair[1])], {
+      includeAdmin: false,
+      protectedRoutes,
+    })
+    assert.equal(
+      row.status,
+      'error',
+      `one-sided login redirect must not pass (${pair.join(' vs ')})`
+    )
+  }
+
+  // The contract really does mark a retained route auth: admin — the guard above
+  // would be vacuous if it did not.
+  assert.ok(
+    contract.routes.some(route => route.auth === 'admin'),
+    'at least one contract route must require admin auth'
+  )
+
+  // Calling buildRows directly cannot detect a regression at the CALL SITE: drop
+  // `protectedRoutes` from runMatrix and every assertion above still passes. Pin
+  // the wiring, and require the protected set to be derived from the contract's
+  // auth rather than from `includeAdmin`.
+  const source = readFileSync(join(PARITY, 'matrix.mjs'), 'utf8')
+  assert.ok(
+    /buildRows\(compareResult\.summary\.shots \?\? \[\],\s*\{[^}]*protectedRoutes/s.test(source),
+    'runMatrix must pass protectedRoutes into buildRows'
+  )
+  assert.ok(
+    /protectedRouteIds\(\[\.\.\.routesContract\.routes, \.\.\.extraRoutes\]\)/.test(
+      source.replace(/\s+/g, ' ')
+    ),
+    'the protected set must be derived from the contract routes plus generated ones'
+  )
+  assert.ok(
+    /function protectedRouteIds\(routes\)\s*\{\s*return new Set\(routes\.filter\(route => route\.auth === 'admin'\)/s.test(
+      source
+    ),
+    "protectedRouteIds must key on the route's own `auth`, not on includeAdmin"
+  )
+})
