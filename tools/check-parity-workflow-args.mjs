@@ -48,11 +48,12 @@ import { repoPath } from './lib/paths.mjs'
  * `matrix.mjs` is imported LAZILY, inside the branch that needs it.
  *
  * A static import here drags in `matrix.mjs -> compare.mjs -> diff.mjs`, and
- * `diff.mjs` statically imports `sharp`. This guard is a pure text check over
- * workflow files, so it must not be able to die because a native image library
- * is absent — reproduced as `ERR_MODULE_NOT_FOUND: Cannot find package 'sharp'`
- * with exit 1 before any invocation was read. That fails closed, but it reports
- * nothing about the workflow arguments it exists to check.
+ * `diff.mjs` reaches the native image library. This guard is a pure text check
+ * over workflow files, so it must not be able to die because a native image
+ * library is absent — reproduced as
+ * `ERR_MODULE_NOT_FOUND: Cannot find package 'sharp'` with exit 1 before any
+ * invocation was read. That fails closed, but it reports nothing about the
+ * workflow arguments it exists to check.
  */
 let matrixParseArgs = null
 async function loadMatrixParser() {

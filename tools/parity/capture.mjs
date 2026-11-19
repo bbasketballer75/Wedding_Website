@@ -373,9 +373,8 @@ async function maybeAdminLogin(page, adminLogin = {}, { routePath } = {}) {
  *   meta: object, text: object|null, textFile: string|null, shotFiles: string[]
  * }}
  */
-export async function captureShot(
-  browser,
-  {
+export async function captureShot(browser, options) {
+  const {
     baseUrl,
     side,
     route,
@@ -391,8 +390,7 @@ export async function captureShot(
     injectCss = '',
     adminLogin = null,
     supabaseUrl,
-  }
-) {
+  } = options
   const key = `${sanitizeKey(route.id)}__${viewport.name}__${theme}`
   const mode = route.auth === 'admin' || route.kind === 'admin' ? 'admin' : 'public'
   const started = Date.now()

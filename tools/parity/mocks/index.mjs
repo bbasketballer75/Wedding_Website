@@ -223,7 +223,7 @@ export async function preparePage(
   page,
   { theme, mode = 'public', fixtures, root = ROOT, supabaseUrl } = {}
 ) {
-  const storageKey = mode === 'admin' ? adminSessionStorageKey({ fixtures, root, supabaseUrl }) : ''
+  const storageKey = prepareStorageKey({ mode, fixtures, root, supabaseUrl })
   const session = fixtures?.admin?.session ?? null
   await page.addInitScript(browserInitScript, {
     theme,
@@ -235,6 +235,18 @@ export async function preparePage(
     reducedMotion: 'reduce',
     colorScheme: theme === 'light' ? 'light' : 'dark',
   })
+}
+
+/**
+ * The localStorage key the admin session is seeded under.
+ *
+ * Exported so the LAST hop of the chain can be asserted BEHAVIOURALLY: a
+ * caller that forwarded `supabaseUrl` incompletely left the override
+ * `undefined`, and the harness silently fell back to the ambient
+ * `VITE_SUPABASE_URL` — the exact failure the override exists to prevent.
+ */
+export function prepareStorageKey({ mode = 'public', fixtures, root = ROOT, supabaseUrl } = {}) {
+  return mode === 'admin' ? adminSessionStorageKey({ fixtures, root, supabaseUrl }) : ''
 }
 
 function fulfillJson(route, payload, status = 200) {

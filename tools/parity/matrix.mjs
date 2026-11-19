@@ -413,21 +413,13 @@ export function describeInvocation(options) {
  */
 export function compareOptions(options, extraRoutes = []) {
   return {
-    legacyUrl: options.legacyUrl,
-    rebuildUrl: options.rebuildUrl,
-    routes: options.routes,
-    matrix: options.matrix,
-    themes: options.themes,
-    outDir: options.outDir,
-    maxDiffRatio: options.maxDiffRatio,
-    pixelThreshold: options.pixelThreshold,
-    edgeTolerance: options.edgeTolerance,
-    wave: options.wave,
+    // Spread FIRST, so the explicit fields below win. Spreading the whole
+    // option bag means a NEW option cannot be dropped by forgetting to list
+    // it here — the failure mode the previous explicit list had.
+    ...options,
     extraRoutes,
     resume: options.resume,
     report: true,
-    adminLogin: options.adminLogin,
-    supabaseUrl: options.supabaseUrl,
   }
 }
 
@@ -534,6 +526,22 @@ export function buildRows(shots, { includeAdmin, protectedRoutes }) {
       },
     }
   })
+}
+
+/**
+ * Assemble the matrix rows from a comparison result — the PRODUCTION path.
+ *
+ * The protected set is derived HERE, from the route contract, rather than
+ * being passed in. A caller that hands `buildRows` an empty or
+ * `includeAdmin`-conditioned set silently disables the auth gate — the exact
+ * fail-open where CI goes green having compared two login screens. Deriving
+ * it inside this function means the production call site cannot get it
+ * wrong, and a test can assert on the real function instead of on a copy of
+ * its logic.
+ */
+export function assembleRows(summary, { includeAdmin, routesContract, extraRoutes = [] }) {
+  const protectedRoutes = protectedRouteIds([...routesContract.routes, ...extraRoutes])
+  return buildRows(summary?.shots ?? [], { includeAdmin, protectedRoutes })
 }
 
 function markdownTable(rows) {
@@ -679,7 +687,6 @@ async function runMatrix(options) {
   await Promise.all([probeUrl(options.legacyUrl), probeUrl(options.rebuildUrl)])
 
   const extraRoutes = options.includeAdmin ? adminCaptureRoutes() : []
-  const protectedRoutes = protectedRouteIds([...routesContract.routes, ...extraRoutes])
   log.info(
     `matrix: ${routesContract.routes.length} contract route(s)` +
       `${options.includeAdmin ? ` + ${extraRoutes.length} admin section(s)` : ''} × viewports × themes`
@@ -704,9 +711,10 @@ async function runMatrix(options) {
 
   const compareResult = await runCompare(compareOptions(options, extraRoutes))
 
-  const rows = buildRows(compareResult.summary.shots ?? [], {
+  const rows = assembleRows(compareResult.summary, {
     includeAdmin: options.includeAdmin,
-    protectedRoutes,
+    routesContract,
+    extraRoutes,
   })
   const overview = matrixOverview(compareResult.summary, rows, {
     includeAdmin: options.includeAdmin,
@@ -776,8 +784,7 @@ async function runMatrix(options) {
   // A row that could not be measured is not a pass. `buildRows` reports an
   // un-authenticated admin row as `error`; make the job's exit code reflect it
   // so CI cannot go green having compared two login screens.
-  exitCode = exitCodeForRows(rows, exitCode)
-  if (options.prerender && prerender?.status === 'fail') exitCode = Math.max(exitCode, 1)
+  exitCode = matrixExitCode(rows, exitCode, { prerender, options })
   return { overview, exitCode, summaryPath, matrixMarkdownPath, readmePath }
 }
 
@@ -791,6 +798,20 @@ async function runMatrix(options) {
  */
 export function exitCodeForRows(rows, exitCode = 0) {
   return rows.some(row => row.status === 'error') ? Math.max(exitCode, 1) : exitCode
+}
+
+/**
+ * The matrix job's exit code — the PRODUCTION path.
+ *
+ * Wraps the row check AND the prerender check, so a test can assert on the
+ * decision the job actually makes. Asserting on `exitCodeForRows` alone left
+ * the call site unpinned: emptying `rows` before the call, or dropping the
+ * prerender check, left the suite green while the job's verdict changed.
+ */
+export function matrixExitCode(rows, exitCode = 0, { prerender = null, options = null } = {}) {
+  let code = exitCodeForRows(rows, exitCode)
+  if (options?.prerender && prerender?.status === 'fail') code = Math.max(code, 1)
+  return code
 }
 
 export async function main(argv) {

@@ -22,11 +22,11 @@
  */
 import assert from 'node:assert/strict'
 import { execFileSync } from 'node:child_process'
-import { mkdtempSync, readFileSync, writeFileSync, rmSync } from 'node:fs'
+import { mkdtempSync, readFileSync, writeFileSync, rmSync, existsSync } from 'node:fs'
 import { tmpdir } from 'node:os'
 import { join } from 'node:path'
 import { test } from 'node:test'
-import { fileURLToPath } from 'node:url'
+import { fileURLToPath, pathToFileURL } from 'node:url'
 
 const ROOT = fileURLToPath(new URL('../..', import.meta.url))
 const PARITY = join(ROOT, 'tools', 'parity')
@@ -110,7 +110,7 @@ test('an un-authenticated admin row is an error, not a pass', async () => {
     'buildRows must report an exempt (un-authenticated) admin row as an error'
   )
   assert.ok(
-    source.includes('exitCode = exitCodeForRows(rows, exitCode)'),
+    source.includes('exitCode = matrixExitCode(rows, exitCode, { prerender, options })'),
     'the job exit code must reflect an unmeasured row'
   )
   assert.ok(
@@ -311,13 +311,14 @@ test('CI flags still reject an unauthenticated protected route', async () => {
   )
 
   // Calling buildRows directly cannot detect a regression at the CALL SITE: drop
-  // `protectedRoutes` from runMatrix and every assertion above still passes. Pin
-  // the wiring, and require the protected set to be derived from the contract's
-  // auth rather than from `includeAdmin`.
+  // `protectedRoutes` from the production wiring and every assertion above still
+  // passes. The production path is `assembleRows`, which derives the protected
+  // set from the contract's own `auth` — so pin THAT, and require the wiring
+  // to use it.
   const source = readFileSync(join(PARITY, 'matrix.mjs'), 'utf8')
   assert.ok(
-    /buildRows\(compareResult\.summary\.shots \?\? \[\],\s*\{[^}]*protectedRoutes/s.test(source),
-    'runMatrix must pass protectedRoutes into buildRows'
+    /buildRows\(summary\?\.shots \?\? \[\],\s*\{[^}]*protectedRoutes/s.test(source),
+    'assembleRows must pass the derived protected set into buildRows'
   )
   assert.ok(
     /protectedRouteIds\(\[\.\.\.routesContract\.routes, \.\.\.extraRoutes\]\)/.test(
@@ -330,6 +331,14 @@ test('CI flags still reject an unauthenticated protected route', async () => {
       source
     ),
     "protectedRouteIds must key on the route's own `auth`, not on includeAdmin"
+  )
+  // And the production call site must USE that function, so the derived set
+  // cannot be swapped for an empty one at the seam.
+  assert.ok(
+    /const rows = assembleRows\(compareResult\.summary,\s*\{[^}]*routesContract/s.test(
+      source.replace(/\s+/g, ' ')
+    ),
+    'runMatrix must build its rows through assembleRows'
   )
 })
 
@@ -664,23 +673,52 @@ test('the guard resolves matrix.mjs lazily and only when it must', () => {
   // all — its module graph pulls in the native image library. The import must
   // therefore be LAZY: evaluated only when a matrix.mjs invocation actually
   // has to be parsed, and never when the guard has no matrix invocation to
-  // check. Assert that BEHAVIOURALLY: point the guard at a scratch
-  // workflows directory holding only a compare.mjs invocation, and remove the
-  // module's resolvability, so a STATIC import would die.
+  // check.
+  //
+  // Prove that BEHAVIOURALLY: run the guard under a module loader that
+  // RECORDS every load of `parity/matrix.mjs`. A compare-only workflows
+  // directory must record NOTHING (the module was never evaluated); a
+  // directory with a matrix.mjs invocation must record a load. A STATIC
+  // import would record a load in both cases and fail the first assertion.
   const scratch = mkdtempSync(join(tmpdir(), 'parity-guard-lazy-'))
   try {
+    const recorder = join(scratch, 'loaded.txt')
+    const loader = join(scratch, 'record-load.mjs')
+    writeFileSync(
+      loader,
+      "import { register } from 'node:module'\n" +
+        "register(new URL('hook.mjs', import.meta.url))\n"
+    )
+    writeFileSync(
+      join(scratch, 'hook.mjs'),
+      "import { appendFileSync } from 'node:fs'\n" +
+        'export function resolve(specifier, context, next) {\n' +
+        "  if (specifier.endsWith('parity/matrix.mjs')) {\n" +
+        `    appendFileSync(${JSON.stringify(recorder)}, 'loaded\\n')\n` +
+        '  }\n' +
+        '  return next(specifier, context)\n' +
+        '}\n'
+    )
     writeFileSync(
       join(scratch, 'only-compare.yml'),
       'jobs:\n  build:\n    steps:\n      - run: node tools/parity/compare.mjs --legacy-url http://127.0.0.1:4174 --rebuild-url http://127.0.0.1:4175 --routes all --matrix all\n'
     )
-    const stdout = execFileSync('node', [GUARD, '--workflows-dir', scratch], {
-      cwd: ROOT,
-      encoding: 'utf8',
-    })
+    const stdout = execFileSync(
+      'node',
+      ['--import', pathToFileURL(loader).href, GUARD, '--workflows-dir', scratch],
+      {
+        cwd: ROOT,
+        encoding: 'utf8',
+      }
+    )
     assert.match(
       stdout,
       /parity workflow invocations valid/,
       `the guard must accept a compare-only workflows directory (got: ${stdout})`
+    )
+    assert.ok(
+      !existsSync(recorder),
+      'the guard must not evaluate matrix.mjs when there is no matrix.mjs invocation to check'
     )
   } finally {
     rmSync(scratch, { recursive: true, force: true })
@@ -690,18 +728,46 @@ test('the guard resolves matrix.mjs lazily and only when it must', () => {
   // with matrix.mjs's own parser: a bad matrix flag must be rejected.
   const scratch2 = mkdtempSync(join(tmpdir(), 'parity-guard-matrix-'))
   try {
+    const recorder2 = join(scratch2, 'loaded.txt')
+    const loader2 = join(scratch2, 'record-load.mjs')
+    writeFileSync(
+      loader2,
+      "import { register } from 'node:module'\n" +
+        "register(new URL('hook.mjs', import.meta.url))\n"
+    )
+    writeFileSync(
+      join(scratch2, 'hook.mjs'),
+      "import { appendFileSync } from 'node:fs'\n" +
+        'export function resolve(specifier, context, next) {\n' +
+        "  if (specifier.endsWith('parity/matrix.mjs')) {\n" +
+        `    appendFileSync(${JSON.stringify(recorder2)}, 'loaded\\n')\n` +
+        '  }\n' +
+        '  return next(specifier, context)\n' +
+        '}\n'
+    )
     writeFileSync(
       join(scratch2, 'bad-matrix.yml'),
       'jobs:\n  build:\n    steps:\n      - run: node tools/parity/matrix.mjs --legacy-url http://127.0.0.1:4174 --rebuild-url http://127.0.0.1:4175 --all\n'
     )
     let failed = false
     try {
-      execFileSync('node', [GUARD, '--workflows-dir', scratch2], { cwd: ROOT, encoding: 'utf8' })
+      execFileSync(
+        'node',
+        ['--import', pathToFileURL(loader2).href, GUARD, '--workflows-dir', scratch2],
+        {
+          cwd: ROOT,
+          encoding: 'utf8',
+        }
+      )
     } catch (error) {
       failed = true
       assert.match(String(error.stderr ?? ''), /unknown argument/, 'the bad flag must be named')
     }
     assert.ok(failed, 'the guard must reject a bad matrix.mjs flag')
+    assert.ok(
+      existsSync(recorder2),
+      'the guard must evaluate matrix.mjs when there IS a matrix.mjs invocation to check'
+    )
   } finally {
     rmSync(scratch2, { recursive: true, force: true })
   }
@@ -753,4 +819,132 @@ test('the job exit code reflects an unmeasured row', async () => {
     1,
     'an existing failure must not be lowered'
   )
+})
+
+test('the production row wiring protects the admin route from the contract', async () => {
+  // The PRODUCTION path, not a copy of its logic: `assembleRows` derives the
+  // protected set from the route contract, so the call site cannot hand
+  // `buildRows` an empty or `includeAdmin`-conditioned set and silently
+  // disable the auth gate.
+  const { assembleRows } = await import(new URL('./matrix.mjs', import.meta.url).href)
+  const { loadRoutesContract } = await import(new URL('./config.mjs', import.meta.url).href)
+  const contract = await loadRoutesContract()
+
+  const adminRoute = contract.routes.find(route => route.auth === 'admin')
+  assert.ok(adminRoute, 'the contract must declare an auth: admin route')
+
+  // The shot the gate exists for: both sides landed on the login screen.
+  const loginShot = {
+    key: `${adminRoute.id}__desktop__dark`,
+    route: adminRoute.id,
+    urlPath: adminRoute.path,
+    viewport: 'desktop',
+    theme: 'dark',
+    status: 'pass',
+    failureReasons: [],
+    legacy: { finalUrl: 'http://127.0.0.1:4174/admin/login' },
+    rebuild: { finalUrl: 'http://127.0.0.1:4175/admin/login' },
+  }
+
+  // `--no-admin` removes the synthetic admin child sections. It must NOT
+  // remove the contract route's protection.
+  const rows = assembleRows(
+    { shots: [loginShot] },
+    { includeAdmin: false, routesContract: contract, extraRoutes: [] }
+  )
+  assert.equal(rows.length, 1)
+  assert.equal(
+    rows[0].status,
+    'error',
+    'the production wiring must report an unauthenticated admin row as an error'
+  )
+
+  // And a genuinely captured admin row must still pass through it.
+  const okRows = assembleRows(
+    {
+      shots: [
+        {
+          ...loginShot,
+          legacy: { finalUrl: 'http://127.0.0.1:4174/admin' },
+          rebuild: { finalUrl: 'http://127.0.0.1:4175/admin' },
+        },
+      ],
+    },
+    { includeAdmin: false, routesContract: contract, extraRoutes: [] }
+  )
+  assert.equal(okRows[0].status, 'pass', 'a genuinely captured admin row must still pass')
+})
+
+test('the production exit-code wiring raises on an unmeasured row', async () => {
+  // The PRODUCTION path: `matrixExitCode` owns BOTH the row check and the
+  // prerender check, so emptying the rows before the call — or dropping the
+  // prerender check — changes the job's verdict.
+  const { matrixExitCode } = await import(new URL('./matrix.mjs', import.meta.url).href)
+  assert.equal(
+    matrixExitCode([{ status: 'error' }], 0),
+    1,
+    'an unmeasured row must raise the production exit code'
+  )
+  assert.equal(
+    matrixExitCode([{ status: 'pass' }], 0),
+    0,
+    'measured rows must leave the production exit code alone'
+  )
+  assert.equal(
+    matrixExitCode([{ status: 'pass' }], 0, {
+      prerender: { status: 'fail' },
+      options: { prerender: true },
+    }),
+    1,
+    'a failed prerender check must raise the production exit code'
+  )
+  assert.equal(
+    matrixExitCode([{ status: 'pass' }], 0, {
+      prerender: { status: 'fail' },
+      options: { prerender: false },
+    }),
+    0,
+    'a prerender result must not raise the code when prerender was not requested'
+  )
+})
+
+test('the capture-side and storage-key hops carry the override', async () => {
+  const { preparePageOptions } = await import(new URL('./capture.mjs', import.meta.url).href)
+  const { prepareStorageKey } = await import(new URL('./mocks/index.mjs', import.meta.url).href)
+
+  const URL_OVERRIDE = 'https://other-project.supabase.co'
+
+  // The capture-side hop: the options preparePage receives must carry it.
+  const pageOpts = preparePageOptions({
+    theme: 'dark',
+    mode: 'admin',
+    fixtures: {},
+    supabaseUrl: URL_OVERRIDE,
+  })
+  assert.equal(pageOpts.supabaseUrl, URL_OVERRIDE, 'the capture-side hop must carry the override')
+
+  // The LAST hop: the key actually seeded into localStorage must be derived
+  // from the override, not from the ambient env.
+  const saved = process.env.VITE_SUPABASE_URL
+  try {
+    process.env.VITE_SUPABASE_URL = 'https://placeholder.supabase.co'
+    assert.equal(
+      prepareStorageKey({ mode: 'admin', fixtures: {}, supabaseUrl: URL_OVERRIDE }),
+      'sb-other-project-auth-token',
+      'the seeded key must come from the explicit build URL'
+    )
+    assert.equal(
+      prepareStorageKey({ mode: 'admin', fixtures: {} }),
+      'sb-placeholder-auth-token',
+      'without an override the ambient env still applies'
+    )
+    assert.equal(
+      prepareStorageKey({ mode: 'public', fixtures: {}, supabaseUrl: URL_OVERRIDE }),
+      '',
+      'a public capture seeds no admin session at all'
+    )
+  } finally {
+    if (saved === undefined) delete process.env.VITE_SUPABASE_URL
+    else process.env.VITE_SUPABASE_URL = saved
+  }
 })
