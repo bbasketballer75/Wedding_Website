@@ -746,6 +746,10 @@ export function matrixOverview(summary, rows, { includeAdmin, prerender, outDir,
     changedPixels: rows.reduce((sum, row) => sum + (row.changedPixels ?? 0), 0),
     totalPixels: rows.reduce((sum, row) => sum + (row.totalPixels ?? 0), 0),
   }
+  // The tally must add up BEFORE the summary is published. Asserting it only
+  // in a test leaves the published artifact free to carry a count that sums
+  // past its own row count.
+  assertTallyConsistent(counts)
   const adminRows = rows.filter(row => row.admin)
   return {
     schemaVersion: SCHEMA_VERSION,
@@ -798,6 +802,23 @@ export function tallyIsConsistent(counts) {
   const buckets = counts.pass + counts.allowed + counts.fail + counts.error
   if (buckets !== counts.rows) return false
   return counts.exempt <= counts.error
+}
+
+/**
+ * Refuse to publish a summary whose tally does not add up.
+ *
+ * The invariant is enforced HERE, at the point the summary is built, not
+ * only by a test: a summary whose buckets exceed the row count is a claim
+ * about a set that does not exist, and it is uploaded as the artifact a
+ * reviewer reads.
+ */
+export function assertTallyConsistent(counts) {
+  if (!tallyIsConsistent(counts)) {
+    throw new Error(
+      `parity: the summary tally is inconsistent — ${JSON.stringify(counts)} does not sum to its row count`
+    )
+  }
+  return counts
 }
 
 /**
