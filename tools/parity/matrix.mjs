@@ -359,7 +359,7 @@ function buildRows(shots, { includeAdmin }) {
     const failureReasons =
       captureClass === 'exempt'
         ? [...(shot.failureReasons ?? []), `admin row not measured: ${exemptReason}`]
-        : shot.failureReasons ?? []
+        : (shot.failureReasons ?? [])
     return {
       key: shot.key,
       route: shot.route,

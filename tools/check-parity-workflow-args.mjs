@@ -66,8 +66,7 @@ const workflowsDir =
  */
 function findInvocations(workflowText) {
   const invocations = []
-  const pattern =
-    /node\s+tools\/parity\/(compare|matrix)\.mjs((?:[^\n]*\\\r?\n)*[^\n]*)/g
+  const pattern = /node\s+tools\/parity\/(compare|matrix)\.mjs((?:[^\n]*\\\r?\n)*[^\n]*)/g
   let match
   while ((match = pattern.exec(workflowText)) !== null) {
     const harness = match[1]
