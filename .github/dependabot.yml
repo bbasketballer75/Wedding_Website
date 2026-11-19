@@ -48,8 +48,17 @@ updates:
     # Dependabot's actions updater returns an unknown_error for
     # github/codeql-action (the CodeQL action versions are managed by GitHub's
     # code-scanning setup); ignore it so the weekly updater job does not fail.
+    #
+    # The updater names the SUB-ACTION, not the umbrella repository: a workflow
+    # that pins `github/codeql-action/init` and `github/codeql-action/analyze`
+    # is reported under those names. Ignoring only `github/codeql-action` does
+    # not match either, so Dependabot opened #235 (analyze) and #236 (init) as
+    # single-step proposals — exactly the half-move the umbrella pin exists to
+    # prevent. Both sub-actions are ignored here for that reason.
     ignore:
       - dependency-name: "github/codeql-action"
+      - dependency-name: "github/codeql-action/init"
+      - dependency-name: "github/codeql-action/analyze"
   # The rebuild is a separate npm package (rebuild/package.json). Dependabot
   # security updates auto-discover it. The minimatch advisory
   # (GHSA-g3hv-75wg-m249, vulnerable >= 7.0.0 < 11.0.1) is reachable only
