@@ -1,5 +1,4 @@
 import { Link, useRouterState } from '@tanstack/react-router'
-import { AnimatePresence, motion } from 'framer-motion'
 import { Menu, X, type LucideIcon } from 'lucide-react'
 import { useEffect, useRef, useState } from 'react'
 import { cn } from '@/shared/lib/cn'
@@ -118,15 +117,11 @@ function HeaderContent() {
   }, [isMobileMenuOpen])
 
   return (
-    <AnimatePresence>
+    <>
       {isVisible && (
-        <motion.header
-          initial={{ opacity: 0, y: -16 }}
-          animate={{ opacity: 1, y: 0 }}
-          exit={{ opacity: 0, y: -16 }}
-          transition={{ duration: 0.45, ease: [0.16, 1, 0.3, 1] }}
+        <header
           data-testid='public-header'
-          className='fixed left-1/2 top-3 z-50 w-[calc(100vw-0.75rem)] max-w-[40rem] -translate-x-1/2 px-0 sm:top-6 sm:w-[calc(100vw-1rem)] sm:max-w-[42rem]'
+          className='shell-enter-down fixed left-1/2 top-3 z-50 w-[calc(100vw-0.75rem)] max-w-[40rem] -translate-x-1/2 px-0 sm:top-6 sm:w-[calc(100vw-1rem)] sm:max-w-[42rem]'
         >
           <div className='theme-panel flex w-full items-center gap-0.5 overflow-x-auto scroll-smooth rounded-full px-1 py-1.5 hide-scrollbar sm:justify-between sm:gap-0 sm:px-2 sm:py-2'>
             <Link
@@ -169,64 +164,42 @@ function HeaderContent() {
               className='flex sm:hidden items-center justify-center w-10 h-10 rounded-full bg-[color:var(--ui-surface-elevated)] text-[color:var(--ui-text)] hover:bg-[color:var(--ui-surface)] transition-colors'
               onClick={toggleMobileMenu}
             >
-              <AnimatePresence mode='wait' initial={false}>
-                {isMobileMenuOpen ? (
-                  <motion.div
-                    key='close'
-                    initial={{ rotate: -90, opacity: 0 }}
-                    animate={{ rotate: 0, opacity: 1 }}
-                    exit={{ rotate: 90, opacity: 0 }}
-                    transition={{ duration: 0.2 }}
-                  >
-                    <X className='w-5 h-5' />
-                  </motion.div>
-                ) : (
-                  <motion.div
-                    key='menu'
-                    initial={{ rotate: -90, opacity: 0 }}
-                    animate={{ rotate: 0, opacity: 1 }}
-                    exit={{ rotate: 90, opacity: 0 }}
-                    transition={{ duration: 0.2 }}
-                  >
-                    <Menu className='w-5 h-5' />
-                  </motion.div>
-                )}
-              </AnimatePresence>
+              {isMobileMenuOpen ? (
+                <span key='close' className='shell-enter-icon flex items-center justify-center'>
+                  <X className='w-5 h-5' />
+                </span>
+              ) : (
+                <span key='menu' className='shell-enter-icon flex items-center justify-center'>
+                  <Menu className='w-5 h-5' />
+                </span>
+              )}
             </button>
           </div>
 
           {/* Mobile menu overlay - hidden on desktop */}
-          <AnimatePresence>
-            {isMobileMenuOpen && (
-              <motion.div
-                initial={{ opacity: 0, y: -8 }}
-                animate={{ opacity: 1, y: 0 }}
-                exit={{ opacity: 0, y: -8 }}
-                transition={{ duration: 0.25, ease: [0.16, 1, 0.3, 1] }}
-                className='theme-panel sm:hidden mt-2 rounded-2xl px-4 py-4'
-              >
-                <nav className='flex flex-col gap-1'>
-                  {publicNavLinks.map(link => (
-                    <HeaderLink
-                      key={link.path}
-                      path={link.path}
-                      name={link.label}
-                      mobileName={link.mobileLabel}
-                      icon={link.icon}
-                      isActive={pathname === link.path}
-                      isPrimary={link.isPrimary}
-                    />
-                  ))}
-                  <div className='mt-2 border-t border-[color:var(--ui-border)] pt-3'>
-                    <ThemeToggle label className='w-full justify-center shadow-none' />
-                  </div>
-                </nav>
-              </motion.div>
-            )}
-          </AnimatePresence>
-        </motion.header>
+          {isMobileMenuOpen && (
+            <div className='shell-enter-menu theme-panel sm:hidden mt-2 rounded-2xl px-4 py-4'>
+              <nav className='flex flex-col gap-1'>
+                {publicNavLinks.map(link => (
+                  <HeaderLink
+                    key={link.path}
+                    path={link.path}
+                    name={link.label}
+                    mobileName={link.mobileLabel}
+                    icon={link.icon}
+                    isActive={pathname === link.path}
+                    isPrimary={link.isPrimary}
+                  />
+                ))}
+                <div className='mt-2 border-t border-[color:var(--ui-border)] pt-3'>
+                  <ThemeToggle label className='w-full justify-center shadow-none' />
+                </div>
+              </nav>
+            </div>
+          )}
+        </header>
       )}
-    </AnimatePresence>
+    </>
   )
 }
 
