@@ -779,3 +779,126 @@ body {
     animation-duration: 0.5s;
   }
 }
+
+/* Shell enter animations — replace framer-motion in the app shell.
+ *
+ * framer-motion was a 46.4 KiB gzip chunk that index.html module-preloaded on the
+ * critical path of every page, for four enter animations. These keyframes carry the
+ * same timing and easing, so the shell is still animated without shipping an
+ * animation runtime to first paint.
+ *
+ * The global `prefers-reduced-motion` rule above already sets animation-duration to
+ * 0.01ms, so these respect that preference with no extra code.
+ *
+ * Note: keyframes use `transform`, which composes with Tailwind's separate `translate`
+ * property (used by the header's -translate-x-1/2 centring) rather than clobbering it.
+ */
+@keyframes shellEnterUp {
+  from {
+    opacity: 0;
+    transform: translateY(20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+@keyframes shellEnterLoader {
+  from {
+    opacity: 0;
+    transform: translateY(16px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+@keyframes shellEnterDown {
+  from {
+    opacity: 0;
+    transform: translateY(-16px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+@keyframes shellEnterMenu {
+  from {
+    opacity: 0;
+    transform: translateY(-8px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+@keyframes shellEnterIcon {
+  from {
+    opacity: 0;
+    transform: rotate(-90deg);
+  }
+  to {
+    opacity: 1;
+    transform: rotate(0deg);
+  }
+}
+@keyframes shellEnterToggle {
+  from {
+    opacity: 0;
+    transform: rotate(-45deg) scale(0.82);
+  }
+  to {
+    opacity: 1;
+    transform: rotate(0deg) scale(1);
+  }
+}
+
+.shell-enter-up {
+  animation: shellEnterUp 0.5s cubic-bezier(0.16, 1, 0.3, 1) both;
+}
+.shell-enter-loader {
+  animation: shellEnterLoader 0.45s cubic-bezier(0.16, 1, 0.3, 1) both;
+}
+.shell-enter-down {
+  animation: shellEnterDown 0.45s cubic-bezier(0.16, 1, 0.3, 1) both;
+}
+.shell-enter-menu {
+  animation: shellEnterMenu 0.25s cubic-bezier(0.16, 1, 0.3, 1) both;
+}
+.shell-enter-icon {
+  animation: shellEnterIcon 0.2s ease-out both;
+}
+.shell-enter-toggle {
+  animation: shellEnterToggle 0.28s cubic-bezier(0.16, 1, 0.3, 1) both;
+}
+
+@keyframes shellEnterNotFound {
+  from {
+    opacity: 0;
+    transform: translateY(20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+@keyframes shellEnterPop {
+  from {
+    opacity: 0;
+    transform: scale(0);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1);
+  }
+}
+/* The 404 page is statically imported as the router's notFoundComponent, so its
+ * framer-motion import used to pull the whole 46 KiB runtime into the entry chunk.
+ * Same 0.6s rise and delayed pop, no runtime. */
+.shell-enter-notfound {
+  animation: shellEnterNotFound 0.6s cubic-bezier(0.16, 1, 0.3, 1) both;
+}
+.shell-enter-pop {
+  animation: shellEnterPop 0.35s cubic-bezier(0.16, 1, 0.3, 1) 0.2s both;
+}

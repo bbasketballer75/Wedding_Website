@@ -1,18 +1,17 @@
-import { motion } from 'framer-motion'
-
 /**
  * Frozen `PageLoader` port (`src/components/ui/PageLoader.tsx`): the Suspense
  * fallback used while a code-split route resolves. Skeleton panels use the
  * shared `theme-*` utilities, so it is theme- and parity-safe.
+ *
+ * The enter animation is CSS (`.shell-enter-loader`) rather than framer-motion: this
+ * is the Suspense fallback, so it must paint immediately and must not drag an
+ * animation runtime onto the critical path.
  */
 export function PageLoader() {
   return (
     <div className='theme-canvas min-h-screen px-4 pt-28 sm:px-6 sm:pt-32'>
-      <motion.div
-        initial={{ opacity: 0, y: 16 }}
-        animate={{ opacity: 1, y: 0 }}
-        transition={{ duration: 0.45, ease: [0.16, 1, 0.3, 1] }}
-        className='mx-auto grid max-w-6xl gap-5 lg:grid-cols-[0.85fr_1.15fr]'
+      <div
+        className='shell-enter-loader mx-auto grid max-w-6xl gap-5 lg:grid-cols-[0.85fr_1.15fr]'
         aria-label='Loading page'
         role='status'
       >
@@ -31,7 +30,7 @@ export function PageLoader() {
           <div className='theme-skeleton hidden aspect-[4/5] rounded-[1.35rem] sm:block' />
         </div>
         <span className='sr-only'>Loading...</span>
-      </motion.div>
+      </div>
     </div>
   )
 }

@@ -1,4 +1,3 @@
-import { motion } from 'framer-motion'
 import { ArrowLeft, Heart, Home } from 'lucide-react'
 import { usePageMeta } from '@/app/seo/usePageMeta'
 import { Button, ButtonLink } from '@/shared/ui/Button'
@@ -20,21 +19,11 @@ export function NotFoundPage() {
 
   return (
     <div className='min-h-screen bg-cream-50 flex items-center justify-center px-4'>
-      <motion.div
-        initial={{ opacity: 0, y: 20 }}
-        animate={{ opacity: 1, y: 0 }}
-        transition={{ duration: 0.6 }}
-        className='text-center max-w-lg'
-      >
+      <div className='shell-enter-notfound text-center max-w-lg'>
         {/* Decorative Icon */}
-        <motion.div
-          initial={{ scale: 0 }}
-          animate={{ scale: 1 }}
-          transition={{ delay: 0.2, type: 'spring', stiffness: 200 }}
-          className='w-24 h-24 bg-gold-100 rounded-full flex items-center justify-center mx-auto mb-8'
-        >
+        <div className='shell-enter-pop w-24 h-24 bg-gold-100 rounded-full flex items-center justify-center mx-auto mb-8'>
           <Heart className='w-12 h-12 text-gold-500' aria-hidden='true' />
-        </motion.div>
+        </div>
 
         {/* 404 Text */}
         <h1 className='font-display text-8xl text-charcoal-900 mb-4'>404</h1>
@@ -64,7 +53,7 @@ export function NotFoundPage() {
           <div className='w-2 h-2 rounded-full bg-gold-400' />
           <div className='w-2 h-2 rounded-full bg-gold-400' />
         </div>
-      </motion.div>
+      </div>
     </div>
   )
 }
