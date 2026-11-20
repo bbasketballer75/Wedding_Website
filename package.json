@@ -186,7 +186,7 @@
     "supabase": "^2.117.0",
     "terser": "5.50.0",
     "typescript": "npm:@typescript/typescript6@6.0.2",
-    "vite": "^8.3.5",
+    "vite": "^8.3.8",
     "vite-plugin-pwa": "^1.2.0",
     "vitest": "^5.0.5",
     "wait-on": "9.5.1"
@@ -195,10 +195,6 @@
     "@rollup/plugin-terser": "1.0.2",
     "serialize-javascript": "7.1.4",
     "axios": ">=1.15.0",
-    "compression": "^1.8.2",
-    "@rolldown/binding-linux-x64-gnu": "1.2.15",
-    "@rolldown/binding-linux-x64-musl": "1.2.15",
-    "@rolldown/binding-linux-arm64-gnu": "1.2.15",
-    "@rolldown/binding-linux-arm64-musl": "1.2.15"
+    "compression": "^1.8.2"
   }
 }
