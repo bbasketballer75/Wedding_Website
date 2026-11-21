@@ -1,0 +1,1171 @@
+{
+  "schemaVersion": 1,
+  "kind": "parity-compare",
+  "generatedAt": "2026-11-10T02:58:10.302Z",
+  "durationMs": 52673,
+  "oracle": {
+    "legacyUrl": "http://127.0.0.1:4174",
+    "rebuildUrl": "http://127.0.0.1:4175",
+    "sameInstance": false,
+    "legacyProbe": {
+      "status": 200,
+      "url": "http://127.0.0.1:4174/"
+    },
+    "rebuildProbe": {
+      "status": 200,
+      "url": "http://127.0.0.1:4175/"
+    }
+  },
+  "toolchain": {
+    "node": "v26.8.1",
+    "platform": "win32-x64",
+    "playwright": "1.63.0",
+    "chromium": "153.0.8010.12",
+    "executablePath": "C:\\Users\\bbask\\AppData\\Local\\ms-playwright\\chromium-1243\\chrome-win64\\chrome.exe",
+    "sharp": "0.35.5"
+  },
+  "contracts": {
+    "ui": {
+      "source": "contracts/ui.json",
+      "file": "C:\\Users\\bbask\\Coding_Projects\\Wedding_Website_Clean\\contracts\\ui.json",
+      "fixedNow": "2026-11-08T17:00:00.000Z"
+    },
+    "routes": {
+      "source": "contracts/routes.json",
+      "file": "C:\\Users\\bbask\\Coding_Projects\\Wedding_Website_Clean\\contracts\\routes.json",
+      "count": 12,
+      "capturePathOverrides": {
+        "admin": {
+          "contractPath": "/admin/*",
+          "capturePath": "/admin"
+        }
+      }
+    }
+  },
+  "selection": {
+    "routes": [
+      {
+        "id": "admin",
+        "path": "/admin/*",
+        "parity": 2,
+        "matrix": ["desktop", "mobile"],
+        "themes": ["dark", "light"]
+      },
+      {
+        "id": "admin-login",
+        "path": "/admin/login",
+        "parity": 2,
+        "matrix": ["desktop", "mobile"],
+        "themes": ["dark", "light"]
+      }
+    ],
+    "viewports": [
+      {
+        "name": "mobile",
+        "width": 390,
+        "height": 844,
+        "deviceScaleFactor": 1
+      }
+    ],
+    "themes": ["dark", "light"],
+    "plannedShots": [
+      "admin__mobile__dark",
+      "admin__mobile__light",
+      "admin-login__mobile__dark",
+      "admin-login__mobile__light"
+    ]
+  },
+  "tolerance": {
+    "maxDiffRatio": 0.001,
+    "pixelThreshold": 0.12,
+    "edgeTolerance": 1,
+    "edgeToleranceSemantics": "changed pixel accepted when the other image matches within +/-N px under the same colour threshold; opt-in edge-raster phase tolerance",
+    "sizeMismatchAlwaysFails": true,
+    "textParityRequired": true
+  },
+  "determinism": {
+    "clock": {
+      "source": "contracts/ui.json fixedNow",
+      "fixedNow": "2026-11-08T17:00:00.000Z",
+      "strategy": "install fake-timer clock at fixedNow, pause before the capture navigation, advance only fixed runFor() budgets"
+    },
+    "timezoneId": "America/New_York",
+    "locale": "en-US",
+    "reducedMotion": "reduce",
+    "colorScheme": "per-theme",
+    "serviceWorkers": "block",
+    "deviceScaleFactor": 1,
+    "scrollStepPx": 600,
+    "maxPageHeightPx": 60000,
+    "fixtures": {
+      "source": "contracts/fixtures",
+      "sources": {
+        "photos": "contracts/fixtures/photos.json",
+        "guestbook": "contracts/fixtures/guestbook.json",
+        "guestUploads": "contracts/fixtures/guestUploads.json",
+        "activity": "contracts/fixtures/activity.json",
+        "editorial": "contracts/fixtures/editorial.json",
+        "claims": "contracts/fixtures/claims.json",
+        "guestTokens": "contracts/fixtures/guestTokens.json",
+        "adminSession": "contracts/fixtures/adminSession.json"
+      }
+    },
+    "mediaStub": {
+      "path": "C:\\Users\\bbask\\Coding_Projects\\Wedding_Website_Clean\\public\\images\\engagement\\PoradaProposal-29.webp",
+      "sha256": "27db7b40c5ebe517bea2ddba5c1074e74b691308d745ff7311d4dd13d13b970a",
+      "hosts": ["media.wedding.theporadas.com"]
+    },
+    "masks": {}
+  },
+  "allowlist": {
+    "file": "C:\\Users\\bbask\\Coding_Projects\\Wedding_Website_Clean\\contracts\\parity-allowlist.json",
+    "entries": 5,
+    "wave": 9
+  },
+  "matrix": {
+    "resumable": true,
+    "resumed": false,
+    "extraRoutes": [],
+    "partialPath": "summary.partial.json"
+  },
+  "shots": [
+    {
+      "key": "admin__mobile__dark",
+      "route": "admin",
+      "routePath": "/admin/*",
+      "urlPath": "/admin",
+      "parity": 2,
+      "viewport": "mobile",
+      "viewportPixels": {
+        "width": 390,
+        "height": 844
+      },
+      "theme": "dark",
+      "status": "fail",
+      "failureReasons": ["pixel"],
+      "allowlist": {
+        "status": "no-entry",
+        "accepted": false,
+        "entry": null,
+        "activeEntries": 0,
+        "expiredEntries": [],
+        "wave": 9
+      },
+      "masks": [],
+      "legacy": {
+        "ok": true,
+        "endpoint": "http://127.0.0.1:4174/admin",
+        "httpStatus": 200,
+        "pageHeightPx": 3446,
+        "sliceCount": 8,
+        "durationMs": 6043,
+        "themeApplied": {
+          "datasetTheme": "dark",
+          "className": "dark-theme",
+          "colorScheme": "dark"
+        },
+        "finalUrl": "http://127.0.0.1:4174/admin",
+        "adminAuth": {
+          "attempted": false,
+          "succeeded": false,
+          "requestedPath": "/admin",
+          "email": "admin@test.wedding",
+          "finalPath": null
+        },
+        "imagesSettled": true,
+        "warnings": [],
+        "consoleErrors": [],
+        "pageErrors": [],
+        "error": null,
+        "files": [
+          "C:\\Users\\bbask\\Coding_Projects\\Wedding_Website_Clean\\tools\\parity\\output\\lead-admin-mobile\\shots\\legacy\\admin__mobile__dark--s000.png",
+          "C:\\Users\\bbask\\Coding_Projects\\Wedding_Website_Clean\\tools\\parity\\output\\lead-admin-mobile\\shots\\legacy\\admin__mobile__dark--s001.png",
+          "C:\\Users\\bbask\\Coding_Projects\\Wedding_Website_Clean\\tools\\parity\\output\\lead-admin-mobile\\shots\\legacy\\admin__mobile__dark--s002.png",
+          "C:\\Users\\bbask\\Coding_Projects\\Wedding_Website_Clean\\tools\\parity\\output\\lead-admin-mobile\\shots\\legacy\\admin__mobile__dark--s003.png",
+          "C:\\Users\\bbask\\Coding_Projects\\Wedding_Website_Clean\\tools\\parity\\output\\lead-admin-mobile\\shots\\legacy\\admin__mobile__dark--s004.png",
+          "C:\\Users\\bbask\\Coding_Projects\\Wedding_Website_Clean\\tools\\parity\\output\\lead-admin-mobile\\shots\\legacy\\admin__mobile__dark--s005.png",
+          "C:\\Users\\bbask\\Coding_Projects\\Wedding_Website_Clean\\tools\\parity\\output\\lead-admin-mobile\\shots\\legacy\\admin__mobile__dark--s006.png",
+          "C:\\Users\\bbask\\Coding_Projects\\Wedding_Website_Clean\\tools\\parity\\output\\lead-admin-mobile\\shots\\legacy\\admin__mobile__dark--s007.png"
+        ]
+      },
+      "rebuild": {
+        "ok": true,
+        "endpoint": "http://127.0.0.1:4175/admin",
+        "httpStatus": 200,
+        "pageHeightPx": 3444,
+        "sliceCount": 8,
+        "durationMs": 5995,
+        "themeApplied": {
+          "datasetTheme": "dark",
+          "className": "dark-theme",
+          "colorScheme": "dark"
+        },
+        "finalUrl": "http://127.0.0.1:4175/admin",
+        "adminAuth": {
+          "attempted": false,
+          "succeeded": false,
+          "requestedPath": "/admin",
+          "email": "admin@test.wedding",
+          "finalPath": null
+        },
+        "imagesSettled": true,
+        "warnings": [],
+        "consoleErrors": [],
+        "pageErrors": [],
+        "error": null,
+        "files": [
+          "C:\\Users\\bbask\\Coding_Projects\\Wedding_Website_Clean\\tools\\parity\\output\\lead-admin-mobile\\shots\\rebuild\\admin__mobile__dark--s000.png",
+          "C:\\Users\\bbask\\Coding_Projects\\Wedding_Website_Clean\\tools\\parity\\output\\lead-admin-mobile\\shots\\rebuild\\admin__mobile__dark--s001.png",
+          "C:\\Users\\bbask\\Coding_Projects\\Wedding_Website_Clean\\tools\\parity\\output\\lead-admin-mobile\\shots\\rebuild\\admin__mobile__dark--s002.png",
+          "C:\\Users\\bbask\\Coding_Projects\\Wedding_Website_Clean\\tools\\parity\\output\\lead-admin-mobile\\shots\\rebuild\\admin__mobile__dark--s003.png",
+          "C:\\Users\\bbask\\Coding_Projects\\Wedding_Website_Clean\\tools\\parity\\output\\lead-admin-mobile\\shots\\rebuild\\admin__mobile__dark--s004.png",
+          "C:\\Users\\bbask\\Coding_Projects\\Wedding_Website_Clean\\tools\\parity\\output\\lead-admin-mobile\\shots\\rebuild\\admin__mobile__dark--s005.png",
+          "C:\\Users\\bbask\\Coding_Projects\\Wedding_Website_Clean\\tools\\parity\\output\\lead-admin-mobile\\shots\\rebuild\\admin__mobile__dark--s006.png",
+          "C:\\Users\\bbask\\Coding_Projects\\Wedding_Website_Clean\\tools\\parity\\output\\lead-admin-mobile\\shots\\rebuild\\admin__mobile__dark--s007.png"
+        ]
+      },
+      "pixelDiff": {
+        "changedPixels": 38217,
+        "totalPixels": 2633280,
+        "ratio": 0.01451307874589865,
+        "maxChannelDelta": 251,
+        "edgeTolerance": 1,
+        "boundingBox": {
+          "x": 0,
+          "y": 0,
+          "width": 390,
+          "height": 844
+        },
+        "sizeMismatch": false,
+        "sliceCountMismatch": false,
+        "slices": [
+          {
+            "slice": 0,
+            "status": "diff",
+            "diffFile": "shots/diff/admin__mobile__dark--s000.png",
+            "changedPixels": 7415,
+            "totalPixels": 329160,
+            "ratio": 0.022527038522299186,
+            "maxChannelDelta": 251,
+            "boundingBox": {
+              "x": 16,
+              "y": 233,
+              "width": 358,
+              "height": 611
+            }
+          },
+          {
+            "slice": 1,
+            "status": "diff",
+            "diffFile": "shots/diff/admin__mobile__dark--s001.png",
+            "changedPixels": 15288,
+            "totalPixels": 329160,
+            "ratio": 0.046445497630331754,
+            "maxChannelDelta": 250,
+            "boundingBox": {
+              "x": 16,
+              "y": 0,
+              "width": 358,
+              "height": 843
+            }
+          },
+          {
+            "slice": 2,
+            "status": "diff",
+            "diffFile": "shots/diff/admin__mobile__dark--s002.png",
+            "changedPixels": 10738,
+            "totalPixels": 329160,
+            "ratio": 0.03262243285939968,
+            "maxChannelDelta": 249,
+            "boundingBox": {
+              "x": 0,
+              "y": 0,
+              "width": 390,
+              "height": 844
+            }
+          },
+          {
+            "slice": 3,
+            "status": "diff",
+            "diffFile": "shots/diff/admin__mobile__dark--s003.png",
+            "changedPixels": 4776,
+            "totalPixels": 329160,
+            "ratio": 0.014509660955158585,
+            "maxChannelDelta": 180,
+            "boundingBox": {
+              "x": 40,
+              "y": 0,
+              "width": 297,
+              "height": 837
+            }
+          },
+          {
+            "slice": 4,
+            "status": "identical",
+            "diffFile": "shots/diff/admin__mobile__dark--s004.png",
+            "changedPixels": 0,
+            "totalPixels": 329160,
+            "ratio": 0,
+            "maxChannelDelta": 170,
+            "boundingBox": null
+          },
+          {
+            "slice": 5,
+            "status": "identical",
+            "diffFile": "shots/diff/admin__mobile__dark--s005.png",
+            "changedPixels": 0,
+            "totalPixels": 329160,
+            "ratio": 0,
+            "maxChannelDelta": 170,
+            "boundingBox": null
+          },
+          {
+            "slice": 6,
+            "status": "identical",
+            "diffFile": "shots/diff/admin__mobile__dark--s006.png",
+            "changedPixels": 0,
+            "totalPixels": 329160,
+            "ratio": 0,
+            "maxChannelDelta": 170,
+            "boundingBox": null
+          },
+          {
+            "slice": 7,
+            "status": "identical",
+            "diffFile": "shots/diff/admin__mobile__dark--s007.png",
+            "changedPixels": 0,
+            "totalPixels": 329160,
+            "ratio": 0,
+            "maxChannelDelta": 170,
+            "boundingBox": null
+          }
+        ]
+      },
+      "textDiff": {
+        "status": "pass",
+        "differences": [],
+        "bodyText": null
+      },
+      "files": {
+        "legacy": [
+          "shots/legacy/admin__mobile__dark--s000.png",
+          "shots/legacy/admin__mobile__dark--s001.png",
+          "shots/legacy/admin__mobile__dark--s002.png",
+          "shots/legacy/admin__mobile__dark--s003.png",
+          "shots/legacy/admin__mobile__dark--s004.png",
+          "shots/legacy/admin__mobile__dark--s005.png",
+          "shots/legacy/admin__mobile__dark--s006.png",
+          "shots/legacy/admin__mobile__dark--s007.png"
+        ],
+        "rebuild": [
+          "shots/rebuild/admin__mobile__dark--s000.png",
+          "shots/rebuild/admin__mobile__dark--s001.png",
+          "shots/rebuild/admin__mobile__dark--s002.png",
+          "shots/rebuild/admin__mobile__dark--s003.png",
+          "shots/rebuild/admin__mobile__dark--s004.png",
+          "shots/rebuild/admin__mobile__dark--s005.png",
+          "shots/rebuild/admin__mobile__dark--s006.png",
+          "shots/rebuild/admin__mobile__dark--s007.png"
+        ],
+        "diff": [
+          "shots/diff/admin__mobile__dark--s000.png",
+          "shots/diff/admin__mobile__dark--s001.png",
+          "shots/diff/admin__mobile__dark--s002.png",
+          "shots/diff/admin__mobile__dark--s003.png",
+          "shots/diff/admin__mobile__dark--s004.png",
+          "shots/diff/admin__mobile__dark--s005.png",
+          "shots/diff/admin__mobile__dark--s006.png",
+          "shots/diff/admin__mobile__dark--s007.png"
+        ],
+        "text": {
+          "legacy": "text/legacy/admin__mobile__dark.json",
+          "rebuild": "text/rebuild/admin__mobile__dark.json",
+          "diff": null
+        }
+      },
+      "warnings": []
+    },
+    {
+      "key": "admin__mobile__light",
+      "route": "admin",
+      "routePath": "/admin/*",
+      "urlPath": "/admin",
+      "parity": 2,
+      "viewport": "mobile",
+      "viewportPixels": {
+        "width": 390,
+        "height": 844
+      },
+      "theme": "light",
+      "status": "fail",
+      "failureReasons": ["pixel"],
+      "allowlist": {
+        "status": "no-entry",
+        "accepted": false,
+        "entry": null,
+        "activeEntries": 0,
+        "expiredEntries": [],
+        "wave": 9
+      },
+      "masks": [],
+      "legacy": {
+        "ok": true,
+        "endpoint": "http://127.0.0.1:4174/admin",
+        "httpStatus": 200,
+        "pageHeightPx": 3446,
+        "sliceCount": 8,
+        "durationMs": 5980,
+        "themeApplied": {
+          "datasetTheme": "light",
+          "className": "light-theme",
+          "colorScheme": "light"
+        },
+        "finalUrl": "http://127.0.0.1:4174/admin",
+        "adminAuth": {
+          "attempted": false,
+          "succeeded": false,
+          "requestedPath": "/admin",
+          "email": "admin@test.wedding",
+          "finalPath": null
+        },
+        "imagesSettled": true,
+        "warnings": [],
+        "consoleErrors": [],
+        "pageErrors": [],
+        "error": null,
+        "files": [
+          "C:\\Users\\bbask\\Coding_Projects\\Wedding_Website_Clean\\tools\\parity\\output\\lead-admin-mobile\\shots\\legacy\\admin__mobile__light--s000.png",
+          "C:\\Users\\bbask\\Coding_Projects\\Wedding_Website_Clean\\tools\\parity\\output\\lead-admin-mobile\\shots\\legacy\\admin__mobile__light--s001.png",
+          "C:\\Users\\bbask\\Coding_Projects\\Wedding_Website_Clean\\tools\\parity\\output\\lead-admin-mobile\\shots\\legacy\\admin__mobile__light--s002.png",
+          "C:\\Users\\bbask\\Coding_Projects\\Wedding_Website_Clean\\tools\\parity\\output\\lead-admin-mobile\\shots\\legacy\\admin__mobile__light--s003.png",
+          "C:\\Users\\bbask\\Coding_Projects\\Wedding_Website_Clean\\tools\\parity\\output\\lead-admin-mobile\\shots\\legacy\\admin__mobile__light--s004.png",
+          "C:\\Users\\bbask\\Coding_Projects\\Wedding_Website_Clean\\tools\\parity\\output\\lead-admin-mobile\\shots\\legacy\\admin__mobile__light--s005.png",
+          "C:\\Users\\bbask\\Coding_Projects\\Wedding_Website_Clean\\tools\\parity\\output\\lead-admin-mobile\\shots\\legacy\\admin__mobile__light--s006.png",
+          "C:\\Users\\bbask\\Coding_Projects\\Wedding_Website_Clean\\tools\\parity\\output\\lead-admin-mobile\\shots\\legacy\\admin__mobile__light--s007.png"
+        ]
+      },
+      "rebuild": {
+        "ok": true,
+        "endpoint": "http://127.0.0.1:4175/admin",
+        "httpStatus": 200,
+        "pageHeightPx": 3444,
+        "sliceCount": 8,
+        "durationMs": 5981,
+        "themeApplied": {
+          "datasetTheme": "light",
+          "className": "light-theme",
+          "colorScheme": "light"
+        },
+        "finalUrl": "http://127.0.0.1:4175/admin",
+        "adminAuth": {
+          "attempted": false,
+          "succeeded": false,
+          "requestedPath": "/admin",
+          "email": "admin@test.wedding",
+          "finalPath": null
+        },
+        "imagesSettled": true,
+        "warnings": [],
+        "consoleErrors": [],
+        "pageErrors": [],
+        "error": null,
+        "files": [
+          "C:\\Users\\bbask\\Coding_Projects\\Wedding_Website_Clean\\tools\\parity\\output\\lead-admin-mobile\\shots\\rebuild\\admin__mobile__light--s000.png",
+          "C:\\Users\\bbask\\Coding_Projects\\Wedding_Website_Clean\\tools\\parity\\output\\lead-admin-mobile\\shots\\rebuild\\admin__mobile__light--s001.png",
+          "C:\\Users\\bbask\\Coding_Projects\\Wedding_Website_Clean\\tools\\parity\\output\\lead-admin-mobile\\shots\\rebuild\\admin__mobile__light--s002.png",
+          "C:\\Users\\bbask\\Coding_Projects\\Wedding_Website_Clean\\tools\\parity\\output\\lead-admin-mobile\\shots\\rebuild\\admin__mobile__light--s003.png",
+          "C:\\Users\\bbask\\Coding_Projects\\Wedding_Website_Clean\\tools\\parity\\output\\lead-admin-mobile\\shots\\rebuild\\admin__mobile__light--s004.png",
+          "C:\\Users\\bbask\\Coding_Projects\\Wedding_Website_Clean\\tools\\parity\\output\\lead-admin-mobile\\shots\\rebuild\\admin__mobile__light--s005.png",
+          "C:\\Users\\bbask\\Coding_Projects\\Wedding_Website_Clean\\tools\\parity\\output\\lead-admin-mobile\\shots\\rebuild\\admin__mobile__light--s006.png",
+          "C:\\Users\\bbask\\Coding_Projects\\Wedding_Website_Clean\\tools\\parity\\output\\lead-admin-mobile\\shots\\rebuild\\admin__mobile__light--s007.png"
+        ]
+      },
+      "pixelDiff": {
+        "changedPixels": 28703,
+        "totalPixels": 2633280,
+        "ratio": 0.010900094179122615,
+        "maxChannelDelta": 247,
+        "edgeTolerance": 1,
+        "boundingBox": {
+          "x": 19,
+          "y": 0,
+          "width": 355,
+          "height": 844
+        },
+        "sizeMismatch": false,
+        "sliceCountMismatch": false,
+        "slices": [
+          {
+            "slice": 0,
+            "status": "diff",
+            "diffFile": "shots/diff/admin__mobile__light--s000.png",
+            "changedPixels": 7922,
+            "totalPixels": 329160,
+            "ratio": 0.024067322882488758,
+            "maxChannelDelta": 247,
+            "boundingBox": {
+              "x": 21,
+              "y": 262,
+              "width": 353,
+              "height": 582
+            }
+          },
+          {
+            "slice": 1,
+            "status": "diff",
+            "diffFile": "shots/diff/admin__mobile__light--s001.png",
+            "changedPixels": 6957,
+            "totalPixels": 329160,
+            "ratio": 0.021135617936565803,
+            "maxChannelDelta": 247,
+            "boundingBox": {
+              "x": 19,
+              "y": 0,
+              "width": 352,
+              "height": 843
+            }
+          },
+          {
+            "slice": 2,
+            "status": "diff",
+            "diffFile": "shots/diff/admin__mobile__light--s002.png",
+            "changedPixels": 9048,
+            "totalPixels": 329160,
+            "ratio": 0.027488151658767772,
+            "maxChannelDelta": 247,
+            "boundingBox": {
+              "x": 27,
+              "y": 0,
+              "width": 346,
+              "height": 844
+            }
+          },
+          {
+            "slice": 3,
+            "status": "diff",
+            "diffFile": "shots/diff/admin__mobile__light--s003.png",
+            "changedPixels": 4776,
+            "totalPixels": 329160,
+            "ratio": 0.014509660955158585,
+            "maxChannelDelta": 180,
+            "boundingBox": {
+              "x": 40,
+              "y": 0,
+              "width": 297,
+              "height": 837
+            }
+          },
+          {
+            "slice": 4,
+            "status": "identical",
+            "diffFile": "shots/diff/admin__mobile__light--s004.png",
+            "changedPixels": 0,
+            "totalPixels": 329160,
+            "ratio": 0,
+            "maxChannelDelta": 170,
+            "boundingBox": null
+          },
+          {
+            "slice": 5,
+            "status": "identical",
+            "diffFile": "shots/diff/admin__mobile__light--s005.png",
+            "changedPixels": 0,
+            "totalPixels": 329160,
+            "ratio": 0,
+            "maxChannelDelta": 170,
+            "boundingBox": null
+          },
+          {
+            "slice": 6,
+            "status": "identical",
+            "diffFile": "shots/diff/admin__mobile__light--s006.png",
+            "changedPixels": 0,
+            "totalPixels": 329160,
+            "ratio": 0,
+            "maxChannelDelta": 170,
+            "boundingBox": null
+          },
+          {
+            "slice": 7,
+            "status": "identical",
+            "diffFile": "shots/diff/admin__mobile__light--s007.png",
+            "changedPixels": 0,
+            "totalPixels": 329160,
+            "ratio": 0,
+            "maxChannelDelta": 170,
+            "boundingBox": null
+          }
+        ]
+      },
+      "textDiff": {
+        "status": "pass",
+        "differences": [],
+        "bodyText": null
+      },
+      "files": {
+        "legacy": [
+          "shots/legacy/admin__mobile__light--s000.png",
+          "shots/legacy/admin__mobile__light--s001.png",
+          "shots/legacy/admin__mobile__light--s002.png",
+          "shots/legacy/admin__mobile__light--s003.png",
+          "shots/legacy/admin__mobile__light--s004.png",
+          "shots/legacy/admin__mobile__light--s005.png",
+          "shots/legacy/admin__mobile__light--s006.png",
+          "shots/legacy/admin__mobile__light--s007.png"
+        ],
+        "rebuild": [
+          "shots/rebuild/admin__mobile__light--s000.png",
+          "shots/rebuild/admin__mobile__light--s001.png",
+          "shots/rebuild/admin__mobile__light--s002.png",
+          "shots/rebuild/admin__mobile__light--s003.png",
+          "shots/rebuild/admin__mobile__light--s004.png",
+          "shots/rebuild/admin__mobile__light--s005.png",
+          "shots/rebuild/admin__mobile__light--s006.png",
+          "shots/rebuild/admin__mobile__light--s007.png"
+        ],
+        "diff": [
+          "shots/diff/admin__mobile__light--s000.png",
+          "shots/diff/admin__mobile__light--s001.png",
+          "shots/diff/admin__mobile__light--s002.png",
+          "shots/diff/admin__mobile__light--s003.png",
+          "shots/diff/admin__mobile__light--s004.png",
+          "shots/diff/admin__mobile__light--s005.png",
+          "shots/diff/admin__mobile__light--s006.png",
+          "shots/diff/admin__mobile__light--s007.png"
+        ],
+        "text": {
+          "legacy": "text/legacy/admin__mobile__light.json",
+          "rebuild": "text/rebuild/admin__mobile__light.json",
+          "diff": null
+        }
+      },
+      "warnings": []
+    },
+    {
+      "key": "admin-login__mobile__dark",
+      "route": "admin-login",
+      "routePath": "/admin/login",
+      "urlPath": "/admin/login",
+      "parity": 2,
+      "viewport": "mobile",
+      "viewportPixels": {
+        "width": 390,
+        "height": 844
+      },
+      "theme": "dark",
+      "status": "fail",
+      "failureReasons": ["pixel"],
+      "allowlist": {
+        "status": "no-entry",
+        "accepted": false,
+        "entry": null,
+        "activeEntries": 0,
+        "expiredEntries": [],
+        "wave": 9
+      },
+      "masks": [],
+      "legacy": {
+        "ok": true,
+        "endpoint": "http://127.0.0.1:4174/admin/login",
+        "httpStatus": 200,
+        "pageHeightPx": 3446,
+        "sliceCount": 8,
+        "durationMs": 7108,
+        "themeApplied": {
+          "datasetTheme": "dark",
+          "className": "dark-theme",
+          "colorScheme": "dark"
+        },
+        "finalUrl": "http://127.0.0.1:4174/admin",
+        "adminAuth": null,
+        "imagesSettled": true,
+        "warnings": [],
+        "consoleErrors": [],
+        "pageErrors": [],
+        "error": null,
+        "files": [
+          "C:\\Users\\bbask\\Coding_Projects\\Wedding_Website_Clean\\tools\\parity\\output\\lead-admin-mobile\\shots\\legacy\\admin-login__mobile__dark--s000.png",
+          "C:\\Users\\bbask\\Coding_Projects\\Wedding_Website_Clean\\tools\\parity\\output\\lead-admin-mobile\\shots\\legacy\\admin-login__mobile__dark--s001.png",
+          "C:\\Users\\bbask\\Coding_Projects\\Wedding_Website_Clean\\tools\\parity\\output\\lead-admin-mobile\\shots\\legacy\\admin-login__mobile__dark--s002.png",
+          "C:\\Users\\bbask\\Coding_Projects\\Wedding_Website_Clean\\tools\\parity\\output\\lead-admin-mobile\\shots\\legacy\\admin-login__mobile__dark--s003.png",
+          "C:\\Users\\bbask\\Coding_Projects\\Wedding_Website_Clean\\tools\\parity\\output\\lead-admin-mobile\\shots\\legacy\\admin-login__mobile__dark--s004.png",
+          "C:\\Users\\bbask\\Coding_Projects\\Wedding_Website_Clean\\tools\\parity\\output\\lead-admin-mobile\\shots\\legacy\\admin-login__mobile__dark--s005.png",
+          "C:\\Users\\bbask\\Coding_Projects\\Wedding_Website_Clean\\tools\\parity\\output\\lead-admin-mobile\\shots\\legacy\\admin-login__mobile__dark--s006.png",
+          "C:\\Users\\bbask\\Coding_Projects\\Wedding_Website_Clean\\tools\\parity\\output\\lead-admin-mobile\\shots\\legacy\\admin-login__mobile__dark--s007.png"
+        ]
+      },
+      "rebuild": {
+        "ok": true,
+        "endpoint": "http://127.0.0.1:4175/admin/login",
+        "httpStatus": 200,
+        "pageHeightPx": 3444,
+        "sliceCount": 8,
+        "durationMs": 6364,
+        "themeApplied": {
+          "datasetTheme": "dark",
+          "className": "dark-theme",
+          "colorScheme": "dark"
+        },
+        "finalUrl": "http://127.0.0.1:4175/admin",
+        "adminAuth": null,
+        "imagesSettled": true,
+        "warnings": [],
+        "consoleErrors": [],
+        "pageErrors": [],
+        "error": null,
+        "files": [
+          "C:\\Users\\bbask\\Coding_Projects\\Wedding_Website_Clean\\tools\\parity\\output\\lead-admin-mobile\\shots\\rebuild\\admin-login__mobile__dark--s000.png",
+          "C:\\Users\\bbask\\Coding_Projects\\Wedding_Website_Clean\\tools\\parity\\output\\lead-admin-mobile\\shots\\rebuild\\admin-login__mobile__dark--s001.png",
+          "C:\\Users\\bbask\\Coding_Projects\\Wedding_Website_Clean\\tools\\parity\\output\\lead-admin-mobile\\shots\\rebuild\\admin-login__mobile__dark--s002.png",
+          "C:\\Users\\bbask\\Coding_Projects\\Wedding_Website_Clean\\tools\\parity\\output\\lead-admin-mobile\\shots\\rebuild\\admin-login__mobile__dark--s003.png",
+          "C:\\Users\\bbask\\Coding_Projects\\Wedding_Website_Clean\\tools\\parity\\output\\lead-admin-mobile\\shots\\rebuild\\admin-login__mobile__dark--s004.png",
+          "C:\\Users\\bbask\\Coding_Projects\\Wedding_Website_Clean\\tools\\parity\\output\\lead-admin-mobile\\shots\\rebuild\\admin-login__mobile__dark--s005.png",
+          "C:\\Users\\bbask\\Coding_Projects\\Wedding_Website_Clean\\tools\\parity\\output\\lead-admin-mobile\\shots\\rebuild\\admin-login__mobile__dark--s006.png",
+          "C:\\Users\\bbask\\Coding_Projects\\Wedding_Website_Clean\\tools\\parity\\output\\lead-admin-mobile\\shots\\rebuild\\admin-login__mobile__dark--s007.png"
+        ]
+      },
+      "pixelDiff": {
+        "changedPixels": 38369,
+        "totalPixels": 2633280,
+        "ratio": 0.014570801433953093,
+        "maxChannelDelta": 251,
+        "edgeTolerance": 1,
+        "boundingBox": {
+          "x": 0,
+          "y": 0,
+          "width": 390,
+          "height": 844
+        },
+        "sizeMismatch": false,
+        "sliceCountMismatch": false,
+        "slices": [
+          {
+            "slice": 0,
+            "status": "diff",
+            "diffFile": "shots/diff/admin-login__mobile__dark--s000.png",
+            "changedPixels": 7415,
+            "totalPixels": 329160,
+            "ratio": 0.022527038522299186,
+            "maxChannelDelta": 251,
+            "boundingBox": {
+              "x": 16,
+              "y": 233,
+              "width": 358,
+              "height": 611
+            }
+          },
+          {
+            "slice": 1,
+            "status": "diff",
+            "diffFile": "shots/diff/admin-login__mobile__dark--s001.png",
+            "changedPixels": 15288,
+            "totalPixels": 329160,
+            "ratio": 0.046445497630331754,
+            "maxChannelDelta": 250,
+            "boundingBox": {
+              "x": 16,
+              "y": 0,
+              "width": 358,
+              "height": 843
+            }
+          },
+          {
+            "slice": 2,
+            "status": "diff",
+            "diffFile": "shots/diff/admin-login__mobile__dark--s002.png",
+            "changedPixels": 10738,
+            "totalPixels": 329160,
+            "ratio": 0.03262243285939968,
+            "maxChannelDelta": 249,
+            "boundingBox": {
+              "x": 0,
+              "y": 0,
+              "width": 390,
+              "height": 844
+            }
+          },
+          {
+            "slice": 3,
+            "status": "diff",
+            "diffFile": "shots/diff/admin-login__mobile__dark--s003.png",
+            "changedPixels": 4928,
+            "totalPixels": 329160,
+            "ratio": 0.014971442459594118,
+            "maxChannelDelta": 180,
+            "boundingBox": {
+              "x": 40,
+              "y": 0,
+              "width": 297,
+              "height": 837
+            }
+          },
+          {
+            "slice": 4,
+            "status": "identical",
+            "diffFile": "shots/diff/admin-login__mobile__dark--s004.png",
+            "changedPixels": 0,
+            "totalPixels": 329160,
+            "ratio": 0,
+            "maxChannelDelta": 170,
+            "boundingBox": null
+          },
+          {
+            "slice": 5,
+            "status": "identical",
+            "diffFile": "shots/diff/admin-login__mobile__dark--s005.png",
+            "changedPixels": 0,
+            "totalPixels": 329160,
+            "ratio": 0,
+            "maxChannelDelta": 170,
+            "boundingBox": null
+          },
+          {
+            "slice": 6,
+            "status": "identical",
+            "diffFile": "shots/diff/admin-login__mobile__dark--s006.png",
+            "changedPixels": 0,
+            "totalPixels": 329160,
+            "ratio": 0,
+            "maxChannelDelta": 170,
+            "boundingBox": null
+          },
+          {
+            "slice": 7,
+            "status": "identical",
+            "diffFile": "shots/diff/admin-login__mobile__dark--s007.png",
+            "changedPixels": 0,
+            "totalPixels": 329160,
+            "ratio": 0,
+            "maxChannelDelta": 170,
+            "boundingBox": null
+          }
+        ]
+      },
+      "textDiff": {
+        "status": "pass",
+        "differences": [],
+        "bodyText": null
+      },
+      "files": {
+        "legacy": [
+          "shots/legacy/admin-login__mobile__dark--s000.png",
+          "shots/legacy/admin-login__mobile__dark--s001.png",
+          "shots/legacy/admin-login__mobile__dark--s002.png",
+          "shots/legacy/admin-login__mobile__dark--s003.png",
+          "shots/legacy/admin-login__mobile__dark--s004.png",
+          "shots/legacy/admin-login__mobile__dark--s005.png",
+          "shots/legacy/admin-login__mobile__dark--s006.png",
+          "shots/legacy/admin-login__mobile__dark--s007.png"
+        ],
+        "rebuild": [
+          "shots/rebuild/admin-login__mobile__dark--s000.png",
+          "shots/rebuild/admin-login__mobile__dark--s001.png",
+          "shots/rebuild/admin-login__mobile__dark--s002.png",
+          "shots/rebuild/admin-login__mobile__dark--s003.png",
+          "shots/rebuild/admin-login__mobile__dark--s004.png",
+          "shots/rebuild/admin-login__mobile__dark--s005.png",
+          "shots/rebuild/admin-login__mobile__dark--s006.png",
+          "shots/rebuild/admin-login__mobile__dark--s007.png"
+        ],
+        "diff": [
+          "shots/diff/admin-login__mobile__dark--s000.png",
+          "shots/diff/admin-login__mobile__dark--s001.png",
+          "shots/diff/admin-login__mobile__dark--s002.png",
+          "shots/diff/admin-login__mobile__dark--s003.png",
+          "shots/diff/admin-login__mobile__dark--s004.png",
+          "shots/diff/admin-login__mobile__dark--s005.png",
+          "shots/diff/admin-login__mobile__dark--s006.png",
+          "shots/diff/admin-login__mobile__dark--s007.png"
+        ],
+        "text": {
+          "legacy": "text/legacy/admin-login__mobile__dark.json",
+          "rebuild": "text/rebuild/admin-login__mobile__dark.json",
+          "diff": null
+        }
+      },
+      "warnings": []
+    },
+    {
+      "key": "admin-login__mobile__light",
+      "route": "admin-login",
+      "routePath": "/admin/login",
+      "urlPath": "/admin/login",
+      "parity": 2,
+      "viewport": "mobile",
+      "viewportPixels": {
+        "width": 390,
+        "height": 844
+      },
+      "theme": "light",
+      "status": "fail",
+      "failureReasons": ["pixel"],
+      "allowlist": {
+        "status": "no-entry",
+        "accepted": false,
+        "entry": null,
+        "activeEntries": 0,
+        "expiredEntries": [],
+        "wave": 9
+      },
+      "masks": [],
+      "legacy": {
+        "ok": true,
+        "endpoint": "http://127.0.0.1:4174/admin/login",
+        "httpStatus": 200,
+        "pageHeightPx": 3446,
+        "sliceCount": 8,
+        "durationMs": 7162,
+        "themeApplied": {
+          "datasetTheme": "light",
+          "className": "light-theme",
+          "colorScheme": "light"
+        },
+        "finalUrl": "http://127.0.0.1:4174/admin",
+        "adminAuth": null,
+        "imagesSettled": true,
+        "warnings": [],
+        "consoleErrors": [],
+        "pageErrors": [],
+        "error": null,
+        "files": [
+          "C:\\Users\\bbask\\Coding_Projects\\Wedding_Website_Clean\\tools\\parity\\output\\lead-admin-mobile\\shots\\legacy\\admin-login__mobile__light--s000.png",
+          "C:\\Users\\bbask\\Coding_Projects\\Wedding_Website_Clean\\tools\\parity\\output\\lead-admin-mobile\\shots\\legacy\\admin-login__mobile__light--s001.png",
+          "C:\\Users\\bbask\\Coding_Projects\\Wedding_Website_Clean\\tools\\parity\\output\\lead-admin-mobile\\shots\\legacy\\admin-login__mobile__light--s002.png",
+          "C:\\Users\\bbask\\Coding_Projects\\Wedding_Website_Clean\\tools\\parity\\output\\lead-admin-mobile\\shots\\legacy\\admin-login__mobile__light--s003.png",
+          "C:\\Users\\bbask\\Coding_Projects\\Wedding_Website_Clean\\tools\\parity\\output\\lead-admin-mobile\\shots\\legacy\\admin-login__mobile__light--s004.png",
+          "C:\\Users\\bbask\\Coding_Projects\\Wedding_Website_Clean\\tools\\parity\\output\\lead-admin-mobile\\shots\\legacy\\admin-login__mobile__light--s005.png",
+          "C:\\Users\\bbask\\Coding_Projects\\Wedding_Website_Clean\\tools\\parity\\output\\lead-admin-mobile\\shots\\legacy\\admin-login__mobile__light--s006.png",
+          "C:\\Users\\bbask\\Coding_Projects\\Wedding_Website_Clean\\tools\\parity\\output\\lead-admin-mobile\\shots\\legacy\\admin-login__mobile__light--s007.png"
+        ]
+      },
+      "rebuild": {
+        "ok": true,
+        "endpoint": "http://127.0.0.1:4175/admin/login",
+        "httpStatus": 200,
+        "pageHeightPx": 3444,
+        "sliceCount": 8,
+        "durationMs": 6344,
+        "themeApplied": {
+          "datasetTheme": "light",
+          "className": "light-theme",
+          "colorScheme": "light"
+        },
+        "finalUrl": "http://127.0.0.1:4175/admin",
+        "adminAuth": null,
+        "imagesSettled": true,
+        "warnings": [],
+        "consoleErrors": [],
+        "pageErrors": [],
+        "error": null,
+        "files": [
+          "C:\\Users\\bbask\\Coding_Projects\\Wedding_Website_Clean\\tools\\parity\\output\\lead-admin-mobile\\shots\\rebuild\\admin-login__mobile__light--s000.png",
+          "C:\\Users\\bbask\\Coding_Projects\\Wedding_Website_Clean\\tools\\parity\\output\\lead-admin-mobile\\shots\\rebuild\\admin-login__mobile__light--s001.png",
+          "C:\\Users\\bbask\\Coding_Projects\\Wedding_Website_Clean\\tools\\parity\\output\\lead-admin-mobile\\shots\\rebuild\\admin-login__mobile__light--s002.png",
+          "C:\\Users\\bbask\\Coding_Projects\\Wedding_Website_Clean\\tools\\parity\\output\\lead-admin-mobile\\shots\\rebuild\\admin-login__mobile__light--s003.png",
+          "C:\\Users\\bbask\\Coding_Projects\\Wedding_Website_Clean\\tools\\parity\\output\\lead-admin-mobile\\shots\\rebuild\\admin-login__mobile__light--s004.png",
+          "C:\\Users\\bbask\\Coding_Projects\\Wedding_Website_Clean\\tools\\parity\\output\\lead-admin-mobile\\shots\\rebuild\\admin-login__mobile__light--s005.png",
+          "C:\\Users\\bbask\\Coding_Projects\\Wedding_Website_Clean\\tools\\parity\\output\\lead-admin-mobile\\shots\\rebuild\\admin-login__mobile__light--s006.png",
+          "C:\\Users\\bbask\\Coding_Projects\\Wedding_Website_Clean\\tools\\parity\\output\\lead-admin-mobile\\shots\\rebuild\\admin-login__mobile__light--s007.png"
+        ]
+      },
+      "pixelDiff": {
+        "changedPixels": 28868,
+        "totalPixels": 2633280,
+        "ratio": 0.010962753676023819,
+        "maxChannelDelta": 247,
+        "edgeTolerance": 1,
+        "boundingBox": {
+          "x": 19,
+          "y": 0,
+          "width": 355,
+          "height": 844
+        },
+        "sizeMismatch": false,
+        "sliceCountMismatch": false,
+        "slices": [
+          {
+            "slice": 0,
+            "status": "diff",
+            "diffFile": "shots/diff/admin-login__mobile__light--s000.png",
+            "changedPixels": 7922,
+            "totalPixels": 329160,
+            "ratio": 0.024067322882488758,
+            "maxChannelDelta": 247,
+            "boundingBox": {
+              "x": 21,
+              "y": 262,
+              "width": 353,
+              "height": 582
+            }
+          },
+          {
+            "slice": 1,
+            "status": "diff",
+            "diffFile": "shots/diff/admin-login__mobile__light--s001.png",
+            "changedPixels": 6957,
+            "totalPixels": 329160,
+            "ratio": 0.021135617936565803,
+            "maxChannelDelta": 247,
+            "boundingBox": {
+              "x": 19,
+              "y": 0,
+              "width": 352,
+              "height": 843
+            }
+          },
+          {
+            "slice": 2,
+            "status": "diff",
+            "diffFile": "shots/diff/admin-login__mobile__light--s002.png",
+            "changedPixels": 9048,
+            "totalPixels": 329160,
+            "ratio": 0.027488151658767772,
+            "maxChannelDelta": 247,
+            "boundingBox": {
+              "x": 27,
+              "y": 0,
+              "width": 346,
+              "height": 844
+            }
+          },
+          {
+            "slice": 3,
+            "status": "diff",
+            "diffFile": "shots/diff/admin-login__mobile__light--s003.png",
+            "changedPixels": 4941,
+            "totalPixels": 329160,
+            "ratio": 0.01501093693036821,
+            "maxChannelDelta": 180,
+            "boundingBox": {
+              "x": 40,
+              "y": 0,
+              "width": 297,
+              "height": 837
+            }
+          },
+          {
+            "slice": 4,
+            "status": "identical",
+            "diffFile": "shots/diff/admin-login__mobile__light--s004.png",
+            "changedPixels": 0,
+            "totalPixels": 329160,
+            "ratio": 0,
+            "maxChannelDelta": 170,
+            "boundingBox": null
+          },
+          {
+            "slice": 5,
+            "status": "identical",
+            "diffFile": "shots/diff/admin-login__mobile__light--s005.png",
+            "changedPixels": 0,
+            "totalPixels": 329160,
+            "ratio": 0,
+            "maxChannelDelta": 170,
+            "boundingBox": null
+          },
+          {
+            "slice": 6,
+            "status": "identical",
+            "diffFile": "shots/diff/admin-login__mobile__light--s006.png",
+            "changedPixels": 0,
+            "totalPixels": 329160,
+            "ratio": 0,
+            "maxChannelDelta": 170,
+            "boundingBox": null
+          },
+          {
+            "slice": 7,
+            "status": "identical",
+            "diffFile": "shots/diff/admin-login__mobile__light--s007.png",
+            "changedPixels": 0,
+            "totalPixels": 329160,
+            "ratio": 0,
+            "maxChannelDelta": 170,
+            "boundingBox": null
+          }
+        ]
+      },
+      "textDiff": {
+        "status": "pass",
+        "differences": [],
+        "bodyText": null
+      },
+      "files": {
+        "legacy": [
+          "shots/legacy/admin-login__mobile__light--s000.png",
+          "shots/legacy/admin-login__mobile__light--s001.png",
+          "shots/legacy/admin-login__mobile__light--s002.png",
+          "shots/legacy/admin-login__mobile__light--s003.png",
+          "shots/legacy/admin-login__mobile__light--s004.png",
+          "shots/legacy/admin-login__mobile__light--s005.png",
+          "shots/legacy/admin-login__mobile__light--s006.png",
+          "shots/legacy/admin-login__mobile__light--s007.png"
+        ],
+        "rebuild": [
+          "shots/rebuild/admin-login__mobile__light--s000.png",
+          "shots/rebuild/admin-login__mobile__light--s001.png",
+          "shots/rebuild/admin-login__mobile__light--s002.png",
+          "shots/rebuild/admin-login__mobile__light--s003.png",
+          "shots/rebuild/admin-login__mobile__light--s004.png",
+          "shots/rebuild/admin-login__mobile__light--s005.png",
+          "shots/rebuild/admin-login__mobile__light--s006.png",
+          "shots/rebuild/admin-login__mobile__light--s007.png"
+        ],
+        "diff": [
+          "shots/diff/admin-login__mobile__light--s000.png",
+          "shots/diff/admin-login__mobile__light--s001.png",
+          "shots/diff/admin-login__mobile__light--s002.png",
+          "shots/diff/admin-login__mobile__light--s003.png",
+          "shots/diff/admin-login__mobile__light--s004.png",
+          "shots/diff/admin-login__mobile__light--s005.png",
+          "shots/diff/admin-login__mobile__light--s006.png",
+          "shots/diff/admin-login__mobile__light--s007.png"
+        ],
+        "text": {
+          "legacy": "text/legacy/admin-login__mobile__light.json",
+          "rebuild": "text/rebuild/admin-login__mobile__light.json",
+          "diff": null
+        }
+      },
+      "warnings": []
+    }
+  ],
+  "totals": {
+    "shots": 4,
+    "passed": 0,
+    "allowed": 0,
+    "failed": 4,
+    "errors": 0,
+    "textDiffs": 0,
+    "changedPixels": 134157,
+    "totalPixels": 10533120,
+    "changedPixelRatio": 0.012736682008749544,
+    "failedShots": [
+      {
+        "key": "admin__mobile__dark",
+        "status": "fail",
+        "reasons": ["pixel"]
+      },
+      {
+        "key": "admin__mobile__light",
+        "status": "fail",
+        "reasons": ["pixel"]
+      },
+      {
+        "key": "admin-login__mobile__dark",
+        "status": "fail",
+        "reasons": ["pixel"]
+      },
+      {
+        "key": "admin-login__mobile__light",
+        "status": "fail",
+        "reasons": ["pixel"]
+      }
+    ]
+  },
+  "verdict": {
+    "status": "failed",
+    "exitCode": 1,
+    "reasons": ["unexplained pixel/text parity differences (see failedShots)"]
+  }
+}

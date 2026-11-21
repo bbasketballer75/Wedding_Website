@@ -1,0 +1,178 @@
+{
+  "key": "admin__desktop__dark",
+  "route": "admin",
+  "viewport": "desktop",
+  "theme": "dark",
+  "generatedAt": "2026-11-10T01:31:04.588Z",
+  "differences": [
+    {
+      "field": "title",
+      "legacy": "Austin & Jordyn | Wedding Archive",
+      "rebuild": "Admin Login | Austin & Jordyn's Wedding"
+    },
+    {
+      "field": "canonical",
+      "legacy": "https://www.theporadas.com/",
+      "rebuild": "https://www.theporadas.com/admin/login"
+    },
+    {
+      "field": "meta.description",
+      "legacy": "A permanent digital archive of our wedding day. Relive our story, browse the films, and view the galleries.",
+      "rebuild": "Secure admin access for the Austin and Jordyn wedding site."
+    },
+    {
+      "field": "meta.og:url",
+      "legacy": "https://www.theporadas.com/",
+      "rebuild": "https://www.theporadas.com/admin/login"
+    },
+    {
+      "field": "meta.og:title",
+      "legacy": "Austin & Jordyn | Wedding Archive",
+      "rebuild": "Admin Login | Austin & Jordyn's Wedding"
+    },
+    {
+      "field": "meta.og:description",
+      "legacy": "A permanent digital archive of our wedding day. Relive our story, browse the films, and view the galleries.",
+      "rebuild": "Secure admin access for the Austin and Jordyn wedding site."
+    },
+    {
+      "field": "meta.og:image",
+      "legacy": "https://www.theporadas.com/images/og-image.webp",
+      "rebuild": "https://www.theporadas.com/images/home/intro-video-poster.png"
+    },
+    {
+      "field": "meta.twitter:title",
+      "legacy": "Austin & Jordyn | Wedding Archive",
+      "rebuild": "Home | Austin & Jordyn's Wedding"
+    },
+    {
+      "field": "meta.twitter:description",
+      "legacy": "A permanent digital archive of our wedding day. Relive our story, browse the films, and view the galleries.",
+      "rebuild": "Join us in celebrating the wedding of Austin and Jordyn. View our story, photos, and share your memories."
+    },
+    {
+      "field": "meta.twitter:image",
+      "legacy": "https://www.theporadas.com/images/og-image.webp",
+      "rebuild": "https://www.theporadas.com/images/home/intro-video-poster.png"
+    },
+    {
+      "field": "meta.robots",
+      "legacy": "index, follow",
+      "rebuild": "noindex, nofollow"
+    },
+    {
+      "field": "meta.og:image:width",
+      "legacy": null,
+      "rebuild": "1200"
+    },
+    {
+      "field": "meta.og:image:height",
+      "legacy": null,
+      "rebuild": "630"
+    },
+    {
+      "field": "meta.og:site_name",
+      "legacy": null,
+      "rebuild": "Austin & Jordyn's Wedding"
+    },
+    {
+      "field": "meta.og:locale",
+      "legacy": null,
+      "rebuild": "en_US"
+    },
+    {
+      "field": "links",
+      "legacy": [
+        "Skip to main content → /#main-content",
+        "A&J → /",
+        "FilmWatch Film → /film",
+        "PhotosGallery → /gallery",
+        "GuestsGuestbook → /guestbook",
+        "ShareShare → /upload",
+        "PrintMemory Book → /print",
+        "A&JAdmin → /",
+        "Dashboard → /admin",
+        "Photos → /admin/photos",
+        "Albums → /admin/albums",
+        "People Review → /admin/review",
+        "Photo Claims → /admin/claims",
+        "Guestbook → /admin/guestbook",
+        "Featured → /admin/featured",
+        "Audit Trail → /admin/audit",
+        "Analytics → /admin/analytics",
+        "Settings → /admin/settings",
+        "DashboardSee what needs attention next. → /admin",
+        "PhotosModerate uploads, publish photos, and run guest tagging. → /admin/photos",
+        "AlbumsArrange the live order inside each public album. → /admin/albums",
+        "People ReviewWork through face review and named people. → /admin/review",
+        "Photo ClaimsReview and approve photo ownership and face tag claims. → /admin/claims",
+        "GuestbookModerate text messages. → /admin/guestbook",
+        "FeaturedSet what appears in the homepage and film page spotlight sections. → /admin/featured",
+        "Audit TrailSee who changed moderation state and when. → /admin/audit",
+        "AnalyticsTrack verified database activity inside the app. → /admin/analytics",
+        "SettingsReference the live setup and operating notes. → /admin/settings",
+        "Photos → /admin/photos",
+        "Albums → /admin/albums",
+        "People Review → /admin/review",
+        "Guestbook → /admin/guestbook",
+        "Audit → /admin/audit",
+        "Operating notes → /admin/settings",
+        "Watch the filmRevisit the ceremony, speeches, and the whole dance floor arc. → /film",
+        "Browse the galleryPortraits, candids, and every little detail we never want to forget. → /gallery",
+        "Leave a noteA quiet last stop for one message, blessing, or little memory from the day. → /guestbook",
+        "Memory BookPrint a keepsake photo book or guestbook — save as PDF from any browser. → /print",
+        "Watch Film → /film",
+        "Gallery → /gallery",
+        "Guestbook → /guestbook",
+        "Share → /upload",
+        "Memory Book → /print"
+      ],
+      "rebuild": [
+        "Skip to main content → /#main-content",
+        "A&J → /",
+        "FilmWatch Film → /film",
+        "PhotosGallery → /gallery",
+        "GuestsGuestbook → /guestbook",
+        "ShareShare → /upload",
+        "PrintMemory Book → /print",
+        "A&JAdmin → /admin",
+        "Dashboard → /admin",
+        "Photos → /admin/photos",
+        "Albums → /admin/albums",
+        "People Review → /admin/review",
+        "Photo Claims → /admin/claims",
+        "Guestbook → /admin/guestbook",
+        "Featured → /admin/featured",
+        "Audit Trail → /admin/audit",
+        "Analytics → /admin/analytics",
+        "Settings → /admin/settings",
+        "DashboardSee what needs attention next. → /admin",
+        "PhotosModerate uploads, publish photos, and run guest tagging. → /admin/photos",
+        "AlbumsArrange the live order inside each public album. → /admin/albums",
+        "People ReviewWork through face review and named people. → /admin/review",
+        "Photo ClaimsReview and approve photo ownership and face tag claims. → /admin/claims",
+        "GuestbookModerate text messages. → /admin/guestbook",
+        "FeaturedSet what appears in the homepage and film page spotlight sections. → /admin/featured",
+        "Audit TrailSee who changed moderation state and when. → /admin/audit",
+        "AnalyticsTrack verified database activity inside the app. → /admin/analytics",
+        "SettingsReference the live setup and operating notes. → /admin/settings",
+        "Photos → /admin/photos",
+        "Albums → /admin/albums",
+        "People Review → /admin/review",
+        "Guestbook → /admin/guestbook",
+        "Audit → /admin/audit",
+        "Operating notes → /admin/settings",
+        "Watch the filmRevisit the ceremony, speeches, and the whole dance floor arc. → /film",
+        "Browse the galleryPortraits, candids, and every little detail we never want to forget. → /gallery",
+        "Leave a noteA quiet last stop for one message, blessing, or little memory from the day. → /guestbook",
+        "Memory BookPrint a keepsake photo book or guestbook — save as PDF from any browser. → /print",
+        "Watch Film → /film",
+        "Gallery → /gallery",
+        "Guestbook → /guestbook",
+        "Share → /upload",
+        "Memory Book → /print"
+      ]
+    }
+  ],
+  "bodyText": null
+}

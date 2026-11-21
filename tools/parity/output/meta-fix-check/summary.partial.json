@@ -1,0 +1,1100 @@
+{
+  "schemaVersion": 1,
+  "kind": "parity-compare-progress",
+  "updatedAt": "2026-11-10T01:38:21.197Z",
+  "plannedShots": [
+    "gallery__desktop__dark",
+    "home__desktop__dark",
+    "upload__desktop__dark",
+    "guestbook__desktop__dark"
+  ],
+  "shots": [
+    {
+      "key": "gallery__desktop__dark",
+      "route": "gallery",
+      "routePath": "/gallery",
+      "urlPath": "/gallery",
+      "parity": 1,
+      "viewport": "desktop",
+      "viewportPixels": {
+        "width": 1440,
+        "height": 900
+      },
+      "theme": "dark",
+      "status": "fail",
+      "failureReasons": ["text"],
+      "allowlist": {
+        "status": "no-entry",
+        "accepted": false,
+        "entry": null,
+        "activeEntries": 0,
+        "expiredEntries": [],
+        "wave": 9
+      },
+      "masks": [],
+      "legacy": {
+        "ok": true,
+        "endpoint": "http://127.0.0.1:4174/gallery",
+        "httpStatus": 200,
+        "pageHeightPx": 2151,
+        "sliceCount": 8,
+        "durationMs": 24034,
+        "themeApplied": {
+          "datasetTheme": "dark",
+          "className": "dark-theme",
+          "colorScheme": "dark"
+        },
+        "finalUrl": "http://127.0.0.1:4174/gallery",
+        "adminAuth": null,
+        "imagesSettled": true,
+        "warnings": [],
+        "consoleErrors": [],
+        "pageErrors": [],
+        "error": null,
+        "files": [
+          "C:\\Users\\bbask\\Coding_Projects\\Wedding_Website_Clean\\tools\\parity\\output\\meta-fix-check\\shots\\legacy\\gallery__desktop__dark--s000.png",
+          "C:\\Users\\bbask\\Coding_Projects\\Wedding_Website_Clean\\tools\\parity\\output\\meta-fix-check\\shots\\legacy\\gallery__desktop__dark--s001.png",
+          "C:\\Users\\bbask\\Coding_Projects\\Wedding_Website_Clean\\tools\\parity\\output\\meta-fix-check\\shots\\legacy\\gallery__desktop__dark--s002.png",
+          "C:\\Users\\bbask\\Coding_Projects\\Wedding_Website_Clean\\tools\\parity\\output\\meta-fix-check\\shots\\legacy\\gallery__desktop__dark--s003.png",
+          "C:\\Users\\bbask\\Coding_Projects\\Wedding_Website_Clean\\tools\\parity\\output\\meta-fix-check\\shots\\legacy\\gallery__desktop__dark--s004.png",
+          "C:\\Users\\bbask\\Coding_Projects\\Wedding_Website_Clean\\tools\\parity\\output\\meta-fix-check\\shots\\legacy\\gallery__desktop__dark--s005.png",
+          "C:\\Users\\bbask\\Coding_Projects\\Wedding_Website_Clean\\tools\\parity\\output\\meta-fix-check\\shots\\legacy\\gallery__desktop__dark--s006.png",
+          "C:\\Users\\bbask\\Coding_Projects\\Wedding_Website_Clean\\tools\\parity\\output\\meta-fix-check\\shots\\legacy\\gallery__desktop__dark--s007.png"
+        ]
+      },
+      "rebuild": {
+        "ok": true,
+        "endpoint": "http://127.0.0.1:4175/gallery",
+        "httpStatus": 200,
+        "pageHeightPx": 2151,
+        "sliceCount": 8,
+        "durationMs": 6946,
+        "themeApplied": {
+          "datasetTheme": "dark",
+          "className": "dark-theme",
+          "colorScheme": "dark"
+        },
+        "finalUrl": "http://127.0.0.1:4175/gallery",
+        "adminAuth": null,
+        "imagesSettled": true,
+        "warnings": [],
+        "consoleErrors": [],
+        "pageErrors": [],
+        "error": null,
+        "files": [
+          "C:\\Users\\bbask\\Coding_Projects\\Wedding_Website_Clean\\tools\\parity\\output\\meta-fix-check\\shots\\rebuild\\gallery__desktop__dark--s000.png",
+          "C:\\Users\\bbask\\Coding_Projects\\Wedding_Website_Clean\\tools\\parity\\output\\meta-fix-check\\shots\\rebuild\\gallery__desktop__dark--s001.png",
+          "C:\\Users\\bbask\\Coding_Projects\\Wedding_Website_Clean\\tools\\parity\\output\\meta-fix-check\\shots\\rebuild\\gallery__desktop__dark--s002.png",
+          "C:\\Users\\bbask\\Coding_Projects\\Wedding_Website_Clean\\tools\\parity\\output\\meta-fix-check\\shots\\rebuild\\gallery__desktop__dark--s003.png",
+          "C:\\Users\\bbask\\Coding_Projects\\Wedding_Website_Clean\\tools\\parity\\output\\meta-fix-check\\shots\\rebuild\\gallery__desktop__dark--s004.png",
+          "C:\\Users\\bbask\\Coding_Projects\\Wedding_Website_Clean\\tools\\parity\\output\\meta-fix-check\\shots\\rebuild\\gallery__desktop__dark--s005.png",
+          "C:\\Users\\bbask\\Coding_Projects\\Wedding_Website_Clean\\tools\\parity\\output\\meta-fix-check\\shots\\rebuild\\gallery__desktop__dark--s006.png",
+          "C:\\Users\\bbask\\Coding_Projects\\Wedding_Website_Clean\\tools\\parity\\output\\meta-fix-check\\shots\\rebuild\\gallery__desktop__dark--s007.png"
+        ]
+      },
+      "pixelDiff": {
+        "changedPixels": 1736,
+        "totalPixels": 10368000,
+        "ratio": 0.00016743827160493828,
+        "maxChannelDelta": 255,
+        "edgeTolerance": 0,
+        "boundingBox": {
+          "x": 1327,
+          "y": 158,
+          "width": 8,
+          "height": 382
+        },
+        "sizeMismatch": false,
+        "sliceCountMismatch": false,
+        "slices": [
+          {
+            "slice": 0,
+            "status": "identical",
+            "diffFile": "shots/diff/gallery__desktop__dark--s000.png",
+            "changedPixels": 0,
+            "totalPixels": 1296000,
+            "ratio": 0,
+            "maxChannelDelta": 1,
+            "boundingBox": null
+          },
+          {
+            "slice": 1,
+            "status": "diff",
+            "diffFile": "shots/diff/gallery__desktop__dark--s001.png",
+            "changedPixels": 248,
+            "totalPixels": 1296000,
+            "ratio": 0.00019135802469135801,
+            "maxChannelDelta": 255,
+            "boundingBox": {
+              "x": 1327,
+              "y": 509,
+              "width": 8,
+              "height": 31
+            }
+          },
+          {
+            "slice": 2,
+            "status": "diff",
+            "diffFile": "shots/diff/gallery__desktop__dark--s002.png",
+            "changedPixels": 248,
+            "totalPixels": 1296000,
+            "ratio": 0.00019135802469135801,
+            "maxChannelDelta": 255,
+            "boundingBox": {
+              "x": 1327,
+              "y": 158,
+              "width": 8,
+              "height": 31
+            }
+          },
+          {
+            "slice": 3,
+            "status": "diff",
+            "diffFile": "shots/diff/gallery__desktop__dark--s003.png",
+            "changedPixels": 248,
+            "totalPixels": 1296000,
+            "ratio": 0.00019135802469135801,
+            "maxChannelDelta": 255,
+            "boundingBox": {
+              "x": 1327,
+              "y": 158,
+              "width": 8,
+              "height": 31
+            }
+          },
+          {
+            "slice": 4,
+            "status": "diff",
+            "diffFile": "shots/diff/gallery__desktop__dark--s004.png",
+            "changedPixels": 248,
+            "totalPixels": 1296000,
+            "ratio": 0.00019135802469135801,
+            "maxChannelDelta": 255,
+            "boundingBox": {
+              "x": 1327,
+              "y": 158,
+              "width": 8,
+              "height": 31
+            }
+          },
+          {
+            "slice": 5,
+            "status": "diff",
+            "diffFile": "shots/diff/gallery__desktop__dark--s005.png",
+            "changedPixels": 248,
+            "totalPixels": 1296000,
+            "ratio": 0.00019135802469135801,
+            "maxChannelDelta": 255,
+            "boundingBox": {
+              "x": 1327,
+              "y": 158,
+              "width": 8,
+              "height": 31
+            }
+          },
+          {
+            "slice": 6,
+            "status": "diff",
+            "diffFile": "shots/diff/gallery__desktop__dark--s006.png",
+            "changedPixels": 248,
+            "totalPixels": 1296000,
+            "ratio": 0.00019135802469135801,
+            "maxChannelDelta": 255,
+            "boundingBox": {
+              "x": 1327,
+              "y": 158,
+              "width": 8,
+              "height": 31
+            }
+          },
+          {
+            "slice": 7,
+            "status": "diff",
+            "diffFile": "shots/diff/gallery__desktop__dark--s007.png",
+            "changedPixels": 248,
+            "totalPixels": 1296000,
+            "ratio": 0.00019135802469135801,
+            "maxChannelDelta": 255,
+            "boundingBox": {
+              "x": 1327,
+              "y": 158,
+              "width": 8,
+              "height": 31
+            }
+          }
+        ]
+      },
+      "textDiff": {
+        "status": "fail",
+        "differences": [
+          {
+            "field": "meta.twitter:title",
+            "legacySummary": {
+              "kind": "string",
+              "value": "Austin & Jordyn | Wedding Archive"
+            },
+            "rebuildSummary": {
+              "kind": "string",
+              "value": "Home | Austin & Jordyn's Wedding"
+            }
+          },
+          {
+            "field": "meta.twitter:description",
+            "legacySummary": {
+              "kind": "string",
+              "value": "A permanent digital archive of our wedding day. Relive our story, browse the films, and view the galleries."
+            },
+            "rebuildSummary": {
+              "kind": "string",
+              "value": "Join us in celebrating the wedding of Austin and Jordyn. View our story, photos, and share your memories."
+            }
+          },
+          {
+            "field": "meta.twitter:image",
+            "legacySummary": {
+              "kind": "string",
+              "value": "https://www.theporadas.com/images/og-image.webp"
+            },
+            "rebuildSummary": {
+              "kind": "string",
+              "value": "https://www.theporadas.com/images/home/intro-video-poster.png"
+            }
+          }
+        ],
+        "bodyText": null
+      },
+      "files": {
+        "legacy": [
+          "shots/legacy/gallery__desktop__dark--s000.png",
+          "shots/legacy/gallery__desktop__dark--s001.png",
+          "shots/legacy/gallery__desktop__dark--s002.png",
+          "shots/legacy/gallery__desktop__dark--s003.png",
+          "shots/legacy/gallery__desktop__dark--s004.png",
+          "shots/legacy/gallery__desktop__dark--s005.png",
+          "shots/legacy/gallery__desktop__dark--s006.png",
+          "shots/legacy/gallery__desktop__dark--s007.png"
+        ],
+        "rebuild": [
+          "shots/rebuild/gallery__desktop__dark--s000.png",
+          "shots/rebuild/gallery__desktop__dark--s001.png",
+          "shots/rebuild/gallery__desktop__dark--s002.png",
+          "shots/rebuild/gallery__desktop__dark--s003.png",
+          "shots/rebuild/gallery__desktop__dark--s004.png",
+          "shots/rebuild/gallery__desktop__dark--s005.png",
+          "shots/rebuild/gallery__desktop__dark--s006.png",
+          "shots/rebuild/gallery__desktop__dark--s007.png"
+        ],
+        "diff": [
+          "shots/diff/gallery__desktop__dark--s000.png",
+          "shots/diff/gallery__desktop__dark--s001.png",
+          "shots/diff/gallery__desktop__dark--s002.png",
+          "shots/diff/gallery__desktop__dark--s003.png",
+          "shots/diff/gallery__desktop__dark--s004.png",
+          "shots/diff/gallery__desktop__dark--s005.png",
+          "shots/diff/gallery__desktop__dark--s006.png",
+          "shots/diff/gallery__desktop__dark--s007.png"
+        ],
+        "text": {
+          "legacy": "text/legacy/gallery__desktop__dark.json",
+          "rebuild": "text/rebuild/gallery__desktop__dark.json",
+          "diff": "text/diff/gallery__desktop__dark.json"
+        }
+      },
+      "warnings": []
+    },
+    {
+      "key": "home__desktop__dark",
+      "route": "home",
+      "routePath": "/",
+      "urlPath": "/",
+      "parity": 1,
+      "viewport": "desktop",
+      "viewportPixels": {
+        "width": 1440,
+        "height": 900
+      },
+      "theme": "dark",
+      "status": "fail",
+      "failureReasons": ["text"],
+      "allowlist": {
+        "status": "allowed",
+        "accepted": true,
+        "entry": {
+          "route": "/",
+          "viewport": "desktop",
+          "theme": "dark",
+          "reason": "Wave 8/9 Home shell: text and layout are exact (0 textDiffs, identical page heights) after the boot-shell + data wiring; the remaining pixel residual is sub-0.02% and is dominated by 1px raster phase on backdrop-blur/gradient surfaces at fractional edges (same class as the solved 404 mobile case). Re-measured on the Wave 8 build with the edge-tolerance harness. Re-evaluate after the post-cutover visual fixes (R25/R27/R28) land.",
+          "expiresAtWave": 9,
+          "maxDiffPixelRatio": 0.003
+        },
+        "activeEntries": 1,
+        "expiredEntries": [],
+        "wave": 9
+      },
+      "masks": [],
+      "legacy": {
+        "ok": true,
+        "endpoint": "http://127.0.0.1:4174/",
+        "httpStatus": 200,
+        "pageHeightPx": 10166,
+        "sliceCount": 8,
+        "durationMs": 21337,
+        "themeApplied": {
+          "datasetTheme": "dark",
+          "className": "dark-theme",
+          "colorScheme": "dark"
+        },
+        "finalUrl": "http://127.0.0.1:4174/",
+        "adminAuth": null,
+        "imagesSettled": false,
+        "warnings": ["Some images did not finish loading/decoding before capture."],
+        "consoleErrors": [],
+        "pageErrors": [],
+        "error": null,
+        "files": [
+          "C:\\Users\\bbask\\Coding_Projects\\Wedding_Website_Clean\\tools\\parity\\output\\meta-fix-check\\shots\\legacy\\home__desktop__dark--s000.png",
+          "C:\\Users\\bbask\\Coding_Projects\\Wedding_Website_Clean\\tools\\parity\\output\\meta-fix-check\\shots\\legacy\\home__desktop__dark--s001.png",
+          "C:\\Users\\bbask\\Coding_Projects\\Wedding_Website_Clean\\tools\\parity\\output\\meta-fix-check\\shots\\legacy\\home__desktop__dark--s002.png",
+          "C:\\Users\\bbask\\Coding_Projects\\Wedding_Website_Clean\\tools\\parity\\output\\meta-fix-check\\shots\\legacy\\home__desktop__dark--s003.png",
+          "C:\\Users\\bbask\\Coding_Projects\\Wedding_Website_Clean\\tools\\parity\\output\\meta-fix-check\\shots\\legacy\\home__desktop__dark--s004.png",
+          "C:\\Users\\bbask\\Coding_Projects\\Wedding_Website_Clean\\tools\\parity\\output\\meta-fix-check\\shots\\legacy\\home__desktop__dark--s005.png",
+          "C:\\Users\\bbask\\Coding_Projects\\Wedding_Website_Clean\\tools\\parity\\output\\meta-fix-check\\shots\\legacy\\home__desktop__dark--s006.png",
+          "C:\\Users\\bbask\\Coding_Projects\\Wedding_Website_Clean\\tools\\parity\\output\\meta-fix-check\\shots\\legacy\\home__desktop__dark--s007.png"
+        ]
+      },
+      "rebuild": {
+        "ok": true,
+        "endpoint": "http://127.0.0.1:4175/",
+        "httpStatus": 200,
+        "pageHeightPx": 10166,
+        "sliceCount": 8,
+        "durationMs": 21269,
+        "themeApplied": {
+          "datasetTheme": "dark",
+          "className": "dark-theme",
+          "colorScheme": "dark"
+        },
+        "finalUrl": "http://127.0.0.1:4175/",
+        "adminAuth": null,
+        "imagesSettled": false,
+        "warnings": ["Some images did not finish loading/decoding before capture."],
+        "consoleErrors": [],
+        "pageErrors": [],
+        "error": null,
+        "files": [
+          "C:\\Users\\bbask\\Coding_Projects\\Wedding_Website_Clean\\tools\\parity\\output\\meta-fix-check\\shots\\rebuild\\home__desktop__dark--s000.png",
+          "C:\\Users\\bbask\\Coding_Projects\\Wedding_Website_Clean\\tools\\parity\\output\\meta-fix-check\\shots\\rebuild\\home__desktop__dark--s001.png",
+          "C:\\Users\\bbask\\Coding_Projects\\Wedding_Website_Clean\\tools\\parity\\output\\meta-fix-check\\shots\\rebuild\\home__desktop__dark--s002.png",
+          "C:\\Users\\bbask\\Coding_Projects\\Wedding_Website_Clean\\tools\\parity\\output\\meta-fix-check\\shots\\rebuild\\home__desktop__dark--s003.png",
+          "C:\\Users\\bbask\\Coding_Projects\\Wedding_Website_Clean\\tools\\parity\\output\\meta-fix-check\\shots\\rebuild\\home__desktop__dark--s004.png",
+          "C:\\Users\\bbask\\Coding_Projects\\Wedding_Website_Clean\\tools\\parity\\output\\meta-fix-check\\shots\\rebuild\\home__desktop__dark--s005.png",
+          "C:\\Users\\bbask\\Coding_Projects\\Wedding_Website_Clean\\tools\\parity\\output\\meta-fix-check\\shots\\rebuild\\home__desktop__dark--s006.png",
+          "C:\\Users\\bbask\\Coding_Projects\\Wedding_Website_Clean\\tools\\parity\\output\\meta-fix-check\\shots\\rebuild\\home__desktop__dark--s007.png"
+        ]
+      },
+      "pixelDiff": {
+        "changedPixels": 238,
+        "totalPixels": 10368000,
+        "ratio": 0.000022955246913580246,
+        "maxChannelDelta": 117,
+        "edgeTolerance": 0,
+        "boundingBox": {
+          "x": 370,
+          "y": 267,
+          "width": 842,
+          "height": 633
+        },
+        "sizeMismatch": false,
+        "sliceCountMismatch": false,
+        "slices": [
+          {
+            "slice": 0,
+            "status": "identical",
+            "diffFile": "shots/diff/home__desktop__dark--s000.png",
+            "changedPixels": 0,
+            "totalPixels": 1296000,
+            "ratio": 0,
+            "maxChannelDelta": 0,
+            "boundingBox": null
+          },
+          {
+            "slice": 1,
+            "status": "identical",
+            "diffFile": "shots/diff/home__desktop__dark--s001.png",
+            "changedPixels": 0,
+            "totalPixels": 1296000,
+            "ratio": 0,
+            "maxChannelDelta": 0,
+            "boundingBox": null
+          },
+          {
+            "slice": 2,
+            "status": "diff",
+            "diffFile": "shots/diff/home__desktop__dark--s002.png",
+            "changedPixels": 43,
+            "totalPixels": 1296000,
+            "ratio": 0.00003317901234567901,
+            "maxChannelDelta": 59,
+            "boundingBox": {
+              "x": 424,
+              "y": 267,
+              "width": 663,
+              "height": 559
+            }
+          },
+          {
+            "slice": 3,
+            "status": "diff",
+            "diffFile": "shots/diff/home__desktop__dark--s003.png",
+            "changedPixels": 4,
+            "totalPixels": 1296000,
+            "ratio": 0.0000030864197530864196,
+            "maxChannelDelta": 48,
+            "boundingBox": {
+              "x": 392,
+              "y": 453,
+              "width": 37,
+              "height": 4
+            }
+          },
+          {
+            "slice": 4,
+            "status": "identical",
+            "diffFile": "shots/diff/home__desktop__dark--s004.png",
+            "changedPixels": 0,
+            "totalPixels": 1296000,
+            "ratio": 0,
+            "maxChannelDelta": 32,
+            "boundingBox": null
+          },
+          {
+            "slice": 5,
+            "status": "diff",
+            "diffFile": "shots/diff/home__desktop__dark--s005.png",
+            "changedPixels": 12,
+            "totalPixels": 1296000,
+            "ratio": 0.000009259259259259259,
+            "maxChannelDelta": 106,
+            "boundingBox": {
+              "x": 1191,
+              "y": 894,
+              "width": 21,
+              "height": 6
+            }
+          },
+          {
+            "slice": 6,
+            "status": "identical",
+            "diffFile": "shots/diff/home__desktop__dark--s006.png",
+            "changedPixels": 0,
+            "totalPixels": 1296000,
+            "ratio": 0,
+            "maxChannelDelta": 28,
+            "boundingBox": null
+          },
+          {
+            "slice": 7,
+            "status": "diff",
+            "diffFile": "shots/diff/home__desktop__dark--s007.png",
+            "changedPixels": 179,
+            "totalPixels": 1296000,
+            "ratio": 0.00013811728395061727,
+            "maxChannelDelta": 117,
+            "boundingBox": {
+              "x": 370,
+              "y": 522,
+              "width": 47,
+              "height": 5
+            }
+          }
+        ]
+      },
+      "textDiff": {
+        "status": "fail",
+        "differences": [
+          {
+            "field": "meta.twitter:title",
+            "legacySummary": {
+              "kind": "string",
+              "value": "Austin & Jordyn | Wedding Archive"
+            },
+            "rebuildSummary": {
+              "kind": "string",
+              "value": "Home | Austin & Jordyn's Wedding"
+            }
+          },
+          {
+            "field": "meta.twitter:description",
+            "legacySummary": {
+              "kind": "string",
+              "value": "A permanent digital archive of our wedding day. Relive our story, browse the films, and view the galleries."
+            },
+            "rebuildSummary": {
+              "kind": "string",
+              "value": "Join us in celebrating the wedding of Austin and Jordyn. View our story, photos, and share your memories."
+            }
+          },
+          {
+            "field": "meta.twitter:image",
+            "legacySummary": {
+              "kind": "string",
+              "value": "https://www.theporadas.com/images/og-image.webp"
+            },
+            "rebuildSummary": {
+              "kind": "string",
+              "value": "https://www.theporadas.com/images/home/intro-video-poster.png"
+            }
+          }
+        ],
+        "bodyText": null
+      },
+      "files": {
+        "legacy": [
+          "shots/legacy/home__desktop__dark--s000.png",
+          "shots/legacy/home__desktop__dark--s001.png",
+          "shots/legacy/home__desktop__dark--s002.png",
+          "shots/legacy/home__desktop__dark--s003.png",
+          "shots/legacy/home__desktop__dark--s004.png",
+          "shots/legacy/home__desktop__dark--s005.png",
+          "shots/legacy/home__desktop__dark--s006.png",
+          "shots/legacy/home__desktop__dark--s007.png"
+        ],
+        "rebuild": [
+          "shots/rebuild/home__desktop__dark--s000.png",
+          "shots/rebuild/home__desktop__dark--s001.png",
+          "shots/rebuild/home__desktop__dark--s002.png",
+          "shots/rebuild/home__desktop__dark--s003.png",
+          "shots/rebuild/home__desktop__dark--s004.png",
+          "shots/rebuild/home__desktop__dark--s005.png",
+          "shots/rebuild/home__desktop__dark--s006.png",
+          "shots/rebuild/home__desktop__dark--s007.png"
+        ],
+        "diff": [
+          "shots/diff/home__desktop__dark--s000.png",
+          "shots/diff/home__desktop__dark--s001.png",
+          "shots/diff/home__desktop__dark--s002.png",
+          "shots/diff/home__desktop__dark--s003.png",
+          "shots/diff/home__desktop__dark--s004.png",
+          "shots/diff/home__desktop__dark--s005.png",
+          "shots/diff/home__desktop__dark--s006.png",
+          "shots/diff/home__desktop__dark--s007.png"
+        ],
+        "text": {
+          "legacy": "text/legacy/home__desktop__dark.json",
+          "rebuild": "text/rebuild/home__desktop__dark.json",
+          "diff": "text/diff/home__desktop__dark.json"
+        }
+      },
+      "warnings": [
+        "Some images did not finish loading/decoding before capture.",
+        "Some images did not finish loading/decoding before capture."
+      ]
+    },
+    {
+      "key": "upload__desktop__dark",
+      "route": "upload",
+      "routePath": "/upload",
+      "urlPath": "/upload",
+      "parity": 1,
+      "viewport": "desktop",
+      "viewportPixels": {
+        "width": 1440,
+        "height": 900
+      },
+      "theme": "dark",
+      "status": "fail",
+      "failureReasons": ["text"],
+      "allowlist": {
+        "status": "no-entry",
+        "accepted": false,
+        "entry": null,
+        "activeEntries": 0,
+        "expiredEntries": [],
+        "wave": 9
+      },
+      "masks": [],
+      "legacy": {
+        "ok": true,
+        "endpoint": "http://127.0.0.1:4174/upload",
+        "httpStatus": 200,
+        "pageHeightPx": 3036,
+        "sliceCount": 8,
+        "durationMs": 6298,
+        "themeApplied": {
+          "datasetTheme": "dark",
+          "className": "dark-theme",
+          "colorScheme": "dark"
+        },
+        "finalUrl": "http://127.0.0.1:4174/upload",
+        "adminAuth": null,
+        "imagesSettled": true,
+        "warnings": [],
+        "consoleErrors": [],
+        "pageErrors": [],
+        "error": null,
+        "files": [
+          "C:\\Users\\bbask\\Coding_Projects\\Wedding_Website_Clean\\tools\\parity\\output\\meta-fix-check\\shots\\legacy\\upload__desktop__dark--s000.png",
+          "C:\\Users\\bbask\\Coding_Projects\\Wedding_Website_Clean\\tools\\parity\\output\\meta-fix-check\\shots\\legacy\\upload__desktop__dark--s001.png",
+          "C:\\Users\\bbask\\Coding_Projects\\Wedding_Website_Clean\\tools\\parity\\output\\meta-fix-check\\shots\\legacy\\upload__desktop__dark--s002.png",
+          "C:\\Users\\bbask\\Coding_Projects\\Wedding_Website_Clean\\tools\\parity\\output\\meta-fix-check\\shots\\legacy\\upload__desktop__dark--s003.png",
+          "C:\\Users\\bbask\\Coding_Projects\\Wedding_Website_Clean\\tools\\parity\\output\\meta-fix-check\\shots\\legacy\\upload__desktop__dark--s004.png",
+          "C:\\Users\\bbask\\Coding_Projects\\Wedding_Website_Clean\\tools\\parity\\output\\meta-fix-check\\shots\\legacy\\upload__desktop__dark--s005.png",
+          "C:\\Users\\bbask\\Coding_Projects\\Wedding_Website_Clean\\tools\\parity\\output\\meta-fix-check\\shots\\legacy\\upload__desktop__dark--s006.png",
+          "C:\\Users\\bbask\\Coding_Projects\\Wedding_Website_Clean\\tools\\parity\\output\\meta-fix-check\\shots\\legacy\\upload__desktop__dark--s007.png"
+        ]
+      },
+      "rebuild": {
+        "ok": true,
+        "endpoint": "http://127.0.0.1:4175/upload",
+        "httpStatus": 200,
+        "pageHeightPx": 3036,
+        "sliceCount": 8,
+        "durationMs": 6217,
+        "themeApplied": {
+          "datasetTheme": "dark",
+          "className": "dark-theme",
+          "colorScheme": "dark"
+        },
+        "finalUrl": "http://127.0.0.1:4175/upload",
+        "adminAuth": null,
+        "imagesSettled": true,
+        "warnings": [],
+        "consoleErrors": [],
+        "pageErrors": [],
+        "error": null,
+        "files": [
+          "C:\\Users\\bbask\\Coding_Projects\\Wedding_Website_Clean\\tools\\parity\\output\\meta-fix-check\\shots\\rebuild\\upload__desktop__dark--s000.png",
+          "C:\\Users\\bbask\\Coding_Projects\\Wedding_Website_Clean\\tools\\parity\\output\\meta-fix-check\\shots\\rebuild\\upload__desktop__dark--s001.png",
+          "C:\\Users\\bbask\\Coding_Projects\\Wedding_Website_Clean\\tools\\parity\\output\\meta-fix-check\\shots\\rebuild\\upload__desktop__dark--s002.png",
+          "C:\\Users\\bbask\\Coding_Projects\\Wedding_Website_Clean\\tools\\parity\\output\\meta-fix-check\\shots\\rebuild\\upload__desktop__dark--s003.png",
+          "C:\\Users\\bbask\\Coding_Projects\\Wedding_Website_Clean\\tools\\parity\\output\\meta-fix-check\\shots\\rebuild\\upload__desktop__dark--s004.png",
+          "C:\\Users\\bbask\\Coding_Projects\\Wedding_Website_Clean\\tools\\parity\\output\\meta-fix-check\\shots\\rebuild\\upload__desktop__dark--s005.png",
+          "C:\\Users\\bbask\\Coding_Projects\\Wedding_Website_Clean\\tools\\parity\\output\\meta-fix-check\\shots\\rebuild\\upload__desktop__dark--s006.png",
+          "C:\\Users\\bbask\\Coding_Projects\\Wedding_Website_Clean\\tools\\parity\\output\\meta-fix-check\\shots\\rebuild\\upload__desktop__dark--s007.png"
+        ]
+      },
+      "pixelDiff": {
+        "changedPixels": 0,
+        "totalPixels": 10368000,
+        "ratio": 0,
+        "maxChannelDelta": 0,
+        "edgeTolerance": 0,
+        "boundingBox": null,
+        "sizeMismatch": false,
+        "sliceCountMismatch": false,
+        "slices": [
+          {
+            "slice": 0,
+            "status": "identical",
+            "diffFile": "shots/diff/upload__desktop__dark--s000.png",
+            "changedPixels": 0,
+            "totalPixels": 1296000,
+            "ratio": 0,
+            "maxChannelDelta": 0,
+            "boundingBox": null
+          },
+          {
+            "slice": 1,
+            "status": "identical",
+            "diffFile": "shots/diff/upload__desktop__dark--s001.png",
+            "changedPixels": 0,
+            "totalPixels": 1296000,
+            "ratio": 0,
+            "maxChannelDelta": 0,
+            "boundingBox": null
+          },
+          {
+            "slice": 2,
+            "status": "identical",
+            "diffFile": "shots/diff/upload__desktop__dark--s002.png",
+            "changedPixels": 0,
+            "totalPixels": 1296000,
+            "ratio": 0,
+            "maxChannelDelta": 0,
+            "boundingBox": null
+          },
+          {
+            "slice": 3,
+            "status": "identical",
+            "diffFile": "shots/diff/upload__desktop__dark--s003.png",
+            "changedPixels": 0,
+            "totalPixels": 1296000,
+            "ratio": 0,
+            "maxChannelDelta": 0,
+            "boundingBox": null
+          },
+          {
+            "slice": 4,
+            "status": "identical",
+            "diffFile": "shots/diff/upload__desktop__dark--s004.png",
+            "changedPixels": 0,
+            "totalPixels": 1296000,
+            "ratio": 0,
+            "maxChannelDelta": 0,
+            "boundingBox": null
+          },
+          {
+            "slice": 5,
+            "status": "identical",
+            "diffFile": "shots/diff/upload__desktop__dark--s005.png",
+            "changedPixels": 0,
+            "totalPixels": 1296000,
+            "ratio": 0,
+            "maxChannelDelta": 0,
+            "boundingBox": null
+          },
+          {
+            "slice": 6,
+            "status": "identical",
+            "diffFile": "shots/diff/upload__desktop__dark--s006.png",
+            "changedPixels": 0,
+            "totalPixels": 1296000,
+            "ratio": 0,
+            "maxChannelDelta": 0,
+            "boundingBox": null
+          },
+          {
+            "slice": 7,
+            "status": "identical",
+            "diffFile": "shots/diff/upload__desktop__dark--s007.png",
+            "changedPixels": 0,
+            "totalPixels": 1296000,
+            "ratio": 0,
+            "maxChannelDelta": 0,
+            "boundingBox": null
+          }
+        ]
+      },
+      "textDiff": {
+        "status": "fail",
+        "differences": [
+          {
+            "field": "meta.twitter:title",
+            "legacySummary": {
+              "kind": "string",
+              "value": "Austin & Jordyn | Wedding Archive"
+            },
+            "rebuildSummary": {
+              "kind": "string",
+              "value": "Home | Austin & Jordyn's Wedding"
+            }
+          },
+          {
+            "field": "meta.twitter:description",
+            "legacySummary": {
+              "kind": "string",
+              "value": "A permanent digital archive of our wedding day. Relive our story, browse the films, and view the galleries."
+            },
+            "rebuildSummary": {
+              "kind": "string",
+              "value": "Join us in celebrating the wedding of Austin and Jordyn. View our story, photos, and share your memories."
+            }
+          },
+          {
+            "field": "meta.twitter:image",
+            "legacySummary": {
+              "kind": "string",
+              "value": "https://www.theporadas.com/images/og-image.webp"
+            },
+            "rebuildSummary": {
+              "kind": "string",
+              "value": "https://www.theporadas.com/images/home/intro-video-poster.png"
+            }
+          }
+        ],
+        "bodyText": null
+      },
+      "files": {
+        "legacy": [
+          "shots/legacy/upload__desktop__dark--s000.png",
+          "shots/legacy/upload__desktop__dark--s001.png",
+          "shots/legacy/upload__desktop__dark--s002.png",
+          "shots/legacy/upload__desktop__dark--s003.png",
+          "shots/legacy/upload__desktop__dark--s004.png",
+          "shots/legacy/upload__desktop__dark--s005.png",
+          "shots/legacy/upload__desktop__dark--s006.png",
+          "shots/legacy/upload__desktop__dark--s007.png"
+        ],
+        "rebuild": [
+          "shots/rebuild/upload__desktop__dark--s000.png",
+          "shots/rebuild/upload__desktop__dark--s001.png",
+          "shots/rebuild/upload__desktop__dark--s002.png",
+          "shots/rebuild/upload__desktop__dark--s003.png",
+          "shots/rebuild/upload__desktop__dark--s004.png",
+          "shots/rebuild/upload__desktop__dark--s005.png",
+          "shots/rebuild/upload__desktop__dark--s006.png",
+          "shots/rebuild/upload__desktop__dark--s007.png"
+        ],
+        "diff": [
+          "shots/diff/upload__desktop__dark--s000.png",
+          "shots/diff/upload__desktop__dark--s001.png",
+          "shots/diff/upload__desktop__dark--s002.png",
+          "shots/diff/upload__desktop__dark--s003.png",
+          "shots/diff/upload__desktop__dark--s004.png",
+          "shots/diff/upload__desktop__dark--s005.png",
+          "shots/diff/upload__desktop__dark--s006.png",
+          "shots/diff/upload__desktop__dark--s007.png"
+        ],
+        "text": {
+          "legacy": "text/legacy/upload__desktop__dark.json",
+          "rebuild": "text/rebuild/upload__desktop__dark.json",
+          "diff": "text/diff/upload__desktop__dark.json"
+        }
+      },
+      "warnings": []
+    },
+    {
+      "key": "guestbook__desktop__dark",
+      "route": "guestbook",
+      "routePath": "/guestbook",
+      "urlPath": "/guestbook",
+      "parity": 1,
+      "viewport": "desktop",
+      "viewportPixels": {
+        "width": 1440,
+        "height": 900
+      },
+      "theme": "dark",
+      "status": "fail",
+      "failureReasons": ["text"],
+      "allowlist": {
+        "status": "no-entry",
+        "accepted": false,
+        "entry": null,
+        "activeEntries": 0,
+        "expiredEntries": [],
+        "wave": 9
+      },
+      "masks": [],
+      "legacy": {
+        "ok": true,
+        "endpoint": "http://127.0.0.1:4174/guestbook",
+        "httpStatus": 200,
+        "pageHeightPx": 2187,
+        "sliceCount": 8,
+        "durationMs": 6967,
+        "themeApplied": {
+          "datasetTheme": "dark",
+          "className": "dark-theme",
+          "colorScheme": "dark"
+        },
+        "finalUrl": "http://127.0.0.1:4174/guestbook",
+        "adminAuth": null,
+        "imagesSettled": true,
+        "warnings": [],
+        "consoleErrors": [],
+        "pageErrors": [],
+        "error": null,
+        "files": [
+          "C:\\Users\\bbask\\Coding_Projects\\Wedding_Website_Clean\\tools\\parity\\output\\meta-fix-check\\shots\\legacy\\guestbook__desktop__dark--s000.png",
+          "C:\\Users\\bbask\\Coding_Projects\\Wedding_Website_Clean\\tools\\parity\\output\\meta-fix-check\\shots\\legacy\\guestbook__desktop__dark--s001.png",
+          "C:\\Users\\bbask\\Coding_Projects\\Wedding_Website_Clean\\tools\\parity\\output\\meta-fix-check\\shots\\legacy\\guestbook__desktop__dark--s002.png",
+          "C:\\Users\\bbask\\Coding_Projects\\Wedding_Website_Clean\\tools\\parity\\output\\meta-fix-check\\shots\\legacy\\guestbook__desktop__dark--s003.png",
+          "C:\\Users\\bbask\\Coding_Projects\\Wedding_Website_Clean\\tools\\parity\\output\\meta-fix-check\\shots\\legacy\\guestbook__desktop__dark--s004.png",
+          "C:\\Users\\bbask\\Coding_Projects\\Wedding_Website_Clean\\tools\\parity\\output\\meta-fix-check\\shots\\legacy\\guestbook__desktop__dark--s005.png",
+          "C:\\Users\\bbask\\Coding_Projects\\Wedding_Website_Clean\\tools\\parity\\output\\meta-fix-check\\shots\\legacy\\guestbook__desktop__dark--s006.png",
+          "C:\\Users\\bbask\\Coding_Projects\\Wedding_Website_Clean\\tools\\parity\\output\\meta-fix-check\\shots\\legacy\\guestbook__desktop__dark--s007.png"
+        ]
+      },
+      "rebuild": {
+        "ok": true,
+        "endpoint": "http://127.0.0.1:4175/guestbook",
+        "httpStatus": 200,
+        "pageHeightPx": 2187,
+        "sliceCount": 8,
+        "durationMs": 6634,
+        "themeApplied": {
+          "datasetTheme": "dark",
+          "className": "dark-theme",
+          "colorScheme": "dark"
+        },
+        "finalUrl": "http://127.0.0.1:4175/guestbook",
+        "adminAuth": null,
+        "imagesSettled": true,
+        "warnings": [],
+        "consoleErrors": [],
+        "pageErrors": [],
+        "error": null,
+        "files": [
+          "C:\\Users\\bbask\\Coding_Projects\\Wedding_Website_Clean\\tools\\parity\\output\\meta-fix-check\\shots\\rebuild\\guestbook__desktop__dark--s000.png",
+          "C:\\Users\\bbask\\Coding_Projects\\Wedding_Website_Clean\\tools\\parity\\output\\meta-fix-check\\shots\\rebuild\\guestbook__desktop__dark--s001.png",
+          "C:\\Users\\bbask\\Coding_Projects\\Wedding_Website_Clean\\tools\\parity\\output\\meta-fix-check\\shots\\rebuild\\guestbook__desktop__dark--s002.png",
+          "C:\\Users\\bbask\\Coding_Projects\\Wedding_Website_Clean\\tools\\parity\\output\\meta-fix-check\\shots\\rebuild\\guestbook__desktop__dark--s003.png",
+          "C:\\Users\\bbask\\Coding_Projects\\Wedding_Website_Clean\\tools\\parity\\output\\meta-fix-check\\shots\\rebuild\\guestbook__desktop__dark--s004.png",
+          "C:\\Users\\bbask\\Coding_Projects\\Wedding_Website_Clean\\tools\\parity\\output\\meta-fix-check\\shots\\rebuild\\guestbook__desktop__dark--s005.png",
+          "C:\\Users\\bbask\\Coding_Projects\\Wedding_Website_Clean\\tools\\parity\\output\\meta-fix-check\\shots\\rebuild\\guestbook__desktop__dark--s006.png",
+          "C:\\Users\\bbask\\Coding_Projects\\Wedding_Website_Clean\\tools\\parity\\output\\meta-fix-check\\shots\\rebuild\\guestbook__desktop__dark--s007.png"
+        ]
+      },
+      "pixelDiff": {
+        "changedPixels": 0,
+        "totalPixels": 10368000,
+        "ratio": 0,
+        "maxChannelDelta": 35,
+        "edgeTolerance": 0,
+        "boundingBox": null,
+        "sizeMismatch": false,
+        "sliceCountMismatch": false,
+        "slices": [
+          {
+            "slice": 0,
+            "status": "identical",
+            "diffFile": "shots/diff/guestbook__desktop__dark--s000.png",
+            "changedPixels": 0,
+            "totalPixels": 1296000,
+            "ratio": 0,
+            "maxChannelDelta": 6,
+            "boundingBox": null
+          },
+          {
+            "slice": 1,
+            "status": "identical",
+            "diffFile": "shots/diff/guestbook__desktop__dark--s001.png",
+            "changedPixels": 0,
+            "totalPixels": 1296000,
+            "ratio": 0,
+            "maxChannelDelta": 22,
+            "boundingBox": null
+          },
+          {
+            "slice": 2,
+            "status": "identical",
+            "diffFile": "shots/diff/guestbook__desktop__dark--s002.png",
+            "changedPixels": 0,
+            "totalPixels": 1296000,
+            "ratio": 0,
+            "maxChannelDelta": 35,
+            "boundingBox": null
+          },
+          {
+            "slice": 3,
+            "status": "identical",
+            "diffFile": "shots/diff/guestbook__desktop__dark--s003.png",
+            "changedPixels": 0,
+            "totalPixels": 1296000,
+            "ratio": 0,
+            "maxChannelDelta": 35,
+            "boundingBox": null
+          },
+          {
+            "slice": 4,
+            "status": "identical",
+            "diffFile": "shots/diff/guestbook__desktop__dark--s004.png",
+            "changedPixels": 0,
+            "totalPixels": 1296000,
+            "ratio": 0,
+            "maxChannelDelta": 35,
+            "boundingBox": null
+          },
+          {
+            "slice": 5,
+            "status": "identical",
+            "diffFile": "shots/diff/guestbook__desktop__dark--s005.png",
+            "changedPixels": 0,
+            "totalPixels": 1296000,
+            "ratio": 0,
+            "maxChannelDelta": 35,
+            "boundingBox": null
+          },
+          {
+            "slice": 6,
+            "status": "identical",
+            "diffFile": "shots/diff/guestbook__desktop__dark--s006.png",
+            "changedPixels": 0,
+            "totalPixels": 1296000,
+            "ratio": 0,
+            "maxChannelDelta": 35,
+            "boundingBox": null
+          },
+          {
+            "slice": 7,
+            "status": "identical",
+            "diffFile": "shots/diff/guestbook__desktop__dark--s007.png",
+            "changedPixels": 0,
+            "totalPixels": 1296000,
+            "ratio": 0,
+            "maxChannelDelta": 35,
+            "boundingBox": null
+          }
+        ]
+      },
+      "textDiff": {
+        "status": "fail",
+        "differences": [
+          {
+            "field": "meta.twitter:title",
+            "legacySummary": {
+              "kind": "string",
+              "value": "Austin & Jordyn | Wedding Archive"
+            },
+            "rebuildSummary": {
+              "kind": "string",
+              "value": "Home | Austin & Jordyn's Wedding"
+            }
+          },
+          {
+            "field": "meta.twitter:description",
+            "legacySummary": {
+              "kind": "string",
+              "value": "A permanent digital archive of our wedding day. Relive our story, browse the films, and view the galleries."
+            },
+            "rebuildSummary": {
+              "kind": "string",
+              "value": "Join us in celebrating the wedding of Austin and Jordyn. View our story, photos, and share your memories."
+            }
+          },
+          {
+            "field": "meta.twitter:image",
+            "legacySummary": {
+              "kind": "string",
+              "value": "https://www.theporadas.com/images/og-image.webp"
+            },
+            "rebuildSummary": {
+              "kind": "string",
+              "value": "https://www.theporadas.com/images/home/intro-video-poster.png"
+            }
+          }
+        ],
+        "bodyText": null
+      },
+      "files": {
+        "legacy": [
+          "shots/legacy/guestbook__desktop__dark--s000.png",
+          "shots/legacy/guestbook__desktop__dark--s001.png",
+          "shots/legacy/guestbook__desktop__dark--s002.png",
+          "shots/legacy/guestbook__desktop__dark--s003.png",
+          "shots/legacy/guestbook__desktop__dark--s004.png",
+          "shots/legacy/guestbook__desktop__dark--s005.png",
+          "shots/legacy/guestbook__desktop__dark--s006.png",
+          "shots/legacy/guestbook__desktop__dark--s007.png"
+        ],
+        "rebuild": [
+          "shots/rebuild/guestbook__desktop__dark--s000.png",
+          "shots/rebuild/guestbook__desktop__dark--s001.png",
+          "shots/rebuild/guestbook__desktop__dark--s002.png",
+          "shots/rebuild/guestbook__desktop__dark--s003.png",
+          "shots/rebuild/guestbook__desktop__dark--s004.png",
+          "shots/rebuild/guestbook__desktop__dark--s005.png",
+          "shots/rebuild/guestbook__desktop__dark--s006.png",
+          "shots/rebuild/guestbook__desktop__dark--s007.png"
+        ],
+        "diff": [
+          "shots/diff/guestbook__desktop__dark--s000.png",
+          "shots/diff/guestbook__desktop__dark--s001.png",
+          "shots/diff/guestbook__desktop__dark--s002.png",
+          "shots/diff/guestbook__desktop__dark--s003.png",
+          "shots/diff/guestbook__desktop__dark--s004.png",
+          "shots/diff/guestbook__desktop__dark--s005.png",
+          "shots/diff/guestbook__desktop__dark--s006.png",
+          "shots/diff/guestbook__desktop__dark--s007.png"
+        ],
+        "text": {
+          "legacy": "text/legacy/guestbook__desktop__dark.json",
+          "rebuild": "text/rebuild/guestbook__desktop__dark.json",
+          "diff": "text/diff/guestbook__desktop__dark.json"
+        }
+      },
+      "warnings": []
+    }
+  ]
+}

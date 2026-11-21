@@ -1,0 +1,186 @@
+{
+  "capturedAt": "2026-11-10T04:03:02.749Z",
+  "baseUrl": "http://127.0.0.1:4175",
+  "url": "/guest-photos",
+  "title": "Guest Photos | Austin & Jordyn's Wedding",
+  "lang": "en",
+  "canonical": "https://www.theporadas.com/guest-photos",
+  "meta": {
+    "viewport": "width=device-width, initial-scale=1.0",
+    "title": "Austin & Jordyn | Wedding Archive",
+    "description": "Browse the photos and notes shared by family and friends from Austin and Jordyn Porada wedding celebrations.",
+    "keywords": "wedding, archive, austin, jordyn, marriage, collection",
+    "author": "Austin & Jordyn",
+    "og:type": "website",
+    "og:url": "https://www.theporadas.com/guest-photos",
+    "og:title": "Guest Photos | Austin & Jordyn's Wedding",
+    "og:description": "Browse the photos and notes shared by family and friends from Austin and Jordyn Porada wedding celebrations.",
+    "og:image": "https://www.theporadas.com/images/home/intro-video-poster.png",
+    "twitter:card": "summary_large_image",
+    "twitter:url": "https://www.theporadas.com/",
+    "twitter:title": "Guest Photos | Austin & Jordyn's Wedding",
+    "twitter:description": "Browse the photos and notes shared by family and friends from Austin and Jordyn Porada wedding celebrations.",
+    "twitter:image": "https://www.theporadas.com/images/home/intro-video-poster.png",
+    "robots": "index, follow",
+    "language": "English",
+    "theme-color": "#d4af37",
+    "mobile-web-app-capable": "yes",
+    "apple-mobile-web-app-status-bar-style": "black-translucent",
+    "apple-mobile-web-app-title": "A&J Wedding",
+    "application-name": "A&J Wedding",
+    "msapplication-TileColor": "#d4af37",
+    "msapplication-config": "/browserconfig.xml",
+    "og:image:width": "1200",
+    "og:image:height": "630",
+    "og:site_name": "Austin & Jordyn's Wedding",
+    "og:locale": "en_US"
+  },
+  "headings": [
+    {
+      "level": 1,
+      "text": "A contact sheet of the night as everyone saw it"
+    },
+    {
+      "level": 2,
+      "text": "Jamie Rivera"
+    },
+    {
+      "level": 2,
+      "text": "Morgan Lee"
+    },
+    {
+      "level": 2,
+      "text": "Thanks for helping us keep the day alive."
+    }
+  ],
+  "links": [
+    {
+      "href": "/#main-content",
+      "text": "Skip to main content",
+      "ariaLabel": ""
+    },
+    {
+      "href": "/",
+      "text": "A&J",
+      "ariaLabel": ""
+    },
+    {
+      "href": "/film",
+      "text": "FilmWatch Film",
+      "ariaLabel": ""
+    },
+    {
+      "href": "/gallery",
+      "text": "PhotosGallery",
+      "ariaLabel": ""
+    },
+    {
+      "href": "/guestbook",
+      "text": "GuestsGuestbook",
+      "ariaLabel": ""
+    },
+    {
+      "href": "/upload",
+      "text": "ShareShare",
+      "ariaLabel": ""
+    },
+    {
+      "href": "/print",
+      "text": "PrintMemory Book",
+      "ariaLabel": ""
+    },
+    {
+      "href": "/upload",
+      "text": "Share yours",
+      "ariaLabel": ""
+    },
+    {
+      "href": "/film",
+      "text": "Watch the filmRevisit the ceremony, speeches, and the whole dance floor arc.",
+      "ariaLabel": ""
+    },
+    {
+      "href": "/gallery",
+      "text": "Browse the galleryPortraits, candids, and every little detail we never want to forget.",
+      "ariaLabel": ""
+    },
+    {
+      "href": "/guestbook",
+      "text": "Leave a noteA quiet last stop for one message, blessing, or little memory from the day.",
+      "ariaLabel": ""
+    },
+    {
+      "href": "/print",
+      "text": "Memory BookPrint a keepsake photo book or guestbook — save as PDF from any browser.",
+      "ariaLabel": ""
+    },
+    {
+      "href": "/film",
+      "text": "Watch Film",
+      "ariaLabel": ""
+    },
+    {
+      "href": "/gallery",
+      "text": "Gallery",
+      "ariaLabel": ""
+    },
+    {
+      "href": "/guestbook",
+      "text": "Guestbook",
+      "ariaLabel": ""
+    },
+    {
+      "href": "/upload",
+      "text": "Share",
+      "ariaLabel": ""
+    },
+    {
+      "href": "/print",
+      "text": "Memory Book",
+      "ariaLabel": ""
+    }
+  ],
+  "images": [
+    {
+      "src": "/images/engagement/PoradaProposal-29.webp",
+      "alt": "Guest photo shared by Jamie Rivera",
+      "loading": "eager"
+    },
+    {
+      "src": "/images/engagement/PoradaProposal-11.webp",
+      "alt": "Guest photo shared by Jamie Rivera",
+      "loading": "eager"
+    },
+    {
+      "src": "/images/engagement/PoradaProposal-150.webp",
+      "alt": "Guest photo shared by Jamie Rivera",
+      "loading": "eager"
+    },
+    {
+      "src": "/images/engagement/PoradaProposal-181.webp",
+      "alt": "Guest photo shared by Morgan Lee",
+      "loading": "lazy"
+    },
+    {
+      "src": "/images/engagement/PoradaProposal-29.webp",
+      "alt": "Shared by Jamie Rivera",
+      "loading": "lazy"
+    },
+    {
+      "src": "/images/engagement/PoradaProposal-11.webp",
+      "alt": "",
+      "loading": "lazy"
+    },
+    {
+      "src": "/images/engagement/PoradaProposal-150.webp",
+      "alt": "",
+      "loading": "lazy"
+    },
+    {
+      "src": "/images/engagement/PoradaProposal-181.webp",
+      "alt": "Shared by Morgan Lee",
+      "loading": "lazy"
+    }
+  ],
+  "bodyText": "Skip to main content\nA&J\nWATCH FILM\nGALLERY\nGUESTBOOK\nSHARE\nMEMORY BOOK\n\nGUEST MEMORIES\n\nA contact sheet of the night as everyone saw it\n\nCandid tables, quick notes, blurry dance-floor joy, and the small details only guests could catch.\n\n2\nAPPROVED UPLOADS\n4\nGUEST PHOTOS\nShare yours\nJamie Rivera\n\nMAY 11, 2025\n\n3 photos\n\nSo glad we were there — what a beautiful day!\n\nMorgan Lee\n\nMAY 11, 2025\n\n1 photo\n\nCaught some candid moments from our table.\n\nAUSTIN AND JORDYN\n\nThanks for helping us keep the day alive.\n\nThe simplest way through is still the best one: watch the film, open the gallery when you want to linger, and leave a note only if you still have something to say before you go.\n\nMAY 10, 2025\nTHE LODGE AT INDIAN LAKE\n\nWatch the film\n\nRevisit the ceremony, speeches, and the whole dance floor arc.\n\nBrowse the gallery\n\nPortraits, candids, and every little detail we never want to forget.\n\nLeave a note\n\nA quiet last stop for one message, blessing, or little memory from the day.\n\nMemory Book\n\nPrint a keepsake photo book or guestbook — save as PDF from any browser.\n\nWATCH FILM\nGALLERY\nGUESTBOOK\nSHARE\nMEMORY BOOK\n\nMade with\nfor the people who shared it with us\n\n© 2026 Austin & Jordyn"
+}

@@ -1,0 +1,277 @@
+{
+  "capturedAt": "2026-11-10T02:14:01.988Z",
+  "baseUrl": "http://127.0.0.1:4175",
+  "url": "/film",
+  "title": "Wedding Film | Austin & Jordyn's Wedding",
+  "lang": "en",
+  "canonical": "https://www.theporadas.com/film",
+  "meta": {
+    "viewport": "width=device-width, initial-scale=1.0",
+    "title": "Austin & Jordyn | Wedding Archive",
+    "description": "Watch the full wedding film for Austin and Jordyn, from getting ready through the last dance.",
+    "keywords": "wedding, archive, austin, jordyn, marriage, collection",
+    "author": "Austin & Jordyn",
+    "og:type": "website",
+    "og:url": "https://www.theporadas.com/film",
+    "og:title": "Wedding Film | Austin & Jordyn's Wedding",
+    "og:description": "Watch the full wedding film for Austin and Jordyn, from getting ready through the last dance.",
+    "og:image": "https://www.theporadas.com/images/film/main-film-poster.png",
+    "twitter:card": "summary_large_image",
+    "twitter:url": "https://www.theporadas.com/",
+    "twitter:title": "Wedding Film | Austin & Jordyn's Wedding",
+    "twitter:description": "Watch the full wedding film for Austin and Jordyn, from getting ready through the last dance.",
+    "twitter:image": "https://www.theporadas.com/images/film/main-film-poster.png",
+    "robots": "index, follow",
+    "language": "English",
+    "theme-color": "#d4af37",
+    "mobile-web-app-capable": "yes",
+    "apple-mobile-web-app-status-bar-style": "black-translucent",
+    "apple-mobile-web-app-title": "A&J Wedding",
+    "application-name": "A&J Wedding",
+    "msapplication-TileColor": "#d4af37",
+    "msapplication-config": "/browserconfig.xml",
+    "og:image:width": "1200",
+    "og:image:height": "630",
+    "og:site_name": "Austin & Jordyn's Wedding",
+    "og:locale": "en_US"
+  },
+  "headings": [
+    {
+      "level": 1,
+      "text": "The day as it felt, not just as it looked."
+    },
+    {
+      "level": 2,
+      "text": "The people who held the day together."
+    },
+    {
+      "level": 2,
+      "text": "The people woven into the film"
+    },
+    {
+      "level": 3,
+      "text": "Austin & Jordyn's Wedding"
+    },
+    {
+      "level": 3,
+      "text": "Chapter guide"
+    },
+    {
+      "level": 2,
+      "text": "Watch the parent dances."
+    },
+    {
+      "level": 2,
+      "text": "Where to next"
+    },
+    {
+      "level": 2,
+      "text": "Thanks for helping us keep the day alive."
+    }
+  ],
+  "links": [
+    {
+      "href": "/#main-content",
+      "text": "Skip to main content",
+      "ariaLabel": ""
+    },
+    {
+      "href": "/",
+      "text": "A&J",
+      "ariaLabel": ""
+    },
+    {
+      "href": "/film",
+      "text": "FilmWatch Film",
+      "ariaLabel": ""
+    },
+    {
+      "href": "/gallery",
+      "text": "PhotosGallery",
+      "ariaLabel": ""
+    },
+    {
+      "href": "/guestbook",
+      "text": "GuestsGuestbook",
+      "ariaLabel": ""
+    },
+    {
+      "href": "/upload",
+      "text": "ShareShare",
+      "ariaLabel": ""
+    },
+    {
+      "href": "/print",
+      "text": "PrintMemory Book",
+      "ariaLabel": ""
+    },
+    {
+      "href": "/gallery?collection=Wedding+Day",
+      "text": "Open Wedding Day Gallery",
+      "ariaLabel": ""
+    },
+    {
+      "href": "/gallery?collection=Guest+Uploads",
+      "text": "Browse Guest Uploads",
+      "ariaLabel": ""
+    },
+    {
+      "href": "/guestbook",
+      "text": "Leave a Note",
+      "ariaLabel": ""
+    },
+    {
+      "href": "/upload",
+      "text": "Share Your Angle",
+      "ariaLabel": ""
+    },
+    {
+      "href": "/film",
+      "text": "Watch the filmRevisit the ceremony, speeches, and the whole dance floor arc.",
+      "ariaLabel": ""
+    },
+    {
+      "href": "/gallery",
+      "text": "Browse the galleryPortraits, candids, and every little detail we never want to forget.",
+      "ariaLabel": ""
+    },
+    {
+      "href": "/guestbook",
+      "text": "Leave a noteA quiet last stop for one message, blessing, or little memory from the day.",
+      "ariaLabel": ""
+    },
+    {
+      "href": "/print",
+      "text": "Memory BookPrint a keepsake photo book or guestbook — save as PDF from any browser.",
+      "ariaLabel": ""
+    },
+    {
+      "href": "/film",
+      "text": "Watch Film",
+      "ariaLabel": ""
+    },
+    {
+      "href": "/gallery",
+      "text": "Gallery",
+      "ariaLabel": ""
+    },
+    {
+      "href": "/guestbook",
+      "text": "Guestbook",
+      "ariaLabel": ""
+    },
+    {
+      "href": "/upload",
+      "text": "Share",
+      "ariaLabel": ""
+    },
+    {
+      "href": "/print",
+      "text": "Memory Book",
+      "ariaLabel": ""
+    }
+  ],
+  "images": [
+    {
+      "src": "/images/parents/jerame.webp",
+      "alt": "Jerame Pringle",
+      "loading": ""
+    },
+    {
+      "src": "/images/parents/christine.webp",
+      "alt": "Christine Pringle",
+      "loading": ""
+    },
+    {
+      "src": "/images/parents/heather.webp",
+      "alt": "Heather Shaffer",
+      "loading": ""
+    },
+    {
+      "src": "/images/parents/melony.webp",
+      "alt": "Melony Porada",
+      "loading": ""
+    },
+    {
+      "src": "/images/couple/jordyn.png",
+      "alt": "Jordyn Porada",
+      "loading": ""
+    },
+    {
+      "src": "/images/couple/austin.png",
+      "alt": "Austin Porada",
+      "loading": ""
+    },
+    {
+      "src": "/images/wedding-party/bridesmaids/maria-mccray.webp",
+      "alt": "Maria McCray",
+      "loading": ""
+    },
+    {
+      "src": "/images/wedding-party/bridesmaids/lexi-berkebile.webp",
+      "alt": "Lexi Berkebile",
+      "loading": ""
+    },
+    {
+      "src": "/images/wedding-party/bridesmaids/emily-aurandt.webp",
+      "alt": "Emily Aurandt",
+      "loading": ""
+    },
+    {
+      "src": "/images/wedding-party/bridesmaids/hannah-porada.webp",
+      "alt": "Hannah Porada",
+      "loading": ""
+    },
+    {
+      "src": "/images/wedding-party/bridesmaids/micaela-helsel.webp",
+      "alt": "Micaela Helsel",
+      "loading": ""
+    },
+    {
+      "src": "/images/wedding-party/bridesmaids/brinnah-helsel.webp",
+      "alt": "Brinnah Helsel",
+      "loading": ""
+    },
+    {
+      "src": "/images/wedding-party/bridesmaids/caitie-helsel.webp",
+      "alt": "Caitie Helsel",
+      "loading": ""
+    },
+    {
+      "src": "/images/wedding-party/groomsmen/tyler-sharpe.webp",
+      "alt": "Tyler Sharpe",
+      "loading": ""
+    },
+    {
+      "src": "/images/wedding-party/groomsmen/alex-molnar.webp",
+      "alt": "Alex Molnar",
+      "loading": ""
+    },
+    {
+      "src": "/images/wedding-party/groomsmen/brosonan-mccray.webp",
+      "alt": "Brosnan McCray",
+      "loading": ""
+    },
+    {
+      "src": "/images/wedding-party/groomsmen/ean-pringle.webp",
+      "alt": "Ean Pringle",
+      "loading": ""
+    },
+    {
+      "src": "/images/wedding-party/groomsmen/eddie-migut.webp",
+      "alt": "Eddie Migut",
+      "loading": ""
+    },
+    {
+      "src": "/images/wedding-party/groomsmen/ian-porada.webp",
+      "alt": "Ian Porada",
+      "loading": ""
+    },
+    {
+      "src": "/images/wedding-party/groomsmen/nate-berkebile.webp",
+      "alt": "Nate Berkebile",
+      "loading": ""
+    }
+  ],
+  "bodyText": "Skip to main content\nA&J\nOUR WEDDING FILM\nThe day as it felt, not just as it looked.\n\nStart here if you are only opening one page. This is the full arc of May 10, 2025: the nerves, the vows, the speeches, the laughter, and the dance floor blur that still feels impossible to forget.\n\nWATCH NOW\nSaturday, May 10, 2025\nThe Lodge at Indian Lake\n45:53 feature film\nMEET THE FAMILY AND FRIENDS\nThe people who held the day together.\n\nBefore you hit play, take a moment to meet the family and friends woven into every chapter of the film. It makes the speeches, reactions, and little glances land even harder.\n\nFAMILY AND FRIENDS\nThe people woven into the film\n\nThe tree keeps things to first names up front. Tap a card to see the full name, role, and portrait.\n\nBRIDE'S FAMILY\n\nJerame\n\nFather of the Bride\n\nChristine\n\nMother of the Bride\n\nGROOM'S FAMILY\n\nHeather\n\nMother of the Groom\n\nMelony\n\nMother of the Groom\n\nJordyn\n\nAustin\n\nBRIDESMAIDS\n\nMaria\n\nOfficiant & Bridesmaid\n\nLexi\n\nMatron of Honor\n\nEmily\n\nBridesmaid\n\nHannah\n\nBridesmaid\n\nMicaela\n\nBridesmaid\n\nBrinnah\n\nBridesmaid\n\nCaitie\n\nBridesmaid\n\nGROOMSMEN\n\nTyler\n\nBest Man\n\nAlex\n\nGroomsman\n\nBrosnan\n\nGroomsman\n\nEan\n\nGroomsman\n\nEddie\n\nGroomsman\n\nIan\n\nGroomsman\n\nNate\n\nGroomsman\n\n45:53 feature film•10 chapters•Captions available\n\nAustin & Jordyn's Wedding\nNow playing\nChapter 1: Start\n10 CHAPTERS\n0% WATCHED\n0:00 / 0:00\nSTART\nCC\nCHAPTER GUIDE\n\nJump back in only when you need a specific section.\n\n0:00\n\nStart\n\n0:44\n\nBachelor+ette\n\n5:00\n\n\"Who Is It\"\n\n14:23\n\nWedding Party\n\n20:11\n\nOur Vows\n\n25:37\n\nThe Ceremony\n\n28:08\n\nThe Reception\n\n30:14\n\nFirst Dance\n\n36:05\n\nBloopers\n\n39:35\n\nThe Party\n\nPARENT DANCES\nWatch the parent dances.\n\nThese four clips are here on their own so you can go straight to the parent dances whenever you want to revisit them.\n\nAFTER THE FILM\nWhere to next\n\nThe next step is usually the gallery. Guest uploads and the guestbook stay here if you want one more pass through the day before you leave.\n\nOPEN WEDDING DAY GALLERY\nBROWSE GUEST UPLOADS\nLEAVE A NOTE\nSHARE YOUR ANGLE\n\nAUSTIN AND JORDYN\n\nThanks for helping us keep the day alive.\n\nThe simplest way through is still the best one: watch the film, open the gallery when you want to linger, and leave a note only if you still have something to say before you go.\n\nMAY 10, 2025\nTHE LODGE AT INDIAN LAKE\n\nWatch the film\n\nBrowse the gallery\n\nLeave a note\n\nMemory Book\n\nWATCH FILM\nGALLERY\nGUESTBOOK\nSHARE\nMEMORY BOOK\n\nMade with\nfor the people who shared it with us\n\n© 2026 Austin & Jordyn"
+}

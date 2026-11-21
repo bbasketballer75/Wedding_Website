@@ -1,0 +1,96 @@
+{
+  "capturedAt": "2026-11-10T02:20:17.434Z",
+  "baseUrl": "http://127.0.0.1:4174",
+  "url": "/print",
+  "title": "Memory Book | Austin & Jordyn's Wedding",
+  "lang": "en",
+  "canonical": "https://www.theporadas.com/print",
+  "meta": {
+    "viewport": "width=device-width, initial-scale=1.0",
+    "title": "Austin & Jordyn | Wedding Archive",
+    "description": "Print a photo book or guestbook keepsake from Austin & Jordyn's wedding archive.",
+    "keywords": "wedding, archive, austin, jordyn, marriage, collection",
+    "author": "Austin & Jordyn",
+    "og:type": "website",
+    "og:url": "https://www.theporadas.com/print",
+    "og:title": "Memory Book | Austin & Jordyn's Wedding",
+    "og:description": "Print a photo book or guestbook keepsake from Austin & Jordyn's wedding archive.",
+    "og:image": "https://www.theporadas.com/images/home/intro-video-poster.png",
+    "twitter:card": "summary_large_image",
+    "twitter:url": "https://www.theporadas.com/",
+    "twitter:title": "Memory Book | Austin & Jordyn's Wedding",
+    "twitter:description": "Print a photo book or guestbook keepsake from Austin & Jordyn's wedding archive.",
+    "twitter:image": "https://www.theporadas.com/images/home/intro-video-poster.png",
+    "robots": "noindex, nofollow",
+    "language": "English",
+    "theme-color": "#d4af37",
+    "mobile-web-app-capable": "yes",
+    "apple-mobile-web-app-status-bar-style": "black-translucent",
+    "apple-mobile-web-app-title": "A&J Wedding",
+    "application-name": "A&J Wedding",
+    "msapplication-TileColor": "#d4af37",
+    "msapplication-config": "/browserconfig.xml",
+    "og:image:width": "1200",
+    "og:image:height": "630",
+    "og:site_name": "Austin & Jordyn's Wedding",
+    "og:locale": "en_US"
+  },
+  "headings": [
+    {
+      "level": 2,
+      "text": "Choose what to include"
+    },
+    {
+      "level": 1,
+      "text": "Austin & Jordyn Porada"
+    },
+    {
+      "level": 2,
+      "text": "Wedding Day"
+    },
+    {
+      "level": 2,
+      "text": "Words from our guests"
+    }
+  ],
+  "links": [
+    {
+      "href": "/#main-content",
+      "text": "Skip to main content",
+      "ariaLabel": ""
+    }
+  ],
+  "images": [
+    {
+      "src": "/images/engagement/PoradaProposal-29.webp",
+      "alt": "First look on the lawn",
+      "loading": "eager"
+    },
+    {
+      "src": "/images/engagement/PoradaProposal-11.webp",
+      "alt": "Walking toward the ceremony garden",
+      "loading": "eager"
+    },
+    {
+      "src": "/images/engagement/PoradaProposal-150.webp",
+      "alt": "Quiet vows before the applause",
+      "loading": "eager"
+    },
+    {
+      "src": "/images/engagement/PoradaProposal-181.webp",
+      "alt": "The first kiss",
+      "loading": "eager"
+    },
+    {
+      "src": "/images/engagement/PoradaProposal-255.webp",
+      "alt": "A table full of laughter",
+      "loading": "eager"
+    },
+    {
+      "src": "/images/engagement/PoradaProposal-277.webp",
+      "alt": "First dance under the lights",
+      "loading": "eager"
+    }
+  ],
+  "bodyText": "Skip to main content\nMemory Book\n6 photos\n3 messages\nPRINT / SAVE PDF\nChoose what to include\n\nSelect albums and sections, then click Print / Save PDF. Your browser's print dialog lets you save as a PDF or send to any printer.\n\nPHOTO ALBUMS\n\nEngagement\n0 photos\nBach+ette\n0 photos\nWedding Day\n6 photos\nGuest Uploads\n0 photos\nMAX PHOTOS PER ALBUM\nGuestbook messages\n3 messages\n\nA WEDDING ARCHIVE\n\nAustin & Jordyn Porada\n\nMay 10, 2025\n\nWedding Day\n\nFirst look on the lawn\n\nWalking toward the ceremony garden\n\nQuiet vows before the applause\n\nThe first kiss\n\nA table full of laughter\n\nFirst dance under the lights\n\nWords from our guests\n\nMay 10, 2025\n\n“Your vows made the whole room disappear for a second. It felt like all of us were holding our breath with you.”\n\n— Sarah Mitchell\n\n“The dance floor was wild in the best way possible.”\n\n— Mike Chen\n\n“We sent a quick video hello from our table right after the toasts.”\n\n— Aunt Patricia"
+}

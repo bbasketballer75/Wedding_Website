@@ -1,0 +1,261 @@
+{
+  "schemaVersion": 1,
+  "kind": "parity-compare-progress",
+  "updatedAt": "2026-11-10T00:46:38.862Z",
+  "plannedShots": ["film__desktop__dark"],
+  "shots": [
+    {
+      "key": "film__desktop__dark",
+      "route": "film",
+      "routePath": "/film",
+      "urlPath": "/film",
+      "parity": 1,
+      "viewport": "desktop",
+      "viewportPixels": {
+        "width": 1440,
+        "height": 900
+      },
+      "theme": "dark",
+      "status": "pass",
+      "failureReasons": [],
+      "allowlist": {
+        "status": "expired",
+        "accepted": false,
+        "entry": null,
+        "activeEntries": 0,
+        "expiredEntries": [
+          {
+            "route": "/film",
+            "viewport": "desktop",
+            "theme": "dark",
+            "reason": "Wave 0 documented capture residual, re-measured at Wave 2: INTERMITTENT — one repeat capture of the identical frozen build measured 0 changed pixels, a later repeat measured 1041/10,368,000 (0.0100%). Video-player overlay spinner/pulse phase in the deterministic window capture (the mocked CDN serves no video bytes); not a product difference. MUST be re-reviewed at Wave 3: fix the film player capture (freeze the overlay animation) or remove with fresh evidence.",
+            "expiresAtWave": 2,
+            "maxDiffPixelRatio": 0.0002
+          }
+        ],
+        "wave": 9
+      },
+      "masks": [],
+      "legacy": {
+        "ok": true,
+        "endpoint": "http://127.0.0.1:4174/film",
+        "httpStatus": 200,
+        "pageHeightPx": 5291,
+        "sliceCount": 8,
+        "durationMs": 10705,
+        "themeApplied": {
+          "datasetTheme": "dark",
+          "className": "dark-theme",
+          "colorScheme": "dark"
+        },
+        "finalUrl": "http://127.0.0.1:4174/film",
+        "adminAuth": null,
+        "imagesSettled": true,
+        "warnings": [],
+        "consoleErrors": [],
+        "pageErrors": [],
+        "error": null,
+        "files": [
+          "C:\\Users\\bbask\\Coding_Projects\\Wedding_Website_Clean\\tools\\parity\\output\\w9-film-check\\shots\\legacy\\film__desktop__dark--s000.png",
+          "C:\\Users\\bbask\\Coding_Projects\\Wedding_Website_Clean\\tools\\parity\\output\\w9-film-check\\shots\\legacy\\film__desktop__dark--s001.png",
+          "C:\\Users\\bbask\\Coding_Projects\\Wedding_Website_Clean\\tools\\parity\\output\\w9-film-check\\shots\\legacy\\film__desktop__dark--s002.png",
+          "C:\\Users\\bbask\\Coding_Projects\\Wedding_Website_Clean\\tools\\parity\\output\\w9-film-check\\shots\\legacy\\film__desktop__dark--s003.png",
+          "C:\\Users\\bbask\\Coding_Projects\\Wedding_Website_Clean\\tools\\parity\\output\\w9-film-check\\shots\\legacy\\film__desktop__dark--s004.png",
+          "C:\\Users\\bbask\\Coding_Projects\\Wedding_Website_Clean\\tools\\parity\\output\\w9-film-check\\shots\\legacy\\film__desktop__dark--s005.png",
+          "C:\\Users\\bbask\\Coding_Projects\\Wedding_Website_Clean\\tools\\parity\\output\\w9-film-check\\shots\\legacy\\film__desktop__dark--s006.png",
+          "C:\\Users\\bbask\\Coding_Projects\\Wedding_Website_Clean\\tools\\parity\\output\\w9-film-check\\shots\\legacy\\film__desktop__dark--s007.png"
+        ]
+      },
+      "rebuild": {
+        "ok": true,
+        "endpoint": "http://127.0.0.1:4175/film",
+        "httpStatus": 200,
+        "pageHeightPx": 5291,
+        "sliceCount": 8,
+        "durationMs": 10874,
+        "themeApplied": {
+          "datasetTheme": "dark",
+          "className": "dark-theme",
+          "colorScheme": "dark"
+        },
+        "finalUrl": "http://127.0.0.1:4175/film",
+        "adminAuth": null,
+        "imagesSettled": true,
+        "warnings": [],
+        "consoleErrors": [],
+        "pageErrors": [],
+        "error": null,
+        "files": [
+          "C:\\Users\\bbask\\Coding_Projects\\Wedding_Website_Clean\\tools\\parity\\output\\w9-film-check\\shots\\rebuild\\film__desktop__dark--s000.png",
+          "C:\\Users\\bbask\\Coding_Projects\\Wedding_Website_Clean\\tools\\parity\\output\\w9-film-check\\shots\\rebuild\\film__desktop__dark--s001.png",
+          "C:\\Users\\bbask\\Coding_Projects\\Wedding_Website_Clean\\tools\\parity\\output\\w9-film-check\\shots\\rebuild\\film__desktop__dark--s002.png",
+          "C:\\Users\\bbask\\Coding_Projects\\Wedding_Website_Clean\\tools\\parity\\output\\w9-film-check\\shots\\rebuild\\film__desktop__dark--s003.png",
+          "C:\\Users\\bbask\\Coding_Projects\\Wedding_Website_Clean\\tools\\parity\\output\\w9-film-check\\shots\\rebuild\\film__desktop__dark--s004.png",
+          "C:\\Users\\bbask\\Coding_Projects\\Wedding_Website_Clean\\tools\\parity\\output\\w9-film-check\\shots\\rebuild\\film__desktop__dark--s005.png",
+          "C:\\Users\\bbask\\Coding_Projects\\Wedding_Website_Clean\\tools\\parity\\output\\w9-film-check\\shots\\rebuild\\film__desktop__dark--s006.png",
+          "C:\\Users\\bbask\\Coding_Projects\\Wedding_Website_Clean\\tools\\parity\\output\\w9-film-check\\shots\\rebuild\\film__desktop__dark--s007.png"
+        ]
+      },
+      "pixelDiff": {
+        "changedPixels": 1211,
+        "totalPixels": 10368000,
+        "ratio": 0.0001168016975308642,
+        "maxChannelDelta": 110,
+        "edgeTolerance": 1,
+        "boundingBox": {
+          "x": 318,
+          "y": 178,
+          "width": 859,
+          "height": 704
+        },
+        "sizeMismatch": false,
+        "sliceCountMismatch": false,
+        "slices": [
+          {
+            "slice": 0,
+            "status": "identical",
+            "diffFile": "shots/diff/film__desktop__dark--s000.png",
+            "changedPixels": 0,
+            "totalPixels": 1296000,
+            "ratio": 0,
+            "maxChannelDelta": 3,
+            "boundingBox": null
+          },
+          {
+            "slice": 1,
+            "status": "identical",
+            "diffFile": "shots/diff/film__desktop__dark--s001.png",
+            "changedPixels": 0,
+            "totalPixels": 1296000,
+            "ratio": 0,
+            "maxChannelDelta": 33,
+            "boundingBox": null
+          },
+          {
+            "slice": 2,
+            "status": "diff",
+            "diffFile": "shots/diff/film__desktop__dark--s002.png",
+            "changedPixels": 731,
+            "totalPixels": 1296000,
+            "ratio": 0.0005640432098765432,
+            "maxChannelDelta": 108,
+            "boundingBox": {
+              "x": 318,
+              "y": 836,
+              "width": 812,
+              "height": 46
+            }
+          },
+          {
+            "slice": 3,
+            "status": "identical",
+            "diffFile": "shots/diff/film__desktop__dark--s003.png",
+            "changedPixels": 0,
+            "totalPixels": 1296000,
+            "ratio": 0,
+            "maxChannelDelta": 2,
+            "boundingBox": null
+          },
+          {
+            "slice": 4,
+            "status": "identical",
+            "diffFile": "shots/diff/film__desktop__dark--s004.png",
+            "changedPixels": 0,
+            "totalPixels": 1296000,
+            "ratio": 0,
+            "maxChannelDelta": 0,
+            "boundingBox": null
+          },
+          {
+            "slice": 5,
+            "status": "diff",
+            "diffFile": "shots/diff/film__desktop__dark--s005.png",
+            "changedPixels": 160,
+            "totalPixels": 1296000,
+            "ratio": 0.0001234567901234568,
+            "maxChannelDelta": 110,
+            "boundingBox": {
+              "x": 868,
+              "y": 178,
+              "width": 309,
+              "height": 9
+            }
+          },
+          {
+            "slice": 6,
+            "status": "diff",
+            "diffFile": "shots/diff/film__desktop__dark--s006.png",
+            "changedPixels": 160,
+            "totalPixels": 1296000,
+            "ratio": 0.0001234567901234568,
+            "maxChannelDelta": 110,
+            "boundingBox": {
+              "x": 868,
+              "y": 178,
+              "width": 309,
+              "height": 9
+            }
+          },
+          {
+            "slice": 7,
+            "status": "diff",
+            "diffFile": "shots/diff/film__desktop__dark--s007.png",
+            "changedPixels": 160,
+            "totalPixels": 1296000,
+            "ratio": 0.0001234567901234568,
+            "maxChannelDelta": 110,
+            "boundingBox": {
+              "x": 868,
+              "y": 178,
+              "width": 309,
+              "height": 9
+            }
+          }
+        ]
+      },
+      "textDiff": {
+        "status": "pass",
+        "differences": [],
+        "bodyText": null
+      },
+      "files": {
+        "legacy": [
+          "shots/legacy/film__desktop__dark--s000.png",
+          "shots/legacy/film__desktop__dark--s001.png",
+          "shots/legacy/film__desktop__dark--s002.png",
+          "shots/legacy/film__desktop__dark--s003.png",
+          "shots/legacy/film__desktop__dark--s004.png",
+          "shots/legacy/film__desktop__dark--s005.png",
+          "shots/legacy/film__desktop__dark--s006.png",
+          "shots/legacy/film__desktop__dark--s007.png"
+        ],
+        "rebuild": [
+          "shots/rebuild/film__desktop__dark--s000.png",
+          "shots/rebuild/film__desktop__dark--s001.png",
+          "shots/rebuild/film__desktop__dark--s002.png",
+          "shots/rebuild/film__desktop__dark--s003.png",
+          "shots/rebuild/film__desktop__dark--s004.png",
+          "shots/rebuild/film__desktop__dark--s005.png",
+          "shots/rebuild/film__desktop__dark--s006.png",
+          "shots/rebuild/film__desktop__dark--s007.png"
+        ],
+        "diff": [
+          "shots/diff/film__desktop__dark--s000.png",
+          "shots/diff/film__desktop__dark--s001.png",
+          "shots/diff/film__desktop__dark--s002.png",
+          "shots/diff/film__desktop__dark--s003.png",
+          "shots/diff/film__desktop__dark--s004.png",
+          "shots/diff/film__desktop__dark--s005.png",
+          "shots/diff/film__desktop__dark--s006.png",
+          "shots/diff/film__desktop__dark--s007.png"
+        ],
+        "text": {
+          "legacy": "text/legacy/film__desktop__dark.json",
+          "rebuild": "text/rebuild/film__desktop__dark.json",
+          "diff": null
+        }
+      },
+      "warnings": []
+    }
+  ]
+}

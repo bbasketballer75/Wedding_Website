@@ -1,0 +1,20 @@
+{
+  "key": "gallery__desktop__dark",
+  "route": "gallery",
+  "viewport": "desktop",
+  "theme": "dark",
+  "generatedAt": "2026-11-10T00:23:13.004Z",
+  "differences": [
+    {
+      "field": "meta.mobile-web-app-capable",
+      "legacy": "yes",
+      "rebuild": null
+    },
+    {
+      "field": "meta.application-name",
+      "legacy": "A&J Wedding",
+      "rebuild": null
+    }
+  ],
+  "bodyText": null
+}

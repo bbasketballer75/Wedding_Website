@@ -1,0 +1,94 @@
+# Parity matrix — 2026-11-10T01:05:49.544Z
+
+Oracle: http://127.0.0.1:4174 → rebuild: http://127.0.0.1:4175 (wave 9)
+
+| Route           | Path                          | Viewport | Theme | Status  | Changed px | Ratio    | Text diffs | Heights (L/R) | First failure                                               |
+| --------------- | ----------------------------- | -------- | ----- | ------- | ---------- | -------- | ---------- | ------------- | ----------------------------------------------------------- |
+| home            | `/`                           | desktop  | dark  | ALLOWED | 199        | 0.0019%  | 0          | 10166 / 10166 | pixel `shots/diff/home__desktop__dark--s002.png`            |
+| home            | `/`                           | desktop  | light | ALLOWED | 231        | 0.0022%  | 0          | 10166 / 10166 | pixel `shots/diff/home__desktop__light--s002.png`           |
+| home            | `/`                           | mobile   | dark  | ALLOWED | 217        | 0.0082%  | 0          | 9414 / 9414   | pixel `shots/diff/home__mobile__dark--s002.png`             |
+| home            | `/`                           | mobile   | light | ALLOWED | 178        | 0.0068%  | 0          | 9414 / 9414   | pixel `shots/diff/home__mobile__light--s007.png`            |
+| film            | `/film`                       | desktop  | dark  | PASS    | 2418       | 0.0233%  | 0          | 5291 / 5291   | pixel `shots/diff/film__desktop__dark--s005.png`            |
+| film            | `/film`                       | desktop  | light | PASS    | 4095       | 0.0395%  | 0          | 5291 / 5291   | pixel `shots/diff/film__desktop__light--s005.png`           |
+| film            | `/film`                       | mobile   | dark  | PASS    | 348        | 0.0132%  | 0          | 7964 / 7964   | pixel `shots/diff/film__mobile__dark--s007.png`             |
+| film            | `/film`                       | mobile   | light | PASS    | 685        | 0.0260%  | 0          | 7964 / 7964   | pixel `shots/diff/film__mobile__light--s007.png`            |
+| gallery         | `/gallery`                    | desktop  | dark  | FAIL    | 13904      | 0.1341%  | 0          | 2151 / 2151   | pixel `shots/diff/gallery__desktop__dark--s001.png`         |
+| gallery         | `/gallery`                    | desktop  | light | FAIL    | 13904      | 0.1341%  | 0          | 2151 / 2151   | pixel `shots/diff/gallery__desktop__light--s001.png`        |
+| gallery         | `/gallery`                    | mobile   | dark  | FAIL    | 0          | 0.0000%  | 2          | 11156 / 9528  | text:images `text/diff/gallery__mobile__dark.json`          |
+| gallery         | `/gallery`                    | mobile   | light | FAIL    | 0          | 0.0000%  | 2          | 11156 / 9528  | text:images `text/diff/gallery__mobile__light.json`         |
+| upload          | `/upload`                     | desktop  | dark  | PASS    | 0          | 0.0000%  | 0          | 3036 / 3036   |                                                             |
+| upload          | `/upload`                     | desktop  | light | PASS    | 0          | 0.0000%  | 0          | 3036 / 3036   |                                                             |
+| upload          | `/upload`                     | mobile   | dark  | FAIL    | 5933       | 0.2253%  | 0          | 4608 / 4608   | pixel `shots/diff/upload__mobile__dark--s004.png`           |
+| upload          | `/upload`                     | mobile   | light | FAIL    | 5933       | 0.2253%  | 0          | 4608 / 4608   | pixel `shots/diff/upload__mobile__light--s004.png`          |
+| guestbook       | `/guestbook`                  | desktop  | dark  | FAIL    | 12168      | 0.1174%  | 0          | 2187 / 2187   | pixel `shots/diff/guestbook__desktop__dark--s002.png`       |
+| guestbook       | `/guestbook`                  | desktop  | light | FAIL    | 12168      | 0.1174%  | 0          | 2187 / 2187   | pixel `shots/diff/guestbook__desktop__light--s002.png`      |
+| guestbook       | `/guestbook`                  | mobile   | dark  | FAIL    | 8460       | 0.3213%  | 0          | 3491 / 3491   | pixel `shots/diff/guestbook__mobile__dark--s003.png`        |
+| guestbook       | `/guestbook`                  | mobile   | light | FAIL    | 8460       | 0.3213%  | 0          | 3491 / 3491   | pixel `shots/diff/guestbook__mobile__light--s003.png`       |
+| guest-photos    | `/guest-photos`               | desktop  | dark  | PASS    | 0          | 0.0000%  | 0          | 1858 / 1858   |                                                             |
+| guest-photos    | `/guest-photos`               | desktop  | light | PASS    | 0          | 0.0000%  | 0          | 1858 / 1858   |                                                             |
+| guest-photos    | `/guest-photos`               | mobile   | dark  | FAIL    | 10585      | 0.4020%  | 0          | 3086 / 3086   | pixel `shots/diff/guest-photos__mobile__dark--s002.png`     |
+| guest-photos    | `/guest-photos`               | mobile   | light | FAIL    | 10585      | 0.4020%  | 0          | 3086 / 3086   | pixel `shots/diff/guest-photos__mobile__light--s002.png`    |
+| activity        | `/activity`                   | desktop  | dark  | PASS    | 0          | 0.0000%  | 0          | 1475 / 1475   |                                                             |
+| activity        | `/activity`                   | desktop  | light | PASS    | 0          | 0.0000%  | 0          | 1475 / 1475   |                                                             |
+| activity        | `/activity`                   | mobile   | dark  | FAIL    | 11011      | 0.4181%  | 0          | 2042 / 2042   | pixel `shots/diff/activity__mobile__dark--s001.png`         |
+| activity        | `/activity`                   | mobile   | light | FAIL    | 11011      | 0.4181%  | 0          | 2042 / 2042   | pixel `shots/diff/activity__mobile__light--s001.png`        |
+| admin-login     | `/admin/login`                | desktop  | dark  | FAIL    | 8380675    | 80.8321% | 10         | 1928 / 900    | text:title `text/diff/admin-login__desktop__dark.json`      |
+| admin-login     | `/admin/login`                | desktop  | light | FAIL    | 4366669    | 42.1168% | 10         | 1928 / 900    | text:title `text/diff/admin-login__desktop__light.json`     |
+| admin-login     | `/admin/login`                | mobile   | dark  | FAIL    | 1906750    | 72.4097% | 10         | 3446 / 1589   | text:title `text/diff/admin-login__mobile__dark.json`       |
+| admin-login     | `/admin/login`                | mobile   | light | FAIL    | 1615225    | 61.3389% | 10         | 3446 / 1589   | text:title `text/diff/admin-login__mobile__light.json`      |
+| admin           | `/admin`                      | desktop  | dark  | FAIL    | 31452      | 0.3034%  | 10         | 1928 / 1928   | text:title `text/diff/admin__desktop__dark.json`            |
+| admin           | `/admin`                      | desktop  | light | FAIL    | 31452      | 0.3034%  | 10         | 1928 / 1928   | text:title `text/diff/admin__desktop__light.json`           |
+| admin           | `/admin`                      | mobile   | dark  | FAIL    | 274425     | 10.4214% | 10         | 3446 / 3415   | text:title `text/diff/admin__mobile__dark.json`             |
+| admin           | `/admin`                      | mobile   | light | FAIL    | 139891     | 5.3124%  | 10         | 3446 / 3415   | text:title `text/diff/admin__mobile__light.json`            |
+| guest-token     | `/guest/valid-showcase-token` | desktop  | dark  | FAIL    | 7796       | 0.0752%  | 6          | 1593 / 1593   | text:title `text/diff/guest-token__desktop__dark.json`      |
+| guest-token     | `/guest/valid-showcase-token` | desktop  | light | FAIL    | 7796       | 0.0752%  | 6          | 1593 / 1593   | text:title `text/diff/guest-token__desktop__light.json`     |
+| guest-token     | `/guest/valid-showcase-token` | mobile   | dark  | FAIL    | 13129      | 0.4986%  | 6          | 3523 / 3523   | text:title `text/diff/guest-token__mobile__dark.json`       |
+| guest-token     | `/guest/valid-showcase-token` | mobile   | light | FAIL    | 13129      | 0.4986%  | 6          | 3523 / 3523   | text:title `text/diff/guest-token__mobile__light.json`      |
+| print           | `/print`                      | desktop  | light | PASS    | 139        | 0.0013%  | 0          | 1628 / 1628   | pixel `shots/diff/print__desktop__light--s000.png`          |
+| print           | `/print`                      | mobile   | light | PASS    | 0          | 0.0000%  | 0          | 1965 / 1965   |                                                             |
+| not-found       | `/people`                     | desktop  | dark  | PASS    | 0          | 0.0000%  | 0          | 1475 / 1475   |                                                             |
+| not-found       | `/people`                     | desktop  | light | PASS    | 0          | 0.0000%  | 0          | 1475 / 1475   |                                                             |
+| not-found       | `/people`                     | mobile   | dark  | FAIL    | 11011      | 0.4181%  | 0          | 2042 / 2042   | pixel `shots/diff/not-found__mobile__dark--s001.png`        |
+| not-found       | `/people`                     | mobile   | light | FAIL    | 11011      | 0.4181%  | 0          | 2042 / 2042   | pixel `shots/diff/not-found__mobile__light--s001.png`       |
+| admin-photos    | `/admin/photos`               | desktop  | dark  | FAIL    | 1316685    | 12.6995% | 10         | 1594 / 1594   | text:title `text/diff/admin-photos__desktop__dark.json`     |
+| admin-photos    | `/admin/photos`               | desktop  | light | FAIL    | 1035692    | 9.9893%  | 10         | 1594 / 1594   | text:title `text/diff/admin-photos__desktop__light.json`    |
+| admin-photos    | `/admin/photos`               | mobile   | dark  | FAIL    | 664671     | 25.2412% | 10         | 1851 / 1819   | text:title `text/diff/admin-photos__mobile__dark.json`      |
+| admin-photos    | `/admin/photos`               | mobile   | light | FAIL    | 542965     | 20.6193% | 10         | 1851 / 1819   | text:title `text/diff/admin-photos__mobile__light.json`     |
+| admin-uploads   | `/admin/uploads`              | desktop  | dark  | FAIL    | 5765670    | 55.6102% | 10         | 1481 / 1928   | text:title `text/diff/admin-uploads__desktop__dark.json`    |
+| admin-uploads   | `/admin/uploads`              | desktop  | light | FAIL    | 4206431    | 40.5713% | 10         | 1481 / 1928   | text:title `text/diff/admin-uploads__desktop__light.json`   |
+| admin-uploads   | `/admin/uploads`              | mobile   | dark  | FAIL    | 2019114    | 76.6768% | 10         | 844 / 3415    | text:title `text/diff/admin-uploads__mobile__dark.json`     |
+| admin-uploads   | `/admin/uploads`              | mobile   | light | FAIL    | 1595434    | 60.5873% | 10         | 844 / 3415    | text:title `text/diff/admin-uploads__mobile__light.json`    |
+| admin-albums    | `/admin/albums`               | desktop  | dark  | FAIL    | 1925042    | 18.5671% | 10         | 1501 / 1501   | text:title `text/diff/admin-albums__desktop__dark.json`     |
+| admin-albums    | `/admin/albums`               | desktop  | light | FAIL    | 1941333    | 18.7243% | 10         | 1501 / 1501   | text:title `text/diff/admin-albums__desktop__light.json`    |
+| admin-albums    | `/admin/albums`               | mobile   | dark  | FAIL    | 1613739    | 61.2825% | 10         | 1793 / 4009   | text:title `text/diff/admin-albums__mobile__dark.json`      |
+| admin-albums    | `/admin/albums`               | mobile   | light | FAIL    | 778372     | 29.5590% | 10         | 1793 / 4009   | text:title `text/diff/admin-albums__mobile__light.json`     |
+| admin-review    | `/admin/review`               | desktop  | dark  | FAIL    | 5438273    | 52.4525% | 10         | 1986 / 900    | text:title `text/diff/admin-review__desktop__dark.json`     |
+| admin-review    | `/admin/review`               | desktop  | light | FAIL    | 1680261    | 16.2062% | 10         | 1986 / 900    | text:title `text/diff/admin-review__desktop__light.json`    |
+| admin-review    | `/admin/review`               | mobile   | dark  | FAIL    | 1027426    | 39.0170% | 10         | 1557 / 979    | text:title `text/diff/admin-review__mobile__dark.json`      |
+| admin-review    | `/admin/review`               | mobile   | light | FAIL    | 531131     | 20.1699% | 10         | 1557 / 979    | text:title `text/diff/admin-review__mobile__light.json`     |
+| admin-claims    | `/admin/claims`               | desktop  | dark  | FAIL    | 0          | 0.0000%  | 10         | 1501 / 1501   | text:title `text/diff/admin-claims__desktop__dark.json`     |
+| admin-claims    | `/admin/claims`               | desktop  | light | FAIL    | 0          | 0.0000%  | 10         | 1501 / 1501   | text:title `text/diff/admin-claims__desktop__light.json`    |
+| admin-claims    | `/admin/claims`               | mobile   | dark  | FAIL    | 215122     | 8.1694%  | 10         | 968 / 936     | text:title `text/diff/admin-claims__mobile__dark.json`      |
+| admin-claims    | `/admin/claims`               | mobile   | light | FAIL    | 179240     | 6.8067%  | 10         | 968 / 936     | text:title `text/diff/admin-claims__mobile__light.json`     |
+| admin-guestbook | `/admin/guestbook`            | desktop  | dark  | FAIL    | 37512      | 0.3618%  | 10         | 1481 / 1481   | text:title `text/diff/admin-guestbook__desktop__dark.json`  |
+| admin-guestbook | `/admin/guestbook`            | desktop  | light | FAIL    | 37512      | 0.3618%  | 10         | 1481 / 1481   | text:title `text/diff/admin-guestbook__desktop__light.json` |
+| admin-guestbook | `/admin/guestbook`            | mobile   | dark  | FAIL    | 183552     | 6.9705%  | 10         | 1792 / 1761   | text:title `text/diff/admin-guestbook__mobile__dark.json`   |
+| admin-guestbook | `/admin/guestbook`            | mobile   | light | FAIL    | 134983     | 5.1260%  | 10         | 1792 / 1761   | text:title `text/diff/admin-guestbook__mobile__light.json`  |
+| admin-featured  | `/admin/featured`             | desktop  | dark  | FAIL    | 0          | 0.0000%  | 10         | 1501 / 1501   | text:title `text/diff/admin-featured__desktop__dark.json`   |
+| admin-featured  | `/admin/featured`             | desktop  | light | FAIL    | 0          | 0.0000%  | 10         | 1501 / 1501   | text:title `text/diff/admin-featured__desktop__light.json`  |
+| admin-featured  | `/admin/featured`             | mobile   | dark  | FAIL    | 82160      | 3.1201%  | 10         | 1823 / 1791   | text:title `text/diff/admin-featured__mobile__dark.json`    |
+| admin-featured  | `/admin/featured`             | mobile   | light | FAIL    | 53486      | 2.0312%  | 10         | 1823 / 1791   | text:title `text/diff/admin-featured__mobile__light.json`   |
+| admin-audit     | `/admin/audit`                | desktop  | dark  | FAIL    | 0          | 0.0000%  | 10         | 1501 / 1501   | text:title `text/diff/admin-audit__desktop__dark.json`      |
+| admin-audit     | `/admin/audit`                | desktop  | light | FAIL    | 0          | 0.0000%  | 10         | 1501 / 1501   | text:title `text/diff/admin-audit__desktop__light.json`     |
+| admin-audit     | `/admin/audit`                | mobile   | dark  | FAIL    | 40614      | 1.5423%  | 10         | 1284 / 1252   | text:title `text/diff/admin-audit__mobile__dark.json`       |
+| admin-audit     | `/admin/audit`                | mobile   | light | FAIL    | 37382      | 1.4196%  | 10         | 1284 / 1252   | text:title `text/diff/admin-audit__mobile__light.json`      |
+| admin-analytics | `/admin/analytics`            | desktop  | dark  | FAIL    | 396        | 0.0038%  | 10         | 1501 / 1501   | text:title `text/diff/admin-analytics__desktop__dark.json`  |
+| admin-analytics | `/admin/analytics`            | desktop  | light | FAIL    | 396        | 0.0038%  | 10         | 1501 / 1501   | text:title `text/diff/admin-analytics__desktop__light.json` |
+| admin-analytics | `/admin/analytics`            | mobile   | dark  | FAIL    | 53426      | 2.0289%  | 10         | 1624 / 1596   | text:title `text/diff/admin-analytics__mobile__dark.json`   |
+| admin-analytics | `/admin/analytics`            | mobile   | light | FAIL    | 20325      | 0.7719%  | 10         | 1624 / 1596   | text:title `text/diff/admin-analytics__mobile__light.json`  |
+| admin-settings  | `/admin/settings`             | desktop  | dark  | FAIL    | 0          | 0.0000%  | 10         | 1501 / 1501   | text:title `text/diff/admin-settings__desktop__dark.json`   |
+| admin-settings  | `/admin/settings`             | desktop  | light | FAIL    | 0          | 0.0000%  | 10         | 1501 / 1501   | text:title `text/diff/admin-settings__desktop__light.json`  |
+| admin-settings  | `/admin/settings`             | mobile   | dark  | FAIL    | 92527      | 3.5138%  | 10         | 2299 / 2267   | text:title `text/diff/admin-settings__mobile__dark.json`    |
+| admin-settings  | `/admin/settings`             | mobile   | light | FAIL    | 88018      | 3.3425%  | 10         | 2299 / 2267   | text:title `text/diff/admin-settings__mobile__light.json`   |
+
+Prerender (W8-1): pending — 0/9 rebuild routes served per-route metadata.

@@ -1,0 +1,193 @@
+{
+  "capturedAt": "2026-11-10T01:21:30.471Z",
+  "baseUrl": "http://127.0.0.1:4175",
+  "url": "/admin/albums",
+  "title": "Admin Login | Austin & Jordyn's Wedding",
+  "lang": "en",
+  "canonical": "https://www.theporadas.com/admin/login",
+  "meta": {
+    "viewport": "width=device-width, initial-scale=1.0",
+    "title": "Austin & Jordyn | Wedding Archive",
+    "description": "Secure admin access for the Austin and Jordyn wedding site.",
+    "keywords": "wedding, archive, austin, jordyn, marriage, collection",
+    "author": "Austin & Jordyn",
+    "og:type": "website",
+    "og:url": "https://www.theporadas.com/admin/login",
+    "og:title": "Admin Login | Austin & Jordyn's Wedding",
+    "og:description": "Secure admin access for the Austin and Jordyn wedding site.",
+    "og:image": "https://www.theporadas.com/images/home/intro-video-poster.png",
+    "twitter:card": "summary_large_image",
+    "twitter:url": "https://www.theporadas.com/",
+    "twitter:title": "Austin & Jordyn | Wedding Archive",
+    "twitter:description": "A permanent digital archive of our wedding day. Relive our story, browse the films, and view the galleries.",
+    "twitter:image": "https://www.theporadas.com/images/og-image.webp",
+    "robots": "noindex, nofollow",
+    "language": "English",
+    "theme-color": "#d4af37",
+    "mobile-web-app-capable": "yes",
+    "apple-mobile-web-app-status-bar-style": "black-translucent",
+    "apple-mobile-web-app-title": "A&J Wedding",
+    "application-name": "A&J Wedding",
+    "msapplication-TileColor": "#d4af37",
+    "msapplication-config": "/browserconfig.xml",
+    "og:image:width": "1200",
+    "og:image:height": "630",
+    "og:site_name": "Austin & Jordyn's Wedding",
+    "og:locale": "en_US"
+  },
+  "headings": [
+    {
+      "level": 1,
+      "text": "Arrange the live album order exactly how you want it."
+    },
+    {
+      "level": 2,
+      "text": "Arrange the live gallery albums."
+    }
+  ],
+  "links": [
+    {
+      "href": "/#main-content",
+      "text": "Skip to main content",
+      "ariaLabel": ""
+    },
+    {
+      "href": "/admin",
+      "text": "A&JAdmin",
+      "ariaLabel": ""
+    },
+    {
+      "href": "/admin",
+      "text": "Dashboard",
+      "ariaLabel": ""
+    },
+    {
+      "href": "/admin/photos",
+      "text": "Photos",
+      "ariaLabel": ""
+    },
+    {
+      "href": "/admin/albums",
+      "text": "Albums",
+      "ariaLabel": ""
+    },
+    {
+      "href": "/admin/review",
+      "text": "People Review",
+      "ariaLabel": ""
+    },
+    {
+      "href": "/admin/claims",
+      "text": "Photo Claims",
+      "ariaLabel": ""
+    },
+    {
+      "href": "/admin/guestbook",
+      "text": "Guestbook",
+      "ariaLabel": ""
+    },
+    {
+      "href": "/admin/featured",
+      "text": "Featured",
+      "ariaLabel": ""
+    },
+    {
+      "href": "/admin/audit",
+      "text": "Audit Trail",
+      "ariaLabel": ""
+    },
+    {
+      "href": "/admin/analytics",
+      "text": "Analytics",
+      "ariaLabel": ""
+    },
+    {
+      "href": "/admin/settings",
+      "text": "Settings",
+      "ariaLabel": ""
+    },
+    {
+      "href": "/admin",
+      "text": "DashboardSee what needs attention next.",
+      "ariaLabel": ""
+    },
+    {
+      "href": "/admin/photos",
+      "text": "PhotosModerate uploads, publish photos, and run guest tagging.",
+      "ariaLabel": ""
+    },
+    {
+      "href": "/admin/albums",
+      "text": "AlbumsArrange the live order inside each public album.",
+      "ariaLabel": ""
+    },
+    {
+      "href": "/admin/review",
+      "text": "People ReviewWork through face review and named people.",
+      "ariaLabel": ""
+    },
+    {
+      "href": "/admin/claims",
+      "text": "Photo ClaimsReview and approve photo ownership and face tag claims.",
+      "ariaLabel": ""
+    },
+    {
+      "href": "/admin/guestbook",
+      "text": "GuestbookModerate text messages.",
+      "ariaLabel": ""
+    },
+    {
+      "href": "/admin/featured",
+      "text": "FeaturedSet what appears in the homepage and film page spotlight sections.",
+      "ariaLabel": ""
+    },
+    {
+      "href": "/admin/audit",
+      "text": "Audit TrailSee who changed moderation state and when.",
+      "ariaLabel": ""
+    },
+    {
+      "href": "/admin/analytics",
+      "text": "AnalyticsTrack verified database activity inside the app.",
+      "ariaLabel": ""
+    },
+    {
+      "href": "/admin/settings",
+      "text": "SettingsReference the live setup and operating notes.",
+      "ariaLabel": ""
+    }
+  ],
+  "images": [
+    {
+      "src": "/images/engagement/PoradaProposal-29.webp",
+      "alt": "First look on the lawn",
+      "loading": "lazy"
+    },
+    {
+      "src": "/images/engagement/PoradaProposal-11.webp",
+      "alt": "Walking toward the ceremony garden",
+      "loading": "lazy"
+    },
+    {
+      "src": "/images/engagement/PoradaProposal-150.webp",
+      "alt": "Quiet vows before the applause",
+      "loading": "lazy"
+    },
+    {
+      "src": "/images/engagement/PoradaProposal-181.webp",
+      "alt": "The first kiss",
+      "loading": "lazy"
+    },
+    {
+      "src": "/images/engagement/PoradaProposal-255.webp",
+      "alt": "A table full of laughter",
+      "loading": "lazy"
+    },
+    {
+      "src": "/images/engagement/PoradaProposal-277.webp",
+      "alt": "First dance under the lights",
+      "loading": "lazy"
+    }
+  ],
+  "bodyText": "Skip to main content\nA&JAdmin\n\nA calmer workspace for moderation, people review, and site upkeep.\n\nSigned in as admin@test.wedding\nSIGN OUT\n\nALBUM WORKFLOW\n\nArrange the live album order exactly how you want it.\n\nThis is the place for sequencing, not moderation: drag photos into order, fix misfiled images, and save the public arrangement album by album.\n\nWORKSPACE MAP\n\nOpen the tool that matches the work in front of you.\n\nRUN THE DAY-TO-DAY\n\nDashboard\n\nSee what needs attention next.\n\nPhotos\n\nModerate uploads, publish photos, and run guest tagging.\n\nAlbums\n\nArrange the live order inside each public album.\n\nPeople Review\n\nWork through face review and named people.\n\nPhoto Claims\n\nReview and approve photo ownership and face tag claims.\n\nGuestbook\n\nModerate text messages.\n\nSHAPE THE PUBLIC SITE\n\nFeatured\n\nSet what appears in the homepage and film page spotlight sections.\n\nAudit Trail\n\nSee who changed moderation state and when.\n\nAnalytics\n\nTrack verified database activity inside the app.\n\nSettings\n\nReference the live setup and operating notes.\n\nALBUM ORGANIZER\n\nArrange the live gallery albums.\n\nDrag for fine ordering, use bulk actions for cleanup, and save only when the album feels right.\n\nNo organizer changes saved yet.\nRESET\nSAVE LIVE ORDER\nreorder 0\nmoves 0\ndeletes 0\nselected 0\nEngagement\n0\nBach+ette\n0\nWedding Day\n0\nGuest Uploads\n0\n6 photos\n\nFirst look on the lawn\n\n5/10/2025\n0\n0\n← Earlier\nLater →\nPosition 1\nMove to...\nBach+ette\nWedding Day\nGuest Uploads\n\nWalking toward the ceremony garden\n\n5/10/2025\n0\n0\n← Earlier\nLater →\nPosition 2\nMove to...\nBach+ette\nWedding Day\nGuest Uploads\n\nQuiet vows before the applause\n\n5/10/2025\n0\n0\n← Earlier\nLater →\nPosition 3\nMove to...\nBach+ette\nWedding Day\nGuest Uploads\n\nThe first kiss\n\n5/10/2025\n0\n0\n← Earlier\nLater →\nPosition 4\nMove to...\nBach+ette\nWedding Day\nGuest Uploads\n\nA table full of laughter\n\n5/10/2025\n0\n0\n← Earlier\nLater →\nPosition 5\nMove to...\nBach+ette\nWedding Day\nGuest Uploads\n\nFirst dance under the lights\n\n5/10/2025\n0\n0\n← Earlier\nLater →\nPosition 6\nMove to...\nBach+ette\nWedding Day\nGuest Uploads"
+}

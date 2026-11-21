@@ -1,0 +1,48 @@
+{
+  "schemaVersion": 1,
+  "kind": "parity-selfcheck",
+  "generatedAt": "2026-11-10T01:45:26.095Z",
+  "durationMs": 402484,
+  "oracle": "http://127.0.0.1:4174",
+  "matrix": {
+    "routes": "priority",
+    "viewports": "desktop",
+    "themes": "dark"
+  },
+  "fixedNow": "2026-11-08T17:00:00.000Z",
+  "checks": [
+    {
+      "id": "run-1-legacy-vs-legacy",
+      "status": "pass",
+      "detail": "6 shots, 0 changed pixels · 1 documented exception(s): home__desktop__dark 13px (0.0001%)"
+    },
+    {
+      "id": "run-2-legacy-vs-legacy",
+      "status": "pass",
+      "detail": "6 shots, 0 changed pixels"
+    },
+    {
+      "id": "run-2-pixel-identical-to-run-1",
+      "status": "pass",
+      "detail": "48/48 windows pixel-identical (0 changed pixels); 30/48 byte-identical"
+    },
+    {
+      "id": "perturbed-diff-detected",
+      "status": "pass",
+      "detail": "changed 13743 px (1.0604%) in film__desktop__dark--s000.png with --edge-tolerance 1"
+    },
+    {
+      "id": "perturbed-capture-detected",
+      "status": "pass",
+      "detail": "injected CSS on home/desktop/dark with --edge-tolerance 1 → exit 1, 396219 changed px"
+    }
+  ],
+  "runs": {
+    "run1": "tools/parity/output/run1",
+    "run2": "tools/parity/output/run2"
+  },
+  "verdict": {
+    "status": "passed",
+    "exitCode": 0
+  }
+}

@@ -1,0 +1,800 @@
+{
+  "capturedAt": "2026-11-08T05:57:33.603Z",
+  "siteUrl": "https://www.theporadas.com",
+  "lighthouseVersion": "13.5.0",
+  "method": {
+    "runsPerCell": 2,
+    "categories": ["performance", "accessibility", "best-practices", "seo"],
+    "formFactors": ["mobile", "desktop"],
+    "routes": ["/", "/gallery", "/film"],
+    "selection": "best performance score per page/profile (ties: lower LCP, lower TBT, earlier run)",
+    "rawReports": "contracts/baseline/lighthouse/<page>-<profile>-run<n>.json",
+    "defaultSettings": "mobile uses Lighthouse defaults (Moto G emulation, simulated 4G, 4x CPU); desktop uses the official desktop-config preset"
+  },
+  "environment": {
+    "platform": "win32",
+    "arch": "x64",
+    "nodeVersion": "v26.8.1",
+    "cpuCount": 16,
+    "cpuModel": "AMD Ryzen 7 3700X 8-Core Processor             ",
+    "totalMemoryBytes": 34271723520,
+    "freeMemoryBytes": 5411758080,
+    "note": "Captured on a contended developer machine with other agents (browser captures, Docker/Supabase) and unrelated workloads active; see docs/rebuild/BASELINE.md measurement conditions."
+  },
+  "pages": [
+    {
+      "page": "/",
+      "profile": "mobile",
+      "url": "https://www.theporadas.com/",
+      "runs": ["home-mobile-run1", "home-mobile-run2"],
+      "successfulRuns": 2,
+      "selectedRun": "home-mobile-run2",
+      "selectionMethod": "best performance score per page/profile; ties broken by lower LCP, then lower TBT, then earlier run",
+      "scores": {
+        "performance": 0.7,
+        "accessibility": 0.96,
+        "best-practices": 1,
+        "seo": 1
+      },
+      "metrics": {
+        "firstContentfulPaintMs": 3208,
+        "largestContentfulPaintMs": 7257,
+        "totalBlockingTimeMs": 0,
+        "cumulativeLayoutShift": 0,
+        "speedIndexMs": 3208,
+        "timeToInteractiveMs": 7425,
+        "totalByteWeight": 14491303,
+        "requestCount": 101
+      }
+    },
+    {
+      "page": "/",
+      "profile": "desktop",
+      "url": "https://www.theporadas.com/",
+      "runs": ["home-desktop-run1", "home-desktop-run2"],
+      "successfulRuns": 2,
+      "selectedRun": "home-desktop-run2",
+      "selectionMethod": "best performance score per page/profile; ties broken by lower LCP, then lower TBT, then earlier run",
+      "scores": {
+        "performance": 0.93,
+        "accessibility": 1,
+        "best-practices": null,
+        "seo": 1
+      },
+      "metrics": {
+        "firstContentfulPaintMs": 650,
+        "largestContentfulPaintMs": 1611,
+        "totalBlockingTimeMs": 28,
+        "cumulativeLayoutShift": 0,
+        "speedIndexMs": 1032,
+        "timeToInteractiveMs": 1625,
+        "totalByteWeight": 14485337,
+        "requestCount": 53
+      }
+    },
+    {
+      "page": "/gallery",
+      "profile": "mobile",
+      "url": "https://www.theporadas.com/gallery",
+      "runs": ["gallery-mobile-run1", "gallery-mobile-run2"],
+      "successfulRuns": 2,
+      "selectedRun": "gallery-mobile-run1",
+      "selectionMethod": "best performance score per page/profile; ties broken by lower LCP, then lower TBT, then earlier run",
+      "scores": {
+        "performance": 0.59,
+        "accessibility": 0.95,
+        "best-practices": 1,
+        "seo": 1
+      },
+      "metrics": {
+        "firstContentfulPaintMs": 3265,
+        "largestContentfulPaintMs": 138126,
+        "totalBlockingTimeMs": 388,
+        "cumulativeLayoutShift": 0.0001473480281904127,
+        "speedIndexMs": 3265,
+        "timeToInteractiveMs": 138126,
+        "totalByteWeight": 32683985,
+        "requestCount": 175
+      }
+    },
+    {
+      "page": "/gallery",
+      "profile": "desktop",
+      "url": "https://www.theporadas.com/gallery",
+      "runs": ["gallery-desktop-run1", "gallery-desktop-run2"],
+      "successfulRuns": 1,
+      "selectedRun": "gallery-desktop-run2",
+      "selectionMethod": "best performance score per page/profile; ties broken by lower LCP, then lower TBT, then earlier run",
+      "scores": {
+        "performance": 0.71,
+        "accessibility": 0.95,
+        "best-practices": 1,
+        "seo": 1
+      },
+      "metrics": {
+        "firstContentfulPaintMs": 797,
+        "largestContentfulPaintMs": 28480,
+        "totalBlockingTimeMs": 145,
+        "cumulativeLayoutShift": 0.04746402640973227,
+        "speedIndexMs": 955,
+        "timeToInteractiveMs": 28599,
+        "totalByteWeight": 38008263,
+        "requestCount": 132
+      }
+    },
+    {
+      "page": "/film",
+      "profile": "mobile",
+      "url": "https://www.theporadas.com/film",
+      "runs": ["film-mobile-run1", "film-mobile-run2"],
+      "successfulRuns": 2,
+      "selectedRun": "film-mobile-run2",
+      "selectionMethod": "best performance score per page/profile; ties broken by lower LCP, then lower TBT, then earlier run",
+      "scores": {
+        "performance": 0.37,
+        "accessibility": 1,
+        "best-practices": 1,
+        "seo": 1
+      },
+      "metrics": {
+        "firstContentfulPaintMs": 3209,
+        "largestContentfulPaintMs": 113121,
+        "totalBlockingTimeMs": 7736,
+        "cumulativeLayoutShift": 0,
+        "speedIndexMs": 4135,
+        "timeToInteractiveMs": 126857,
+        "totalByteWeight": 320181009,
+        "requestCount": 163
+      }
+    },
+    {
+      "page": "/film",
+      "profile": "desktop",
+      "url": "https://www.theporadas.com/film",
+      "runs": ["film-desktop-run1", "film-desktop-run2"],
+      "successfulRuns": 2,
+      "selectedRun": "film-desktop-run1",
+      "selectionMethod": "best performance score per page/profile; ties broken by lower LCP, then lower TBT, then earlier run",
+      "scores": {
+        "performance": 0.67,
+        "accessibility": 0.96,
+        "best-practices": null,
+        "seo": 1
+      },
+      "metrics": {
+        "firstContentfulPaintMs": 699,
+        "largestContentfulPaintMs": 1240,
+        "totalBlockingTimeMs": 1019,
+        "cumulativeLayoutShift": 0,
+        "speedIndexMs": 1247,
+        "timeToInteractiveMs": 2853,
+        "totalByteWeight": 372167453,
+        "requestCount": 95
+      }
+    }
+  ],
+  "runs": [
+    {
+      "id": "home-mobile-run1",
+      "page": "/",
+      "profile": "mobile",
+      "run": 1,
+      "ok": true,
+      "fetchTime": "2026-11-08T05:48:56.918Z",
+      "requestedUrl": "https://www.theporadas.com/",
+      "finalDisplayedUrl": "https://www.theporadas.com/",
+      "lighthouseVersion": "13.5.0",
+      "scores": {
+        "performance": 0.67,
+        "accessibility": 0.96,
+        "best-practices": 1,
+        "seo": 1
+      },
+      "metrics": {
+        "firstContentfulPaintMs": 3242,
+        "largestContentfulPaintMs": 7240,
+        "totalBlockingTimeMs": 189,
+        "cumulativeLayoutShift": 0,
+        "speedIndexMs": 3242,
+        "timeToInteractiveMs": 7418,
+        "totalByteWeight": 14491454,
+        "requestCount": 101
+      },
+      "settings": {
+        "formFactor": "mobile",
+        "screenEmulation": {
+          "mobile": true,
+          "width": 412,
+          "height": 823,
+          "deviceScaleFactor": 1.75
+        },
+        "throttlingMethod": "simulate",
+        "throttling": {
+          "rttMs": 150,
+          "throughputKbps": 1638.4,
+          "cpuSlowdownMultiplier": 4,
+          "requestLatencyMs": 562.5,
+          "downloadThroughputKbps": 1474.5600000000002,
+          "uploadThroughputKbps": 675
+        },
+        "userAgent": null
+      },
+      "environment": {
+        "networkUserAgent": "Mozilla/5.0 (Linux; Android 11; moto g power (2022)) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/157.0.0.0 Mobile Safari/537.36",
+        "hostUserAgent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) HeadlessChrome/157.0.0.0 Safari/537.36",
+        "benchmarkIndex": 2268
+      },
+      "runWarnings": [
+        "The page loaded too slowly to finish within the time limit. Results may be incomplete."
+      ],
+      "runtimeError": null,
+      "reportPath": "contracts/baseline/lighthouse/home-mobile-run1.json",
+      "attempt": 1
+    },
+    {
+      "id": "home-mobile-run2",
+      "page": "/",
+      "profile": "mobile",
+      "run": 2,
+      "ok": true,
+      "fetchTime": "2026-11-08T05:51:14.258Z",
+      "requestedUrl": "https://www.theporadas.com/",
+      "finalDisplayedUrl": "https://www.theporadas.com/",
+      "lighthouseVersion": "13.5.0",
+      "scores": {
+        "performance": 0.7,
+        "accessibility": 0.96,
+        "best-practices": 1,
+        "seo": 1
+      },
+      "metrics": {
+        "firstContentfulPaintMs": 3208,
+        "largestContentfulPaintMs": 7257,
+        "totalBlockingTimeMs": 0,
+        "cumulativeLayoutShift": 0,
+        "speedIndexMs": 3208,
+        "timeToInteractiveMs": 7425,
+        "totalByteWeight": 14491303,
+        "requestCount": 101
+      },
+      "settings": {
+        "formFactor": "mobile",
+        "screenEmulation": {
+          "mobile": true,
+          "width": 412,
+          "height": 823,
+          "deviceScaleFactor": 1.75
+        },
+        "throttlingMethod": "simulate",
+        "throttling": {
+          "rttMs": 150,
+          "throughputKbps": 1638.4,
+          "cpuSlowdownMultiplier": 4,
+          "requestLatencyMs": 562.5,
+          "downloadThroughputKbps": 1474.5600000000002,
+          "uploadThroughputKbps": 675
+        },
+        "userAgent": null
+      },
+      "environment": {
+        "networkUserAgent": "Mozilla/5.0 (Linux; Android 11; moto g power (2022)) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/157.0.0.0 Mobile Safari/537.36",
+        "hostUserAgent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) HeadlessChrome/157.0.0.0 Safari/537.36",
+        "benchmarkIndex": 2039.5
+      },
+      "runWarnings": [],
+      "runtimeError": null,
+      "reportPath": "contracts/baseline/lighthouse/home-mobile-run2.json",
+      "attempt": 1
+    },
+    {
+      "id": "home-desktop-run1",
+      "page": "/",
+      "profile": "desktop",
+      "run": 1,
+      "ok": true,
+      "fetchTime": "2026-11-08T05:51:38.022Z",
+      "requestedUrl": "https://www.theporadas.com/",
+      "finalDisplayedUrl": "https://www.theporadas.com/",
+      "lighthouseVersion": "13.5.0",
+      "scores": {
+        "performance": 0.93,
+        "accessibility": 0.92,
+        "best-practices": null,
+        "seo": 1
+      },
+      "metrics": {
+        "firstContentfulPaintMs": 626,
+        "largestContentfulPaintMs": 1646,
+        "totalBlockingTimeMs": 8,
+        "cumulativeLayoutShift": 0,
+        "speedIndexMs": 894,
+        "timeToInteractiveMs": 1662,
+        "totalByteWeight": 14485594,
+        "requestCount": 53
+      },
+      "settings": {
+        "formFactor": "desktop",
+        "screenEmulation": {
+          "mobile": false,
+          "width": 1350,
+          "height": 940,
+          "deviceScaleFactor": 1
+        },
+        "throttlingMethod": "simulate",
+        "throttling": {
+          "rttMs": 40,
+          "throughputKbps": 10240,
+          "cpuSlowdownMultiplier": 1,
+          "requestLatencyMs": 0,
+          "downloadThroughputKbps": 0,
+          "uploadThroughputKbps": 0
+        },
+        "userAgent": null
+      },
+      "environment": {
+        "networkUserAgent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/157.0.0.0 Safari/537.36",
+        "hostUserAgent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) HeadlessChrome/157.0.0.0 Safari/537.36",
+        "benchmarkIndex": 1998
+      },
+      "runWarnings": [],
+      "runtimeError": null,
+      "reportPath": "contracts/baseline/lighthouse/home-desktop-run1.json",
+      "attempt": 1
+    },
+    {
+      "id": "home-desktop-run2",
+      "page": "/",
+      "profile": "desktop",
+      "run": 2,
+      "ok": true,
+      "fetchTime": "2026-11-08T05:52:01.052Z",
+      "requestedUrl": "https://www.theporadas.com/",
+      "finalDisplayedUrl": "https://www.theporadas.com/",
+      "lighthouseVersion": "13.5.0",
+      "scores": {
+        "performance": 0.93,
+        "accessibility": 1,
+        "best-practices": null,
+        "seo": 1
+      },
+      "metrics": {
+        "firstContentfulPaintMs": 650,
+        "largestContentfulPaintMs": 1611,
+        "totalBlockingTimeMs": 28,
+        "cumulativeLayoutShift": 0,
+        "speedIndexMs": 1032,
+        "timeToInteractiveMs": 1625,
+        "totalByteWeight": 14485337,
+        "requestCount": 53
+      },
+      "settings": {
+        "formFactor": "desktop",
+        "screenEmulation": {
+          "mobile": false,
+          "width": 1350,
+          "height": 940,
+          "deviceScaleFactor": 1
+        },
+        "throttlingMethod": "simulate",
+        "throttling": {
+          "rttMs": 40,
+          "throughputKbps": 10240,
+          "cpuSlowdownMultiplier": 1,
+          "requestLatencyMs": 0,
+          "downloadThroughputKbps": 0,
+          "uploadThroughputKbps": 0
+        },
+        "userAgent": null
+      },
+      "environment": {
+        "networkUserAgent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/157.0.0.0 Safari/537.36",
+        "hostUserAgent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) HeadlessChrome/157.0.0.0 Safari/537.36",
+        "benchmarkIndex": 1986.5
+      },
+      "runWarnings": [],
+      "runtimeError": null,
+      "reportPath": "contracts/baseline/lighthouse/home-desktop-run2.json",
+      "attempt": 1
+    },
+    {
+      "id": "gallery-mobile-run1",
+      "page": "/gallery",
+      "profile": "mobile",
+      "run": 1,
+      "ok": true,
+      "fetchTime": "2026-11-08T05:52:22.990Z",
+      "requestedUrl": "https://www.theporadas.com/gallery",
+      "finalDisplayedUrl": "https://www.theporadas.com/gallery",
+      "lighthouseVersion": "13.5.0",
+      "scores": {
+        "performance": 0.59,
+        "accessibility": 0.95,
+        "best-practices": 1,
+        "seo": 1
+      },
+      "metrics": {
+        "firstContentfulPaintMs": 3265,
+        "largestContentfulPaintMs": 138126,
+        "totalBlockingTimeMs": 388,
+        "cumulativeLayoutShift": 0.0001473480281904127,
+        "speedIndexMs": 3265,
+        "timeToInteractiveMs": 138126,
+        "totalByteWeight": 32683985,
+        "requestCount": 175
+      },
+      "settings": {
+        "formFactor": "mobile",
+        "screenEmulation": {
+          "mobile": true,
+          "width": 412,
+          "height": 823,
+          "deviceScaleFactor": 1.75
+        },
+        "throttlingMethod": "simulate",
+        "throttling": {
+          "rttMs": 150,
+          "throughputKbps": 1638.4,
+          "cpuSlowdownMultiplier": 4,
+          "requestLatencyMs": 562.5,
+          "downloadThroughputKbps": 1474.5600000000002,
+          "uploadThroughputKbps": 675
+        },
+        "userAgent": null
+      },
+      "environment": {
+        "networkUserAgent": "Mozilla/5.0 (Linux; Android 11; moto g power (2022)) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/157.0.0.0 Mobile Safari/537.36",
+        "hostUserAgent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) HeadlessChrome/157.0.0.0 Safari/537.36",
+        "benchmarkIndex": 2168.5
+      },
+      "runWarnings": [],
+      "runtimeError": null,
+      "reportPath": "contracts/baseline/lighthouse/gallery-mobile-run1.json",
+      "attempt": 1
+    },
+    {
+      "id": "gallery-mobile-run2",
+      "page": "/gallery",
+      "profile": "mobile",
+      "run": 2,
+      "ok": true,
+      "fetchTime": "2026-11-08T05:52:57.551Z",
+      "requestedUrl": "https://www.theporadas.com/gallery",
+      "finalDisplayedUrl": "https://www.theporadas.com/gallery",
+      "lighthouseVersion": "13.5.0",
+      "scores": {
+        "performance": 0.49,
+        "accessibility": 0.95,
+        "best-practices": 1,
+        "seo": 1
+      },
+      "metrics": {
+        "firstContentfulPaintMs": 3193,
+        "largestContentfulPaintMs": 148809,
+        "totalBlockingTimeMs": 830,
+        "cumulativeLayoutShift": 0,
+        "speedIndexMs": 3193,
+        "timeToInteractiveMs": 149725,
+        "totalByteWeight": 32453299,
+        "requestCount": 168
+      },
+      "settings": {
+        "formFactor": "mobile",
+        "screenEmulation": {
+          "mobile": true,
+          "width": 412,
+          "height": 823,
+          "deviceScaleFactor": 1.75
+        },
+        "throttlingMethod": "simulate",
+        "throttling": {
+          "rttMs": 150,
+          "throughputKbps": 1638.4,
+          "cpuSlowdownMultiplier": 4,
+          "requestLatencyMs": 562.5,
+          "downloadThroughputKbps": 1474.5600000000002,
+          "uploadThroughputKbps": 675
+        },
+        "userAgent": null
+      },
+      "environment": {
+        "networkUserAgent": "Mozilla/5.0 (Linux; Android 11; moto g power (2022)) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/157.0.0.0 Mobile Safari/537.36",
+        "hostUserAgent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) HeadlessChrome/157.0.0.0 Safari/537.36",
+        "benchmarkIndex": 2042.5
+      },
+      "runWarnings": [],
+      "runtimeError": null,
+      "reportPath": "contracts/baseline/lighthouse/gallery-mobile-run2.json",
+      "attempt": 1
+    },
+    {
+      "id": "gallery-desktop-run1",
+      "page": "/gallery",
+      "profile": "desktop",
+      "run": 1,
+      "ok": false,
+      "scores": {
+        "performance": null,
+        "accessibility": null,
+        "best-practices": null,
+        "seo": null
+      },
+      "metrics": {},
+      "error": "Protocol error (Runtime.evaluate): Protocol error (Runtime.evaluate): Execution context was destroyed."
+    },
+    {
+      "id": "gallery-desktop-run2",
+      "page": "/gallery",
+      "profile": "desktop",
+      "run": 2,
+      "ok": true,
+      "fetchTime": "2026-11-08T05:53:51.684Z",
+      "requestedUrl": "https://www.theporadas.com/gallery",
+      "finalDisplayedUrl": "https://www.theporadas.com/gallery",
+      "lighthouseVersion": "13.5.0",
+      "scores": {
+        "performance": 0.71,
+        "accessibility": 0.95,
+        "best-practices": 1,
+        "seo": 1
+      },
+      "metrics": {
+        "firstContentfulPaintMs": 797,
+        "largestContentfulPaintMs": 28480,
+        "totalBlockingTimeMs": 145,
+        "cumulativeLayoutShift": 0.04746402640973227,
+        "speedIndexMs": 955,
+        "timeToInteractiveMs": 28599,
+        "totalByteWeight": 38008263,
+        "requestCount": 132
+      },
+      "settings": {
+        "formFactor": "desktop",
+        "screenEmulation": {
+          "mobile": false,
+          "width": 1350,
+          "height": 940,
+          "deviceScaleFactor": 1
+        },
+        "throttlingMethod": "simulate",
+        "throttling": {
+          "rttMs": 40,
+          "throughputKbps": 10240,
+          "cpuSlowdownMultiplier": 1,
+          "requestLatencyMs": 0,
+          "downloadThroughputKbps": 0,
+          "uploadThroughputKbps": 0
+        },
+        "userAgent": null
+      },
+      "environment": {
+        "networkUserAgent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/157.0.0.0 Safari/537.36",
+        "hostUserAgent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) HeadlessChrome/157.0.0.0 Safari/537.36",
+        "benchmarkIndex": 1836
+      },
+      "runWarnings": [],
+      "runtimeError": null,
+      "reportPath": "contracts/baseline/lighthouse/gallery-desktop-run2.json",
+      "attempt": 1
+    },
+    {
+      "id": "film-mobile-run1",
+      "page": "/film",
+      "profile": "mobile",
+      "run": 1,
+      "ok": true,
+      "fetchTime": "2026-11-08T05:54:15.428Z",
+      "requestedUrl": "https://www.theporadas.com/film",
+      "finalDisplayedUrl": "https://www.theporadas.com/film",
+      "lighthouseVersion": "13.5.0",
+      "scores": {
+        "performance": 0.37,
+        "accessibility": 1,
+        "best-practices": 0.96,
+        "seo": 1
+      },
+      "metrics": {
+        "firstContentfulPaintMs": 3211,
+        "largestContentfulPaintMs": 116698,
+        "totalBlockingTimeMs": 6131,
+        "cumulativeLayoutShift": 0,
+        "speedIndexMs": 4215,
+        "timeToInteractiveMs": 129642,
+        "totalByteWeight": 329965335,
+        "requestCount": 164
+      },
+      "settings": {
+        "formFactor": "mobile",
+        "screenEmulation": {
+          "mobile": true,
+          "width": 412,
+          "height": 823,
+          "deviceScaleFactor": 1.75
+        },
+        "throttlingMethod": "simulate",
+        "throttling": {
+          "rttMs": 150,
+          "throughputKbps": 1638.4,
+          "cpuSlowdownMultiplier": 4,
+          "requestLatencyMs": 562.5,
+          "downloadThroughputKbps": 1474.5600000000002,
+          "uploadThroughputKbps": 675
+        },
+        "userAgent": null
+      },
+      "environment": {
+        "networkUserAgent": "Mozilla/5.0 (Linux; Android 11; moto g power (2022)) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/157.0.0.0 Mobile Safari/537.36",
+        "hostUserAgent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) HeadlessChrome/157.0.0.0 Safari/537.36",
+        "benchmarkIndex": 2386
+      },
+      "runWarnings": [],
+      "runtimeError": null,
+      "reportPath": "contracts/baseline/lighthouse/film-mobile-run1.json",
+      "attempt": 1
+    },
+    {
+      "id": "film-mobile-run2",
+      "page": "/film",
+      "profile": "mobile",
+      "run": 2,
+      "ok": true,
+      "fetchTime": "2026-11-08T05:55:13.077Z",
+      "requestedUrl": "https://www.theporadas.com/film",
+      "finalDisplayedUrl": "https://www.theporadas.com/film",
+      "lighthouseVersion": "13.5.0",
+      "scores": {
+        "performance": 0.37,
+        "accessibility": 1,
+        "best-practices": 1,
+        "seo": 1
+      },
+      "metrics": {
+        "firstContentfulPaintMs": 3209,
+        "largestContentfulPaintMs": 113121,
+        "totalBlockingTimeMs": 7736,
+        "cumulativeLayoutShift": 0,
+        "speedIndexMs": 4135,
+        "timeToInteractiveMs": 126857,
+        "totalByteWeight": 320181009,
+        "requestCount": 163
+      },
+      "settings": {
+        "formFactor": "mobile",
+        "screenEmulation": {
+          "mobile": true,
+          "width": 412,
+          "height": 823,
+          "deviceScaleFactor": 1.75
+        },
+        "throttlingMethod": "simulate",
+        "throttling": {
+          "rttMs": 150,
+          "throughputKbps": 1638.4,
+          "cpuSlowdownMultiplier": 4,
+          "requestLatencyMs": 562.5,
+          "downloadThroughputKbps": 1474.5600000000002,
+          "uploadThroughputKbps": 675
+        },
+        "userAgent": null
+      },
+      "environment": {
+        "networkUserAgent": "Mozilla/5.0 (Linux; Android 11; moto g power (2022)) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/157.0.0.0 Mobile Safari/537.36",
+        "hostUserAgent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) HeadlessChrome/157.0.0.0 Safari/537.36",
+        "benchmarkIndex": 1979
+      },
+      "runWarnings": [],
+      "runtimeError": null,
+      "reportPath": "contracts/baseline/lighthouse/film-mobile-run2.json",
+      "attempt": 1
+    },
+    {
+      "id": "film-desktop-run1",
+      "page": "/film",
+      "profile": "desktop",
+      "run": 1,
+      "ok": true,
+      "fetchTime": "2026-11-08T05:56:04.487Z",
+      "requestedUrl": "https://www.theporadas.com/film",
+      "finalDisplayedUrl": "https://www.theporadas.com/film",
+      "lighthouseVersion": "13.5.0",
+      "scores": {
+        "performance": 0.67,
+        "accessibility": 0.96,
+        "best-practices": null,
+        "seo": 1
+      },
+      "metrics": {
+        "firstContentfulPaintMs": 699,
+        "largestContentfulPaintMs": 1240,
+        "totalBlockingTimeMs": 1019,
+        "cumulativeLayoutShift": 0,
+        "speedIndexMs": 1247,
+        "timeToInteractiveMs": 2853,
+        "totalByteWeight": 372167453,
+        "requestCount": 95
+      },
+      "settings": {
+        "formFactor": "desktop",
+        "screenEmulation": {
+          "mobile": false,
+          "width": 1350,
+          "height": 940,
+          "deviceScaleFactor": 1
+        },
+        "throttlingMethod": "simulate",
+        "throttling": {
+          "rttMs": 40,
+          "throughputKbps": 10240,
+          "cpuSlowdownMultiplier": 1,
+          "requestLatencyMs": 0,
+          "downloadThroughputKbps": 0,
+          "uploadThroughputKbps": 0
+        },
+        "userAgent": null
+      },
+      "environment": {
+        "networkUserAgent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/157.0.0.0 Safari/537.36",
+        "hostUserAgent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) HeadlessChrome/157.0.0.0 Safari/537.36",
+        "benchmarkIndex": 2071
+      },
+      "runWarnings": [],
+      "runtimeError": null,
+      "reportPath": "contracts/baseline/lighthouse/film-desktop-run1.json",
+      "attempt": 1
+    },
+    {
+      "id": "film-desktop-run2",
+      "page": "/film",
+      "profile": "desktop",
+      "run": 2,
+      "ok": true,
+      "fetchTime": "2026-11-08T05:56:58.085Z",
+      "requestedUrl": "https://www.theporadas.com/film",
+      "finalDisplayedUrl": "https://www.theporadas.com/film",
+      "lighthouseVersion": "13.5.0",
+      "scores": {
+        "performance": 0.48,
+        "accessibility": 0.96,
+        "best-practices": 1,
+        "seo": 1
+      },
+      "metrics": {
+        "firstContentfulPaintMs": 831,
+        "largestContentfulPaintMs": 18741,
+        "totalBlockingTimeMs": 695,
+        "cumulativeLayoutShift": 0,
+        "speedIndexMs": 1273,
+        "timeToInteractiveMs": 20882,
+        "totalByteWeight": 162209122,
+        "requestCount": 153
+      },
+      "settings": {
+        "formFactor": "desktop",
+        "screenEmulation": {
+          "mobile": false,
+          "width": 1350,
+          "height": 940,
+          "deviceScaleFactor": 1
+        },
+        "throttlingMethod": "simulate",
+        "throttling": {
+          "rttMs": 40,
+          "throughputKbps": 10240,
+          "cpuSlowdownMultiplier": 1,
+          "requestLatencyMs": 0,
+          "downloadThroughputKbps": 0,
+          "uploadThroughputKbps": 0
+        },
+        "userAgent": null
+      },
+      "environment": {
+        "networkUserAgent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/157.0.0.0 Safari/537.36",
+        "hostUserAgent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) HeadlessChrome/157.0.0.0 Safari/537.36",
+        "benchmarkIndex": 2259
+      },
+      "runWarnings": [],
+      "runtimeError": null,
+      "reportPath": "contracts/baseline/lighthouse/film-desktop-run2.json",
+      "attempt": 1
+    }
+  ]
+}

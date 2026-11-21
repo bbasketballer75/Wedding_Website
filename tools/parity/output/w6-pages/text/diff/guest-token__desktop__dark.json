@@ -1,0 +1,20 @@
+{
+  "key": "guest-token__desktop__dark",
+  "route": "guest-token",
+  "viewport": "desktop",
+  "theme": "dark",
+  "generatedAt": "2026-11-08T19:09:57.078Z",
+  "differences": [
+    {
+      "field": "canonical",
+      "legacy": "",
+      "rebuild": "https://www.theporadas.com/"
+    },
+    {
+      "field": "meta.og:url",
+      "legacy": "http://127.0.0.1:4174/guest/valid-showcase-token",
+      "rebuild": "http://127.0.0.1:4175/guest/valid-showcase-token"
+    }
+  ],
+  "bodyText": null
+}

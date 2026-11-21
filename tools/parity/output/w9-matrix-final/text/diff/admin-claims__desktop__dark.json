@@ -1,0 +1,140 @@
+{
+  "key": "admin-claims__desktop__dark",
+  "route": "admin-claims",
+  "viewport": "desktop",
+  "theme": "dark",
+  "generatedAt": "2026-11-10T01:22:48.208Z",
+  "differences": [
+    {
+      "field": "title",
+      "legacy": "Austin & Jordyn | Wedding Archive",
+      "rebuild": "Admin Login | Austin & Jordyn's Wedding"
+    },
+    {
+      "field": "canonical",
+      "legacy": "https://www.theporadas.com/",
+      "rebuild": "https://www.theporadas.com/admin/login"
+    },
+    {
+      "field": "meta.description",
+      "legacy": "A permanent digital archive of our wedding day. Relive our story, browse the films, and view the galleries.",
+      "rebuild": "Secure admin access for the Austin and Jordyn wedding site."
+    },
+    {
+      "field": "meta.og:url",
+      "legacy": "https://www.theporadas.com/",
+      "rebuild": "https://www.theporadas.com/admin/login"
+    },
+    {
+      "field": "meta.og:title",
+      "legacy": "Austin & Jordyn | Wedding Archive",
+      "rebuild": "Admin Login | Austin & Jordyn's Wedding"
+    },
+    {
+      "field": "meta.og:description",
+      "legacy": "A permanent digital archive of our wedding day. Relive our story, browse the films, and view the galleries.",
+      "rebuild": "Secure admin access for the Austin and Jordyn wedding site."
+    },
+    {
+      "field": "meta.og:image",
+      "legacy": "https://www.theporadas.com/images/og-image.webp",
+      "rebuild": "https://www.theporadas.com/images/home/intro-video-poster.png"
+    },
+    {
+      "field": "meta.twitter:title",
+      "legacy": "Austin & Jordyn | Wedding Archive",
+      "rebuild": "Home | Austin & Jordyn's Wedding"
+    },
+    {
+      "field": "meta.twitter:description",
+      "legacy": "A permanent digital archive of our wedding day. Relive our story, browse the films, and view the galleries.",
+      "rebuild": "Join us in celebrating the wedding of Austin and Jordyn. View our story, photos, and share your memories."
+    },
+    {
+      "field": "meta.twitter:image",
+      "legacy": "https://www.theporadas.com/images/og-image.webp",
+      "rebuild": "https://www.theporadas.com/images/home/intro-video-poster.png"
+    },
+    {
+      "field": "meta.robots",
+      "legacy": "index, follow",
+      "rebuild": "noindex, nofollow"
+    },
+    {
+      "field": "meta.og:image:width",
+      "legacy": null,
+      "rebuild": "1200"
+    },
+    {
+      "field": "meta.og:image:height",
+      "legacy": null,
+      "rebuild": "630"
+    },
+    {
+      "field": "meta.og:site_name",
+      "legacy": null,
+      "rebuild": "Austin & Jordyn's Wedding"
+    },
+    {
+      "field": "meta.og:locale",
+      "legacy": null,
+      "rebuild": "en_US"
+    },
+    {
+      "field": "links",
+      "legacy": [
+        "Skip to main content → /#main-content",
+        "A&JAdmin → /",
+        "Dashboard → /admin",
+        "Photos → /admin/photos",
+        "Albums → /admin/albums",
+        "People Review → /admin/review",
+        "Photo Claims → /admin/claims",
+        "Guestbook → /admin/guestbook",
+        "Featured → /admin/featured",
+        "Audit Trail → /admin/audit",
+        "Analytics → /admin/analytics",
+        "Settings → /admin/settings",
+        "DashboardSee what needs attention next. → /admin",
+        "PhotosModerate uploads, publish photos, and run guest tagging. → /admin/photos",
+        "AlbumsArrange the live order inside each public album. → /admin/albums",
+        "People ReviewWork through face review and named people. → /admin/review",
+        "Photo ClaimsReview and approve photo ownership and face tag claims. → /admin/claims",
+        "GuestbookModerate text messages. → /admin/guestbook",
+        "FeaturedSet what appears in the homepage and film page spotlight sections. → /admin/featured",
+        "Audit TrailSee who changed moderation state and when. → /admin/audit",
+        "AnalyticsTrack verified database activity inside the app. → /admin/analytics",
+        "SettingsReference the live setup and operating notes. → /admin/settings",
+        " → /images/engagement/PoradaProposal-29.webp",
+        "jane@example.com → mailto:jane@example.com"
+      ],
+      "rebuild": [
+        "Skip to main content → /#main-content",
+        "A&JAdmin → /admin",
+        "Dashboard → /admin",
+        "Photos → /admin/photos",
+        "Albums → /admin/albums",
+        "People Review → /admin/review",
+        "Photo Claims → /admin/claims",
+        "Guestbook → /admin/guestbook",
+        "Featured → /admin/featured",
+        "Audit Trail → /admin/audit",
+        "Analytics → /admin/analytics",
+        "Settings → /admin/settings",
+        "DashboardSee what needs attention next. → /admin",
+        "PhotosModerate uploads, publish photos, and run guest tagging. → /admin/photos",
+        "AlbumsArrange the live order inside each public album. → /admin/albums",
+        "People ReviewWork through face review and named people. → /admin/review",
+        "Photo ClaimsReview and approve photo ownership and face tag claims. → /admin/claims",
+        "GuestbookModerate text messages. → /admin/guestbook",
+        "FeaturedSet what appears in the homepage and film page spotlight sections. → /admin/featured",
+        "Audit TrailSee who changed moderation state and when. → /admin/audit",
+        "AnalyticsTrack verified database activity inside the app. → /admin/analytics",
+        "SettingsReference the live setup and operating notes. → /admin/settings",
+        " → /images/engagement/PoradaProposal-29.webp",
+        "jane@example.com → mailto:jane@example.com"
+      ]
+    }
+  ],
+  "bodyText": null
+}

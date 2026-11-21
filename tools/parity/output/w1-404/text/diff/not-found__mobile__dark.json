@@ -1,0 +1,120 @@
+{
+  "key": "not-found__mobile__dark",
+  "route": "not-found",
+  "viewport": "mobile",
+  "theme": "dark",
+  "generatedAt": "2026-11-08T07:01:22.293Z",
+  "differences": [
+    {
+      "field": "meta.title",
+      "legacy": "Austin & Jordyn | Wedding Archive",
+      "rebuild": null
+    },
+    {
+      "field": "meta.keywords",
+      "legacy": "wedding, archive, austin, jordyn, marriage, collection",
+      "rebuild": null
+    },
+    {
+      "field": "meta.author",
+      "legacy": "Austin & Jordyn",
+      "rebuild": null
+    },
+    {
+      "field": "meta.og:type",
+      "legacy": "website",
+      "rebuild": null
+    },
+    {
+      "field": "meta.og:url",
+      "legacy": "https://www.theporadas.com/404",
+      "rebuild": null
+    },
+    {
+      "field": "meta.twitter:card",
+      "legacy": "summary_large_image",
+      "rebuild": null
+    },
+    {
+      "field": "meta.twitter:url",
+      "legacy": "https://www.theporadas.com/",
+      "rebuild": null
+    },
+    {
+      "field": "meta.twitter:title",
+      "legacy": "Austin & Jordyn | Wedding Archive",
+      "rebuild": "Page Not Found | Austin & Jordyn's Wedding"
+    },
+    {
+      "field": "meta.twitter:description",
+      "legacy": "A permanent digital archive of our wedding day. Relive our story, browse the films, and view the galleries.",
+      "rebuild": "This page could not be found."
+    },
+    {
+      "field": "meta.twitter:image",
+      "legacy": "https://www.theporadas.com/images/og-image.webp",
+      "rebuild": "https://www.theporadas.com/images/home/intro-video-poster.png"
+    },
+    {
+      "field": "meta.language",
+      "legacy": "English",
+      "rebuild": null
+    },
+    {
+      "field": "meta.theme-color",
+      "legacy": "#d4af37",
+      "rebuild": null
+    },
+    {
+      "field": "meta.mobile-web-app-capable",
+      "legacy": "yes",
+      "rebuild": null
+    },
+    {
+      "field": "meta.apple-mobile-web-app-status-bar-style",
+      "legacy": "black-translucent",
+      "rebuild": null
+    },
+    {
+      "field": "meta.apple-mobile-web-app-title",
+      "legacy": "A&J Wedding",
+      "rebuild": null
+    },
+    {
+      "field": "meta.application-name",
+      "legacy": "A&J Wedding",
+      "rebuild": null
+    },
+    {
+      "field": "meta.msapplication-TileColor",
+      "legacy": "#d4af37",
+      "rebuild": null
+    },
+    {
+      "field": "meta.msapplication-config",
+      "legacy": "/browserconfig.xml",
+      "rebuild": null
+    },
+    {
+      "field": "meta.og:image:width",
+      "legacy": "1200",
+      "rebuild": null
+    },
+    {
+      "field": "meta.og:image:height",
+      "legacy": "630",
+      "rebuild": null
+    },
+    {
+      "field": "meta.og:site_name",
+      "legacy": "Austin & Jordyn's Wedding",
+      "rebuild": null
+    },
+    {
+      "field": "meta.og:locale",
+      "legacy": "en_US",
+      "rebuild": null
+    }
+  ],
+  "bodyText": null
+}

@@ -1,0 +1,35 @@
+{
+  "key": "not-found__desktop__dark",
+  "route": "not-found",
+  "viewport": "desktop",
+  "theme": "dark",
+  "generatedAt": "2026-11-10T00:11:04.636Z",
+  "differences": [
+    {
+      "field": "meta.twitter:title",
+      "legacy": "Austin & Jordyn | Wedding Archive",
+      "rebuild": "Page Not Found | Austin & Jordyn's Wedding"
+    },
+    {
+      "field": "meta.twitter:description",
+      "legacy": "A permanent digital archive of our wedding day. Relive our story, browse the films, and view the galleries.",
+      "rebuild": "This page could not be found."
+    },
+    {
+      "field": "meta.twitter:image",
+      "legacy": "https://www.theporadas.com/images/og-image.webp",
+      "rebuild": "https://www.theporadas.com/images/home/intro-video-poster.png"
+    },
+    {
+      "field": "meta.msapplication-config",
+      "legacy": "/browserconfig.xml",
+      "rebuild": null
+    },
+    {
+      "field": "meta.apple-mobile-web-app-capable",
+      "legacy": null,
+      "rebuild": "yes"
+    }
+  ],
+  "bodyText": null
+}

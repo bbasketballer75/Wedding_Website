@@ -1,0 +1,67 @@
+{
+  "capturedAt": "2026-11-10T01:22:26.631Z",
+  "baseUrl": "http://127.0.0.1:4175",
+  "url": "/admin/review",
+  "title": "Admin Login | Austin & Jordyn's Wedding",
+  "lang": "en",
+  "canonical": "https://www.theporadas.com/admin/login",
+  "meta": {
+    "viewport": "width=device-width, initial-scale=1.0",
+    "title": "Austin & Jordyn | Wedding Archive",
+    "description": "Secure admin access for the Austin and Jordyn wedding site.",
+    "keywords": "wedding, archive, austin, jordyn, marriage, collection",
+    "author": "Austin & Jordyn",
+    "og:type": "website",
+    "og:url": "https://www.theporadas.com/admin/login",
+    "og:title": "Admin Login | Austin & Jordyn's Wedding",
+    "og:description": "Secure admin access for the Austin and Jordyn wedding site.",
+    "og:image": "https://www.theporadas.com/images/home/intro-video-poster.png",
+    "twitter:card": "summary_large_image",
+    "twitter:url": "https://www.theporadas.com/",
+    "twitter:title": "Austin & Jordyn | Wedding Archive",
+    "twitter:description": "A permanent digital archive of our wedding day. Relive our story, browse the films, and view the galleries.",
+    "twitter:image": "https://www.theporadas.com/images/og-image.webp",
+    "robots": "noindex, nofollow",
+    "language": "English",
+    "theme-color": "#d4af37",
+    "mobile-web-app-capable": "yes",
+    "apple-mobile-web-app-status-bar-style": "black-translucent",
+    "apple-mobile-web-app-title": "A&J Wedding",
+    "application-name": "A&J Wedding",
+    "msapplication-TileColor": "#d4af37",
+    "msapplication-config": "/browserconfig.xml",
+    "og:image:width": "1200",
+    "og:image:height": "630",
+    "og:site_name": "Austin & Jordyn's Wedding",
+    "og:locale": "en_US"
+  },
+  "headings": [
+    {
+      "level": 1,
+      "text": "Turn face detections into a browsable people archive."
+    },
+    {
+      "level": 2,
+      "text": "Turn face detections into a browsable people archive."
+    }
+  ],
+  "links": [
+    {
+      "href": "/#main-content",
+      "text": "Skip to main content",
+      "ariaLabel": ""
+    },
+    {
+      "href": "/admin",
+      "text": "A&JAdmin",
+      "ariaLabel": ""
+    },
+    {
+      "href": "/admin",
+      "text": "Back to Dashboard",
+      "ariaLabel": ""
+    }
+  ],
+  "images": [],
+  "bodyText": "Skip to main content\nA&JAdmin\n\nA calmer workspace for moderation, people review, and site upkeep.\n\nSigned in as admin@test.wedding\nSIGN OUT\n\nPEOPLE WORKFLOW\n\nTurn face detections into a browsable people archive.\nBACK TO DASHBOARD\n\nPEOPLE WORKFLOW\n\nTurn face detections into a browsable people archive.\n\nUse photo-first review for accuracy, then clean up recurring people in bulk so the public gallery stays useful instead of noisy.\n\nREFRESH\n\nGuest-upload review queue is empty\n\nExport and tag approved guest uploads, then push a guest review batch to stage the next people-review pass."
+}

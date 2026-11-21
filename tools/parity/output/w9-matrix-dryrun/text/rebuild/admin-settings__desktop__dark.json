@@ -1,0 +1,67 @@
+{
+  "capturedAt": "2026-11-10T00:16:38.041Z",
+  "baseUrl": "http://127.0.0.1:4175",
+  "url": "/admin/login?from=%2Fadmin%2Fsettings",
+  "title": "Admin Login | Austin & Jordyn's Wedding",
+  "lang": "en",
+  "canonical": "https://www.theporadas.com/admin/login",
+  "meta": {
+    "viewport": "width=device-width, initial-scale=1.0",
+    "title": "Austin & Jordyn | Wedding Archive",
+    "description": "Secure admin access for the Austin and Jordyn wedding site.",
+    "keywords": "wedding, archive, austin, jordyn, marriage, collection",
+    "author": "Austin & Jordyn",
+    "og:type": "website",
+    "og:url": "https://www.theporadas.com/admin/login",
+    "og:title": "Admin Login | Austin & Jordyn's Wedding",
+    "og:description": "Secure admin access for the Austin and Jordyn wedding site.",
+    "og:image": "https://www.theporadas.com/images/home/intro-video-poster.png",
+    "twitter:card": "summary_large_image",
+    "twitter:url": "https://www.theporadas.com/",
+    "twitter:title": "Austin & Jordyn | Wedding Archive",
+    "twitter:description": "A permanent digital archive of our wedding day. Relive our story, browse the films, and view the galleries.",
+    "twitter:image": "https://www.theporadas.com/images/og-image.webp",
+    "robots": "noindex, nofollow",
+    "language": "English",
+    "theme-color": "#d4af37",
+    "mobile-web-app-capable": "yes",
+    "apple-mobile-web-app-status-bar-style": "black-translucent",
+    "apple-mobile-web-app-title": "A&J Wedding",
+    "application-name": "A&J Wedding",
+    "msapplication-TileColor": "#d4af37",
+    "msapplication-config": "/browserconfig.xml",
+    "og:image:width": "1200",
+    "og:image:height": "630",
+    "og:site_name": "Austin & Jordyn's Wedding",
+    "og:locale": "en_US"
+  },
+  "headings": [
+    {
+      "level": 1,
+      "text": "Admin sign in"
+    },
+    {
+      "level": 2,
+      "text": "Sign in to continue"
+    }
+  ],
+  "links": [
+    {
+      "href": "/#main-content",
+      "text": "Skip to main content",
+      "ariaLabel": ""
+    },
+    {
+      "href": "/",
+      "text": "Back to site",
+      "ariaLabel": ""
+    },
+    {
+      "href": "/admin/settings",
+      "text": "Go to requested admin page",
+      "ariaLabel": ""
+    }
+  ],
+  "images": [],
+  "bodyText": "Skip to main content\nPROTECTED ACCESS\nAdmin sign in\n\nUse the Supabase email and password for your admin account to review uploads, moderate the guestbook, and manage the wedding archive.\n\nWHAT THIS USES\n\nThe same Supabase authentication already wired into the app. There are no hardcoded admin credentials in the codebase.\n\nADMIN ROLE CHECK\n\nAccess is granted only when the signed-in user has `role: admin` in Supabase user metadata.\n\nNext configuration step\n\nOnce you can sign in here, we can set your Supabase user metadata so this page upgrades from “authenticated” to full admin access.\n\nBack to site\nGo to requested admin page\nACCOUNT ACCESS\nSign in to continue\n\nEnter the email and password for the Supabase user you just created.\n\nEMAIL\nPASSWORD\nSIGN IN"
+}

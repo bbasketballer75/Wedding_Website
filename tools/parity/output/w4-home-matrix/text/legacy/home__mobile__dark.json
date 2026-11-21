@@ -1,0 +1,332 @@
+{
+  "capturedAt": "2026-11-08T18:56:20.040Z",
+  "baseUrl": "http://127.0.0.1:4174",
+  "url": "/",
+  "title": "Home | Austin & Jordyn's Wedding",
+  "lang": "en",
+  "canonical": "https://www.theporadas.com/",
+  "meta": {
+    "viewport": "width=device-width, initial-scale=1.0",
+    "title": "Austin & Jordyn | Wedding Archive",
+    "description": "Join us in celebrating the wedding of Austin and Jordyn. View our story, photos, and share your memories.",
+    "keywords": "wedding, archive, austin, jordyn, marriage, collection",
+    "author": "Austin & Jordyn",
+    "og:type": "website",
+    "og:url": "https://www.theporadas.com/",
+    "og:title": "Home | Austin & Jordyn's Wedding",
+    "og:description": "Join us in celebrating the wedding of Austin and Jordyn. View our story, photos, and share your memories.",
+    "og:image": "https://www.theporadas.com/images/home/intro-video-poster.png",
+    "twitter:card": "summary_large_image",
+    "twitter:url": "https://www.theporadas.com/",
+    "twitter:title": "Austin & Jordyn | Wedding Archive",
+    "twitter:description": "A permanent digital archive of our wedding day. Relive our story, browse the films, and view the galleries.",
+    "twitter:image": "https://www.theporadas.com/images/og-image.webp",
+    "robots": "index, follow",
+    "language": "English",
+    "theme-color": "#d4af37",
+    "mobile-web-app-capable": "yes",
+    "apple-mobile-web-app-status-bar-style": "black-translucent",
+    "apple-mobile-web-app-title": "A&J Wedding",
+    "application-name": "A&J Wedding",
+    "msapplication-TileColor": "#d4af37",
+    "msapplication-config": "/browserconfig.xml",
+    "og:image:width": "1200",
+    "og:image:height": "630",
+    "og:site_name": "Austin & Jordyn's Wedding",
+    "og:locale": "en_US"
+  },
+  "headings": [
+    {
+      "level": 2,
+      "text": "The Journey to I Do"
+    },
+    {
+      "level": 3,
+      "text": "The Meeting"
+    },
+    {
+      "level": 3,
+      "text": "First Date"
+    },
+    {
+      "level": 3,
+      "text": "Moved to Ligonier"
+    },
+    {
+      "level": 3,
+      "text": "Bought Our First Home"
+    },
+    {
+      "level": 3,
+      "text": "The Kitties Arrive"
+    },
+    {
+      "level": 3,
+      "text": "The Proposal💍"
+    },
+    {
+      "level": 3,
+      "text": "Bachelor & Bachelorette"
+    },
+    {
+      "level": 3,
+      "text": "Jordyn's Bridal Shower"
+    },
+    {
+      "level": 3,
+      "text": "We Got Married!"
+    },
+    {
+      "level": 3,
+      "text": "The whole night, start to finish."
+    },
+    {
+      "level": 2,
+      "text": "You were there with us"
+    },
+    {
+      "level": 2,
+      "text": "Thanks for helping us keep the day alive."
+    }
+  ],
+  "links": [
+    {
+      "href": "/#main-content",
+      "text": "Skip to main content",
+      "ariaLabel": ""
+    },
+    {
+      "href": "/",
+      "text": "A&J",
+      "ariaLabel": ""
+    },
+    {
+      "href": "/film",
+      "text": "FilmWatch Film",
+      "ariaLabel": ""
+    },
+    {
+      "href": "/gallery",
+      "text": "PhotosGallery",
+      "ariaLabel": ""
+    },
+    {
+      "href": "/guestbook",
+      "text": "GuestsGuestbook",
+      "ariaLabel": ""
+    },
+    {
+      "href": "/upload",
+      "text": "ShareShare",
+      "ariaLabel": ""
+    },
+    {
+      "href": "/print",
+      "text": "PrintMemory Book",
+      "ariaLabel": ""
+    },
+    {
+      "href": "/film",
+      "text": "Film",
+      "ariaLabel": ""
+    },
+    {
+      "href": "/gallery",
+      "text": "Gallery",
+      "ariaLabel": ""
+    },
+    {
+      "href": "/film",
+      "text": "Watch the Film",
+      "ariaLabel": ""
+    },
+    {
+      "href": "/gallery",
+      "text": "View the full gallery →",
+      "ariaLabel": ""
+    },
+    {
+      "href": "/guestbook",
+      "text": "Read the guestbook",
+      "ariaLabel": ""
+    },
+    {
+      "href": "/film",
+      "text": "Watch the filmRevisit the ceremony, speeches, and the whole dance floor arc.",
+      "ariaLabel": ""
+    },
+    {
+      "href": "/gallery",
+      "text": "Browse the galleryPortraits, candids, and every little detail we never want to forget.",
+      "ariaLabel": ""
+    },
+    {
+      "href": "/guestbook",
+      "text": "Leave a noteA quiet last stop for one message, blessing, or little memory from the day.",
+      "ariaLabel": ""
+    },
+    {
+      "href": "/print",
+      "text": "Memory BookPrint a keepsake photo book or guestbook — save as PDF from any browser.",
+      "ariaLabel": ""
+    },
+    {
+      "href": "/film",
+      "text": "Watch Film",
+      "ariaLabel": ""
+    },
+    {
+      "href": "/gallery",
+      "text": "Gallery",
+      "ariaLabel": ""
+    },
+    {
+      "href": "/guestbook",
+      "text": "Guestbook",
+      "ariaLabel": ""
+    },
+    {
+      "href": "/upload",
+      "text": "Share",
+      "ariaLabel": ""
+    },
+    {
+      "href": "/print",
+      "text": "Memory Book",
+      "ariaLabel": ""
+    }
+  ],
+  "images": [
+    {
+      "src": "/images/home/intro-video-poster.png",
+      "alt": "",
+      "loading": ""
+    },
+    {
+      "src": "https://media.wedding.theporadas.com/media/timeline/cats/20210128_150848_4__1r5aqbl.jpg",
+      "alt": "Moira and Stella - 1",
+      "loading": "eager"
+    },
+    {
+      "src": "https://media.wedding.theporadas.com/media/timeline/cats/PXL_20240114_184414874_2__1a7yin.jpg",
+      "alt": "Moira and Stella - 2",
+      "loading": "eager"
+    },
+    {
+      "src": "https://media.wedding.theporadas.com/media/timeline/cats/608763682_1196135159331667_4161914504755009183_n.jpg",
+      "alt": "Moira and Stella - 3",
+      "loading": "eager"
+    },
+    {
+      "src": "https://media.wedding.theporadas.com/media/timeline/cats/PXL_20230825_171945218.jpg",
+      "alt": "Moira and Stella - 4",
+      "loading": "lazy"
+    },
+    {
+      "src": "https://media.wedding.theporadas.com/media/timeline/engagement/PoradaProposal-316.webp",
+      "alt": "Engagement - 1",
+      "loading": "eager"
+    },
+    {
+      "src": "https://media.wedding.theporadas.com/media/timeline/engagement/PoradaProposal-458.webp",
+      "alt": "Engagement - 2",
+      "loading": "eager"
+    },
+    {
+      "src": "https://media.wedding.theporadas.com/media/timeline/engagement/PoradaProposal-277.webp",
+      "alt": "Engagement - 3",
+      "loading": "eager"
+    },
+    {
+      "src": "https://media.wedding.theporadas.com/media/timeline/engagement/PoradaProposal-181.webp",
+      "alt": "Engagement - 4",
+      "loading": "lazy"
+    },
+    {
+      "src": "https://media.wedding.theporadas.com/media/timeline/engagement/PoradaProposal-6.webp",
+      "alt": "Engagement - 5",
+      "loading": "lazy"
+    },
+    {
+      "src": "https://media.wedding.theporadas.com/media/timeline/engagement/PoradaProposal-262.webp",
+      "alt": "Engagement - 6",
+      "loading": "lazy"
+    },
+    {
+      "src": "https://media.wedding.theporadas.com/media/timeline/engagement/PoradaProposal-255.webp",
+      "alt": "Engagement - 7",
+      "loading": "lazy"
+    },
+    {
+      "src": "https://media.wedding.theporadas.com/media/timeline/engagement/PoradaProposal-146.webp",
+      "alt": "Engagement - 8",
+      "loading": "lazy"
+    },
+    {
+      "src": "https://media.wedding.theporadas.com/media/timeline/bachelor_ette__1nlhm4u/000108.jpg",
+      "alt": "Bachelor and Bachelorette Party - 1",
+      "loading": "eager"
+    },
+    {
+      "src": "https://media.wedding.theporadas.com/media/timeline/bachelor_ette__1nlhm4u/000407.jpg",
+      "alt": "Bachelor and Bachelorette Party - 2",
+      "loading": "eager"
+    },
+    {
+      "src": "https://media.wedding.theporadas.com/media/timeline/bachelor_ette__1nlhm4u/000191.jpg",
+      "alt": "Bachelor and Bachelorette Party - 3",
+      "loading": "eager"
+    },
+    {
+      "src": "https://media.wedding.theporadas.com/media/timeline/bachelor_ette__1nlhm4u/000429.jpg",
+      "alt": "Bachelor and Bachelorette Party - 4",
+      "loading": "lazy"
+    },
+    {
+      "src": "https://media.wedding.theporadas.com/media/timeline/bachelor_ette__1nlhm4u/000198_2.jpg",
+      "alt": "Bachelor and Bachelorette Party - 5",
+      "loading": "lazy"
+    },
+    {
+      "src": "https://media.wedding.theporadas.com/media/timeline/bachelor_ette__1nlhm4u/000106.jpg",
+      "alt": "Bachelor and Bachelorette Party - 6",
+      "loading": "lazy"
+    },
+    {
+      "src": "/images/engagement/PoradaProposal-29.webp",
+      "alt": "First look on the lawn",
+      "loading": "lazy"
+    },
+    {
+      "src": "/images/engagement/PoradaProposal-29.webp",
+      "alt": "First look on the lawn",
+      "loading": "lazy"
+    },
+    {
+      "src": "/images/engagement/PoradaProposal-11.webp",
+      "alt": "Walking toward the ceremony garden",
+      "loading": "lazy"
+    },
+    {
+      "src": "/images/engagement/PoradaProposal-150.webp",
+      "alt": "Quiet vows before the applause",
+      "loading": "lazy"
+    },
+    {
+      "src": "/images/engagement/PoradaProposal-181.webp",
+      "alt": "The first kiss",
+      "loading": "lazy"
+    },
+    {
+      "src": "/images/engagement/PoradaProposal-255.webp",
+      "alt": "A table full of laughter",
+      "loading": "lazy"
+    },
+    {
+      "src": "/images/engagement/PoradaProposal-277.webp",
+      "alt": "First dance under the lights",
+      "loading": "lazy"
+    }
+  ],
+  "bodyText": "Skip to main content\nA&J\nFILM\nPHOTOS\nGUESTS\nSHARE\nPRINT\n\nAUSTIN AND JORDYN PORADA\n\nWedding film, photographs, guest memories, and the story we built with everyone who celebrated with us.\n\nENTER ARCHIVE\nFILM\nGALLERY\n\nOur Story\n\nMAY 10, 2025 · SHARED WITH LOVE\n\nMARRIED\n\n1 year, 181 days\n\nAustin & Jordyn · May 10, 2025\n\nOUR LOVE STORY\nThe Journey to I Do\n\nFrom a summer job to forever. Here's how our story unfolded.\n\nWhere it all began\nSummer 2017\nThe Meeting\n\nWe met during a summer at work and somehow the ordinary days started feeling a lot less ordinary. It did not take long f…\n\nRead more\n✨\n💕\nLove sparked\nSummer 2018\nFirst Date\n\nThis was the point where talking turned into choosing each other on purpose. It felt easy, exciting, and like the start…\n\nRead more\nLigonier, PA\nSummer 2019\nMoved to Ligonier\n\nWe packed up, landed in Ligonier, and started building a life that finally felt like ours. New town, new routines, same…\n\nRead more\nLigonier, PA\nOur First Home\nFall 2020\nBought Our First Home\n\nKeys in hand, we stepped into the first place that was truly ours. It was the beginning of quiet nights, shared projects…\n\nRead more\n4 / 4\nNov 2020\nThe Kitties Arrive\n\nMoira and Stella made the house feel instantly fuller, louder, and more us. Our little family grew by two and never look…\n\nRead more\n🧟\n👰‍♀️\n🎃\n✨\n4 / 8\nOCTOBER 31, 2022\nThe Proposal💍\n\nOn All Hallows' Eve, with the costumes on, the music up, and the whole night already feeling half haunted and half electric, Frankenstein finally asked his Bride the question that had been building toward forever.\n\nShe said yes, and the whole party tipped into forever.\n\nHALLOWEEN NIGHT • COSTUMES ON • FOREVER GOT WEIRD IN THE BEST WAY\n4 / 6\nAug 2024\nBachelor & Bachelorette\n\nA full weekend in Pittsburgh with the people who know us best: loud laughs, late nights, and the kind of memories that o…\n\nRead more\nPittsburgh, PA\nThe Boulevard Grill\nFeb 2025\nJordyn's Bridal Shower\n\nOne of those gentler celebrations we will always remember. It was full of love, stories, and the feeling that the weddin…\n\nRead more\nThe Boulevard Grill\n✨\nForever begins\nMay 10, 2025\nWe Got Married!\n\nThe day all of these chapters finally met in one room. Surrounded by our people, we said yes again, this time out loud a…\n\nRead more\nThe Lodge at Indian Lake\nThe whole night, start to finish.\n\nCeremony, vows, speeches, first dance — and everything in between.\n\nWATCH THE FILM\n\nMEMORIES FROM OUR GUESTS\n\nYou were there with us\n1 / 6\nView the full gallery →\n\"We sent a quick video hello from our table right after the toasts.\"\n\n— Aunt Patricia\n\nRead the guestbook\n\nAUSTIN AND JORDYN\n\nThanks for helping us keep the day alive.\n\nThe simplest way through is still the best one: watch the film, open the gallery when you want to linger, and leave a note only if you still have something to say before you go.\n\nMAY 10, 2025\nTHE LODGE AT INDIAN LAKE\n\nWatch the film\n\nBrowse the gallery\n\nLeave a note\n\nMemory Book\n\nWATCH FILM\nGALLERY\nGUESTBOOK\nSHARE\nMEMORY BOOK\n\nMade with\nfor the people who shared it with us\n\n© 2026 Austin & Jordyn"
+}

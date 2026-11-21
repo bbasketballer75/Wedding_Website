@@ -1,0 +1,69 @@
+{
+  "command": "npx vitest run --coverage --coverage.reporter=json-summary --coverage.reporter=text-summary",
+  "exitCode": 0,
+  "timedOut": false,
+  "wallMs": 12958,
+  "passed": true,
+  "coverageSummaryPath": "coverage/coverage-summary.json",
+  "totals": {
+    "statements": {
+      "total": 3865,
+      "covered": 1928,
+      "skipped": 0,
+      "pct": 49.88
+    },
+    "branches": {
+      "total": 2420,
+      "covered": 916,
+      "skipped": 0,
+      "pct": 37.85
+    },
+    "functions": {
+      "total": 1133,
+      "covered": 511,
+      "skipped": 0,
+      "pct": 45.1
+    },
+    "lines": {
+      "total": 3510,
+      "covered": 1817,
+      "skipped": 0,
+      "pct": 51.76
+    }
+  },
+  "coveredFiles": 128,
+  "testRun": {
+    "testFiles": 42,
+    "tests": 346,
+    "failed": null,
+    "durationText": "11.52s (environment 61%, tests 18%, setup 12%, import 4%, worker 3%, transform 1%)",
+    "statementsPctFromTextSummary": 49.88
+  },
+  "outputTail": [
+    "RUN  v5.0.5 C:/Users/bbask/Coding_Projects/Wedding_Website_Clean",
+    "      Coverage enabled with v8",
+    "",
+    "",
+    " Test Files  42 passed (42)",
+    "      Tests  346 passed (346)",
+    "   Start at  01:14:30",
+    "   Duration  11.52s (environment 61%, tests 18%, setup 12%, import 4%, worker 3%, transform 1%)",
+    "",
+    "Environment  jsdom was created 42 times · 83.87s total, 61% of tracked time",
+    "             create it once per worker with pool: 'vmThreads' (keeps per-file isolation) or isolate: false (shares it across files)",
+    "             learn more: https://vitest.dev/guide/improving-performance#test-environments",
+    "",
+    " % Coverage report from v8",
+    "",
+    "=============================== Coverage summary ===============================",
+    "Statements   : 49.88% ( 1928/3865 )",
+    "Branches     : 37.85% ( 916/2420 )",
+    "Functions    : 45.1% ( 511/1133 )",
+    "Lines        : 51.76% ( 1817/3510 )",
+    "================================================================================",
+    "",
+    "(!) Your Vite config uses features that are unsupported by `configLoader: 'native'`, which is planned to become the default in a future major version of Vite:",
+    "  - `__dirname` (vitest.config.js:27:25). Use `import.meta.dirname` instead",
+    "Set `VITE_CONFIG_NATIVE_IGNORE_WARNING=true` to suppress this warning."
+  ]
+}

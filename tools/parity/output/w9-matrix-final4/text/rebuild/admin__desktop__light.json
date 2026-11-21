@@ -1,0 +1,271 @@
+{
+  "capturedAt": "2026-11-10T02:19:07.934Z",
+  "baseUrl": "http://127.0.0.1:4175",
+  "url": "/admin",
+  "title": "Austin & Jordyn | Wedding Archive",
+  "lang": "en",
+  "canonical": "https://www.theporadas.com/",
+  "meta": {
+    "viewport": "width=device-width, initial-scale=1.0",
+    "title": "Austin & Jordyn | Wedding Archive",
+    "description": "A permanent digital archive of our wedding day. Relive our story, browse the films, and view the galleries.",
+    "keywords": "wedding, archive, austin, jordyn, marriage, collection",
+    "author": "Austin & Jordyn",
+    "og:type": "website",
+    "og:url": "https://www.theporadas.com/",
+    "og:title": "Austin & Jordyn | Wedding Archive",
+    "og:description": "A permanent digital archive of our wedding day. Relive our story, browse the films, and view the galleries.",
+    "og:image": "https://www.theporadas.com/images/og-image.webp",
+    "twitter:card": "summary_large_image",
+    "twitter:url": "https://www.theporadas.com/",
+    "twitter:title": "Austin & Jordyn | Wedding Archive",
+    "twitter:description": "A permanent digital archive of our wedding day. Relive our story, browse the films, and view the galleries.",
+    "twitter:image": "https://www.theporadas.com/images/og-image.webp",
+    "robots": "index, follow",
+    "language": "English",
+    "theme-color": "#d4af37",
+    "mobile-web-app-capable": "yes",
+    "apple-mobile-web-app-status-bar-style": "black-translucent",
+    "apple-mobile-web-app-title": "A&J Wedding",
+    "application-name": "A&J Wedding",
+    "msapplication-TileColor": "#d4af37",
+    "msapplication-config": "/browserconfig.xml"
+  },
+  "headings": [
+    {
+      "level": 2,
+      "text": "A faster weekly view of what needs attention."
+    },
+    {
+      "level": 3,
+      "text": "Three steps, in order"
+    },
+    {
+      "level": 3,
+      "text": "What belongs here"
+    },
+    {
+      "level": 2,
+      "text": "Thanks for helping us keep the day alive."
+    }
+  ],
+  "links": [
+    {
+      "href": "/#main-content",
+      "text": "Skip to main content",
+      "ariaLabel": ""
+    },
+    {
+      "href": "/",
+      "text": "A&J",
+      "ariaLabel": ""
+    },
+    {
+      "href": "/film",
+      "text": "FilmWatch Film",
+      "ariaLabel": ""
+    },
+    {
+      "href": "/gallery",
+      "text": "PhotosGallery",
+      "ariaLabel": ""
+    },
+    {
+      "href": "/guestbook",
+      "text": "GuestsGuestbook",
+      "ariaLabel": ""
+    },
+    {
+      "href": "/upload",
+      "text": "ShareShare",
+      "ariaLabel": ""
+    },
+    {
+      "href": "/print",
+      "text": "PrintMemory Book",
+      "ariaLabel": ""
+    },
+    {
+      "href": "/",
+      "text": "A&JAdmin",
+      "ariaLabel": ""
+    },
+    {
+      "href": "/admin",
+      "text": "Dashboard",
+      "ariaLabel": ""
+    },
+    {
+      "href": "/admin/photos",
+      "text": "Photos",
+      "ariaLabel": ""
+    },
+    {
+      "href": "/admin/albums",
+      "text": "Albums",
+      "ariaLabel": ""
+    },
+    {
+      "href": "/admin/review",
+      "text": "People Review",
+      "ariaLabel": ""
+    },
+    {
+      "href": "/admin/claims",
+      "text": "Photo Claims",
+      "ariaLabel": ""
+    },
+    {
+      "href": "/admin/guestbook",
+      "text": "Guestbook",
+      "ariaLabel": ""
+    },
+    {
+      "href": "/admin/featured",
+      "text": "Featured",
+      "ariaLabel": ""
+    },
+    {
+      "href": "/admin/audit",
+      "text": "Audit Trail",
+      "ariaLabel": ""
+    },
+    {
+      "href": "/admin/analytics",
+      "text": "Analytics",
+      "ariaLabel": ""
+    },
+    {
+      "href": "/admin/settings",
+      "text": "Settings",
+      "ariaLabel": ""
+    },
+    {
+      "href": "/admin",
+      "text": "DashboardSee what needs attention next.",
+      "ariaLabel": ""
+    },
+    {
+      "href": "/admin/photos",
+      "text": "PhotosModerate uploads, publish photos, and run guest tagging.",
+      "ariaLabel": ""
+    },
+    {
+      "href": "/admin/albums",
+      "text": "AlbumsArrange the live order inside each public album.",
+      "ariaLabel": ""
+    },
+    {
+      "href": "/admin/review",
+      "text": "People ReviewWork through face review and named people.",
+      "ariaLabel": ""
+    },
+    {
+      "href": "/admin/claims",
+      "text": "Photo ClaimsReview and approve photo ownership and face tag claims.",
+      "ariaLabel": ""
+    },
+    {
+      "href": "/admin/guestbook",
+      "text": "GuestbookModerate text messages.",
+      "ariaLabel": ""
+    },
+    {
+      "href": "/admin/featured",
+      "text": "FeaturedSet what appears in the homepage and film page spotlight sections.",
+      "ariaLabel": ""
+    },
+    {
+      "href": "/admin/audit",
+      "text": "Audit TrailSee who changed moderation state and when.",
+      "ariaLabel": ""
+    },
+    {
+      "href": "/admin/analytics",
+      "text": "AnalyticsTrack verified database activity inside the app.",
+      "ariaLabel": ""
+    },
+    {
+      "href": "/admin/settings",
+      "text": "SettingsReference the live setup and operating notes.",
+      "ariaLabel": ""
+    },
+    {
+      "href": "/admin/photos",
+      "text": "Photos",
+      "ariaLabel": ""
+    },
+    {
+      "href": "/admin/albums",
+      "text": "Albums",
+      "ariaLabel": ""
+    },
+    {
+      "href": "/admin/review",
+      "text": "People Review",
+      "ariaLabel": ""
+    },
+    {
+      "href": "/admin/guestbook",
+      "text": "Guestbook",
+      "ariaLabel": ""
+    },
+    {
+      "href": "/admin/audit",
+      "text": "Audit",
+      "ariaLabel": ""
+    },
+    {
+      "href": "/admin/settings",
+      "text": "Operating notes",
+      "ariaLabel": ""
+    },
+    {
+      "href": "/film",
+      "text": "Watch the filmRevisit the ceremony, speeches, and the whole dance floor arc.",
+      "ariaLabel": ""
+    },
+    {
+      "href": "/gallery",
+      "text": "Browse the galleryPortraits, candids, and every little detail we never want to forget.",
+      "ariaLabel": ""
+    },
+    {
+      "href": "/guestbook",
+      "text": "Leave a noteA quiet last stop for one message, blessing, or little memory from the day.",
+      "ariaLabel": ""
+    },
+    {
+      "href": "/print",
+      "text": "Memory BookPrint a keepsake photo book or guestbook — save as PDF from any browser.",
+      "ariaLabel": ""
+    },
+    {
+      "href": "/film",
+      "text": "Watch Film",
+      "ariaLabel": ""
+    },
+    {
+      "href": "/gallery",
+      "text": "Gallery",
+      "ariaLabel": ""
+    },
+    {
+      "href": "/guestbook",
+      "text": "Guestbook",
+      "ariaLabel": ""
+    },
+    {
+      "href": "/upload",
+      "text": "Share",
+      "ariaLabel": ""
+    },
+    {
+      "href": "/print",
+      "text": "Memory Book",
+      "ariaLabel": ""
+    }
+  ],
+  "images": [],
+  "bodyText": "Skip to main content\nA&J\nWATCH FILM\nGALLERY\nGUESTBOOK\nSHARE\nMEMORY BOOK\nA&JAdmin\n\nA calmer workspace for moderation, people review, and site upkeep.\n\nSigned in as admin@test.wedding\nSIGN OUT\n\nWORKSPACE MAP\n\nOpen the tool that matches the work in front of you.\n\nRUN THE DAY-TO-DAY\n\nDashboard\n\nSee what needs attention next.\n\nPhotos\n\nModerate uploads, publish photos, and run guest tagging.\n\nAlbums\n\nArrange the live order inside each public album.\n\nPeople Review\n\nWork through face review and named people.\n\nPhoto Claims\n\nReview and approve photo ownership and face tag claims.\n\nGuestbook\n\nModerate text messages.\n\nSHAPE THE PUBLIC SITE\n\nFeatured\n\nSet what appears in the homepage and film page spotlight sections.\n\nAudit Trail\n\nSee who changed moderation state and when.\n\nAnalytics\n\nTrack verified database activity inside the app.\n\nSettings\n\nReference the live setup and operating notes.\n\nAUSTIN + JORDYN CONTROL ROOM\n\nA faster weekly view of what needs attention.\n\nUse this like a briefing, not a landing page: check the current state, then jump straight into the next workflow.\n\nPHOTOS\nALBUMS\nPEOPLE REVIEW\nGUESTBOOK\nAUDIT\n\nPENDING UPLOADS\n\n0\n\nQueue is clear.\n\nPEOPLE REVIEW\n\n0\n\nNo active batch.\n\nGUEST TAGGING SYNC\n\nNo guest sync yet\n\nLast metadata sync back into Gallery.\n\nAPPROVED UPLOADS\n\n0\n\nReady to browse or face-tag later.\n\nLive gallery photos\n\n0\n\nPending review\n\n0\n\nGuestbook entries\n\n0\n\nApproved uploads\n\n0\n\nRECOMMENDED RHYTHM\n\nThree steps, in order\n1\n\nPhotos\n\nClear /admin/photos first.\n\n2\n\nPeople\n\nTighten names in /admin/review.\n\n3\n\nGuestbook\n\nClean up messages only when needed.\n\nSCOPE\n\nWhat belongs here\n\nAdmin is for moderation, people review, and verified site data. Traffic and error dashboards still live in Google Analytics and Sentry.\n\nOPERATING NOTES\n\nAUSTIN AND JORDYN\n\nThanks for helping us keep the day alive.\n\nThe simplest way through is still the best one: watch the film, open the gallery when you want to linger, and leave a note only if you still have something to say before you go.\n\nMAY 10, 2025\nTHE LODGE AT INDIAN LAKE\n\nWatch the film\n\nRevisit the ceremony, speeches, and the whole dance floor arc.\n\nBrowse the gallery\n\nPortraits, candids, and every little detail we never want to forget.\n\nLeave a note\n\nA quiet last stop for one message, blessing, or little memory from the day.\n\nMemory Book\n\nPrint a keepsake photo book or guestbook — save as PDF from any browser.\n\nWATCH FILM\nGALLERY\nGUESTBOOK\nSHARE\nMEMORY BOOK\n\nMade with\nfor the people who shared it with us\n\n© 2026 Austin & Jordyn"
+}

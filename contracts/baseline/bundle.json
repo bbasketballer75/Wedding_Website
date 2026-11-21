@@ -1,0 +1,791 @@
+{
+  "source": {
+    "distPath": "dist",
+    "distBuiltAt": "2026-11-08T05:39:20.129Z",
+    "measuredBy": "node tools/baseline/capture.mjs",
+    "commit": "dd0cf48120801ef8ea621be90eed7fd1c2bf3664",
+    "freezeTag": "legacy-freeze-2026-11-08",
+    "captureHeadCommit": "891bfbe4f946a3ac9f8ccfc1a8a032616a9b3d39",
+    "build": {
+      "source": "Lead-provided build log for the frozen commit (metrics-eng did not run npm run build)",
+      "totalWallSeconds": 20.2,
+      "viteBuildSeconds": 12.02,
+      "viteBuildCommand": "vite build",
+      "postbuildSteps": [
+        "scripts/prune-local-media.js",
+        "scripts/copy-public-images.js",
+        "scripts/generate-sitemap.js",
+        "scripts/prune-sourcemaps.js"
+      ],
+      "nodeVersion": "v26.8.1",
+      "platform": "win32",
+      "note": "20.2 s total = vite build 12.02 s + postbuild prune/copy/sitemap/sourcemap steps. Measured while unrelated workloads and other agents were active on the same machine."
+    },
+    "compression": "gzipSync(buffer, { level: 9 }) and brotliCompressSync(buffer) (zlib library default quality) computed over the raw emitted files; no build-time compressed variants exist in dist/."
+  },
+  "dist": {
+    "files": 640,
+    "bytes": 148717076,
+    "appFiles": 98,
+    "appBytes": 2649253,
+    "categories": [
+      {
+        "category": "copied-public-images",
+        "files": 542,
+        "bytes": 146067823
+      },
+      {
+        "category": "js",
+        "files": 46,
+        "bytes": 1610085
+      },
+      {
+        "category": "fonts",
+        "files": 22,
+        "bytes": 555624
+      },
+      {
+        "category": "css",
+        "files": 2,
+        "bytes": 251614
+      },
+      {
+        "category": "pwa-icons",
+        "files": 12,
+        "bytes": 197473
+      },
+      {
+        "category": "app-static",
+        "files": 13,
+        "bytes": 25649
+      },
+      {
+        "category": "html",
+        "files": 2,
+        "bytes": 8755
+      },
+      {
+        "category": "captions",
+        "files": 1,
+        "bytes": 53
+      }
+    ]
+  },
+  "javascript": {
+    "files": 46,
+    "bytes": 1610085,
+    "gzipBytes": 481696,
+    "brotliBytes": 416744
+  },
+  "css": {
+    "files": 2,
+    "bytes": 251614,
+    "gzipBytes": 34301,
+    "brotliBytes": 25499
+  },
+  "fonts": {
+    "files": 22,
+    "bytes": 555624
+  },
+  "entry": {
+    "html": "dist/index.html",
+    "scripts": ["/assets/index-B_ACu2o8.js"],
+    "modulePreloads": [
+      "/assets/rolldown-runtime-BofVGku5.js",
+      "/assets/vendor-icons-Df_mJc13.js",
+      "/assets/vendor-react-BGKYjtwS.js",
+      "/assets/vendor-motion-oF9liMxR.js",
+      "/assets/react-DyM2PYHr.js",
+      "/assets/middleware-JoZqVoXI.js",
+      "/assets/app-supabase-tZC6I57X.js"
+    ],
+    "preloads": [],
+    "stylesheets": ["/assets/index-DYP6bYj0.css"],
+    "inlineScriptCount": 0,
+    "entryScript": "/assets/index-B_ACu2o8.js",
+    "entryStylesheet": "/assets/index-DYP6bYj0.css"
+  },
+  "initialPayload": {
+    "definition": "entry <script> + <link rel=\"modulepreload\"> + entry stylesheet from dist/index.html (the JS/CSS a first route needs before it can render); HTML transfer is reported separately",
+    "htmlBytes": 4788,
+    "files": 9,
+    "assets": [
+      {
+        "file": "assets/index-B_ACu2o8.js",
+        "kind": "js",
+        "bytes": 205154,
+        "gzipBytes": 66416,
+        "brotliBytes": 57549
+      },
+      {
+        "file": "assets/rolldown-runtime-BofVGku5.js",
+        "kind": "js",
+        "bytes": 1147,
+        "gzipBytes": 632,
+        "brotliBytes": 538
+      },
+      {
+        "file": "assets/vendor-icons-Df_mJc13.js",
+        "kind": "js",
+        "bytes": 33546,
+        "gzipBytes": 11567,
+        "brotliBytes": 9889
+      },
+      {
+        "file": "assets/vendor-react-BGKYjtwS.js",
+        "kind": "js",
+        "bytes": 210337,
+        "gzipBytes": 65484,
+        "brotliBytes": 56295
+      },
+      {
+        "file": "assets/vendor-motion-oF9liMxR.js",
+        "kind": "js",
+        "bytes": 141017,
+        "gzipBytes": 45115,
+        "brotliBytes": 40106
+      },
+      {
+        "file": "assets/react-DyM2PYHr.js",
+        "kind": "js",
+        "bytes": 715,
+        "gzipBytes": 434,
+        "brotliBytes": 376
+      },
+      {
+        "file": "assets/middleware-JoZqVoXI.js",
+        "kind": "js",
+        "bytes": 4899,
+        "gzipBytes": 2121,
+        "brotliBytes": 1927
+      },
+      {
+        "file": "assets/app-supabase-tZC6I57X.js",
+        "kind": "js",
+        "bytes": 236252,
+        "gzipBytes": 58802,
+        "brotliBytes": 49890
+      },
+      {
+        "file": "assets/index-DYP6bYj0.css",
+        "kind": "css",
+        "bytes": 250910,
+        "gzipBytes": 33978,
+        "brotliBytes": 25258
+      }
+    ],
+    "bytes": 1083977,
+    "gzipBytes": 284549,
+    "brotliBytes": 241828
+  },
+  "chunks": {
+    "total": 48,
+    "top20ByGzip": [
+      {
+        "file": "assets/index-B_ACu2o8.js",
+        "kind": "js",
+        "bytes": 205154,
+        "gzipBytes": 66416,
+        "brotliBytes": 57549
+      },
+      {
+        "file": "assets/vendor-react-BGKYjtwS.js",
+        "kind": "js",
+        "bytes": 210337,
+        "gzipBytes": 65484,
+        "brotliBytes": 56295
+      },
+      {
+        "file": "assets/app-supabase-tZC6I57X.js",
+        "kind": "js",
+        "bytes": 236252,
+        "gzipBytes": 58802,
+        "brotliBytes": 49890
+      },
+      {
+        "file": "assets/Gallery-DHy_wuF4.js",
+        "kind": "js",
+        "bytes": 182603,
+        "gzipBytes": 51698,
+        "brotliBytes": 44938
+      },
+      {
+        "file": "assets/vendor-motion-oF9liMxR.js",
+        "kind": "js",
+        "bytes": 141017,
+        "gzipBytes": 45115,
+        "brotliBytes": 40106
+      },
+      {
+        "file": "assets/Admin-DzQmlTIj.js",
+        "kind": "js",
+        "bytes": 122081,
+        "gzipBytes": 34581,
+        "brotliBytes": 29830
+      },
+      {
+        "file": "assets/PhotoLightbox-DMewTB0W.js",
+        "kind": "js",
+        "bytes": 103444,
+        "gzipBytes": 34545,
+        "brotliBytes": 29569
+      },
+      {
+        "file": "assets/index-DYP6bYj0.css",
+        "kind": "css",
+        "bytes": 250910,
+        "gzipBytes": 33978,
+        "brotliBytes": 25258
+      },
+      {
+        "file": "assets/Film-BE4Os7uW.js",
+        "kind": "js",
+        "bytes": 62678,
+        "gzipBytes": 16481,
+        "brotliBytes": 14064
+      },
+      {
+        "file": "assets/Home-CyiiJlAK.js",
+        "kind": "js",
+        "bytes": 60778,
+        "gzipBytes": 14842,
+        "brotliBytes": 12731
+      },
+      {
+        "file": "assets/Upload-Dz0gK5aI.js",
+        "kind": "js",
+        "bytes": 55621,
+        "gzipBytes": 13707,
+        "brotliBytes": 11945
+      },
+      {
+        "file": "assets/vendor-icons-Df_mJc13.js",
+        "kind": "js",
+        "bytes": 33546,
+        "gzipBytes": 11567,
+        "brotliBytes": 9889
+      },
+      {
+        "file": "assets/Guestbook-BfzZDM2Z.js",
+        "kind": "js",
+        "bytes": 24666,
+        "gzipBytes": 7437,
+        "brotliBytes": 6512
+      },
+      {
+        "file": "workbox-835c8c05.js",
+        "kind": "js",
+        "bytes": 21863,
+        "gzipBytes": 7425,
+        "brotliBytes": 6732
+      },
+      {
+        "file": "assets/Activity-xj1R_XZE.js",
+        "kind": "js",
+        "bytes": 15582,
+        "gzipBytes": 5459,
+        "brotliBytes": 4905
+      },
+      {
+        "file": "assets/GuestShare-DLU1ADxY.js",
+        "kind": "js",
+        "bytes": 13847,
+        "gzipBytes": 4299,
+        "brotliBytes": 3739
+      },
+      {
+        "file": "assets/FeaturedContentManager-Cvlh0LF6.js",
+        "kind": "js",
+        "bytes": 11872,
+        "gzipBytes": 3522,
+        "brotliBytes": 3055
+      },
+      {
+        "file": "assets/ClaimsModeration-9z0w6s0j.js",
+        "kind": "js",
+        "bytes": 11079,
+        "gzipBytes": 3421,
+        "brotliBytes": 2973
+      },
+      {
+        "file": "assets/Print-DNtVlyRy.js",
+        "kind": "js",
+        "bytes": 8573,
+        "gzipBytes": 2713,
+        "brotliBytes": 2422
+      },
+      {
+        "file": "assets/GuestPhotos-DXrejCwN.js",
+        "kind": "js",
+        "bytes": 6948,
+        "gzipBytes": 2460,
+        "brotliBytes": 2155
+      }
+    ],
+    "all": [
+      {
+        "file": "assets/index-B_ACu2o8.js",
+        "kind": "js",
+        "bytes": 205154,
+        "gzipBytes": 66416,
+        "brotliBytes": 57549
+      },
+      {
+        "file": "assets/vendor-react-BGKYjtwS.js",
+        "kind": "js",
+        "bytes": 210337,
+        "gzipBytes": 65484,
+        "brotliBytes": 56295
+      },
+      {
+        "file": "assets/app-supabase-tZC6I57X.js",
+        "kind": "js",
+        "bytes": 236252,
+        "gzipBytes": 58802,
+        "brotliBytes": 49890
+      },
+      {
+        "file": "assets/Gallery-DHy_wuF4.js",
+        "kind": "js",
+        "bytes": 182603,
+        "gzipBytes": 51698,
+        "brotliBytes": 44938
+      },
+      {
+        "file": "assets/vendor-motion-oF9liMxR.js",
+        "kind": "js",
+        "bytes": 141017,
+        "gzipBytes": 45115,
+        "brotliBytes": 40106
+      },
+      {
+        "file": "assets/Admin-DzQmlTIj.js",
+        "kind": "js",
+        "bytes": 122081,
+        "gzipBytes": 34581,
+        "brotliBytes": 29830
+      },
+      {
+        "file": "assets/PhotoLightbox-DMewTB0W.js",
+        "kind": "js",
+        "bytes": 103444,
+        "gzipBytes": 34545,
+        "brotliBytes": 29569
+      },
+      {
+        "file": "assets/index-DYP6bYj0.css",
+        "kind": "css",
+        "bytes": 250910,
+        "gzipBytes": 33978,
+        "brotliBytes": 25258
+      },
+      {
+        "file": "assets/Film-BE4Os7uW.js",
+        "kind": "js",
+        "bytes": 62678,
+        "gzipBytes": 16481,
+        "brotliBytes": 14064
+      },
+      {
+        "file": "assets/Home-CyiiJlAK.js",
+        "kind": "js",
+        "bytes": 60778,
+        "gzipBytes": 14842,
+        "brotliBytes": 12731
+      },
+      {
+        "file": "assets/Upload-Dz0gK5aI.js",
+        "kind": "js",
+        "bytes": 55621,
+        "gzipBytes": 13707,
+        "brotliBytes": 11945
+      },
+      {
+        "file": "assets/vendor-icons-Df_mJc13.js",
+        "kind": "js",
+        "bytes": 33546,
+        "gzipBytes": 11567,
+        "brotliBytes": 9889
+      },
+      {
+        "file": "assets/Guestbook-BfzZDM2Z.js",
+        "kind": "js",
+        "bytes": 24666,
+        "gzipBytes": 7437,
+        "brotliBytes": 6512
+      },
+      {
+        "file": "workbox-835c8c05.js",
+        "kind": "js",
+        "bytes": 21863,
+        "gzipBytes": 7425,
+        "brotliBytes": 6732
+      },
+      {
+        "file": "assets/Activity-xj1R_XZE.js",
+        "kind": "js",
+        "bytes": 15582,
+        "gzipBytes": 5459,
+        "brotliBytes": 4905
+      },
+      {
+        "file": "assets/GuestShare-DLU1ADxY.js",
+        "kind": "js",
+        "bytes": 13847,
+        "gzipBytes": 4299,
+        "brotliBytes": 3739
+      },
+      {
+        "file": "assets/FeaturedContentManager-Cvlh0LF6.js",
+        "kind": "js",
+        "bytes": 11872,
+        "gzipBytes": 3522,
+        "brotliBytes": 3055
+      },
+      {
+        "file": "assets/ClaimsModeration-9z0w6s0j.js",
+        "kind": "js",
+        "bytes": 11079,
+        "gzipBytes": 3421,
+        "brotliBytes": 2973
+      },
+      {
+        "file": "assets/Print-DNtVlyRy.js",
+        "kind": "js",
+        "bytes": 8573,
+        "gzipBytes": 2713,
+        "brotliBytes": 2422
+      },
+      {
+        "file": "assets/GuestPhotos-DXrejCwN.js",
+        "kind": "js",
+        "bytes": 6948,
+        "gzipBytes": 2460,
+        "brotliBytes": 2155
+      },
+      {
+        "file": "assets/AdminLogin-qOnYLvZg.js",
+        "kind": "js",
+        "bytes": 7106,
+        "gzipBytes": 2418,
+        "brotliBytes": 2085
+      },
+      {
+        "file": "assets/Dashboard-C1OKDfYO.js",
+        "kind": "js",
+        "bytes": 7960,
+        "gzipBytes": 2386,
+        "brotliBytes": 2058
+      },
+      {
+        "file": "assets/workbox-window.prod.es5-BLTxx3vi.js",
+        "kind": "js",
+        "bytes": 5686,
+        "gzipBytes": 2221,
+        "brotliBytes": 1961
+      },
+      {
+        "file": "assets/middleware-JoZqVoXI.js",
+        "kind": "js",
+        "bytes": 4899,
+        "gzipBytes": 2121,
+        "brotliBytes": 1927
+      },
+      {
+        "file": "assets/GuestbookModeration-suoVkbud.js",
+        "kind": "js",
+        "bytes": 5347,
+        "gzipBytes": 2059,
+        "brotliBytes": 1777
+      },
+      {
+        "file": "assets/SEOHead-Br6_hZcd.js",
+        "kind": "js",
+        "bytes": 5328,
+        "gzipBytes": 2033,
+        "brotliBytes": 1703
+      },
+      {
+        "file": "sw.js",
+        "kind": "js",
+        "bytes": 4863,
+        "gzipBytes": 1995,
+        "brotliBytes": 1658
+      },
+      {
+        "file": "assets/Button-B9MbBZYo.js",
+        "kind": "js",
+        "bytes": 4483,
+        "gzipBytes": 1725,
+        "brotliBytes": 1529
+      },
+      {
+        "file": "assets/Analytics-BfFEngJF.js",
+        "kind": "js",
+        "bytes": 4653,
+        "gzipBytes": 1629,
+        "brotliBytes": 1388
+      },
+      {
+        "file": "assets/AuditLogView-hqPMq6n5.js",
+        "kind": "js",
+        "bytes": 4040,
+        "gzipBytes": 1431,
+        "brotliBytes": 1224
+      },
+      {
+        "file": "assets/Settings-GXQUW-uk.js",
+        "kind": "js",
+        "bytes": 4631,
+        "gzipBytes": 1404,
+        "brotliBytes": 1084
+      },
+      {
+        "file": "assets/vendor-radix-B04bMTKd.js",
+        "kind": "js",
+        "bytes": 2980,
+        "gzipBytes": 1330,
+        "brotliBytes": 1213
+      },
+      {
+        "file": "assets/shared-B2DNySIT.js",
+        "kind": "js",
+        "bytes": 3466,
+        "gzipBytes": 1163,
+        "brotliBytes": 1028
+      },
+      {
+        "file": "assets/PhotoModeration-Y5OdaqFf.js",
+        "kind": "js",
+        "bytes": 2190,
+        "gzipBytes": 975,
+        "brotliBytes": 820
+      },
+      {
+        "file": "assets/weddingParty-D2Nq_oGk.js",
+        "kind": "js",
+        "bytes": 3127,
+        "gzipBytes": 843,
+        "brotliBytes": 777
+      },
+      {
+        "file": "assets/NotFound-GKCilU2r.js",
+        "kind": "js",
+        "bytes": 1816,
+        "gzipBytes": 785,
+        "brotliBytes": 693
+      },
+      {
+        "file": "assets/Avatar-BD_A6J2i.js",
+        "kind": "js",
+        "bytes": 1152,
+        "gzipBytes": 720,
+        "brotliBytes": 629
+      },
+      {
+        "file": "assets/Textarea-Ds-JGOdM.js",
+        "kind": "js",
+        "bytes": 1172,
+        "gzipBytes": 654,
+        "brotliBytes": 586
+      },
+      {
+        "file": "assets/Input-DoywoUls.js",
+        "kind": "js",
+        "bytes": 1153,
+        "gzipBytes": 648,
+        "brotliBytes": 588
+      },
+      {
+        "file": "assets/rolldown-runtime-BofVGku5.js",
+        "kind": "js",
+        "bytes": 1147,
+        "gzipBytes": 632,
+        "brotliBytes": 538
+      },
+      {
+        "file": "assets/Skeleton-C7ApFTZw.js",
+        "kind": "js",
+        "bytes": 1480,
+        "gzipBytes": 553,
+        "brotliBytes": 480
+      },
+      {
+        "file": "assets/react-DyM2PYHr.js",
+        "kind": "js",
+        "bytes": 715,
+        "gzipBytes": 434,
+        "brotliBytes": 376
+      },
+      {
+        "file": "assets/storage-BUOoYGq-.js",
+        "kind": "js",
+        "bytes": 1038,
+        "gzipBytes": 395,
+        "brotliBytes": 350
+      },
+      {
+        "file": "assets/videoProgress-CL6IQlNK.js",
+        "kind": "js",
+        "bytes": 598,
+        "gzipBytes": 332,
+        "brotliBytes": 278
+      },
+      {
+        "file": "assets/Print-BDi5nzB5.css",
+        "kind": "css",
+        "bytes": 704,
+        "gzipBytes": 323,
+        "brotliBytes": 241
+      },
+      {
+        "file": "assets/Label-DbR-835t.js",
+        "kind": "js",
+        "bytes": 408,
+        "gzipBytes": 298,
+        "brotliBytes": 250
+      },
+      {
+        "file": "assets/SocialPlatformIcon-B5h9Y1Dt.js",
+        "kind": "js",
+        "bytes": 346,
+        "gzipBytes": 276,
+        "brotliBytes": 226
+      },
+      {
+        "file": "assets/media-DvmgtN1j.js",
+        "kind": "js",
+        "bytes": 360,
+        "gzipBytes": 262,
+        "brotliBytes": 219
+      }
+    ],
+    "allFilesSortedByGzip": [
+      "assets/index-B_ACu2o8.js",
+      "assets/vendor-react-BGKYjtwS.js",
+      "assets/app-supabase-tZC6I57X.js",
+      "assets/Gallery-DHy_wuF4.js",
+      "assets/vendor-motion-oF9liMxR.js",
+      "assets/Admin-DzQmlTIj.js",
+      "assets/PhotoLightbox-DMewTB0W.js",
+      "assets/index-DYP6bYj0.css",
+      "assets/Film-BE4Os7uW.js",
+      "assets/Home-CyiiJlAK.js",
+      "assets/Upload-Dz0gK5aI.js",
+      "assets/vendor-icons-Df_mJc13.js",
+      "assets/Guestbook-BfzZDM2Z.js",
+      "workbox-835c8c05.js",
+      "assets/Activity-xj1R_XZE.js",
+      "assets/GuestShare-DLU1ADxY.js",
+      "assets/FeaturedContentManager-Cvlh0LF6.js",
+      "assets/ClaimsModeration-9z0w6s0j.js",
+      "assets/Print-DNtVlyRy.js",
+      "assets/GuestPhotos-DXrejCwN.js",
+      "assets/AdminLogin-qOnYLvZg.js",
+      "assets/Dashboard-C1OKDfYO.js",
+      "assets/workbox-window.prod.es5-BLTxx3vi.js",
+      "assets/middleware-JoZqVoXI.js",
+      "assets/GuestbookModeration-suoVkbud.js",
+      "assets/SEOHead-Br6_hZcd.js",
+      "sw.js",
+      "assets/Button-B9MbBZYo.js",
+      "assets/Analytics-BfFEngJF.js",
+      "assets/AuditLogView-hqPMq6n5.js",
+      "assets/Settings-GXQUW-uk.js",
+      "assets/vendor-radix-B04bMTKd.js",
+      "assets/shared-B2DNySIT.js",
+      "assets/PhotoModeration-Y5OdaqFf.js",
+      "assets/weddingParty-D2Nq_oGk.js",
+      "assets/NotFound-GKCilU2r.js",
+      "assets/Avatar-BD_A6J2i.js",
+      "assets/Textarea-Ds-JGOdM.js",
+      "assets/Input-DoywoUls.js",
+      "assets/rolldown-runtime-BofVGku5.js",
+      "assets/Skeleton-C7ApFTZw.js",
+      "assets/react-DyM2PYHr.js",
+      "assets/storage-BUOoYGq-.js",
+      "assets/videoProgress-CL6IQlNK.js",
+      "assets/Print-BDi5nzB5.css",
+      "assets/Label-DbR-835t.js",
+      "assets/SocialPlatformIcon-B5h9Y1Dt.js",
+      "assets/media-DvmgtN1j.js"
+    ]
+  },
+  "pwa": {
+    "precache": {
+      "entries": 63,
+      "uniqueUrls": 62,
+      "totalBytes": 2003781,
+      "totalKiB": 1956.82,
+      "missing": [],
+      "largestPrecached": [
+        {
+          "url": "assets/index-DYP6bYj0.css",
+          "bytes": 250910
+        },
+        {
+          "url": "assets/app-supabase-tZC6I57X.js",
+          "bytes": 236252
+        },
+        {
+          "url": "assets/vendor-react-BGKYjtwS.js",
+          "bytes": 210337
+        },
+        {
+          "url": "assets/index-B_ACu2o8.js",
+          "bytes": 205154
+        },
+        {
+          "url": "assets/Gallery-DHy_wuF4.js",
+          "bytes": 182603
+        },
+        {
+          "url": "assets/vendor-motion-oF9liMxR.js",
+          "bytes": 141017
+        },
+        {
+          "url": "assets/Admin-DzQmlTIj.js",
+          "bytes": 122081
+        },
+        {
+          "url": "assets/PhotoLightbox-DMewTB0W.js",
+          "bytes": 103444
+        },
+        {
+          "url": "assets/Film-BE4Os7uW.js",
+          "bytes": 62678
+        },
+        {
+          "url": "assets/Home-CyiiJlAK.js",
+          "bytes": 60778
+        }
+      ],
+      "duplicates": 1,
+      "groups": {
+        "js": 1583359,
+        "css": 251614,
+        "html": 8755,
+        "icons": 140614,
+        "images": 17403,
+        "other": 2036
+      },
+      "jsCssHtmlBytes": 1843728,
+      "jsCssHtmlKiB": 1800.52,
+      "leadReported": {
+        "source": "Lead-provided build log",
+        "entries": 63,
+        "totalKiB": 1800.52,
+        "definition": "emitted JS+CSS+HTML payload only (excludes the includeAssets image precache)"
+      },
+      "matchesLeadReport": {
+        "entries": true,
+        "jsCssHtmlKiB": true
+      }
+    },
+    "leadReported": {
+      "entries": 63,
+      "totalKiB": 1800.52
+    },
+    "note": "Precache manifest parsed from dist/sw.js; byte totals resolve each precached URL in dist/."
+  }
+}

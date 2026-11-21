@@ -1,0 +1,41 @@
+{
+  "key": "gallery__desktop__dark",
+  "route": "gallery",
+  "viewport": "desktop",
+  "theme": "dark",
+  "generatedAt": "2026-11-08T19:09:09.773Z",
+  "differences": [
+    {
+      "field": "images",
+      "legacy": [
+        "A closer look at the ring → /images/engagement/PoradaProposal-310.webp (lazy)",
+        "The exhale after everything changed → /images/engagement/PoradaProposal-375.webp (lazy)",
+        "Wedding photo → /images/engagement/PoradaProposal-4.webp (lazy)",
+        "Wedding photo → /images/engagement/PoradaProposal-6.webp (lazy)",
+        "Wedding photo → /images/engagement/PoradaProposal-28.webp (lazy)",
+        "Wedding photo → /images/engagement/PoradaProposal-31.webp (lazy)",
+        "Wedding photo → /images/engagement/PoradaProposal-36.webp (lazy)",
+        "Wedding photo → /images/engagement/PoradaProposal-40.webp (lazy)",
+        "Wedding photo → /images/engagement/PoradaProposal-58.webp (lazy)",
+        "Wedding photo → /images/engagement/PoradaProposal-62.webp (lazy)",
+        "Wedding photo → /images/engagement/PoradaProposal-67.webp (lazy)",
+        "Wedding photo → /images/engagement/PoradaProposal-75.webp (lazy)"
+      ],
+      "rebuild": [
+        "The walk into the surprise → /images/engagement/PoradaProposal-29.webp (lazy)",
+        "A quiet pause before forever → /images/engagement/PoradaProposal-11.webp (lazy)",
+        "The question already answered in her smile → /images/engagement/PoradaProposal-150.webp (lazy)",
+        "Portraits in the last light → /images/engagement/PoradaProposal-181.webp (lazy)",
+        "Laughing between takes → /images/engagement/PoradaProposal-255.webp (lazy)",
+        "The ring, finally on her hand → /images/engagement/PoradaProposal-277.webp (lazy)",
+        "Golden hour on the water → /images/engagement/PoradaProposal-310.webp (lazy)",
+        "A promise made at dusk → /images/engagement/PoradaProposal-375.webp (lazy)",
+        "The walk into the surprise → /images/engagement/PoradaProposal-4.webp (lazy)",
+        "A quiet pause before forever → /images/engagement/PoradaProposal-6.webp (lazy)",
+        "The question already answered in her smile → /images/engagement/PoradaProposal-28.webp (lazy)",
+        "Portraits in the last light → /images/engagement/PoradaProposal-31.webp (lazy)"
+      ]
+    }
+  ],
+  "bodyText": null
+}

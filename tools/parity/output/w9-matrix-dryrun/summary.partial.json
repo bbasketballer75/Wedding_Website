@@ -1,0 +1,2726 @@
+{
+  "schemaVersion": 1,
+  "kind": "parity-compare-progress",
+  "updatedAt": "2026-11-10T00:16:38.048Z",
+  "plannedShots": [
+    "home__desktop__dark",
+    "film__desktop__dark",
+    "gallery__desktop__dark",
+    "upload__desktop__dark",
+    "guestbook__desktop__dark",
+    "guest-photos__desktop__dark",
+    "activity__desktop__dark",
+    "admin-login__desktop__dark",
+    "admin__desktop__dark",
+    "guest-token__desktop__dark",
+    "not-found__desktop__dark",
+    "admin-photos__desktop__dark",
+    "admin-uploads__desktop__dark",
+    "admin-albums__desktop__dark",
+    "admin-review__desktop__dark",
+    "admin-claims__desktop__dark",
+    "admin-guestbook__desktop__dark",
+    "admin-featured__desktop__dark",
+    "admin-audit__desktop__dark",
+    "admin-analytics__desktop__dark",
+    "admin-settings__desktop__dark"
+  ],
+  "shots": [
+    {
+      "key": "home__desktop__dark",
+      "route": "home",
+      "routePath": "/",
+      "urlPath": "/",
+      "parity": 1,
+      "viewport": "desktop",
+      "viewportPixels": {
+        "width": 1440,
+        "height": 900
+      },
+      "theme": "dark",
+      "status": "fail",
+      "failureReasons": ["text"],
+      "allowlist": {
+        "status": "expired",
+        "accepted": false,
+        "entry": null,
+        "activeEntries": 0,
+        "expiredEntries": [
+          {
+            "route": "/",
+            "viewport": "desktop",
+            "theme": "dark",
+            "reason": "Wave 4 Home shell: page text and layout are exact (0 textDiffs, identical page heights), but the pixel residual is 0.12-0.23% of a page dense with backdrop-blur/gradient surfaces. It is dominated by 1px raster phase at fractional edges (same class as the solved 404 mobile case), not missing or misplaced content: side-by-side captures are visually identical. Measured: desktop 0.232% (dark/light), mobile 0.123% (dark/light). Retire this after the Wave 8 anti-aliasing/edge pass (or once the surfaces sit on integral pixels).",
+            "expiresAtWave": 8,
+            "maxDiffPixelRatio": 0.003
+          }
+        ],
+        "wave": 9
+      },
+      "masks": [],
+      "legacy": {
+        "ok": true,
+        "endpoint": "http://127.0.0.1:4174/",
+        "httpStatus": 200,
+        "pageHeightPx": 10166,
+        "sliceCount": 8,
+        "durationMs": 21669,
+        "themeApplied": {
+          "datasetTheme": "dark",
+          "className": "dark-theme",
+          "colorScheme": "dark"
+        },
+        "finalUrl": "http://127.0.0.1:4174/",
+        "adminAuth": null,
+        "imagesSettled": false,
+        "warnings": ["Some images did not finish loading/decoding before capture."],
+        "consoleErrors": [],
+        "pageErrors": [],
+        "error": null,
+        "files": [
+          "C:\\Users\\bbask\\Coding_Projects\\Wedding_Website_Clean\\tools\\parity\\output\\w9-matrix-dryrun\\shots\\legacy\\home__desktop__dark--s000.png",
+          "C:\\Users\\bbask\\Coding_Projects\\Wedding_Website_Clean\\tools\\parity\\output\\w9-matrix-dryrun\\shots\\legacy\\home__desktop__dark--s001.png",
+          "C:\\Users\\bbask\\Coding_Projects\\Wedding_Website_Clean\\tools\\parity\\output\\w9-matrix-dryrun\\shots\\legacy\\home__desktop__dark--s002.png",
+          "C:\\Users\\bbask\\Coding_Projects\\Wedding_Website_Clean\\tools\\parity\\output\\w9-matrix-dryrun\\shots\\legacy\\home__desktop__dark--s003.png",
+          "C:\\Users\\bbask\\Coding_Projects\\Wedding_Website_Clean\\tools\\parity\\output\\w9-matrix-dryrun\\shots\\legacy\\home__desktop__dark--s004.png",
+          "C:\\Users\\bbask\\Coding_Projects\\Wedding_Website_Clean\\tools\\parity\\output\\w9-matrix-dryrun\\shots\\legacy\\home__desktop__dark--s005.png",
+          "C:\\Users\\bbask\\Coding_Projects\\Wedding_Website_Clean\\tools\\parity\\output\\w9-matrix-dryrun\\shots\\legacy\\home__desktop__dark--s006.png",
+          "C:\\Users\\bbask\\Coding_Projects\\Wedding_Website_Clean\\tools\\parity\\output\\w9-matrix-dryrun\\shots\\legacy\\home__desktop__dark--s007.png"
+        ]
+      },
+      "rebuild": {
+        "ok": true,
+        "endpoint": "http://127.0.0.1:4175/",
+        "httpStatus": 200,
+        "pageHeightPx": 10166,
+        "sliceCount": 8,
+        "durationMs": 36700,
+        "themeApplied": {
+          "datasetTheme": "dark",
+          "className": "dark-theme",
+          "colorScheme": "dark"
+        },
+        "finalUrl": "http://127.0.0.1:4175/",
+        "adminAuth": null,
+        "imagesSettled": false,
+        "warnings": ["Some images did not finish loading/decoding before capture."],
+        "consoleErrors": [],
+        "pageErrors": [],
+        "error": null,
+        "files": [
+          "C:\\Users\\bbask\\Coding_Projects\\Wedding_Website_Clean\\tools\\parity\\output\\w9-matrix-dryrun\\shots\\rebuild\\home__desktop__dark--s000.png",
+          "C:\\Users\\bbask\\Coding_Projects\\Wedding_Website_Clean\\tools\\parity\\output\\w9-matrix-dryrun\\shots\\rebuild\\home__desktop__dark--s001.png",
+          "C:\\Users\\bbask\\Coding_Projects\\Wedding_Website_Clean\\tools\\parity\\output\\w9-matrix-dryrun\\shots\\rebuild\\home__desktop__dark--s002.png",
+          "C:\\Users\\bbask\\Coding_Projects\\Wedding_Website_Clean\\tools\\parity\\output\\w9-matrix-dryrun\\shots\\rebuild\\home__desktop__dark--s003.png",
+          "C:\\Users\\bbask\\Coding_Projects\\Wedding_Website_Clean\\tools\\parity\\output\\w9-matrix-dryrun\\shots\\rebuild\\home__desktop__dark--s004.png",
+          "C:\\Users\\bbask\\Coding_Projects\\Wedding_Website_Clean\\tools\\parity\\output\\w9-matrix-dryrun\\shots\\rebuild\\home__desktop__dark--s005.png",
+          "C:\\Users\\bbask\\Coding_Projects\\Wedding_Website_Clean\\tools\\parity\\output\\w9-matrix-dryrun\\shots\\rebuild\\home__desktop__dark--s006.png",
+          "C:\\Users\\bbask\\Coding_Projects\\Wedding_Website_Clean\\tools\\parity\\output\\w9-matrix-dryrun\\shots\\rebuild\\home__desktop__dark--s007.png"
+        ]
+      },
+      "pixelDiff": {
+        "changedPixels": 5593,
+        "totalPixels": 10368000,
+        "ratio": 0.0005394483024691358,
+        "maxChannelDelta": 255,
+        "edgeTolerance": 0,
+        "boundingBox": {
+          "x": 230,
+          "y": 0,
+          "width": 1000,
+          "height": 900
+        },
+        "sizeMismatch": false,
+        "sliceCountMismatch": false,
+        "slices": [
+          {
+            "slice": 0,
+            "status": "identical",
+            "diffFile": "shots/diff/home__desktop__dark--s000.png",
+            "changedPixels": 0,
+            "totalPixels": 1296000,
+            "ratio": 0,
+            "maxChannelDelta": 0,
+            "boundingBox": null
+          },
+          {
+            "slice": 1,
+            "status": "identical",
+            "diffFile": "shots/diff/home__desktop__dark--s001.png",
+            "changedPixels": 0,
+            "totalPixels": 1296000,
+            "ratio": 0,
+            "maxChannelDelta": 1,
+            "boundingBox": null
+          },
+          {
+            "slice": 2,
+            "status": "diff",
+            "diffFile": "shots/diff/home__desktop__dark--s002.png",
+            "changedPixels": 589,
+            "totalPixels": 1296000,
+            "ratio": 0.0004544753086419753,
+            "maxChannelDelta": 234,
+            "boundingBox": {
+              "x": 410,
+              "y": 266,
+              "width": 709,
+              "height": 594
+            }
+          },
+          {
+            "slice": 3,
+            "status": "diff",
+            "diffFile": "shots/diff/home__desktop__dark--s003.png",
+            "changedPixels": 334,
+            "totalPixels": 1296000,
+            "ratio": 0.000257716049382716,
+            "maxChannelDelta": 136,
+            "boundingBox": {
+              "x": 230,
+              "y": 419,
+              "width": 363,
+              "height": 84
+            }
+          },
+          {
+            "slice": 4,
+            "status": "diff",
+            "diffFile": "shots/diff/home__desktop__dark--s004.png",
+            "changedPixels": 789,
+            "totalPixels": 1296000,
+            "ratio": 0.0006087962962962963,
+            "maxChannelDelta": 135,
+            "boundingBox": {
+              "x": 651,
+              "y": 100,
+              "width": 386,
+              "height": 730
+            }
+          },
+          {
+            "slice": 5,
+            "status": "diff",
+            "diffFile": "shots/diff/home__desktop__dark--s005.png",
+            "changedPixels": 117,
+            "totalPixels": 1296000,
+            "ratio": 0.00009027777777777777,
+            "maxChannelDelta": 127,
+            "boundingBox": {
+              "x": 851,
+              "y": 303,
+              "width": 379,
+              "height": 597
+            }
+          },
+          {
+            "slice": 6,
+            "status": "diff",
+            "diffFile": "shots/diff/home__desktop__dark--s006.png",
+            "changedPixels": 445,
+            "totalPixels": 1296000,
+            "ratio": 0.0003433641975308642,
+            "maxChannelDelta": 255,
+            "boundingBox": {
+              "x": 260,
+              "y": 0,
+              "width": 933,
+              "height": 465
+            }
+          },
+          {
+            "slice": 7,
+            "status": "diff",
+            "diffFile": "shots/diff/home__desktop__dark--s007.png",
+            "changedPixels": 3319,
+            "totalPixels": 1296000,
+            "ratio": 0.0025609567901234568,
+            "maxChannelDelta": 211,
+            "boundingBox": {
+              "x": 350,
+              "y": 3,
+              "width": 687,
+              "height": 734
+            }
+          }
+        ]
+      },
+      "textDiff": {
+        "status": "fail",
+        "differences": [
+          {
+            "field": "bodyText",
+            "legacySummary": {
+              "kind": "lines",
+              "count": 158,
+              "sample": [
+                "Skip to main content",
+                "A&J",
+                "WATCH FILM",
+                "GALLERY",
+                "GUESTBOOK",
+                "SHARE"
+              ]
+            },
+            "rebuildSummary": {
+              "kind": "lines",
+              "count": 158,
+              "sample": [
+                "Skip to main content",
+                "A&J",
+                "WATCH FILM",
+                "GALLERY",
+                "GUESTBOOK",
+                "SHARE"
+              ]
+            }
+          }
+        ],
+        "bodyText": {
+          "legacyLines": 158,
+          "rebuildLines": 158,
+          "firstDifferenceLine": 73,
+          "context": {
+            "legacy": [
+              "👰‍♀️",
+              "🎃",
+              "✨",
+              "4 / 8",
+              "OCTOBER 31, 2022",
+              "The Proposal💍",
+              "",
+              "On All Hallows' Eve, with the costumes on, the music up, and the whole night already feeling half haunted and half electric, Frankenstein finally asked his Bride the question that had been building toward forever.",
+              ""
+            ],
+            "rebuild": [
+              "👰‍♀️",
+              "🎃",
+              "✨",
+              "3 / 8",
+              "OCTOBER 31, 2022",
+              "The Proposal💍",
+              "",
+              "On All Hallows' Eve, with the costumes on, the music up, and the whole night already feeling half haunted and half electric, Frankenstein finally asked his Bride the question that had been building toward forever.",
+              ""
+            ]
+          }
+        }
+      },
+      "files": {
+        "legacy": [
+          "shots/legacy/home__desktop__dark--s000.png",
+          "shots/legacy/home__desktop__dark--s001.png",
+          "shots/legacy/home__desktop__dark--s002.png",
+          "shots/legacy/home__desktop__dark--s003.png",
+          "shots/legacy/home__desktop__dark--s004.png",
+          "shots/legacy/home__desktop__dark--s005.png",
+          "shots/legacy/home__desktop__dark--s006.png",
+          "shots/legacy/home__desktop__dark--s007.png"
+        ],
+        "rebuild": [
+          "shots/rebuild/home__desktop__dark--s000.png",
+          "shots/rebuild/home__desktop__dark--s001.png",
+          "shots/rebuild/home__desktop__dark--s002.png",
+          "shots/rebuild/home__desktop__dark--s003.png",
+          "shots/rebuild/home__desktop__dark--s004.png",
+          "shots/rebuild/home__desktop__dark--s005.png",
+          "shots/rebuild/home__desktop__dark--s006.png",
+          "shots/rebuild/home__desktop__dark--s007.png"
+        ],
+        "diff": [
+          "shots/diff/home__desktop__dark--s000.png",
+          "shots/diff/home__desktop__dark--s001.png",
+          "shots/diff/home__desktop__dark--s002.png",
+          "shots/diff/home__desktop__dark--s003.png",
+          "shots/diff/home__desktop__dark--s004.png",
+          "shots/diff/home__desktop__dark--s005.png",
+          "shots/diff/home__desktop__dark--s006.png",
+          "shots/diff/home__desktop__dark--s007.png"
+        ],
+        "text": {
+          "legacy": "text/legacy/home__desktop__dark.json",
+          "rebuild": "text/rebuild/home__desktop__dark.json",
+          "diff": "text/diff/home__desktop__dark.json"
+        }
+      },
+      "warnings": [
+        "Some images did not finish loading/decoding before capture.",
+        "Some images did not finish loading/decoding before capture."
+      ]
+    },
+    {
+      "key": "film__desktop__dark",
+      "route": "film",
+      "routePath": "/film",
+      "urlPath": "/film",
+      "parity": 1,
+      "viewport": "desktop",
+      "viewportPixels": {
+        "width": 1440,
+        "height": 900
+      },
+      "theme": "dark",
+      "status": "pass",
+      "failureReasons": [],
+      "allowlist": {
+        "status": "expired",
+        "accepted": false,
+        "entry": null,
+        "activeEntries": 0,
+        "expiredEntries": [
+          {
+            "route": "/film",
+            "viewport": "desktop",
+            "theme": "dark",
+            "reason": "Wave 0 documented capture residual, re-measured at Wave 2: INTERMITTENT — one repeat capture of the identical frozen build measured 0 changed pixels, a later repeat measured 1041/10,368,000 (0.0100%). Video-player overlay spinner/pulse phase in the deterministic window capture (the mocked CDN serves no video bytes); not a product difference. MUST be re-reviewed at Wave 3: fix the film player capture (freeze the overlay animation) or remove with fresh evidence.",
+            "expiresAtWave": 2,
+            "maxDiffPixelRatio": 0.0002
+          }
+        ],
+        "wave": 9
+      },
+      "masks": [],
+      "legacy": {
+        "ok": true,
+        "endpoint": "http://127.0.0.1:4174/film",
+        "httpStatus": 200,
+        "pageHeightPx": 5291,
+        "sliceCount": 8,
+        "durationMs": 10880,
+        "themeApplied": {
+          "datasetTheme": "dark",
+          "className": "dark-theme",
+          "colorScheme": "dark"
+        },
+        "finalUrl": "http://127.0.0.1:4174/film",
+        "adminAuth": null,
+        "imagesSettled": true,
+        "warnings": [],
+        "consoleErrors": [],
+        "pageErrors": [],
+        "error": null,
+        "files": [
+          "C:\\Users\\bbask\\Coding_Projects\\Wedding_Website_Clean\\tools\\parity\\output\\w9-matrix-dryrun\\shots\\legacy\\film__desktop__dark--s000.png",
+          "C:\\Users\\bbask\\Coding_Projects\\Wedding_Website_Clean\\tools\\parity\\output\\w9-matrix-dryrun\\shots\\legacy\\film__desktop__dark--s001.png",
+          "C:\\Users\\bbask\\Coding_Projects\\Wedding_Website_Clean\\tools\\parity\\output\\w9-matrix-dryrun\\shots\\legacy\\film__desktop__dark--s002.png",
+          "C:\\Users\\bbask\\Coding_Projects\\Wedding_Website_Clean\\tools\\parity\\output\\w9-matrix-dryrun\\shots\\legacy\\film__desktop__dark--s003.png",
+          "C:\\Users\\bbask\\Coding_Projects\\Wedding_Website_Clean\\tools\\parity\\output\\w9-matrix-dryrun\\shots\\legacy\\film__desktop__dark--s004.png",
+          "C:\\Users\\bbask\\Coding_Projects\\Wedding_Website_Clean\\tools\\parity\\output\\w9-matrix-dryrun\\shots\\legacy\\film__desktop__dark--s005.png",
+          "C:\\Users\\bbask\\Coding_Projects\\Wedding_Website_Clean\\tools\\parity\\output\\w9-matrix-dryrun\\shots\\legacy\\film__desktop__dark--s006.png",
+          "C:\\Users\\bbask\\Coding_Projects\\Wedding_Website_Clean\\tools\\parity\\output\\w9-matrix-dryrun\\shots\\legacy\\film__desktop__dark--s007.png"
+        ]
+      },
+      "rebuild": {
+        "ok": true,
+        "endpoint": "http://127.0.0.1:4175/film",
+        "httpStatus": 200,
+        "pageHeightPx": 5291,
+        "sliceCount": 8,
+        "durationMs": 27124,
+        "themeApplied": {
+          "datasetTheme": "dark",
+          "className": "dark-theme",
+          "colorScheme": "dark"
+        },
+        "finalUrl": "http://127.0.0.1:4175/film",
+        "adminAuth": null,
+        "imagesSettled": true,
+        "warnings": [],
+        "consoleErrors": [],
+        "pageErrors": [],
+        "error": null,
+        "files": [
+          "C:\\Users\\bbask\\Coding_Projects\\Wedding_Website_Clean\\tools\\parity\\output\\w9-matrix-dryrun\\shots\\rebuild\\film__desktop__dark--s000.png",
+          "C:\\Users\\bbask\\Coding_Projects\\Wedding_Website_Clean\\tools\\parity\\output\\w9-matrix-dryrun\\shots\\rebuild\\film__desktop__dark--s001.png",
+          "C:\\Users\\bbask\\Coding_Projects\\Wedding_Website_Clean\\tools\\parity\\output\\w9-matrix-dryrun\\shots\\rebuild\\film__desktop__dark--s002.png",
+          "C:\\Users\\bbask\\Coding_Projects\\Wedding_Website_Clean\\tools\\parity\\output\\w9-matrix-dryrun\\shots\\rebuild\\film__desktop__dark--s003.png",
+          "C:\\Users\\bbask\\Coding_Projects\\Wedding_Website_Clean\\tools\\parity\\output\\w9-matrix-dryrun\\shots\\rebuild\\film__desktop__dark--s004.png",
+          "C:\\Users\\bbask\\Coding_Projects\\Wedding_Website_Clean\\tools\\parity\\output\\w9-matrix-dryrun\\shots\\rebuild\\film__desktop__dark--s005.png",
+          "C:\\Users\\bbask\\Coding_Projects\\Wedding_Website_Clean\\tools\\parity\\output\\w9-matrix-dryrun\\shots\\rebuild\\film__desktop__dark--s006.png",
+          "C:\\Users\\bbask\\Coding_Projects\\Wedding_Website_Clean\\tools\\parity\\output\\w9-matrix-dryrun\\shots\\rebuild\\film__desktop__dark--s007.png"
+        ]
+      },
+      "pixelDiff": {
+        "changedPixels": 8165,
+        "totalPixels": 10368000,
+        "ratio": 0.0007875192901234568,
+        "maxChannelDelta": 150,
+        "edgeTolerance": 0,
+        "boundingBox": {
+          "x": 222,
+          "y": 178,
+          "width": 1000,
+          "height": 608
+        },
+        "sizeMismatch": false,
+        "sliceCountMismatch": false,
+        "slices": [
+          {
+            "slice": 0,
+            "status": "identical",
+            "diffFile": "shots/diff/film__desktop__dark--s000.png",
+            "changedPixels": 0,
+            "totalPixels": 1296000,
+            "ratio": 0,
+            "maxChannelDelta": 3,
+            "boundingBox": null
+          },
+          {
+            "slice": 1,
+            "status": "diff",
+            "diffFile": "shots/diff/film__desktop__dark--s001.png",
+            "changedPixels": 102,
+            "totalPixels": 1296000,
+            "ratio": 0.0000787037037037037,
+            "maxChannelDelta": 150,
+            "boundingBox": {
+              "x": 707,
+              "y": 763,
+              "width": 26,
+              "height": 23
+            }
+          },
+          {
+            "slice": 2,
+            "status": "diff",
+            "diffFile": "shots/diff/film__desktop__dark--s002.png",
+            "changedPixels": 5645,
+            "totalPixels": 1296000,
+            "ratio": 0.00435570987654321,
+            "maxChannelDelta": 108,
+            "boundingBox": {
+              "x": 222,
+              "y": 286,
+              "width": 1000,
+              "height": 324
+            }
+          },
+          {
+            "slice": 3,
+            "status": "identical",
+            "diffFile": "shots/diff/film__desktop__dark--s003.png",
+            "changedPixels": 0,
+            "totalPixels": 1296000,
+            "ratio": 0,
+            "maxChannelDelta": 18,
+            "boundingBox": null
+          },
+          {
+            "slice": 4,
+            "status": "identical",
+            "diffFile": "shots/diff/film__desktop__dark--s004.png",
+            "changedPixels": 0,
+            "totalPixels": 1296000,
+            "ratio": 0,
+            "maxChannelDelta": 0,
+            "boundingBox": null
+          },
+          {
+            "slice": 5,
+            "status": "diff",
+            "diffFile": "shots/diff/film__desktop__dark--s005.png",
+            "changedPixels": 806,
+            "totalPixels": 1296000,
+            "ratio": 0.0006219135802469135,
+            "maxChannelDelta": 110,
+            "boundingBox": {
+              "x": 852,
+              "y": 178,
+              "width": 325,
+              "height": 9
+            }
+          },
+          {
+            "slice": 6,
+            "status": "diff",
+            "diffFile": "shots/diff/film__desktop__dark--s006.png",
+            "changedPixels": 806,
+            "totalPixels": 1296000,
+            "ratio": 0.0006219135802469135,
+            "maxChannelDelta": 110,
+            "boundingBox": {
+              "x": 852,
+              "y": 178,
+              "width": 325,
+              "height": 9
+            }
+          },
+          {
+            "slice": 7,
+            "status": "diff",
+            "diffFile": "shots/diff/film__desktop__dark--s007.png",
+            "changedPixels": 806,
+            "totalPixels": 1296000,
+            "ratio": 0.0006219135802469135,
+            "maxChannelDelta": 110,
+            "boundingBox": {
+              "x": 852,
+              "y": 178,
+              "width": 325,
+              "height": 9
+            }
+          }
+        ]
+      },
+      "textDiff": {
+        "status": "pass",
+        "differences": [],
+        "bodyText": null
+      },
+      "files": {
+        "legacy": [
+          "shots/legacy/film__desktop__dark--s000.png",
+          "shots/legacy/film__desktop__dark--s001.png",
+          "shots/legacy/film__desktop__dark--s002.png",
+          "shots/legacy/film__desktop__dark--s003.png",
+          "shots/legacy/film__desktop__dark--s004.png",
+          "shots/legacy/film__desktop__dark--s005.png",
+          "shots/legacy/film__desktop__dark--s006.png",
+          "shots/legacy/film__desktop__dark--s007.png"
+        ],
+        "rebuild": [
+          "shots/rebuild/film__desktop__dark--s000.png",
+          "shots/rebuild/film__desktop__dark--s001.png",
+          "shots/rebuild/film__desktop__dark--s002.png",
+          "shots/rebuild/film__desktop__dark--s003.png",
+          "shots/rebuild/film__desktop__dark--s004.png",
+          "shots/rebuild/film__desktop__dark--s005.png",
+          "shots/rebuild/film__desktop__dark--s006.png",
+          "shots/rebuild/film__desktop__dark--s007.png"
+        ],
+        "diff": [
+          "shots/diff/film__desktop__dark--s000.png",
+          "shots/diff/film__desktop__dark--s001.png",
+          "shots/diff/film__desktop__dark--s002.png",
+          "shots/diff/film__desktop__dark--s003.png",
+          "shots/diff/film__desktop__dark--s004.png",
+          "shots/diff/film__desktop__dark--s005.png",
+          "shots/diff/film__desktop__dark--s006.png",
+          "shots/diff/film__desktop__dark--s007.png"
+        ],
+        "text": {
+          "legacy": "text/legacy/film__desktop__dark.json",
+          "rebuild": "text/rebuild/film__desktop__dark.json",
+          "diff": null
+        }
+      },
+      "warnings": []
+    },
+    {
+      "key": "gallery__desktop__dark",
+      "route": "gallery",
+      "routePath": "/gallery",
+      "urlPath": "/gallery",
+      "parity": 1,
+      "viewport": "desktop",
+      "viewportPixels": {
+        "width": 1440,
+        "height": 900
+      },
+      "theme": "dark",
+      "status": "fail",
+      "failureReasons": ["pixel"],
+      "allowlist": {
+        "status": "no-entry",
+        "accepted": false,
+        "entry": null,
+        "activeEntries": 0,
+        "expiredEntries": [],
+        "wave": 9
+      },
+      "masks": [],
+      "legacy": {
+        "ok": true,
+        "endpoint": "http://127.0.0.1:4174/gallery",
+        "httpStatus": 200,
+        "pageHeightPx": 2151,
+        "sliceCount": 8,
+        "durationMs": 7588,
+        "themeApplied": {
+          "datasetTheme": "dark",
+          "className": "dark-theme",
+          "colorScheme": "dark"
+        },
+        "finalUrl": "http://127.0.0.1:4174/gallery",
+        "adminAuth": null,
+        "imagesSettled": true,
+        "warnings": [],
+        "consoleErrors": [],
+        "pageErrors": [],
+        "error": null,
+        "files": [
+          "C:\\Users\\bbask\\Coding_Projects\\Wedding_Website_Clean\\tools\\parity\\output\\w9-matrix-dryrun\\shots\\legacy\\gallery__desktop__dark--s000.png",
+          "C:\\Users\\bbask\\Coding_Projects\\Wedding_Website_Clean\\tools\\parity\\output\\w9-matrix-dryrun\\shots\\legacy\\gallery__desktop__dark--s001.png",
+          "C:\\Users\\bbask\\Coding_Projects\\Wedding_Website_Clean\\tools\\parity\\output\\w9-matrix-dryrun\\shots\\legacy\\gallery__desktop__dark--s002.png",
+          "C:\\Users\\bbask\\Coding_Projects\\Wedding_Website_Clean\\tools\\parity\\output\\w9-matrix-dryrun\\shots\\legacy\\gallery__desktop__dark--s003.png",
+          "C:\\Users\\bbask\\Coding_Projects\\Wedding_Website_Clean\\tools\\parity\\output\\w9-matrix-dryrun\\shots\\legacy\\gallery__desktop__dark--s004.png",
+          "C:\\Users\\bbask\\Coding_Projects\\Wedding_Website_Clean\\tools\\parity\\output\\w9-matrix-dryrun\\shots\\legacy\\gallery__desktop__dark--s005.png",
+          "C:\\Users\\bbask\\Coding_Projects\\Wedding_Website_Clean\\tools\\parity\\output\\w9-matrix-dryrun\\shots\\legacy\\gallery__desktop__dark--s006.png",
+          "C:\\Users\\bbask\\Coding_Projects\\Wedding_Website_Clean\\tools\\parity\\output\\w9-matrix-dryrun\\shots\\legacy\\gallery__desktop__dark--s007.png"
+        ]
+      },
+      "rebuild": {
+        "ok": true,
+        "endpoint": "http://127.0.0.1:4175/gallery",
+        "httpStatus": 200,
+        "pageHeightPx": 2151,
+        "sliceCount": 8,
+        "durationMs": 22760,
+        "themeApplied": {
+          "datasetTheme": "dark",
+          "className": "dark-theme",
+          "colorScheme": "dark"
+        },
+        "finalUrl": "http://127.0.0.1:4175/gallery",
+        "adminAuth": null,
+        "imagesSettled": true,
+        "warnings": [],
+        "consoleErrors": [],
+        "pageErrors": [],
+        "error": null,
+        "files": [
+          "C:\\Users\\bbask\\Coding_Projects\\Wedding_Website_Clean\\tools\\parity\\output\\w9-matrix-dryrun\\shots\\rebuild\\gallery__desktop__dark--s000.png",
+          "C:\\Users\\bbask\\Coding_Projects\\Wedding_Website_Clean\\tools\\parity\\output\\w9-matrix-dryrun\\shots\\rebuild\\gallery__desktop__dark--s001.png",
+          "C:\\Users\\bbask\\Coding_Projects\\Wedding_Website_Clean\\tools\\parity\\output\\w9-matrix-dryrun\\shots\\rebuild\\gallery__desktop__dark--s002.png",
+          "C:\\Users\\bbask\\Coding_Projects\\Wedding_Website_Clean\\tools\\parity\\output\\w9-matrix-dryrun\\shots\\rebuild\\gallery__desktop__dark--s003.png",
+          "C:\\Users\\bbask\\Coding_Projects\\Wedding_Website_Clean\\tools\\parity\\output\\w9-matrix-dryrun\\shots\\rebuild\\gallery__desktop__dark--s004.png",
+          "C:\\Users\\bbask\\Coding_Projects\\Wedding_Website_Clean\\tools\\parity\\output\\w9-matrix-dryrun\\shots\\rebuild\\gallery__desktop__dark--s005.png",
+          "C:\\Users\\bbask\\Coding_Projects\\Wedding_Website_Clean\\tools\\parity\\output\\w9-matrix-dryrun\\shots\\rebuild\\gallery__desktop__dark--s006.png",
+          "C:\\Users\\bbask\\Coding_Projects\\Wedding_Website_Clean\\tools\\parity\\output\\w9-matrix-dryrun\\shots\\rebuild\\gallery__desktop__dark--s007.png"
+        ]
+      },
+      "pixelDiff": {
+        "changedPixels": 672470,
+        "totalPixels": 10368000,
+        "ratio": 0.06486014660493827,
+        "maxChannelDelta": 255,
+        "edgeTolerance": 0,
+        "boundingBox": {
+          "x": 110,
+          "y": 0,
+          "width": 1227,
+          "height": 900
+        },
+        "sizeMismatch": false,
+        "sliceCountMismatch": false,
+        "slices": [
+          {
+            "slice": 0,
+            "status": "diff",
+            "diffFile": "shots/diff/gallery__desktop__dark--s000.png",
+            "changedPixels": 162701,
+            "totalPixels": 1296000,
+            "ratio": 0.12554089506172839,
+            "maxChannelDelta": 255,
+            "boundingBox": {
+              "x": 110,
+              "y": 289,
+              "width": 1227,
+              "height": 611
+            }
+          },
+          {
+            "slice": 1,
+            "status": "diff",
+            "diffFile": "shots/diff/gallery__desktop__dark--s001.png",
+            "changedPixels": 241983,
+            "totalPixels": 1296000,
+            "ratio": 0.18671527777777777,
+            "maxChannelDelta": 255,
+            "boundingBox": {
+              "x": 110,
+              "y": 0,
+              "width": 1225,
+              "height": 540
+            }
+          },
+          {
+            "slice": 2,
+            "status": "diff",
+            "diffFile": "shots/diff/gallery__desktop__dark--s002.png",
+            "changedPixels": 44631,
+            "totalPixels": 1296000,
+            "ratio": 0.0344375,
+            "maxChannelDelta": 255,
+            "boundingBox": {
+              "x": 110,
+              "y": 0,
+              "width": 1225,
+              "height": 189
+            }
+          },
+          {
+            "slice": 3,
+            "status": "diff",
+            "diffFile": "shots/diff/gallery__desktop__dark--s003.png",
+            "changedPixels": 44631,
+            "totalPixels": 1296000,
+            "ratio": 0.0344375,
+            "maxChannelDelta": 255,
+            "boundingBox": {
+              "x": 110,
+              "y": 0,
+              "width": 1225,
+              "height": 189
+            }
+          },
+          {
+            "slice": 4,
+            "status": "diff",
+            "diffFile": "shots/diff/gallery__desktop__dark--s004.png",
+            "changedPixels": 44631,
+            "totalPixels": 1296000,
+            "ratio": 0.0344375,
+            "maxChannelDelta": 255,
+            "boundingBox": {
+              "x": 110,
+              "y": 0,
+              "width": 1225,
+              "height": 189
+            }
+          },
+          {
+            "slice": 5,
+            "status": "diff",
+            "diffFile": "shots/diff/gallery__desktop__dark--s005.png",
+            "changedPixels": 44631,
+            "totalPixels": 1296000,
+            "ratio": 0.0344375,
+            "maxChannelDelta": 255,
+            "boundingBox": {
+              "x": 110,
+              "y": 0,
+              "width": 1225,
+              "height": 189
+            }
+          },
+          {
+            "slice": 6,
+            "status": "diff",
+            "diffFile": "shots/diff/gallery__desktop__dark--s006.png",
+            "changedPixels": 44631,
+            "totalPixels": 1296000,
+            "ratio": 0.0344375,
+            "maxChannelDelta": 255,
+            "boundingBox": {
+              "x": 110,
+              "y": 0,
+              "width": 1225,
+              "height": 189
+            }
+          },
+          {
+            "slice": 7,
+            "status": "diff",
+            "diffFile": "shots/diff/gallery__desktop__dark--s007.png",
+            "changedPixels": 44631,
+            "totalPixels": 1296000,
+            "ratio": 0.0344375,
+            "maxChannelDelta": 255,
+            "boundingBox": {
+              "x": 110,
+              "y": 0,
+              "width": 1225,
+              "height": 189
+            }
+          }
+        ]
+      },
+      "textDiff": {
+        "status": "pass",
+        "differences": [],
+        "bodyText": null
+      },
+      "files": {
+        "legacy": [
+          "shots/legacy/gallery__desktop__dark--s000.png",
+          "shots/legacy/gallery__desktop__dark--s001.png",
+          "shots/legacy/gallery__desktop__dark--s002.png",
+          "shots/legacy/gallery__desktop__dark--s003.png",
+          "shots/legacy/gallery__desktop__dark--s004.png",
+          "shots/legacy/gallery__desktop__dark--s005.png",
+          "shots/legacy/gallery__desktop__dark--s006.png",
+          "shots/legacy/gallery__desktop__dark--s007.png"
+        ],
+        "rebuild": [
+          "shots/rebuild/gallery__desktop__dark--s000.png",
+          "shots/rebuild/gallery__desktop__dark--s001.png",
+          "shots/rebuild/gallery__desktop__dark--s002.png",
+          "shots/rebuild/gallery__desktop__dark--s003.png",
+          "shots/rebuild/gallery__desktop__dark--s004.png",
+          "shots/rebuild/gallery__desktop__dark--s005.png",
+          "shots/rebuild/gallery__desktop__dark--s006.png",
+          "shots/rebuild/gallery__desktop__dark--s007.png"
+        ],
+        "diff": [
+          "shots/diff/gallery__desktop__dark--s000.png",
+          "shots/diff/gallery__desktop__dark--s001.png",
+          "shots/diff/gallery__desktop__dark--s002.png",
+          "shots/diff/gallery__desktop__dark--s003.png",
+          "shots/diff/gallery__desktop__dark--s004.png",
+          "shots/diff/gallery__desktop__dark--s005.png",
+          "shots/diff/gallery__desktop__dark--s006.png",
+          "shots/diff/gallery__desktop__dark--s007.png"
+        ],
+        "text": {
+          "legacy": "text/legacy/gallery__desktop__dark.json",
+          "rebuild": "text/rebuild/gallery__desktop__dark.json",
+          "diff": null
+        }
+      },
+      "warnings": []
+    },
+    {
+      "key": "upload__desktop__dark",
+      "route": "upload",
+      "routePath": "/upload",
+      "urlPath": "/upload",
+      "parity": 1,
+      "viewport": "desktop",
+      "viewportPixels": {
+        "width": 1440,
+        "height": 900
+      },
+      "theme": "dark",
+      "status": "pass",
+      "failureReasons": [],
+      "allowlist": {
+        "status": "no-entry",
+        "accepted": false,
+        "entry": null,
+        "activeEntries": 0,
+        "expiredEntries": [],
+        "wave": 9
+      },
+      "masks": [],
+      "legacy": {
+        "ok": true,
+        "endpoint": "http://127.0.0.1:4174/upload",
+        "httpStatus": 200,
+        "pageHeightPx": 3036,
+        "sliceCount": 8,
+        "durationMs": 6353,
+        "themeApplied": {
+          "datasetTheme": "dark",
+          "className": "dark-theme",
+          "colorScheme": "dark"
+        },
+        "finalUrl": "http://127.0.0.1:4174/upload",
+        "adminAuth": null,
+        "imagesSettled": true,
+        "warnings": [],
+        "consoleErrors": [],
+        "pageErrors": [],
+        "error": null,
+        "files": [
+          "C:\\Users\\bbask\\Coding_Projects\\Wedding_Website_Clean\\tools\\parity\\output\\w9-matrix-dryrun\\shots\\legacy\\upload__desktop__dark--s000.png",
+          "C:\\Users\\bbask\\Coding_Projects\\Wedding_Website_Clean\\tools\\parity\\output\\w9-matrix-dryrun\\shots\\legacy\\upload__desktop__dark--s001.png",
+          "C:\\Users\\bbask\\Coding_Projects\\Wedding_Website_Clean\\tools\\parity\\output\\w9-matrix-dryrun\\shots\\legacy\\upload__desktop__dark--s002.png",
+          "C:\\Users\\bbask\\Coding_Projects\\Wedding_Website_Clean\\tools\\parity\\output\\w9-matrix-dryrun\\shots\\legacy\\upload__desktop__dark--s003.png",
+          "C:\\Users\\bbask\\Coding_Projects\\Wedding_Website_Clean\\tools\\parity\\output\\w9-matrix-dryrun\\shots\\legacy\\upload__desktop__dark--s004.png",
+          "C:\\Users\\bbask\\Coding_Projects\\Wedding_Website_Clean\\tools\\parity\\output\\w9-matrix-dryrun\\shots\\legacy\\upload__desktop__dark--s005.png",
+          "C:\\Users\\bbask\\Coding_Projects\\Wedding_Website_Clean\\tools\\parity\\output\\w9-matrix-dryrun\\shots\\legacy\\upload__desktop__dark--s006.png",
+          "C:\\Users\\bbask\\Coding_Projects\\Wedding_Website_Clean\\tools\\parity\\output\\w9-matrix-dryrun\\shots\\legacy\\upload__desktop__dark--s007.png"
+        ]
+      },
+      "rebuild": {
+        "ok": true,
+        "endpoint": "http://127.0.0.1:4175/upload",
+        "httpStatus": 200,
+        "pageHeightPx": 3036,
+        "sliceCount": 8,
+        "durationMs": 21958,
+        "themeApplied": {
+          "datasetTheme": "dark",
+          "className": "dark-theme",
+          "colorScheme": "dark"
+        },
+        "finalUrl": "http://127.0.0.1:4175/upload",
+        "adminAuth": null,
+        "imagesSettled": true,
+        "warnings": [],
+        "consoleErrors": [],
+        "pageErrors": [],
+        "error": null,
+        "files": [
+          "C:\\Users\\bbask\\Coding_Projects\\Wedding_Website_Clean\\tools\\parity\\output\\w9-matrix-dryrun\\shots\\rebuild\\upload__desktop__dark--s000.png",
+          "C:\\Users\\bbask\\Coding_Projects\\Wedding_Website_Clean\\tools\\parity\\output\\w9-matrix-dryrun\\shots\\rebuild\\upload__desktop__dark--s001.png",
+          "C:\\Users\\bbask\\Coding_Projects\\Wedding_Website_Clean\\tools\\parity\\output\\w9-matrix-dryrun\\shots\\rebuild\\upload__desktop__dark--s002.png",
+          "C:\\Users\\bbask\\Coding_Projects\\Wedding_Website_Clean\\tools\\parity\\output\\w9-matrix-dryrun\\shots\\rebuild\\upload__desktop__dark--s003.png",
+          "C:\\Users\\bbask\\Coding_Projects\\Wedding_Website_Clean\\tools\\parity\\output\\w9-matrix-dryrun\\shots\\rebuild\\upload__desktop__dark--s004.png",
+          "C:\\Users\\bbask\\Coding_Projects\\Wedding_Website_Clean\\tools\\parity\\output\\w9-matrix-dryrun\\shots\\rebuild\\upload__desktop__dark--s005.png",
+          "C:\\Users\\bbask\\Coding_Projects\\Wedding_Website_Clean\\tools\\parity\\output\\w9-matrix-dryrun\\shots\\rebuild\\upload__desktop__dark--s006.png",
+          "C:\\Users\\bbask\\Coding_Projects\\Wedding_Website_Clean\\tools\\parity\\output\\w9-matrix-dryrun\\shots\\rebuild\\upload__desktop__dark--s007.png"
+        ]
+      },
+      "pixelDiff": {
+        "changedPixels": 0,
+        "totalPixels": 10368000,
+        "ratio": 0,
+        "maxChannelDelta": 8,
+        "edgeTolerance": 0,
+        "boundingBox": null,
+        "sizeMismatch": false,
+        "sliceCountMismatch": false,
+        "slices": [
+          {
+            "slice": 0,
+            "status": "identical",
+            "diffFile": "shots/diff/upload__desktop__dark--s000.png",
+            "changedPixels": 0,
+            "totalPixels": 1296000,
+            "ratio": 0,
+            "maxChannelDelta": 8,
+            "boundingBox": null
+          },
+          {
+            "slice": 1,
+            "status": "identical",
+            "diffFile": "shots/diff/upload__desktop__dark--s001.png",
+            "changedPixels": 0,
+            "totalPixels": 1296000,
+            "ratio": 0,
+            "maxChannelDelta": 0,
+            "boundingBox": null
+          },
+          {
+            "slice": 2,
+            "status": "identical",
+            "diffFile": "shots/diff/upload__desktop__dark--s002.png",
+            "changedPixels": 0,
+            "totalPixels": 1296000,
+            "ratio": 0,
+            "maxChannelDelta": 0,
+            "boundingBox": null
+          },
+          {
+            "slice": 3,
+            "status": "identical",
+            "diffFile": "shots/diff/upload__desktop__dark--s003.png",
+            "changedPixels": 0,
+            "totalPixels": 1296000,
+            "ratio": 0,
+            "maxChannelDelta": 0,
+            "boundingBox": null
+          },
+          {
+            "slice": 4,
+            "status": "identical",
+            "diffFile": "shots/diff/upload__desktop__dark--s004.png",
+            "changedPixels": 0,
+            "totalPixels": 1296000,
+            "ratio": 0,
+            "maxChannelDelta": 0,
+            "boundingBox": null
+          },
+          {
+            "slice": 5,
+            "status": "identical",
+            "diffFile": "shots/diff/upload__desktop__dark--s005.png",
+            "changedPixels": 0,
+            "totalPixels": 1296000,
+            "ratio": 0,
+            "maxChannelDelta": 0,
+            "boundingBox": null
+          },
+          {
+            "slice": 6,
+            "status": "identical",
+            "diffFile": "shots/diff/upload__desktop__dark--s006.png",
+            "changedPixels": 0,
+            "totalPixels": 1296000,
+            "ratio": 0,
+            "maxChannelDelta": 0,
+            "boundingBox": null
+          },
+          {
+            "slice": 7,
+            "status": "identical",
+            "diffFile": "shots/diff/upload__desktop__dark--s007.png",
+            "changedPixels": 0,
+            "totalPixels": 1296000,
+            "ratio": 0,
+            "maxChannelDelta": 0,
+            "boundingBox": null
+          }
+        ]
+      },
+      "textDiff": {
+        "status": "pass",
+        "differences": [],
+        "bodyText": null
+      },
+      "files": {
+        "legacy": [
+          "shots/legacy/upload__desktop__dark--s000.png",
+          "shots/legacy/upload__desktop__dark--s001.png",
+          "shots/legacy/upload__desktop__dark--s002.png",
+          "shots/legacy/upload__desktop__dark--s003.png",
+          "shots/legacy/upload__desktop__dark--s004.png",
+          "shots/legacy/upload__desktop__dark--s005.png",
+          "shots/legacy/upload__desktop__dark--s006.png",
+          "shots/legacy/upload__desktop__dark--s007.png"
+        ],
+        "rebuild": [
+          "shots/rebuild/upload__desktop__dark--s000.png",
+          "shots/rebuild/upload__desktop__dark--s001.png",
+          "shots/rebuild/upload__desktop__dark--s002.png",
+          "shots/rebuild/upload__desktop__dark--s003.png",
+          "shots/rebuild/upload__desktop__dark--s004.png",
+          "shots/rebuild/upload__desktop__dark--s005.png",
+          "shots/rebuild/upload__desktop__dark--s006.png",
+          "shots/rebuild/upload__desktop__dark--s007.png"
+        ],
+        "diff": [
+          "shots/diff/upload__desktop__dark--s000.png",
+          "shots/diff/upload__desktop__dark--s001.png",
+          "shots/diff/upload__desktop__dark--s002.png",
+          "shots/diff/upload__desktop__dark--s003.png",
+          "shots/diff/upload__desktop__dark--s004.png",
+          "shots/diff/upload__desktop__dark--s005.png",
+          "shots/diff/upload__desktop__dark--s006.png",
+          "shots/diff/upload__desktop__dark--s007.png"
+        ],
+        "text": {
+          "legacy": "text/legacy/upload__desktop__dark.json",
+          "rebuild": "text/rebuild/upload__desktop__dark.json",
+          "diff": null
+        }
+      },
+      "warnings": []
+    },
+    {
+      "key": "guestbook__desktop__dark",
+      "route": "guestbook",
+      "routePath": "/guestbook",
+      "urlPath": "/guestbook",
+      "parity": 1,
+      "viewport": "desktop",
+      "viewportPixels": {
+        "width": 1440,
+        "height": 900
+      },
+      "theme": "dark",
+      "status": "error",
+      "failureReasons": [
+        "legacy capture-error: page.goto: net::ERR_CONNECTION_REFUSED at http://127.0.0.1:4174/guestbook\nCall log:\n\u001b[2m  - navigating to \"http://127.0.0.1:4174/guestbook\", waiting until \"load\"\u001b[22m\n"
+      ],
+      "allowlist": null,
+      "masks": [],
+      "legacy": {
+        "ok": false,
+        "endpoint": "http://127.0.0.1:4174/guestbook",
+        "httpStatus": null,
+        "pageHeightPx": 0,
+        "sliceCount": 0,
+        "durationMs": 116,
+        "themeApplied": null,
+        "finalUrl": null,
+        "adminAuth": null,
+        "imagesSettled": null,
+        "warnings": [],
+        "consoleErrors": [],
+        "pageErrors": [],
+        "error": {
+          "message": "page.goto: net::ERR_CONNECTION_REFUSED at http://127.0.0.1:4174/guestbook\nCall log:\n\u001b[2m  - navigating to \"http://127.0.0.1:4174/guestbook\", waiting until \"load\"\u001b[22m\n",
+          "kind": "capture",
+          "stack": "page.goto: net::ERR_CONNECTION_REFUSED at http://127.0.0.1:4174/guestbook\nCall log:\n\u001b[2m  - navigating to \"http://127.0.0.1:4174/guestbook\", waiting until \"load\"\u001b[22m\n\n    at warmUpContext (C:\\Users\\bbask\\Coding_Projects\\Wedding_Website_Clean\\tools\\parity\\capture.mjs:274:31)\n    at async captureShot (C:\\Users\\bbask\\Coding_Projects\\Wedding_Website_Clean\\tools\\parity\\capture.mjs:372:18)"
+        },
+        "files": []
+      },
+      "rebuild": {
+        "ok": true,
+        "endpoint": "http://127.0.0.1:4175/guestbook",
+        "httpStatus": 200,
+        "pageHeightPx": 2187,
+        "sliceCount": 8,
+        "durationMs": 22433,
+        "themeApplied": {
+          "datasetTheme": "dark",
+          "className": "dark-theme",
+          "colorScheme": "dark"
+        },
+        "finalUrl": "http://127.0.0.1:4175/guestbook",
+        "adminAuth": null,
+        "imagesSettled": true,
+        "warnings": [],
+        "consoleErrors": [],
+        "pageErrors": [],
+        "error": null,
+        "files": [
+          "C:\\Users\\bbask\\Coding_Projects\\Wedding_Website_Clean\\tools\\parity\\output\\w9-matrix-dryrun\\shots\\rebuild\\guestbook__desktop__dark--s000.png",
+          "C:\\Users\\bbask\\Coding_Projects\\Wedding_Website_Clean\\tools\\parity\\output\\w9-matrix-dryrun\\shots\\rebuild\\guestbook__desktop__dark--s001.png",
+          "C:\\Users\\bbask\\Coding_Projects\\Wedding_Website_Clean\\tools\\parity\\output\\w9-matrix-dryrun\\shots\\rebuild\\guestbook__desktop__dark--s002.png",
+          "C:\\Users\\bbask\\Coding_Projects\\Wedding_Website_Clean\\tools\\parity\\output\\w9-matrix-dryrun\\shots\\rebuild\\guestbook__desktop__dark--s003.png",
+          "C:\\Users\\bbask\\Coding_Projects\\Wedding_Website_Clean\\tools\\parity\\output\\w9-matrix-dryrun\\shots\\rebuild\\guestbook__desktop__dark--s004.png",
+          "C:\\Users\\bbask\\Coding_Projects\\Wedding_Website_Clean\\tools\\parity\\output\\w9-matrix-dryrun\\shots\\rebuild\\guestbook__desktop__dark--s005.png",
+          "C:\\Users\\bbask\\Coding_Projects\\Wedding_Website_Clean\\tools\\parity\\output\\w9-matrix-dryrun\\shots\\rebuild\\guestbook__desktop__dark--s006.png",
+          "C:\\Users\\bbask\\Coding_Projects\\Wedding_Website_Clean\\tools\\parity\\output\\w9-matrix-dryrun\\shots\\rebuild\\guestbook__desktop__dark--s007.png"
+        ]
+      },
+      "pixelDiff": null,
+      "textDiff": null,
+      "files": {
+        "legacy": [],
+        "rebuild": [
+          "shots/rebuild/guestbook__desktop__dark--s000.png",
+          "shots/rebuild/guestbook__desktop__dark--s001.png",
+          "shots/rebuild/guestbook__desktop__dark--s002.png",
+          "shots/rebuild/guestbook__desktop__dark--s003.png",
+          "shots/rebuild/guestbook__desktop__dark--s004.png",
+          "shots/rebuild/guestbook__desktop__dark--s005.png",
+          "shots/rebuild/guestbook__desktop__dark--s006.png",
+          "shots/rebuild/guestbook__desktop__dark--s007.png"
+        ],
+        "diff": [],
+        "text": {
+          "legacy": null,
+          "rebuild": "text/rebuild/guestbook__desktop__dark.json",
+          "diff": null
+        }
+      },
+      "warnings": []
+    },
+    {
+      "key": "guest-photos__desktop__dark",
+      "route": "guest-photos",
+      "routePath": "/guest-photos",
+      "urlPath": "/guest-photos",
+      "parity": 1,
+      "viewport": "desktop",
+      "viewportPixels": {
+        "width": 1440,
+        "height": 900
+      },
+      "theme": "dark",
+      "status": "error",
+      "failureReasons": [
+        "legacy capture-error: page.goto: net::ERR_CONNECTION_REFUSED at http://127.0.0.1:4174/guest-photos\nCall log:\n\u001b[2m  - navigating to \"http://127.0.0.1:4174/guest-photos\", waiting until \"load\"\u001b[22m\n"
+      ],
+      "allowlist": null,
+      "masks": [],
+      "legacy": {
+        "ok": false,
+        "endpoint": "http://127.0.0.1:4174/guest-photos",
+        "httpStatus": null,
+        "pageHeightPx": 0,
+        "sliceCount": 0,
+        "durationMs": 93,
+        "themeApplied": null,
+        "finalUrl": null,
+        "adminAuth": null,
+        "imagesSettled": null,
+        "warnings": [],
+        "consoleErrors": [],
+        "pageErrors": [],
+        "error": {
+          "message": "page.goto: net::ERR_CONNECTION_REFUSED at http://127.0.0.1:4174/guest-photos\nCall log:\n\u001b[2m  - navigating to \"http://127.0.0.1:4174/guest-photos\", waiting until \"load\"\u001b[22m\n",
+          "kind": "capture",
+          "stack": "page.goto: net::ERR_CONNECTION_REFUSED at http://127.0.0.1:4174/guest-photos\nCall log:\n\u001b[2m  - navigating to \"http://127.0.0.1:4174/guest-photos\", waiting until \"load\"\u001b[22m\n\n    at warmUpContext (C:\\Users\\bbask\\Coding_Projects\\Wedding_Website_Clean\\tools\\parity\\capture.mjs:274:31)\n    at async captureShot (C:\\Users\\bbask\\Coding_Projects\\Wedding_Website_Clean\\tools\\parity\\capture.mjs:372:18)"
+        },
+        "files": []
+      },
+      "rebuild": {
+        "ok": true,
+        "endpoint": "http://127.0.0.1:4175/guest-photos",
+        "httpStatus": 200,
+        "pageHeightPx": 1858,
+        "sliceCount": 8,
+        "durationMs": 6634,
+        "themeApplied": {
+          "datasetTheme": "dark",
+          "className": "dark-theme",
+          "colorScheme": "dark"
+        },
+        "finalUrl": "http://127.0.0.1:4175/guest-photos",
+        "adminAuth": null,
+        "imagesSettled": true,
+        "warnings": [],
+        "consoleErrors": [],
+        "pageErrors": [],
+        "error": null,
+        "files": [
+          "C:\\Users\\bbask\\Coding_Projects\\Wedding_Website_Clean\\tools\\parity\\output\\w9-matrix-dryrun\\shots\\rebuild\\guest-photos__desktop__dark--s000.png",
+          "C:\\Users\\bbask\\Coding_Projects\\Wedding_Website_Clean\\tools\\parity\\output\\w9-matrix-dryrun\\shots\\rebuild\\guest-photos__desktop__dark--s001.png",
+          "C:\\Users\\bbask\\Coding_Projects\\Wedding_Website_Clean\\tools\\parity\\output\\w9-matrix-dryrun\\shots\\rebuild\\guest-photos__desktop__dark--s002.png",
+          "C:\\Users\\bbask\\Coding_Projects\\Wedding_Website_Clean\\tools\\parity\\output\\w9-matrix-dryrun\\shots\\rebuild\\guest-photos__desktop__dark--s003.png",
+          "C:\\Users\\bbask\\Coding_Projects\\Wedding_Website_Clean\\tools\\parity\\output\\w9-matrix-dryrun\\shots\\rebuild\\guest-photos__desktop__dark--s004.png",
+          "C:\\Users\\bbask\\Coding_Projects\\Wedding_Website_Clean\\tools\\parity\\output\\w9-matrix-dryrun\\shots\\rebuild\\guest-photos__desktop__dark--s005.png",
+          "C:\\Users\\bbask\\Coding_Projects\\Wedding_Website_Clean\\tools\\parity\\output\\w9-matrix-dryrun\\shots\\rebuild\\guest-photos__desktop__dark--s006.png",
+          "C:\\Users\\bbask\\Coding_Projects\\Wedding_Website_Clean\\tools\\parity\\output\\w9-matrix-dryrun\\shots\\rebuild\\guest-photos__desktop__dark--s007.png"
+        ]
+      },
+      "pixelDiff": null,
+      "textDiff": null,
+      "files": {
+        "legacy": [],
+        "rebuild": [
+          "shots/rebuild/guest-photos__desktop__dark--s000.png",
+          "shots/rebuild/guest-photos__desktop__dark--s001.png",
+          "shots/rebuild/guest-photos__desktop__dark--s002.png",
+          "shots/rebuild/guest-photos__desktop__dark--s003.png",
+          "shots/rebuild/guest-photos__desktop__dark--s004.png",
+          "shots/rebuild/guest-photos__desktop__dark--s005.png",
+          "shots/rebuild/guest-photos__desktop__dark--s006.png",
+          "shots/rebuild/guest-photos__desktop__dark--s007.png"
+        ],
+        "diff": [],
+        "text": {
+          "legacy": null,
+          "rebuild": "text/rebuild/guest-photos__desktop__dark.json",
+          "diff": null
+        }
+      },
+      "warnings": []
+    },
+    {
+      "key": "activity__desktop__dark",
+      "route": "activity",
+      "routePath": "/activity",
+      "urlPath": "/activity",
+      "parity": 3,
+      "viewport": "desktop",
+      "viewportPixels": {
+        "width": 1440,
+        "height": 900
+      },
+      "theme": "dark",
+      "status": "error",
+      "failureReasons": [
+        "legacy capture-error: page.goto: net::ERR_CONNECTION_REFUSED at http://127.0.0.1:4174/activity\nCall log:\n\u001b[2m  - navigating to \"http://127.0.0.1:4174/activity\", waiting until \"load\"\u001b[22m\n"
+      ],
+      "allowlist": null,
+      "masks": [],
+      "legacy": {
+        "ok": false,
+        "endpoint": "http://127.0.0.1:4174/activity",
+        "httpStatus": null,
+        "pageHeightPx": 0,
+        "sliceCount": 0,
+        "durationMs": 83,
+        "themeApplied": null,
+        "finalUrl": null,
+        "adminAuth": null,
+        "imagesSettled": null,
+        "warnings": [],
+        "consoleErrors": [],
+        "pageErrors": [],
+        "error": {
+          "message": "page.goto: net::ERR_CONNECTION_REFUSED at http://127.0.0.1:4174/activity\nCall log:\n\u001b[2m  - navigating to \"http://127.0.0.1:4174/activity\", waiting until \"load\"\u001b[22m\n",
+          "kind": "capture",
+          "stack": "page.goto: net::ERR_CONNECTION_REFUSED at http://127.0.0.1:4174/activity\nCall log:\n\u001b[2m  - navigating to \"http://127.0.0.1:4174/activity\", waiting until \"load\"\u001b[22m\n\n    at warmUpContext (C:\\Users\\bbask\\Coding_Projects\\Wedding_Website_Clean\\tools\\parity\\capture.mjs:274:31)\n    at async captureShot (C:\\Users\\bbask\\Coding_Projects\\Wedding_Website_Clean\\tools\\parity\\capture.mjs:372:18)"
+        },
+        "files": []
+      },
+      "rebuild": {
+        "ok": true,
+        "endpoint": "http://127.0.0.1:4175/activity",
+        "httpStatus": 200,
+        "pageHeightPx": 1475,
+        "sliceCount": 8,
+        "durationMs": 6479,
+        "themeApplied": {
+          "datasetTheme": "dark",
+          "className": "dark-theme",
+          "colorScheme": "dark"
+        },
+        "finalUrl": "http://127.0.0.1:4175/activity",
+        "adminAuth": null,
+        "imagesSettled": true,
+        "warnings": [],
+        "consoleErrors": [],
+        "pageErrors": [],
+        "error": null,
+        "files": [
+          "C:\\Users\\bbask\\Coding_Projects\\Wedding_Website_Clean\\tools\\parity\\output\\w9-matrix-dryrun\\shots\\rebuild\\activity__desktop__dark--s000.png",
+          "C:\\Users\\bbask\\Coding_Projects\\Wedding_Website_Clean\\tools\\parity\\output\\w9-matrix-dryrun\\shots\\rebuild\\activity__desktop__dark--s001.png",
+          "C:\\Users\\bbask\\Coding_Projects\\Wedding_Website_Clean\\tools\\parity\\output\\w9-matrix-dryrun\\shots\\rebuild\\activity__desktop__dark--s002.png",
+          "C:\\Users\\bbask\\Coding_Projects\\Wedding_Website_Clean\\tools\\parity\\output\\w9-matrix-dryrun\\shots\\rebuild\\activity__desktop__dark--s003.png",
+          "C:\\Users\\bbask\\Coding_Projects\\Wedding_Website_Clean\\tools\\parity\\output\\w9-matrix-dryrun\\shots\\rebuild\\activity__desktop__dark--s004.png",
+          "C:\\Users\\bbask\\Coding_Projects\\Wedding_Website_Clean\\tools\\parity\\output\\w9-matrix-dryrun\\shots\\rebuild\\activity__desktop__dark--s005.png",
+          "C:\\Users\\bbask\\Coding_Projects\\Wedding_Website_Clean\\tools\\parity\\output\\w9-matrix-dryrun\\shots\\rebuild\\activity__desktop__dark--s006.png",
+          "C:\\Users\\bbask\\Coding_Projects\\Wedding_Website_Clean\\tools\\parity\\output\\w9-matrix-dryrun\\shots\\rebuild\\activity__desktop__dark--s007.png"
+        ]
+      },
+      "pixelDiff": null,
+      "textDiff": null,
+      "files": {
+        "legacy": [],
+        "rebuild": [
+          "shots/rebuild/activity__desktop__dark--s000.png",
+          "shots/rebuild/activity__desktop__dark--s001.png",
+          "shots/rebuild/activity__desktop__dark--s002.png",
+          "shots/rebuild/activity__desktop__dark--s003.png",
+          "shots/rebuild/activity__desktop__dark--s004.png",
+          "shots/rebuild/activity__desktop__dark--s005.png",
+          "shots/rebuild/activity__desktop__dark--s006.png",
+          "shots/rebuild/activity__desktop__dark--s007.png"
+        ],
+        "diff": [],
+        "text": {
+          "legacy": null,
+          "rebuild": "text/rebuild/activity__desktop__dark.json",
+          "diff": null
+        }
+      },
+      "warnings": []
+    },
+    {
+      "key": "admin-login__desktop__dark",
+      "route": "admin-login",
+      "routePath": "/admin/login",
+      "urlPath": "/admin/login",
+      "parity": 2,
+      "viewport": "desktop",
+      "viewportPixels": {
+        "width": 1440,
+        "height": 900
+      },
+      "theme": "dark",
+      "status": "error",
+      "failureReasons": [
+        "legacy capture-error: page.goto: net::ERR_CONNECTION_REFUSED at http://127.0.0.1:4174/admin/login\nCall log:\n\u001b[2m  - navigating to \"http://127.0.0.1:4174/admin/login\", waiting until \"load\"\u001b[22m\n"
+      ],
+      "allowlist": null,
+      "masks": [],
+      "legacy": {
+        "ok": false,
+        "endpoint": "http://127.0.0.1:4174/admin/login",
+        "httpStatus": null,
+        "pageHeightPx": 0,
+        "sliceCount": 0,
+        "durationMs": 103,
+        "themeApplied": null,
+        "finalUrl": null,
+        "adminAuth": null,
+        "imagesSettled": null,
+        "warnings": [],
+        "consoleErrors": [],
+        "pageErrors": [],
+        "error": {
+          "message": "page.goto: net::ERR_CONNECTION_REFUSED at http://127.0.0.1:4174/admin/login\nCall log:\n\u001b[2m  - navigating to \"http://127.0.0.1:4174/admin/login\", waiting until \"load\"\u001b[22m\n",
+          "kind": "capture",
+          "stack": "page.goto: net::ERR_CONNECTION_REFUSED at http://127.0.0.1:4174/admin/login\nCall log:\n\u001b[2m  - navigating to \"http://127.0.0.1:4174/admin/login\", waiting until \"load\"\u001b[22m\n\n    at warmUpContext (C:\\Users\\bbask\\Coding_Projects\\Wedding_Website_Clean\\tools\\parity\\capture.mjs:274:31)\n    at async captureShot (C:\\Users\\bbask\\Coding_Projects\\Wedding_Website_Clean\\tools\\parity\\capture.mjs:372:18)"
+        },
+        "files": []
+      },
+      "rebuild": {
+        "ok": true,
+        "endpoint": "http://127.0.0.1:4175/admin/login",
+        "httpStatus": 200,
+        "pageHeightPx": 900,
+        "sliceCount": 8,
+        "durationMs": 6693,
+        "themeApplied": {
+          "datasetTheme": "dark",
+          "className": "dark-theme",
+          "colorScheme": "dark"
+        },
+        "finalUrl": "http://127.0.0.1:4175/admin/login",
+        "adminAuth": null,
+        "imagesSettled": true,
+        "warnings": [],
+        "consoleErrors": [],
+        "pageErrors": [],
+        "error": null,
+        "files": [
+          "C:\\Users\\bbask\\Coding_Projects\\Wedding_Website_Clean\\tools\\parity\\output\\w9-matrix-dryrun\\shots\\rebuild\\admin-login__desktop__dark--s000.png",
+          "C:\\Users\\bbask\\Coding_Projects\\Wedding_Website_Clean\\tools\\parity\\output\\w9-matrix-dryrun\\shots\\rebuild\\admin-login__desktop__dark--s001.png",
+          "C:\\Users\\bbask\\Coding_Projects\\Wedding_Website_Clean\\tools\\parity\\output\\w9-matrix-dryrun\\shots\\rebuild\\admin-login__desktop__dark--s002.png",
+          "C:\\Users\\bbask\\Coding_Projects\\Wedding_Website_Clean\\tools\\parity\\output\\w9-matrix-dryrun\\shots\\rebuild\\admin-login__desktop__dark--s003.png",
+          "C:\\Users\\bbask\\Coding_Projects\\Wedding_Website_Clean\\tools\\parity\\output\\w9-matrix-dryrun\\shots\\rebuild\\admin-login__desktop__dark--s004.png",
+          "C:\\Users\\bbask\\Coding_Projects\\Wedding_Website_Clean\\tools\\parity\\output\\w9-matrix-dryrun\\shots\\rebuild\\admin-login__desktop__dark--s005.png",
+          "C:\\Users\\bbask\\Coding_Projects\\Wedding_Website_Clean\\tools\\parity\\output\\w9-matrix-dryrun\\shots\\rebuild\\admin-login__desktop__dark--s006.png",
+          "C:\\Users\\bbask\\Coding_Projects\\Wedding_Website_Clean\\tools\\parity\\output\\w9-matrix-dryrun\\shots\\rebuild\\admin-login__desktop__dark--s007.png"
+        ]
+      },
+      "pixelDiff": null,
+      "textDiff": null,
+      "files": {
+        "legacy": [],
+        "rebuild": [
+          "shots/rebuild/admin-login__desktop__dark--s000.png",
+          "shots/rebuild/admin-login__desktop__dark--s001.png",
+          "shots/rebuild/admin-login__desktop__dark--s002.png",
+          "shots/rebuild/admin-login__desktop__dark--s003.png",
+          "shots/rebuild/admin-login__desktop__dark--s004.png",
+          "shots/rebuild/admin-login__desktop__dark--s005.png",
+          "shots/rebuild/admin-login__desktop__dark--s006.png",
+          "shots/rebuild/admin-login__desktop__dark--s007.png"
+        ],
+        "diff": [],
+        "text": {
+          "legacy": null,
+          "rebuild": "text/rebuild/admin-login__desktop__dark.json",
+          "diff": null
+        }
+      },
+      "warnings": []
+    },
+    {
+      "key": "admin__desktop__dark",
+      "route": "admin",
+      "routePath": "/admin/*",
+      "urlPath": "/admin",
+      "parity": 2,
+      "viewport": "desktop",
+      "viewportPixels": {
+        "width": 1440,
+        "height": 900
+      },
+      "theme": "dark",
+      "status": "error",
+      "failureReasons": [
+        "legacy capture-error: page.goto: net::ERR_CONNECTION_REFUSED at http://127.0.0.1:4174/admin\nCall log:\n\u001b[2m  - navigating to \"http://127.0.0.1:4174/admin\", waiting until \"load\"\u001b[22m\n"
+      ],
+      "allowlist": null,
+      "masks": [],
+      "legacy": {
+        "ok": false,
+        "endpoint": "http://127.0.0.1:4174/admin",
+        "httpStatus": null,
+        "pageHeightPx": 0,
+        "sliceCount": 0,
+        "durationMs": 144,
+        "themeApplied": null,
+        "finalUrl": null,
+        "adminAuth": null,
+        "imagesSettled": null,
+        "warnings": [],
+        "consoleErrors": [],
+        "pageErrors": [],
+        "error": {
+          "message": "page.goto: net::ERR_CONNECTION_REFUSED at http://127.0.0.1:4174/admin\nCall log:\n\u001b[2m  - navigating to \"http://127.0.0.1:4174/admin\", waiting until \"load\"\u001b[22m\n",
+          "kind": "capture",
+          "stack": "page.goto: net::ERR_CONNECTION_REFUSED at http://127.0.0.1:4174/admin\nCall log:\n\u001b[2m  - navigating to \"http://127.0.0.1:4174/admin\", waiting until \"load\"\u001b[22m\n\n    at warmUpContext (C:\\Users\\bbask\\Coding_Projects\\Wedding_Website_Clean\\tools\\parity\\capture.mjs:274:31)\n    at async captureShot (C:\\Users\\bbask\\Coding_Projects\\Wedding_Website_Clean\\tools\\parity\\capture.mjs:372:18)"
+        },
+        "files": []
+      },
+      "rebuild": {
+        "ok": true,
+        "endpoint": "http://127.0.0.1:4175/admin",
+        "httpStatus": 200,
+        "pageHeightPx": 1928,
+        "sliceCount": 8,
+        "durationMs": 7133,
+        "themeApplied": {
+          "datasetTheme": "dark",
+          "className": "dark-theme",
+          "colorScheme": "dark"
+        },
+        "finalUrl": "http://127.0.0.1:4175/admin",
+        "adminAuth": {
+          "attempted": true,
+          "succeeded": true,
+          "requestedPath": "/admin",
+          "email": "admin@test.wedding",
+          "finalPath": "/admin"
+        },
+        "imagesSettled": true,
+        "warnings": [],
+        "consoleErrors": [],
+        "pageErrors": [],
+        "error": null,
+        "files": [
+          "C:\\Users\\bbask\\Coding_Projects\\Wedding_Website_Clean\\tools\\parity\\output\\w9-matrix-dryrun\\shots\\rebuild\\admin__desktop__dark--s000.png",
+          "C:\\Users\\bbask\\Coding_Projects\\Wedding_Website_Clean\\tools\\parity\\output\\w9-matrix-dryrun\\shots\\rebuild\\admin__desktop__dark--s001.png",
+          "C:\\Users\\bbask\\Coding_Projects\\Wedding_Website_Clean\\tools\\parity\\output\\w9-matrix-dryrun\\shots\\rebuild\\admin__desktop__dark--s002.png",
+          "C:\\Users\\bbask\\Coding_Projects\\Wedding_Website_Clean\\tools\\parity\\output\\w9-matrix-dryrun\\shots\\rebuild\\admin__desktop__dark--s003.png",
+          "C:\\Users\\bbask\\Coding_Projects\\Wedding_Website_Clean\\tools\\parity\\output\\w9-matrix-dryrun\\shots\\rebuild\\admin__desktop__dark--s004.png",
+          "C:\\Users\\bbask\\Coding_Projects\\Wedding_Website_Clean\\tools\\parity\\output\\w9-matrix-dryrun\\shots\\rebuild\\admin__desktop__dark--s005.png",
+          "C:\\Users\\bbask\\Coding_Projects\\Wedding_Website_Clean\\tools\\parity\\output\\w9-matrix-dryrun\\shots\\rebuild\\admin__desktop__dark--s006.png",
+          "C:\\Users\\bbask\\Coding_Projects\\Wedding_Website_Clean\\tools\\parity\\output\\w9-matrix-dryrun\\shots\\rebuild\\admin__desktop__dark--s007.png"
+        ]
+      },
+      "pixelDiff": null,
+      "textDiff": null,
+      "files": {
+        "legacy": [],
+        "rebuild": [
+          "shots/rebuild/admin__desktop__dark--s000.png",
+          "shots/rebuild/admin__desktop__dark--s001.png",
+          "shots/rebuild/admin__desktop__dark--s002.png",
+          "shots/rebuild/admin__desktop__dark--s003.png",
+          "shots/rebuild/admin__desktop__dark--s004.png",
+          "shots/rebuild/admin__desktop__dark--s005.png",
+          "shots/rebuild/admin__desktop__dark--s006.png",
+          "shots/rebuild/admin__desktop__dark--s007.png"
+        ],
+        "diff": [],
+        "text": {
+          "legacy": null,
+          "rebuild": "text/rebuild/admin__desktop__dark.json",
+          "diff": null
+        }
+      },
+      "warnings": []
+    },
+    {
+      "key": "guest-token__desktop__dark",
+      "route": "guest-token",
+      "routePath": "/guest/:token",
+      "urlPath": "/guest/valid-showcase-token",
+      "parity": 2,
+      "viewport": "desktop",
+      "viewportPixels": {
+        "width": 1440,
+        "height": 900
+      },
+      "theme": "dark",
+      "status": "error",
+      "failureReasons": [
+        "legacy capture-error: page.goto: net::ERR_CONNECTION_REFUSED at http://127.0.0.1:4174/guest/valid-showcase-token\nCall log:\n\u001b[2m  - navigating to \"http://127.0.0.1:4174/guest/valid-showcase-token\", waiting until \"load\"\u001b[22m\n"
+      ],
+      "allowlist": null,
+      "masks": [],
+      "legacy": {
+        "ok": false,
+        "endpoint": "http://127.0.0.1:4174/guest/valid-showcase-token",
+        "httpStatus": null,
+        "pageHeightPx": 0,
+        "sliceCount": 0,
+        "durationMs": 94,
+        "themeApplied": null,
+        "finalUrl": null,
+        "adminAuth": null,
+        "imagesSettled": null,
+        "warnings": [],
+        "consoleErrors": [],
+        "pageErrors": [],
+        "error": {
+          "message": "page.goto: net::ERR_CONNECTION_REFUSED at http://127.0.0.1:4174/guest/valid-showcase-token\nCall log:\n\u001b[2m  - navigating to \"http://127.0.0.1:4174/guest/valid-showcase-token\", waiting until \"load\"\u001b[22m\n",
+          "kind": "capture",
+          "stack": "page.goto: net::ERR_CONNECTION_REFUSED at http://127.0.0.1:4174/guest/valid-showcase-token\nCall log:\n\u001b[2m  - navigating to \"http://127.0.0.1:4174/guest/valid-showcase-token\", waiting until \"load\"\u001b[22m\n\n    at warmUpContext (C:\\Users\\bbask\\Coding_Projects\\Wedding_Website_Clean\\tools\\parity\\capture.mjs:274:31)\n    at async captureShot (C:\\Users\\bbask\\Coding_Projects\\Wedding_Website_Clean\\tools\\parity\\capture.mjs:372:18)"
+        },
+        "files": []
+      },
+      "rebuild": {
+        "ok": true,
+        "endpoint": "http://127.0.0.1:4175/guest/valid-showcase-token",
+        "httpStatus": 200,
+        "pageHeightPx": 1593,
+        "sliceCount": 8,
+        "durationMs": 6931,
+        "themeApplied": {
+          "datasetTheme": "dark",
+          "className": "dark-theme",
+          "colorScheme": "dark"
+        },
+        "finalUrl": "http://127.0.0.1:4175/guest/valid-showcase-token",
+        "adminAuth": null,
+        "imagesSettled": true,
+        "warnings": [],
+        "consoleErrors": [],
+        "pageErrors": [],
+        "error": null,
+        "files": [
+          "C:\\Users\\bbask\\Coding_Projects\\Wedding_Website_Clean\\tools\\parity\\output\\w9-matrix-dryrun\\shots\\rebuild\\guest-token__desktop__dark--s000.png",
+          "C:\\Users\\bbask\\Coding_Projects\\Wedding_Website_Clean\\tools\\parity\\output\\w9-matrix-dryrun\\shots\\rebuild\\guest-token__desktop__dark--s001.png",
+          "C:\\Users\\bbask\\Coding_Projects\\Wedding_Website_Clean\\tools\\parity\\output\\w9-matrix-dryrun\\shots\\rebuild\\guest-token__desktop__dark--s002.png",
+          "C:\\Users\\bbask\\Coding_Projects\\Wedding_Website_Clean\\tools\\parity\\output\\w9-matrix-dryrun\\shots\\rebuild\\guest-token__desktop__dark--s003.png",
+          "C:\\Users\\bbask\\Coding_Projects\\Wedding_Website_Clean\\tools\\parity\\output\\w9-matrix-dryrun\\shots\\rebuild\\guest-token__desktop__dark--s004.png",
+          "C:\\Users\\bbask\\Coding_Projects\\Wedding_Website_Clean\\tools\\parity\\output\\w9-matrix-dryrun\\shots\\rebuild\\guest-token__desktop__dark--s005.png",
+          "C:\\Users\\bbask\\Coding_Projects\\Wedding_Website_Clean\\tools\\parity\\output\\w9-matrix-dryrun\\shots\\rebuild\\guest-token__desktop__dark--s006.png",
+          "C:\\Users\\bbask\\Coding_Projects\\Wedding_Website_Clean\\tools\\parity\\output\\w9-matrix-dryrun\\shots\\rebuild\\guest-token__desktop__dark--s007.png"
+        ]
+      },
+      "pixelDiff": null,
+      "textDiff": null,
+      "files": {
+        "legacy": [],
+        "rebuild": [
+          "shots/rebuild/guest-token__desktop__dark--s000.png",
+          "shots/rebuild/guest-token__desktop__dark--s001.png",
+          "shots/rebuild/guest-token__desktop__dark--s002.png",
+          "shots/rebuild/guest-token__desktop__dark--s003.png",
+          "shots/rebuild/guest-token__desktop__dark--s004.png",
+          "shots/rebuild/guest-token__desktop__dark--s005.png",
+          "shots/rebuild/guest-token__desktop__dark--s006.png",
+          "shots/rebuild/guest-token__desktop__dark--s007.png"
+        ],
+        "diff": [],
+        "text": {
+          "legacy": null,
+          "rebuild": "text/rebuild/guest-token__desktop__dark.json",
+          "diff": null
+        }
+      },
+      "warnings": []
+    },
+    {
+      "key": "not-found__desktop__dark",
+      "route": "not-found",
+      "routePath": "/*",
+      "urlPath": "/people",
+      "parity": 3,
+      "viewport": "desktop",
+      "viewportPixels": {
+        "width": 1440,
+        "height": 900
+      },
+      "theme": "dark",
+      "status": "error",
+      "failureReasons": [
+        "legacy capture-error: page.goto: net::ERR_CONNECTION_REFUSED at http://127.0.0.1:4174/people\nCall log:\n\u001b[2m  - navigating to \"http://127.0.0.1:4174/people\", waiting until \"load\"\u001b[22m\n"
+      ],
+      "allowlist": null,
+      "masks": [],
+      "legacy": {
+        "ok": false,
+        "endpoint": "http://127.0.0.1:4174/people",
+        "httpStatus": null,
+        "pageHeightPx": 0,
+        "sliceCount": 0,
+        "durationMs": 88,
+        "themeApplied": null,
+        "finalUrl": null,
+        "adminAuth": null,
+        "imagesSettled": null,
+        "warnings": [],
+        "consoleErrors": [],
+        "pageErrors": [],
+        "error": {
+          "message": "page.goto: net::ERR_CONNECTION_REFUSED at http://127.0.0.1:4174/people\nCall log:\n\u001b[2m  - navigating to \"http://127.0.0.1:4174/people\", waiting until \"load\"\u001b[22m\n",
+          "kind": "capture",
+          "stack": "page.goto: net::ERR_CONNECTION_REFUSED at http://127.0.0.1:4174/people\nCall log:\n\u001b[2m  - navigating to \"http://127.0.0.1:4174/people\", waiting until \"load\"\u001b[22m\n\n    at warmUpContext (C:\\Users\\bbask\\Coding_Projects\\Wedding_Website_Clean\\tools\\parity\\capture.mjs:274:31)\n    at async captureShot (C:\\Users\\bbask\\Coding_Projects\\Wedding_Website_Clean\\tools\\parity\\capture.mjs:372:18)"
+        },
+        "files": []
+      },
+      "rebuild": {
+        "ok": true,
+        "endpoint": "http://127.0.0.1:4175/people",
+        "httpStatus": 200,
+        "pageHeightPx": 1475,
+        "sliceCount": 8,
+        "durationMs": 6045,
+        "themeApplied": {
+          "datasetTheme": "dark",
+          "className": "dark-theme",
+          "colorScheme": "dark"
+        },
+        "finalUrl": "http://127.0.0.1:4175/people",
+        "adminAuth": null,
+        "imagesSettled": true,
+        "warnings": [],
+        "consoleErrors": [],
+        "pageErrors": [],
+        "error": null,
+        "files": [
+          "C:\\Users\\bbask\\Coding_Projects\\Wedding_Website_Clean\\tools\\parity\\output\\w9-matrix-dryrun\\shots\\rebuild\\not-found__desktop__dark--s000.png",
+          "C:\\Users\\bbask\\Coding_Projects\\Wedding_Website_Clean\\tools\\parity\\output\\w9-matrix-dryrun\\shots\\rebuild\\not-found__desktop__dark--s001.png",
+          "C:\\Users\\bbask\\Coding_Projects\\Wedding_Website_Clean\\tools\\parity\\output\\w9-matrix-dryrun\\shots\\rebuild\\not-found__desktop__dark--s002.png",
+          "C:\\Users\\bbask\\Coding_Projects\\Wedding_Website_Clean\\tools\\parity\\output\\w9-matrix-dryrun\\shots\\rebuild\\not-found__desktop__dark--s003.png",
+          "C:\\Users\\bbask\\Coding_Projects\\Wedding_Website_Clean\\tools\\parity\\output\\w9-matrix-dryrun\\shots\\rebuild\\not-found__desktop__dark--s004.png",
+          "C:\\Users\\bbask\\Coding_Projects\\Wedding_Website_Clean\\tools\\parity\\output\\w9-matrix-dryrun\\shots\\rebuild\\not-found__desktop__dark--s005.png",
+          "C:\\Users\\bbask\\Coding_Projects\\Wedding_Website_Clean\\tools\\parity\\output\\w9-matrix-dryrun\\shots\\rebuild\\not-found__desktop__dark--s006.png",
+          "C:\\Users\\bbask\\Coding_Projects\\Wedding_Website_Clean\\tools\\parity\\output\\w9-matrix-dryrun\\shots\\rebuild\\not-found__desktop__dark--s007.png"
+        ]
+      },
+      "pixelDiff": null,
+      "textDiff": null,
+      "files": {
+        "legacy": [],
+        "rebuild": [
+          "shots/rebuild/not-found__desktop__dark--s000.png",
+          "shots/rebuild/not-found__desktop__dark--s001.png",
+          "shots/rebuild/not-found__desktop__dark--s002.png",
+          "shots/rebuild/not-found__desktop__dark--s003.png",
+          "shots/rebuild/not-found__desktop__dark--s004.png",
+          "shots/rebuild/not-found__desktop__dark--s005.png",
+          "shots/rebuild/not-found__desktop__dark--s006.png",
+          "shots/rebuild/not-found__desktop__dark--s007.png"
+        ],
+        "diff": [],
+        "text": {
+          "legacy": null,
+          "rebuild": "text/rebuild/not-found__desktop__dark.json",
+          "diff": null
+        }
+      },
+      "warnings": []
+    },
+    {
+      "key": "admin-photos__desktop__dark",
+      "route": "admin-photos",
+      "routePath": "/admin/photos",
+      "urlPath": "/admin/photos",
+      "parity": 2,
+      "viewport": "desktop",
+      "viewportPixels": {
+        "width": 1440,
+        "height": 900
+      },
+      "theme": "dark",
+      "status": "error",
+      "failureReasons": [
+        "legacy capture-error: page.goto: net::ERR_CONNECTION_REFUSED at http://127.0.0.1:4174/admin/photos\nCall log:\n\u001b[2m  - navigating to \"http://127.0.0.1:4174/admin/photos\", waiting until \"load\"\u001b[22m\n"
+      ],
+      "allowlist": null,
+      "masks": [],
+      "legacy": {
+        "ok": false,
+        "endpoint": "http://127.0.0.1:4174/admin/photos",
+        "httpStatus": null,
+        "pageHeightPx": 0,
+        "sliceCount": 0,
+        "durationMs": 90,
+        "themeApplied": null,
+        "finalUrl": null,
+        "adminAuth": null,
+        "imagesSettled": null,
+        "warnings": [],
+        "consoleErrors": [],
+        "pageErrors": [],
+        "error": {
+          "message": "page.goto: net::ERR_CONNECTION_REFUSED at http://127.0.0.1:4174/admin/photos\nCall log:\n\u001b[2m  - navigating to \"http://127.0.0.1:4174/admin/photos\", waiting until \"load\"\u001b[22m\n",
+          "kind": "capture",
+          "stack": "page.goto: net::ERR_CONNECTION_REFUSED at http://127.0.0.1:4174/admin/photos\nCall log:\n\u001b[2m  - navigating to \"http://127.0.0.1:4174/admin/photos\", waiting until \"load\"\u001b[22m\n\n    at warmUpContext (C:\\Users\\bbask\\Coding_Projects\\Wedding_Website_Clean\\tools\\parity\\capture.mjs:274:31)\n    at async captureShot (C:\\Users\\bbask\\Coding_Projects\\Wedding_Website_Clean\\tools\\parity\\capture.mjs:372:18)"
+        },
+        "files": []
+      },
+      "rebuild": {
+        "ok": true,
+        "endpoint": "http://127.0.0.1:4175/admin/photos",
+        "httpStatus": 200,
+        "pageHeightPx": 1594,
+        "sliceCount": 8,
+        "durationMs": 5804,
+        "themeApplied": {
+          "datasetTheme": "dark",
+          "className": "dark-theme",
+          "colorScheme": "dark"
+        },
+        "finalUrl": "http://127.0.0.1:4175/admin/photos",
+        "adminAuth": {
+          "attempted": true,
+          "succeeded": true,
+          "requestedPath": "/admin/photos",
+          "email": "admin@test.wedding",
+          "finalPath": "/admin/photos"
+        },
+        "imagesSettled": true,
+        "warnings": [],
+        "consoleErrors": [],
+        "pageErrors": [],
+        "error": null,
+        "files": [
+          "C:\\Users\\bbask\\Coding_Projects\\Wedding_Website_Clean\\tools\\parity\\output\\w9-matrix-dryrun\\shots\\rebuild\\admin-photos__desktop__dark--s000.png",
+          "C:\\Users\\bbask\\Coding_Projects\\Wedding_Website_Clean\\tools\\parity\\output\\w9-matrix-dryrun\\shots\\rebuild\\admin-photos__desktop__dark--s001.png",
+          "C:\\Users\\bbask\\Coding_Projects\\Wedding_Website_Clean\\tools\\parity\\output\\w9-matrix-dryrun\\shots\\rebuild\\admin-photos__desktop__dark--s002.png",
+          "C:\\Users\\bbask\\Coding_Projects\\Wedding_Website_Clean\\tools\\parity\\output\\w9-matrix-dryrun\\shots\\rebuild\\admin-photos__desktop__dark--s003.png",
+          "C:\\Users\\bbask\\Coding_Projects\\Wedding_Website_Clean\\tools\\parity\\output\\w9-matrix-dryrun\\shots\\rebuild\\admin-photos__desktop__dark--s004.png",
+          "C:\\Users\\bbask\\Coding_Projects\\Wedding_Website_Clean\\tools\\parity\\output\\w9-matrix-dryrun\\shots\\rebuild\\admin-photos__desktop__dark--s005.png",
+          "C:\\Users\\bbask\\Coding_Projects\\Wedding_Website_Clean\\tools\\parity\\output\\w9-matrix-dryrun\\shots\\rebuild\\admin-photos__desktop__dark--s006.png",
+          "C:\\Users\\bbask\\Coding_Projects\\Wedding_Website_Clean\\tools\\parity\\output\\w9-matrix-dryrun\\shots\\rebuild\\admin-photos__desktop__dark--s007.png"
+        ]
+      },
+      "pixelDiff": null,
+      "textDiff": null,
+      "files": {
+        "legacy": [],
+        "rebuild": [
+          "shots/rebuild/admin-photos__desktop__dark--s000.png",
+          "shots/rebuild/admin-photos__desktop__dark--s001.png",
+          "shots/rebuild/admin-photos__desktop__dark--s002.png",
+          "shots/rebuild/admin-photos__desktop__dark--s003.png",
+          "shots/rebuild/admin-photos__desktop__dark--s004.png",
+          "shots/rebuild/admin-photos__desktop__dark--s005.png",
+          "shots/rebuild/admin-photos__desktop__dark--s006.png",
+          "shots/rebuild/admin-photos__desktop__dark--s007.png"
+        ],
+        "diff": [],
+        "text": {
+          "legacy": null,
+          "rebuild": "text/rebuild/admin-photos__desktop__dark.json",
+          "diff": null
+        }
+      },
+      "warnings": []
+    },
+    {
+      "key": "admin-uploads__desktop__dark",
+      "route": "admin-uploads",
+      "routePath": "/admin/uploads",
+      "urlPath": "/admin/uploads",
+      "parity": 2,
+      "viewport": "desktop",
+      "viewportPixels": {
+        "width": 1440,
+        "height": 900
+      },
+      "theme": "dark",
+      "status": "error",
+      "failureReasons": [
+        "legacy capture-error: page.goto: net::ERR_CONNECTION_REFUSED at http://127.0.0.1:4174/admin/uploads\nCall log:\n\u001b[2m  - navigating to \"http://127.0.0.1:4174/admin/uploads\", waiting until \"load\"\u001b[22m\n"
+      ],
+      "allowlist": null,
+      "masks": [],
+      "legacy": {
+        "ok": false,
+        "endpoint": "http://127.0.0.1:4174/admin/uploads",
+        "httpStatus": null,
+        "pageHeightPx": 0,
+        "sliceCount": 0,
+        "durationMs": 120,
+        "themeApplied": null,
+        "finalUrl": null,
+        "adminAuth": null,
+        "imagesSettled": null,
+        "warnings": [],
+        "consoleErrors": [],
+        "pageErrors": [],
+        "error": {
+          "message": "page.goto: net::ERR_CONNECTION_REFUSED at http://127.0.0.1:4174/admin/uploads\nCall log:\n\u001b[2m  - navigating to \"http://127.0.0.1:4174/admin/uploads\", waiting until \"load\"\u001b[22m\n",
+          "kind": "capture",
+          "stack": "page.goto: net::ERR_CONNECTION_REFUSED at http://127.0.0.1:4174/admin/uploads\nCall log:\n\u001b[2m  - navigating to \"http://127.0.0.1:4174/admin/uploads\", waiting until \"load\"\u001b[22m\n\n    at warmUpContext (C:\\Users\\bbask\\Coding_Projects\\Wedding_Website_Clean\\tools\\parity\\capture.mjs:274:31)\n    at async captureShot (C:\\Users\\bbask\\Coding_Projects\\Wedding_Website_Clean\\tools\\parity\\capture.mjs:372:18)"
+        },
+        "files": []
+      },
+      "rebuild": {
+        "ok": true,
+        "endpoint": "http://127.0.0.1:4175/admin/uploads",
+        "httpStatus": 200,
+        "pageHeightPx": 1928,
+        "sliceCount": 8,
+        "durationMs": 6845,
+        "themeApplied": {
+          "datasetTheme": "dark",
+          "className": "dark-theme",
+          "colorScheme": "dark"
+        },
+        "finalUrl": "http://127.0.0.1:4175/admin",
+        "adminAuth": {
+          "attempted": true,
+          "succeeded": true,
+          "requestedPath": "/admin/uploads",
+          "email": "admin@test.wedding",
+          "finalPath": "/admin"
+        },
+        "imagesSettled": true,
+        "warnings": [],
+        "consoleErrors": [],
+        "pageErrors": [],
+        "error": null,
+        "files": [
+          "C:\\Users\\bbask\\Coding_Projects\\Wedding_Website_Clean\\tools\\parity\\output\\w9-matrix-dryrun\\shots\\rebuild\\admin-uploads__desktop__dark--s000.png",
+          "C:\\Users\\bbask\\Coding_Projects\\Wedding_Website_Clean\\tools\\parity\\output\\w9-matrix-dryrun\\shots\\rebuild\\admin-uploads__desktop__dark--s001.png",
+          "C:\\Users\\bbask\\Coding_Projects\\Wedding_Website_Clean\\tools\\parity\\output\\w9-matrix-dryrun\\shots\\rebuild\\admin-uploads__desktop__dark--s002.png",
+          "C:\\Users\\bbask\\Coding_Projects\\Wedding_Website_Clean\\tools\\parity\\output\\w9-matrix-dryrun\\shots\\rebuild\\admin-uploads__desktop__dark--s003.png",
+          "C:\\Users\\bbask\\Coding_Projects\\Wedding_Website_Clean\\tools\\parity\\output\\w9-matrix-dryrun\\shots\\rebuild\\admin-uploads__desktop__dark--s004.png",
+          "C:\\Users\\bbask\\Coding_Projects\\Wedding_Website_Clean\\tools\\parity\\output\\w9-matrix-dryrun\\shots\\rebuild\\admin-uploads__desktop__dark--s005.png",
+          "C:\\Users\\bbask\\Coding_Projects\\Wedding_Website_Clean\\tools\\parity\\output\\w9-matrix-dryrun\\shots\\rebuild\\admin-uploads__desktop__dark--s006.png",
+          "C:\\Users\\bbask\\Coding_Projects\\Wedding_Website_Clean\\tools\\parity\\output\\w9-matrix-dryrun\\shots\\rebuild\\admin-uploads__desktop__dark--s007.png"
+        ]
+      },
+      "pixelDiff": null,
+      "textDiff": null,
+      "files": {
+        "legacy": [],
+        "rebuild": [
+          "shots/rebuild/admin-uploads__desktop__dark--s000.png",
+          "shots/rebuild/admin-uploads__desktop__dark--s001.png",
+          "shots/rebuild/admin-uploads__desktop__dark--s002.png",
+          "shots/rebuild/admin-uploads__desktop__dark--s003.png",
+          "shots/rebuild/admin-uploads__desktop__dark--s004.png",
+          "shots/rebuild/admin-uploads__desktop__dark--s005.png",
+          "shots/rebuild/admin-uploads__desktop__dark--s006.png",
+          "shots/rebuild/admin-uploads__desktop__dark--s007.png"
+        ],
+        "diff": [],
+        "text": {
+          "legacy": null,
+          "rebuild": "text/rebuild/admin-uploads__desktop__dark.json",
+          "diff": null
+        }
+      },
+      "warnings": []
+    },
+    {
+      "key": "admin-albums__desktop__dark",
+      "route": "admin-albums",
+      "routePath": "/admin/albums",
+      "urlPath": "/admin/albums",
+      "parity": 2,
+      "viewport": "desktop",
+      "viewportPixels": {
+        "width": 1440,
+        "height": 900
+      },
+      "theme": "dark",
+      "status": "error",
+      "failureReasons": [
+        "legacy capture-error: page.goto: net::ERR_CONNECTION_REFUSED at http://127.0.0.1:4174/admin/albums\nCall log:\n\u001b[2m  - navigating to \"http://127.0.0.1:4174/admin/albums\", waiting until \"load\"\u001b[22m\n"
+      ],
+      "allowlist": null,
+      "masks": [],
+      "legacy": {
+        "ok": false,
+        "endpoint": "http://127.0.0.1:4174/admin/albums",
+        "httpStatus": null,
+        "pageHeightPx": 0,
+        "sliceCount": 0,
+        "durationMs": 65,
+        "themeApplied": null,
+        "finalUrl": null,
+        "adminAuth": null,
+        "imagesSettled": null,
+        "warnings": [],
+        "consoleErrors": [],
+        "pageErrors": [],
+        "error": {
+          "message": "page.goto: net::ERR_CONNECTION_REFUSED at http://127.0.0.1:4174/admin/albums\nCall log:\n\u001b[2m  - navigating to \"http://127.0.0.1:4174/admin/albums\", waiting until \"load\"\u001b[22m\n",
+          "kind": "capture",
+          "stack": "page.goto: net::ERR_CONNECTION_REFUSED at http://127.0.0.1:4174/admin/albums\nCall log:\n\u001b[2m  - navigating to \"http://127.0.0.1:4174/admin/albums\", waiting until \"load\"\u001b[22m\n\n    at warmUpContext (C:\\Users\\bbask\\Coding_Projects\\Wedding_Website_Clean\\tools\\parity\\capture.mjs:274:31)\n    at async captureShot (C:\\Users\\bbask\\Coding_Projects\\Wedding_Website_Clean\\tools\\parity\\capture.mjs:372:18)"
+        },
+        "files": []
+      },
+      "rebuild": {
+        "ok": true,
+        "endpoint": "http://127.0.0.1:4175/admin/albums",
+        "httpStatus": 200,
+        "pageHeightPx": 1501,
+        "sliceCount": 8,
+        "durationMs": 5953,
+        "themeApplied": {
+          "datasetTheme": "dark",
+          "className": "dark-theme",
+          "colorScheme": "dark"
+        },
+        "finalUrl": "http://127.0.0.1:4175/admin/albums",
+        "adminAuth": {
+          "attempted": true,
+          "succeeded": true,
+          "requestedPath": "/admin/albums",
+          "email": "admin@test.wedding",
+          "finalPath": "/admin/albums"
+        },
+        "imagesSettled": true,
+        "warnings": [],
+        "consoleErrors": [],
+        "pageErrors": [],
+        "error": null,
+        "files": [
+          "C:\\Users\\bbask\\Coding_Projects\\Wedding_Website_Clean\\tools\\parity\\output\\w9-matrix-dryrun\\shots\\rebuild\\admin-albums__desktop__dark--s000.png",
+          "C:\\Users\\bbask\\Coding_Projects\\Wedding_Website_Clean\\tools\\parity\\output\\w9-matrix-dryrun\\shots\\rebuild\\admin-albums__desktop__dark--s001.png",
+          "C:\\Users\\bbask\\Coding_Projects\\Wedding_Website_Clean\\tools\\parity\\output\\w9-matrix-dryrun\\shots\\rebuild\\admin-albums__desktop__dark--s002.png",
+          "C:\\Users\\bbask\\Coding_Projects\\Wedding_Website_Clean\\tools\\parity\\output\\w9-matrix-dryrun\\shots\\rebuild\\admin-albums__desktop__dark--s003.png",
+          "C:\\Users\\bbask\\Coding_Projects\\Wedding_Website_Clean\\tools\\parity\\output\\w9-matrix-dryrun\\shots\\rebuild\\admin-albums__desktop__dark--s004.png",
+          "C:\\Users\\bbask\\Coding_Projects\\Wedding_Website_Clean\\tools\\parity\\output\\w9-matrix-dryrun\\shots\\rebuild\\admin-albums__desktop__dark--s005.png",
+          "C:\\Users\\bbask\\Coding_Projects\\Wedding_Website_Clean\\tools\\parity\\output\\w9-matrix-dryrun\\shots\\rebuild\\admin-albums__desktop__dark--s006.png",
+          "C:\\Users\\bbask\\Coding_Projects\\Wedding_Website_Clean\\tools\\parity\\output\\w9-matrix-dryrun\\shots\\rebuild\\admin-albums__desktop__dark--s007.png"
+        ]
+      },
+      "pixelDiff": null,
+      "textDiff": null,
+      "files": {
+        "legacy": [],
+        "rebuild": [
+          "shots/rebuild/admin-albums__desktop__dark--s000.png",
+          "shots/rebuild/admin-albums__desktop__dark--s001.png",
+          "shots/rebuild/admin-albums__desktop__dark--s002.png",
+          "shots/rebuild/admin-albums__desktop__dark--s003.png",
+          "shots/rebuild/admin-albums__desktop__dark--s004.png",
+          "shots/rebuild/admin-albums__desktop__dark--s005.png",
+          "shots/rebuild/admin-albums__desktop__dark--s006.png",
+          "shots/rebuild/admin-albums__desktop__dark--s007.png"
+        ],
+        "diff": [],
+        "text": {
+          "legacy": null,
+          "rebuild": "text/rebuild/admin-albums__desktop__dark.json",
+          "diff": null
+        }
+      },
+      "warnings": []
+    },
+    {
+      "key": "admin-review__desktop__dark",
+      "route": "admin-review",
+      "routePath": "/admin/review",
+      "urlPath": "/admin/review",
+      "parity": 2,
+      "viewport": "desktop",
+      "viewportPixels": {
+        "width": 1440,
+        "height": 900
+      },
+      "theme": "dark",
+      "status": "error",
+      "failureReasons": [
+        "legacy capture-error: page.goto: net::ERR_CONNECTION_REFUSED at http://127.0.0.1:4174/admin/review\nCall log:\n\u001b[2m  - navigating to \"http://127.0.0.1:4174/admin/review\", waiting until \"load\"\u001b[22m\n"
+      ],
+      "allowlist": null,
+      "masks": [],
+      "legacy": {
+        "ok": false,
+        "endpoint": "http://127.0.0.1:4174/admin/review",
+        "httpStatus": null,
+        "pageHeightPx": 0,
+        "sliceCount": 0,
+        "durationMs": 76,
+        "themeApplied": null,
+        "finalUrl": null,
+        "adminAuth": null,
+        "imagesSettled": null,
+        "warnings": [],
+        "consoleErrors": [],
+        "pageErrors": [],
+        "error": {
+          "message": "page.goto: net::ERR_CONNECTION_REFUSED at http://127.0.0.1:4174/admin/review\nCall log:\n\u001b[2m  - navigating to \"http://127.0.0.1:4174/admin/review\", waiting until \"load\"\u001b[22m\n",
+          "kind": "capture",
+          "stack": "page.goto: net::ERR_CONNECTION_REFUSED at http://127.0.0.1:4174/admin/review\nCall log:\n\u001b[2m  - navigating to \"http://127.0.0.1:4174/admin/review\", waiting until \"load\"\u001b[22m\n\n    at warmUpContext (C:\\Users\\bbask\\Coding_Projects\\Wedding_Website_Clean\\tools\\parity\\capture.mjs:274:31)\n    at async captureShot (C:\\Users\\bbask\\Coding_Projects\\Wedding_Website_Clean\\tools\\parity\\capture.mjs:372:18)"
+        },
+        "files": []
+      },
+      "rebuild": {
+        "ok": true,
+        "endpoint": "http://127.0.0.1:4175/admin/review",
+        "httpStatus": 200,
+        "pageHeightPx": 900,
+        "sliceCount": 8,
+        "durationMs": 5366,
+        "themeApplied": {
+          "datasetTheme": "dark",
+          "className": "dark-theme",
+          "colorScheme": "dark"
+        },
+        "finalUrl": "http://127.0.0.1:4175/admin/review",
+        "adminAuth": {
+          "attempted": true,
+          "succeeded": true,
+          "requestedPath": "/admin/review",
+          "email": "admin@test.wedding",
+          "finalPath": "/admin/review"
+        },
+        "imagesSettled": true,
+        "warnings": [],
+        "consoleErrors": [],
+        "pageErrors": [],
+        "error": null,
+        "files": [
+          "C:\\Users\\bbask\\Coding_Projects\\Wedding_Website_Clean\\tools\\parity\\output\\w9-matrix-dryrun\\shots\\rebuild\\admin-review__desktop__dark--s000.png",
+          "C:\\Users\\bbask\\Coding_Projects\\Wedding_Website_Clean\\tools\\parity\\output\\w9-matrix-dryrun\\shots\\rebuild\\admin-review__desktop__dark--s001.png",
+          "C:\\Users\\bbask\\Coding_Projects\\Wedding_Website_Clean\\tools\\parity\\output\\w9-matrix-dryrun\\shots\\rebuild\\admin-review__desktop__dark--s002.png",
+          "C:\\Users\\bbask\\Coding_Projects\\Wedding_Website_Clean\\tools\\parity\\output\\w9-matrix-dryrun\\shots\\rebuild\\admin-review__desktop__dark--s003.png",
+          "C:\\Users\\bbask\\Coding_Projects\\Wedding_Website_Clean\\tools\\parity\\output\\w9-matrix-dryrun\\shots\\rebuild\\admin-review__desktop__dark--s004.png",
+          "C:\\Users\\bbask\\Coding_Projects\\Wedding_Website_Clean\\tools\\parity\\output\\w9-matrix-dryrun\\shots\\rebuild\\admin-review__desktop__dark--s005.png",
+          "C:\\Users\\bbask\\Coding_Projects\\Wedding_Website_Clean\\tools\\parity\\output\\w9-matrix-dryrun\\shots\\rebuild\\admin-review__desktop__dark--s006.png",
+          "C:\\Users\\bbask\\Coding_Projects\\Wedding_Website_Clean\\tools\\parity\\output\\w9-matrix-dryrun\\shots\\rebuild\\admin-review__desktop__dark--s007.png"
+        ]
+      },
+      "pixelDiff": null,
+      "textDiff": null,
+      "files": {
+        "legacy": [],
+        "rebuild": [
+          "shots/rebuild/admin-review__desktop__dark--s000.png",
+          "shots/rebuild/admin-review__desktop__dark--s001.png",
+          "shots/rebuild/admin-review__desktop__dark--s002.png",
+          "shots/rebuild/admin-review__desktop__dark--s003.png",
+          "shots/rebuild/admin-review__desktop__dark--s004.png",
+          "shots/rebuild/admin-review__desktop__dark--s005.png",
+          "shots/rebuild/admin-review__desktop__dark--s006.png",
+          "shots/rebuild/admin-review__desktop__dark--s007.png"
+        ],
+        "diff": [],
+        "text": {
+          "legacy": null,
+          "rebuild": "text/rebuild/admin-review__desktop__dark.json",
+          "diff": null
+        }
+      },
+      "warnings": []
+    },
+    {
+      "key": "admin-claims__desktop__dark",
+      "route": "admin-claims",
+      "routePath": "/admin/claims",
+      "urlPath": "/admin/claims",
+      "parity": 2,
+      "viewport": "desktop",
+      "viewportPixels": {
+        "width": 1440,
+        "height": 900
+      },
+      "theme": "dark",
+      "status": "error",
+      "failureReasons": [
+        "legacy capture-error: page.goto: net::ERR_CONNECTION_REFUSED at http://127.0.0.1:4174/admin/claims\nCall log:\n\u001b[2m  - navigating to \"http://127.0.0.1:4174/admin/claims\", waiting until \"load\"\u001b[22m\n"
+      ],
+      "allowlist": null,
+      "masks": [],
+      "legacy": {
+        "ok": false,
+        "endpoint": "http://127.0.0.1:4174/admin/claims",
+        "httpStatus": null,
+        "pageHeightPx": 0,
+        "sliceCount": 0,
+        "durationMs": 81,
+        "themeApplied": null,
+        "finalUrl": null,
+        "adminAuth": null,
+        "imagesSettled": null,
+        "warnings": [],
+        "consoleErrors": [],
+        "pageErrors": [],
+        "error": {
+          "message": "page.goto: net::ERR_CONNECTION_REFUSED at http://127.0.0.1:4174/admin/claims\nCall log:\n\u001b[2m  - navigating to \"http://127.0.0.1:4174/admin/claims\", waiting until \"load\"\u001b[22m\n",
+          "kind": "capture",
+          "stack": "page.goto: net::ERR_CONNECTION_REFUSED at http://127.0.0.1:4174/admin/claims\nCall log:\n\u001b[2m  - navigating to \"http://127.0.0.1:4174/admin/claims\", waiting until \"load\"\u001b[22m\n\n    at warmUpContext (C:\\Users\\bbask\\Coding_Projects\\Wedding_Website_Clean\\tools\\parity\\capture.mjs:274:31)\n    at async captureShot (C:\\Users\\bbask\\Coding_Projects\\Wedding_Website_Clean\\tools\\parity\\capture.mjs:372:18)"
+        },
+        "files": []
+      },
+      "rebuild": {
+        "ok": true,
+        "endpoint": "http://127.0.0.1:4175/admin/claims",
+        "httpStatus": 200,
+        "pageHeightPx": 1501,
+        "sliceCount": 8,
+        "durationMs": 5841,
+        "themeApplied": {
+          "datasetTheme": "dark",
+          "className": "dark-theme",
+          "colorScheme": "dark"
+        },
+        "finalUrl": "http://127.0.0.1:4175/admin/claims",
+        "adminAuth": {
+          "attempted": true,
+          "succeeded": true,
+          "requestedPath": "/admin/claims",
+          "email": "admin@test.wedding",
+          "finalPath": "/admin/claims"
+        },
+        "imagesSettled": true,
+        "warnings": [],
+        "consoleErrors": [],
+        "pageErrors": [],
+        "error": null,
+        "files": [
+          "C:\\Users\\bbask\\Coding_Projects\\Wedding_Website_Clean\\tools\\parity\\output\\w9-matrix-dryrun\\shots\\rebuild\\admin-claims__desktop__dark--s000.png",
+          "C:\\Users\\bbask\\Coding_Projects\\Wedding_Website_Clean\\tools\\parity\\output\\w9-matrix-dryrun\\shots\\rebuild\\admin-claims__desktop__dark--s001.png",
+          "C:\\Users\\bbask\\Coding_Projects\\Wedding_Website_Clean\\tools\\parity\\output\\w9-matrix-dryrun\\shots\\rebuild\\admin-claims__desktop__dark--s002.png",
+          "C:\\Users\\bbask\\Coding_Projects\\Wedding_Website_Clean\\tools\\parity\\output\\w9-matrix-dryrun\\shots\\rebuild\\admin-claims__desktop__dark--s003.png",
+          "C:\\Users\\bbask\\Coding_Projects\\Wedding_Website_Clean\\tools\\parity\\output\\w9-matrix-dryrun\\shots\\rebuild\\admin-claims__desktop__dark--s004.png",
+          "C:\\Users\\bbask\\Coding_Projects\\Wedding_Website_Clean\\tools\\parity\\output\\w9-matrix-dryrun\\shots\\rebuild\\admin-claims__desktop__dark--s005.png",
+          "C:\\Users\\bbask\\Coding_Projects\\Wedding_Website_Clean\\tools\\parity\\output\\w9-matrix-dryrun\\shots\\rebuild\\admin-claims__desktop__dark--s006.png",
+          "C:\\Users\\bbask\\Coding_Projects\\Wedding_Website_Clean\\tools\\parity\\output\\w9-matrix-dryrun\\shots\\rebuild\\admin-claims__desktop__dark--s007.png"
+        ]
+      },
+      "pixelDiff": null,
+      "textDiff": null,
+      "files": {
+        "legacy": [],
+        "rebuild": [
+          "shots/rebuild/admin-claims__desktop__dark--s000.png",
+          "shots/rebuild/admin-claims__desktop__dark--s001.png",
+          "shots/rebuild/admin-claims__desktop__dark--s002.png",
+          "shots/rebuild/admin-claims__desktop__dark--s003.png",
+          "shots/rebuild/admin-claims__desktop__dark--s004.png",
+          "shots/rebuild/admin-claims__desktop__dark--s005.png",
+          "shots/rebuild/admin-claims__desktop__dark--s006.png",
+          "shots/rebuild/admin-claims__desktop__dark--s007.png"
+        ],
+        "diff": [],
+        "text": {
+          "legacy": null,
+          "rebuild": "text/rebuild/admin-claims__desktop__dark.json",
+          "diff": null
+        }
+      },
+      "warnings": []
+    },
+    {
+      "key": "admin-guestbook__desktop__dark",
+      "route": "admin-guestbook",
+      "routePath": "/admin/guestbook",
+      "urlPath": "/admin/guestbook",
+      "parity": 2,
+      "viewport": "desktop",
+      "viewportPixels": {
+        "width": 1440,
+        "height": 900
+      },
+      "theme": "dark",
+      "status": "error",
+      "failureReasons": [
+        "legacy capture-error: page.goto: net::ERR_CONNECTION_REFUSED at http://127.0.0.1:4174/admin/guestbook\nCall log:\n\u001b[2m  - navigating to \"http://127.0.0.1:4174/admin/guestbook\", waiting until \"load\"\u001b[22m\n"
+      ],
+      "allowlist": null,
+      "masks": [],
+      "legacy": {
+        "ok": false,
+        "endpoint": "http://127.0.0.1:4174/admin/guestbook",
+        "httpStatus": null,
+        "pageHeightPx": 0,
+        "sliceCount": 0,
+        "durationMs": 98,
+        "themeApplied": null,
+        "finalUrl": null,
+        "adminAuth": null,
+        "imagesSettled": null,
+        "warnings": [],
+        "consoleErrors": [],
+        "pageErrors": [],
+        "error": {
+          "message": "page.goto: net::ERR_CONNECTION_REFUSED at http://127.0.0.1:4174/admin/guestbook\nCall log:\n\u001b[2m  - navigating to \"http://127.0.0.1:4174/admin/guestbook\", waiting until \"load\"\u001b[22m\n",
+          "kind": "capture",
+          "stack": "page.goto: net::ERR_CONNECTION_REFUSED at http://127.0.0.1:4174/admin/guestbook\nCall log:\n\u001b[2m  - navigating to \"http://127.0.0.1:4174/admin/guestbook\", waiting until \"load\"\u001b[22m\n\n    at warmUpContext (C:\\Users\\bbask\\Coding_Projects\\Wedding_Website_Clean\\tools\\parity\\capture.mjs:274:31)\n    at async captureShot (C:\\Users\\bbask\\Coding_Projects\\Wedding_Website_Clean\\tools\\parity\\capture.mjs:372:18)"
+        },
+        "files": []
+      },
+      "rebuild": {
+        "ok": true,
+        "endpoint": "http://127.0.0.1:4175/admin/guestbook",
+        "httpStatus": 200,
+        "pageHeightPx": 1481,
+        "sliceCount": 8,
+        "durationMs": 5478,
+        "themeApplied": {
+          "datasetTheme": "dark",
+          "className": "dark-theme",
+          "colorScheme": "dark"
+        },
+        "finalUrl": "http://127.0.0.1:4175/admin/guestbook",
+        "adminAuth": {
+          "attempted": true,
+          "succeeded": true,
+          "requestedPath": "/admin/guestbook",
+          "email": "admin@test.wedding",
+          "finalPath": "/admin/guestbook"
+        },
+        "imagesSettled": true,
+        "warnings": [],
+        "consoleErrors": [],
+        "pageErrors": [],
+        "error": null,
+        "files": [
+          "C:\\Users\\bbask\\Coding_Projects\\Wedding_Website_Clean\\tools\\parity\\output\\w9-matrix-dryrun\\shots\\rebuild\\admin-guestbook__desktop__dark--s000.png",
+          "C:\\Users\\bbask\\Coding_Projects\\Wedding_Website_Clean\\tools\\parity\\output\\w9-matrix-dryrun\\shots\\rebuild\\admin-guestbook__desktop__dark--s001.png",
+          "C:\\Users\\bbask\\Coding_Projects\\Wedding_Website_Clean\\tools\\parity\\output\\w9-matrix-dryrun\\shots\\rebuild\\admin-guestbook__desktop__dark--s002.png",
+          "C:\\Users\\bbask\\Coding_Projects\\Wedding_Website_Clean\\tools\\parity\\output\\w9-matrix-dryrun\\shots\\rebuild\\admin-guestbook__desktop__dark--s003.png",
+          "C:\\Users\\bbask\\Coding_Projects\\Wedding_Website_Clean\\tools\\parity\\output\\w9-matrix-dryrun\\shots\\rebuild\\admin-guestbook__desktop__dark--s004.png",
+          "C:\\Users\\bbask\\Coding_Projects\\Wedding_Website_Clean\\tools\\parity\\output\\w9-matrix-dryrun\\shots\\rebuild\\admin-guestbook__desktop__dark--s005.png",
+          "C:\\Users\\bbask\\Coding_Projects\\Wedding_Website_Clean\\tools\\parity\\output\\w9-matrix-dryrun\\shots\\rebuild\\admin-guestbook__desktop__dark--s006.png",
+          "C:\\Users\\bbask\\Coding_Projects\\Wedding_Website_Clean\\tools\\parity\\output\\w9-matrix-dryrun\\shots\\rebuild\\admin-guestbook__desktop__dark--s007.png"
+        ]
+      },
+      "pixelDiff": null,
+      "textDiff": null,
+      "files": {
+        "legacy": [],
+        "rebuild": [
+          "shots/rebuild/admin-guestbook__desktop__dark--s000.png",
+          "shots/rebuild/admin-guestbook__desktop__dark--s001.png",
+          "shots/rebuild/admin-guestbook__desktop__dark--s002.png",
+          "shots/rebuild/admin-guestbook__desktop__dark--s003.png",
+          "shots/rebuild/admin-guestbook__desktop__dark--s004.png",
+          "shots/rebuild/admin-guestbook__desktop__dark--s005.png",
+          "shots/rebuild/admin-guestbook__desktop__dark--s006.png",
+          "shots/rebuild/admin-guestbook__desktop__dark--s007.png"
+        ],
+        "diff": [],
+        "text": {
+          "legacy": null,
+          "rebuild": "text/rebuild/admin-guestbook__desktop__dark.json",
+          "diff": null
+        }
+      },
+      "warnings": []
+    },
+    {
+      "key": "admin-featured__desktop__dark",
+      "route": "admin-featured",
+      "routePath": "/admin/featured",
+      "urlPath": "/admin/featured",
+      "parity": 2,
+      "viewport": "desktop",
+      "viewportPixels": {
+        "width": 1440,
+        "height": 900
+      },
+      "theme": "dark",
+      "status": "error",
+      "failureReasons": [
+        "legacy capture-error: page.goto: net::ERR_CONNECTION_REFUSED at http://127.0.0.1:4174/admin/featured\nCall log:\n\u001b[2m  - navigating to \"http://127.0.0.1:4174/admin/featured\", waiting until \"load\"\u001b[22m\n"
+      ],
+      "allowlist": null,
+      "masks": [],
+      "legacy": {
+        "ok": false,
+        "endpoint": "http://127.0.0.1:4174/admin/featured",
+        "httpStatus": null,
+        "pageHeightPx": 0,
+        "sliceCount": 0,
+        "durationMs": 86,
+        "themeApplied": null,
+        "finalUrl": null,
+        "adminAuth": null,
+        "imagesSettled": null,
+        "warnings": [],
+        "consoleErrors": [],
+        "pageErrors": [],
+        "error": {
+          "message": "page.goto: net::ERR_CONNECTION_REFUSED at http://127.0.0.1:4174/admin/featured\nCall log:\n\u001b[2m  - navigating to \"http://127.0.0.1:4174/admin/featured\", waiting until \"load\"\u001b[22m\n",
+          "kind": "capture",
+          "stack": "page.goto: net::ERR_CONNECTION_REFUSED at http://127.0.0.1:4174/admin/featured\nCall log:\n\u001b[2m  - navigating to \"http://127.0.0.1:4174/admin/featured\", waiting until \"load\"\u001b[22m\n\n    at warmUpContext (C:\\Users\\bbask\\Coding_Projects\\Wedding_Website_Clean\\tools\\parity\\capture.mjs:274:31)\n    at async captureShot (C:\\Users\\bbask\\Coding_Projects\\Wedding_Website_Clean\\tools\\parity\\capture.mjs:372:18)"
+        },
+        "files": []
+      },
+      "rebuild": {
+        "ok": true,
+        "endpoint": "http://127.0.0.1:4175/admin/featured",
+        "httpStatus": 200,
+        "pageHeightPx": 1501,
+        "sliceCount": 8,
+        "durationMs": 5477,
+        "themeApplied": {
+          "datasetTheme": "dark",
+          "className": "dark-theme",
+          "colorScheme": "dark"
+        },
+        "finalUrl": "http://127.0.0.1:4175/admin/featured",
+        "adminAuth": {
+          "attempted": true,
+          "succeeded": true,
+          "requestedPath": "/admin/featured",
+          "email": "admin@test.wedding",
+          "finalPath": "/admin/featured"
+        },
+        "imagesSettled": true,
+        "warnings": [],
+        "consoleErrors": [],
+        "pageErrors": [],
+        "error": null,
+        "files": [
+          "C:\\Users\\bbask\\Coding_Projects\\Wedding_Website_Clean\\tools\\parity\\output\\w9-matrix-dryrun\\shots\\rebuild\\admin-featured__desktop__dark--s000.png",
+          "C:\\Users\\bbask\\Coding_Projects\\Wedding_Website_Clean\\tools\\parity\\output\\w9-matrix-dryrun\\shots\\rebuild\\admin-featured__desktop__dark--s001.png",
+          "C:\\Users\\bbask\\Coding_Projects\\Wedding_Website_Clean\\tools\\parity\\output\\w9-matrix-dryrun\\shots\\rebuild\\admin-featured__desktop__dark--s002.png",
+          "C:\\Users\\bbask\\Coding_Projects\\Wedding_Website_Clean\\tools\\parity\\output\\w9-matrix-dryrun\\shots\\rebuild\\admin-featured__desktop__dark--s003.png",
+          "C:\\Users\\bbask\\Coding_Projects\\Wedding_Website_Clean\\tools\\parity\\output\\w9-matrix-dryrun\\shots\\rebuild\\admin-featured__desktop__dark--s004.png",
+          "C:\\Users\\bbask\\Coding_Projects\\Wedding_Website_Clean\\tools\\parity\\output\\w9-matrix-dryrun\\shots\\rebuild\\admin-featured__desktop__dark--s005.png",
+          "C:\\Users\\bbask\\Coding_Projects\\Wedding_Website_Clean\\tools\\parity\\output\\w9-matrix-dryrun\\shots\\rebuild\\admin-featured__desktop__dark--s006.png",
+          "C:\\Users\\bbask\\Coding_Projects\\Wedding_Website_Clean\\tools\\parity\\output\\w9-matrix-dryrun\\shots\\rebuild\\admin-featured__desktop__dark--s007.png"
+        ]
+      },
+      "pixelDiff": null,
+      "textDiff": null,
+      "files": {
+        "legacy": [],
+        "rebuild": [
+          "shots/rebuild/admin-featured__desktop__dark--s000.png",
+          "shots/rebuild/admin-featured__desktop__dark--s001.png",
+          "shots/rebuild/admin-featured__desktop__dark--s002.png",
+          "shots/rebuild/admin-featured__desktop__dark--s003.png",
+          "shots/rebuild/admin-featured__desktop__dark--s004.png",
+          "shots/rebuild/admin-featured__desktop__dark--s005.png",
+          "shots/rebuild/admin-featured__desktop__dark--s006.png",
+          "shots/rebuild/admin-featured__desktop__dark--s007.png"
+        ],
+        "diff": [],
+        "text": {
+          "legacy": null,
+          "rebuild": "text/rebuild/admin-featured__desktop__dark.json",
+          "diff": null
+        }
+      },
+      "warnings": []
+    },
+    {
+      "key": "admin-audit__desktop__dark",
+      "route": "admin-audit",
+      "routePath": "/admin/audit",
+      "urlPath": "/admin/audit",
+      "parity": 2,
+      "viewport": "desktop",
+      "viewportPixels": {
+        "width": 1440,
+        "height": 900
+      },
+      "theme": "dark",
+      "status": "error",
+      "failureReasons": [
+        "legacy capture-error: page.goto: net::ERR_CONNECTION_REFUSED at http://127.0.0.1:4174/admin/audit\nCall log:\n\u001b[2m  - navigating to \"http://127.0.0.1:4174/admin/audit\", waiting until \"load\"\u001b[22m\n"
+      ],
+      "allowlist": null,
+      "masks": [],
+      "legacy": {
+        "ok": false,
+        "endpoint": "http://127.0.0.1:4174/admin/audit",
+        "httpStatus": null,
+        "pageHeightPx": 0,
+        "sliceCount": 0,
+        "durationMs": 70,
+        "themeApplied": null,
+        "finalUrl": null,
+        "adminAuth": null,
+        "imagesSettled": null,
+        "warnings": [],
+        "consoleErrors": [],
+        "pageErrors": [],
+        "error": {
+          "message": "page.goto: net::ERR_CONNECTION_REFUSED at http://127.0.0.1:4174/admin/audit\nCall log:\n\u001b[2m  - navigating to \"http://127.0.0.1:4174/admin/audit\", waiting until \"load\"\u001b[22m\n",
+          "kind": "capture",
+          "stack": "page.goto: net::ERR_CONNECTION_REFUSED at http://127.0.0.1:4174/admin/audit\nCall log:\n\u001b[2m  - navigating to \"http://127.0.0.1:4174/admin/audit\", waiting until \"load\"\u001b[22m\n\n    at warmUpContext (C:\\Users\\bbask\\Coding_Projects\\Wedding_Website_Clean\\tools\\parity\\capture.mjs:274:31)\n    at async captureShot (C:\\Users\\bbask\\Coding_Projects\\Wedding_Website_Clean\\tools\\parity\\capture.mjs:372:18)"
+        },
+        "files": []
+      },
+      "rebuild": {
+        "ok": true,
+        "endpoint": "http://127.0.0.1:4175/admin/audit",
+        "httpStatus": 200,
+        "pageHeightPx": 1501,
+        "sliceCount": 8,
+        "durationMs": 8307,
+        "themeApplied": {
+          "datasetTheme": "dark",
+          "className": "dark-theme",
+          "colorScheme": "dark"
+        },
+        "finalUrl": "http://127.0.0.1:4175/admin/audit",
+        "adminAuth": {
+          "attempted": true,
+          "succeeded": true,
+          "requestedPath": "/admin/audit",
+          "email": "admin@test.wedding",
+          "finalPath": "/admin/audit"
+        },
+        "imagesSettled": true,
+        "warnings": [],
+        "consoleErrors": [],
+        "pageErrors": [],
+        "error": null,
+        "files": [
+          "C:\\Users\\bbask\\Coding_Projects\\Wedding_Website_Clean\\tools\\parity\\output\\w9-matrix-dryrun\\shots\\rebuild\\admin-audit__desktop__dark--s000.png",
+          "C:\\Users\\bbask\\Coding_Projects\\Wedding_Website_Clean\\tools\\parity\\output\\w9-matrix-dryrun\\shots\\rebuild\\admin-audit__desktop__dark--s001.png",
+          "C:\\Users\\bbask\\Coding_Projects\\Wedding_Website_Clean\\tools\\parity\\output\\w9-matrix-dryrun\\shots\\rebuild\\admin-audit__desktop__dark--s002.png",
+          "C:\\Users\\bbask\\Coding_Projects\\Wedding_Website_Clean\\tools\\parity\\output\\w9-matrix-dryrun\\shots\\rebuild\\admin-audit__desktop__dark--s003.png",
+          "C:\\Users\\bbask\\Coding_Projects\\Wedding_Website_Clean\\tools\\parity\\output\\w9-matrix-dryrun\\shots\\rebuild\\admin-audit__desktop__dark--s004.png",
+          "C:\\Users\\bbask\\Coding_Projects\\Wedding_Website_Clean\\tools\\parity\\output\\w9-matrix-dryrun\\shots\\rebuild\\admin-audit__desktop__dark--s005.png",
+          "C:\\Users\\bbask\\Coding_Projects\\Wedding_Website_Clean\\tools\\parity\\output\\w9-matrix-dryrun\\shots\\rebuild\\admin-audit__desktop__dark--s006.png",
+          "C:\\Users\\bbask\\Coding_Projects\\Wedding_Website_Clean\\tools\\parity\\output\\w9-matrix-dryrun\\shots\\rebuild\\admin-audit__desktop__dark--s007.png"
+        ]
+      },
+      "pixelDiff": null,
+      "textDiff": null,
+      "files": {
+        "legacy": [],
+        "rebuild": [
+          "shots/rebuild/admin-audit__desktop__dark--s000.png",
+          "shots/rebuild/admin-audit__desktop__dark--s001.png",
+          "shots/rebuild/admin-audit__desktop__dark--s002.png",
+          "shots/rebuild/admin-audit__desktop__dark--s003.png",
+          "shots/rebuild/admin-audit__desktop__dark--s004.png",
+          "shots/rebuild/admin-audit__desktop__dark--s005.png",
+          "shots/rebuild/admin-audit__desktop__dark--s006.png",
+          "shots/rebuild/admin-audit__desktop__dark--s007.png"
+        ],
+        "diff": [],
+        "text": {
+          "legacy": null,
+          "rebuild": "text/rebuild/admin-audit__desktop__dark.json",
+          "diff": null
+        }
+      },
+      "warnings": []
+    },
+    {
+      "key": "admin-analytics__desktop__dark",
+      "route": "admin-analytics",
+      "routePath": "/admin/analytics",
+      "urlPath": "/admin/analytics",
+      "parity": 2,
+      "viewport": "desktop",
+      "viewportPixels": {
+        "width": 1440,
+        "height": 900
+      },
+      "theme": "dark",
+      "status": "error",
+      "failureReasons": [
+        "legacy capture-error: page.goto: net::ERR_CONNECTION_REFUSED at http://127.0.0.1:4174/admin/analytics\nCall log:\n\u001b[2m  - navigating to \"http://127.0.0.1:4174/admin/analytics\", waiting until \"load\"\u001b[22m\n"
+      ],
+      "allowlist": null,
+      "masks": [],
+      "legacy": {
+        "ok": false,
+        "endpoint": "http://127.0.0.1:4174/admin/analytics",
+        "httpStatus": null,
+        "pageHeightPx": 0,
+        "sliceCount": 0,
+        "durationMs": 758,
+        "themeApplied": null,
+        "finalUrl": null,
+        "adminAuth": null,
+        "imagesSettled": null,
+        "warnings": [],
+        "consoleErrors": [],
+        "pageErrors": [],
+        "error": {
+          "message": "page.goto: net::ERR_CONNECTION_REFUSED at http://127.0.0.1:4174/admin/analytics\nCall log:\n\u001b[2m  - navigating to \"http://127.0.0.1:4174/admin/analytics\", waiting until \"load\"\u001b[22m\n",
+          "kind": "capture",
+          "stack": "page.goto: net::ERR_CONNECTION_REFUSED at http://127.0.0.1:4174/admin/analytics\nCall log:\n\u001b[2m  - navigating to \"http://127.0.0.1:4174/admin/analytics\", waiting until \"load\"\u001b[22m\n\n    at warmUpContext (C:\\Users\\bbask\\Coding_Projects\\Wedding_Website_Clean\\tools\\parity\\capture.mjs:274:31)\n    at async captureShot (C:\\Users\\bbask\\Coding_Projects\\Wedding_Website_Clean\\tools\\parity\\capture.mjs:372:18)"
+        },
+        "files": []
+      },
+      "rebuild": {
+        "ok": true,
+        "endpoint": "http://127.0.0.1:4175/admin/analytics",
+        "httpStatus": 200,
+        "pageHeightPx": 1501,
+        "sliceCount": 8,
+        "durationMs": 9856,
+        "themeApplied": {
+          "datasetTheme": "dark",
+          "className": "dark-theme",
+          "colorScheme": "dark"
+        },
+        "finalUrl": "http://127.0.0.1:4175/admin/analytics",
+        "adminAuth": {
+          "attempted": true,
+          "succeeded": true,
+          "requestedPath": "/admin/analytics",
+          "email": "admin@test.wedding",
+          "finalPath": "/admin/analytics"
+        },
+        "imagesSettled": true,
+        "warnings": [],
+        "consoleErrors": [
+          "Failed to load resource: the server responded with a status of 404 (Not Found)",
+          "Failed to load resource: the server responded with a status of 404 (Not Found)"
+        ],
+        "pageErrors": [],
+        "error": null,
+        "files": [
+          "C:\\Users\\bbask\\Coding_Projects\\Wedding_Website_Clean\\tools\\parity\\output\\w9-matrix-dryrun\\shots\\rebuild\\admin-analytics__desktop__dark--s000.png",
+          "C:\\Users\\bbask\\Coding_Projects\\Wedding_Website_Clean\\tools\\parity\\output\\w9-matrix-dryrun\\shots\\rebuild\\admin-analytics__desktop__dark--s001.png",
+          "C:\\Users\\bbask\\Coding_Projects\\Wedding_Website_Clean\\tools\\parity\\output\\w9-matrix-dryrun\\shots\\rebuild\\admin-analytics__desktop__dark--s002.png",
+          "C:\\Users\\bbask\\Coding_Projects\\Wedding_Website_Clean\\tools\\parity\\output\\w9-matrix-dryrun\\shots\\rebuild\\admin-analytics__desktop__dark--s003.png",
+          "C:\\Users\\bbask\\Coding_Projects\\Wedding_Website_Clean\\tools\\parity\\output\\w9-matrix-dryrun\\shots\\rebuild\\admin-analytics__desktop__dark--s004.png",
+          "C:\\Users\\bbask\\Coding_Projects\\Wedding_Website_Clean\\tools\\parity\\output\\w9-matrix-dryrun\\shots\\rebuild\\admin-analytics__desktop__dark--s005.png",
+          "C:\\Users\\bbask\\Coding_Projects\\Wedding_Website_Clean\\tools\\parity\\output\\w9-matrix-dryrun\\shots\\rebuild\\admin-analytics__desktop__dark--s006.png",
+          "C:\\Users\\bbask\\Coding_Projects\\Wedding_Website_Clean\\tools\\parity\\output\\w9-matrix-dryrun\\shots\\rebuild\\admin-analytics__desktop__dark--s007.png"
+        ]
+      },
+      "pixelDiff": null,
+      "textDiff": null,
+      "files": {
+        "legacy": [],
+        "rebuild": [
+          "shots/rebuild/admin-analytics__desktop__dark--s000.png",
+          "shots/rebuild/admin-analytics__desktop__dark--s001.png",
+          "shots/rebuild/admin-analytics__desktop__dark--s002.png",
+          "shots/rebuild/admin-analytics__desktop__dark--s003.png",
+          "shots/rebuild/admin-analytics__desktop__dark--s004.png",
+          "shots/rebuild/admin-analytics__desktop__dark--s005.png",
+          "shots/rebuild/admin-analytics__desktop__dark--s006.png",
+          "shots/rebuild/admin-analytics__desktop__dark--s007.png"
+        ],
+        "diff": [],
+        "text": {
+          "legacy": null,
+          "rebuild": "text/rebuild/admin-analytics__desktop__dark.json",
+          "diff": null
+        }
+      },
+      "warnings": []
+    },
+    {
+      "key": "admin-settings__desktop__dark",
+      "route": "admin-settings",
+      "routePath": "/admin/settings",
+      "urlPath": "/admin/settings",
+      "parity": 2,
+      "viewport": "desktop",
+      "viewportPixels": {
+        "width": 1440,
+        "height": 900
+      },
+      "theme": "dark",
+      "status": "error",
+      "failureReasons": [
+        "legacy capture-error: page.goto: net::ERR_CONNECTION_REFUSED at http://127.0.0.1:4174/admin/settings\nCall log:\n\u001b[2m  - navigating to \"http://127.0.0.1:4174/admin/settings\", waiting until \"load\"\u001b[22m\n"
+      ],
+      "allowlist": null,
+      "masks": [],
+      "legacy": {
+        "ok": false,
+        "endpoint": "http://127.0.0.1:4174/admin/settings",
+        "httpStatus": null,
+        "pageHeightPx": 0,
+        "sliceCount": 0,
+        "durationMs": 719,
+        "themeApplied": null,
+        "finalUrl": null,
+        "adminAuth": null,
+        "imagesSettled": null,
+        "warnings": [],
+        "consoleErrors": [],
+        "pageErrors": [],
+        "error": {
+          "message": "page.goto: net::ERR_CONNECTION_REFUSED at http://127.0.0.1:4174/admin/settings\nCall log:\n\u001b[2m  - navigating to \"http://127.0.0.1:4174/admin/settings\", waiting until \"load\"\u001b[22m\n",
+          "kind": "capture",
+          "stack": "page.goto: net::ERR_CONNECTION_REFUSED at http://127.0.0.1:4174/admin/settings\nCall log:\n\u001b[2m  - navigating to \"http://127.0.0.1:4174/admin/settings\", waiting until \"load\"\u001b[22m\n\n    at warmUpContext (C:\\Users\\bbask\\Coding_Projects\\Wedding_Website_Clean\\tools\\parity\\capture.mjs:274:31)\n    at async captureShot (C:\\Users\\bbask\\Coding_Projects\\Wedding_Website_Clean\\tools\\parity\\capture.mjs:372:18)"
+        },
+        "files": []
+      },
+      "rebuild": {
+        "ok": true,
+        "endpoint": "http://127.0.0.1:4175/admin/settings",
+        "httpStatus": 200,
+        "pageHeightPx": 900,
+        "sliceCount": 8,
+        "durationMs": 22750,
+        "themeApplied": {
+          "datasetTheme": "dark",
+          "className": "dark-theme",
+          "colorScheme": "dark"
+        },
+        "finalUrl": "http://127.0.0.1:4175/admin/login?from=%2Fadmin%2Fsettings",
+        "adminAuth": {
+          "attempted": false,
+          "succeeded": false,
+          "requestedPath": "/admin/settings",
+          "email": "admin@test.wedding",
+          "finalPath": null
+        },
+        "imagesSettled": true,
+        "warnings": [],
+        "consoleErrors": [],
+        "pageErrors": [],
+        "error": null,
+        "files": [
+          "C:\\Users\\bbask\\Coding_Projects\\Wedding_Website_Clean\\tools\\parity\\output\\w9-matrix-dryrun\\shots\\rebuild\\admin-settings__desktop__dark--s000.png",
+          "C:\\Users\\bbask\\Coding_Projects\\Wedding_Website_Clean\\tools\\parity\\output\\w9-matrix-dryrun\\shots\\rebuild\\admin-settings__desktop__dark--s001.png",
+          "C:\\Users\\bbask\\Coding_Projects\\Wedding_Website_Clean\\tools\\parity\\output\\w9-matrix-dryrun\\shots\\rebuild\\admin-settings__desktop__dark--s002.png",
+          "C:\\Users\\bbask\\Coding_Projects\\Wedding_Website_Clean\\tools\\parity\\output\\w9-matrix-dryrun\\shots\\rebuild\\admin-settings__desktop__dark--s003.png",
+          "C:\\Users\\bbask\\Coding_Projects\\Wedding_Website_Clean\\tools\\parity\\output\\w9-matrix-dryrun\\shots\\rebuild\\admin-settings__desktop__dark--s004.png",
+          "C:\\Users\\bbask\\Coding_Projects\\Wedding_Website_Clean\\tools\\parity\\output\\w9-matrix-dryrun\\shots\\rebuild\\admin-settings__desktop__dark--s005.png",
+          "C:\\Users\\bbask\\Coding_Projects\\Wedding_Website_Clean\\tools\\parity\\output\\w9-matrix-dryrun\\shots\\rebuild\\admin-settings__desktop__dark--s006.png",
+          "C:\\Users\\bbask\\Coding_Projects\\Wedding_Website_Clean\\tools\\parity\\output\\w9-matrix-dryrun\\shots\\rebuild\\admin-settings__desktop__dark--s007.png"
+        ]
+      },
+      "pixelDiff": null,
+      "textDiff": null,
+      "files": {
+        "legacy": [],
+        "rebuild": [
+          "shots/rebuild/admin-settings__desktop__dark--s000.png",
+          "shots/rebuild/admin-settings__desktop__dark--s001.png",
+          "shots/rebuild/admin-settings__desktop__dark--s002.png",
+          "shots/rebuild/admin-settings__desktop__dark--s003.png",
+          "shots/rebuild/admin-settings__desktop__dark--s004.png",
+          "shots/rebuild/admin-settings__desktop__dark--s005.png",
+          "shots/rebuild/admin-settings__desktop__dark--s006.png",
+          "shots/rebuild/admin-settings__desktop__dark--s007.png"
+        ],
+        "diff": [],
+        "text": {
+          "legacy": null,
+          "rebuild": "text/rebuild/admin-settings__desktop__dark.json",
+          "diff": null
+        }
+      },
+      "warnings": []
+    }
+  ]
+}

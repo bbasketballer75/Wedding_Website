@@ -1,0 +1,257 @@
+{
+  "key": "gallery__mobile__dark",
+  "route": "gallery",
+  "viewport": "mobile",
+  "theme": "dark",
+  "generatedAt": "2026-11-10T02:54:20.356Z",
+  "differences": [
+    {
+      "field": "title",
+      "legacy": "Photo Gallery | Austin & Jordyn's Wedding",
+      "rebuild": "Austin & Jordyn | Wedding Archive"
+    },
+    {
+      "field": "canonical",
+      "legacy": "https://www.theporadas.com/gallery",
+      "rebuild": "https://www.theporadas.com/"
+    },
+    {
+      "field": "meta.description",
+      "legacy": "Browse our wedding photos and share your own. A collection of memories from our special day.",
+      "rebuild": "A permanent digital archive of our wedding day. Relive our story, browse the films, and view the galleries."
+    },
+    {
+      "field": "meta.og:url",
+      "legacy": "https://www.theporadas.com/gallery",
+      "rebuild": "https://www.theporadas.com/"
+    },
+    {
+      "field": "meta.og:title",
+      "legacy": "Photo Gallery | Austin & Jordyn's Wedding",
+      "rebuild": "Austin & Jordyn | Wedding Archive"
+    },
+    {
+      "field": "meta.og:description",
+      "legacy": "Browse our wedding photos and share your own. A collection of memories from our special day.",
+      "rebuild": "A permanent digital archive of our wedding day. Relive our story, browse the films, and view the galleries."
+    },
+    {
+      "field": "meta.og:image",
+      "legacy": "https://www.theporadas.com/images/home/intro-video-poster.png",
+      "rebuild": "https://www.theporadas.com/images/og-image.webp"
+    },
+    {
+      "field": "meta.twitter:title",
+      "legacy": "Photo Gallery | Austin & Jordyn's Wedding",
+      "rebuild": "Austin & Jordyn | Wedding Archive"
+    },
+    {
+      "field": "meta.twitter:description",
+      "legacy": "Browse our wedding photos and share your own. A collection of memories from our special day.",
+      "rebuild": "A permanent digital archive of our wedding day. Relive our story, browse the films, and view the galleries."
+    },
+    {
+      "field": "meta.twitter:image",
+      "legacy": "https://www.theporadas.com/images/home/intro-video-poster.png",
+      "rebuild": "https://www.theporadas.com/images/og-image.webp"
+    },
+    {
+      "field": "meta.og:image:width",
+      "legacy": "1200",
+      "rebuild": null
+    },
+    {
+      "field": "meta.og:image:height",
+      "legacy": "630",
+      "rebuild": null
+    },
+    {
+      "field": "meta.og:site_name",
+      "legacy": "Austin & Jordyn's Wedding",
+      "rebuild": null
+    },
+    {
+      "field": "meta.og:locale",
+      "legacy": "en_US",
+      "rebuild": null
+    },
+    {
+      "field": "headings",
+      "legacy": [
+        "h1: Browse the archive",
+        "h3: Check Your Upload Status",
+        "h2: Proposal",
+        "h2: Thanks for helping us keep the day alive."
+      ],
+      "rebuild": ["h1: Something went wrong", "h2: Thanks for helping us keep the day alive."]
+    },
+    {
+      "field": "images",
+      "legacy": [
+        "A closer look at the ring → /images/engagement/PoradaProposal-310.webp (lazy)",
+        "The exhale after everything changed → /images/engagement/PoradaProposal-375.webp (lazy)",
+        "Wedding photo → /images/engagement/PoradaProposal-4.webp (lazy)",
+        "Wedding photo → /images/engagement/PoradaProposal-6.webp (lazy)",
+        "Wedding photo → /images/engagement/PoradaProposal-28.webp (lazy)",
+        "Wedding photo → /images/engagement/PoradaProposal-31.webp (lazy)",
+        "Wedding photo → /images/engagement/PoradaProposal-36.webp (lazy)",
+        "Wedding photo → /images/engagement/PoradaProposal-40.webp (lazy)",
+        "Wedding photo → /images/engagement/PoradaProposal-58.webp (lazy)",
+        "Wedding photo → /images/engagement/PoradaProposal-62.webp (lazy)",
+        "Wedding photo → /images/engagement/PoradaProposal-67.webp (lazy)",
+        "Wedding photo → /images/engagement/PoradaProposal-75.webp (lazy)",
+        "Wedding photo → /images/engagement/PoradaProposal-78.webp (lazy)",
+        "Wedding photo → /images/engagement/PoradaProposal-146.webp (lazy)",
+        "Wedding photo → /images/engagement/PoradaProposal-156.webp (lazy)",
+        "Wedding photo → /images/engagement/PoradaProposal-198.webp (lazy)",
+        "Wedding photo → /images/engagement/PoradaProposal-259.webp (lazy)",
+        "Wedding photo → /images/engagement/PoradaProposal-262.webp (lazy)",
+        "Wedding photo → /images/engagement/PoradaProposal-268.webp (lazy)",
+        "Wedding photo → /images/engagement/PoradaProposal-273.webp (lazy)",
+        "Wedding photo → /images/engagement/PoradaProposal-286.webp (lazy)",
+        "Wedding photo → /images/engagement/PoradaProposal-309.webp (lazy)",
+        "Wedding photo → /images/engagement/PoradaProposal-316.webp (lazy)",
+        "Wedding photo → /images/engagement/PoradaProposal-318.webp (lazy)",
+        "Wedding photo → /images/engagement/PoradaProposal-320.webp (lazy)",
+        "Wedding photo → /images/engagement/PoradaProposal-359.webp (lazy)",
+        "Wedding photo → /images/engagement/PoradaProposal-421.webp (lazy)",
+        "Wedding photo → /images/engagement/PoradaProposal-458.webp (lazy)",
+        "Wedding photo → /images/engagement/PoradaProposal-482.webp (lazy)",
+        "First look on the lawn → /images/engagement/PoradaProposal-29.webp (lazy)"
+      ],
+      "rebuild": []
+    },
+    {
+      "field": "bodyText",
+      "legacy": [
+        "Skip to main content",
+        "A&J",
+        "",
+        "GALLERY",
+        "",
+        "Browse the archive",
+        "",
+        "Start with the album you want, then use search or people browsing only when you need it.",
+        "",
+        "30 visible",
+        "",
+        "Proposal",
+        "",
+        "30 photos",
+        "",
+        "Bach+ette",
+        "",
+        "0 photos",
+        "",
+        "Wedding Photos",
+        "",
+        "5 photos",
+        "",
+        "Guest Photos",
+        "",
+        "0 photos",
+        "",
+        "Masonry",
+        "Grid",
+        "Timeline",
+        "Select",
+        "Check Your Upload Status",
+        "",
+        "Enter the email address you used when uploading to see your status.",
+        "",
+        "LOOK UP",
+        "Proposal",
+        "",
+        "AUSTIN AND JORDYN",
+        "",
+        "Thanks for helping us keep the day alive.",
+        "",
+        "The simplest way through is still the best one: watch the film, open the gallery when you want to linger, and leave a note only if you still have something to say before you go.",
+        "",
+        "MAY 10, 2025",
+        "THE LODGE AT INDIAN LAKE",
+        "",
+        "Watch the film",
+        "",
+        "Browse the gallery",
+        "",
+        "Leave a note",
+        "",
+        "Memory Book",
+        "",
+        "WATCH FILM",
+        "GALLERY",
+        "GUESTBOOK",
+        "SHARE",
+        "MEMORY BOOK",
+        "",
+        "Made with",
+        "for the people who shared it with us",
+        "",
+        "© 2026 Austin & Jordyn"
+      ],
+      "rebuild": [
+        "Skip to main content",
+        "A&J",
+        "Something went wrong",
+        "",
+        "This page could not be displayed.",
+        "",
+        "AUSTIN AND JORDYN",
+        "",
+        "Thanks for helping us keep the day alive.",
+        "",
+        "The simplest way through is still the best one: watch the film, open the gallery when you want to linger, and leave a note only if you still have something to say before you go.",
+        "",
+        "MAY 10, 2025",
+        "THE LODGE AT INDIAN LAKE",
+        "",
+        "Watch the film",
+        "",
+        "Browse the gallery",
+        "",
+        "Leave a note",
+        "",
+        "Memory Book",
+        "",
+        "WATCH FILM",
+        "GALLERY",
+        "GUESTBOOK",
+        "SHARE",
+        "MEMORY BOOK",
+        "",
+        "Made with",
+        "for the people who shared it with us",
+        "",
+        "© 2026 Austin & Jordyn"
+      ]
+    }
+  ],
+  "bodyText": {
+    "legacyLines": 65,
+    "rebuildLines": 33,
+    "firstDifferenceLine": 2,
+    "context": {
+      "legacy": [
+        "Skip to main content",
+        "A&J",
+        "",
+        "GALLERY",
+        "",
+        "Browse the archive",
+        "",
+        "Start with the album you want, then use search or people browsing only when you need it."
+      ],
+      "rebuild": [
+        "Skip to main content",
+        "A&J",
+        "Something went wrong",
+        "",
+        "This page could not be displayed.",
+        "",
+        "AUSTIN AND JORDYN",
+        ""
+      ]
+    }
+  }
+}

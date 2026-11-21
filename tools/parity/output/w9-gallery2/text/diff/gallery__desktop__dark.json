@@ -1,0 +1,41 @@
+{
+  "key": "gallery__desktop__dark",
+  "route": "gallery",
+  "viewport": "desktop",
+  "theme": "dark",
+  "generatedAt": "2026-11-10T00:02:30.188Z",
+  "differences": [
+    {
+      "field": "images",
+      "legacy": [
+        "A closer look at the ring → /images/engagement/PoradaProposal-310.webp (lazy)",
+        "The exhale after everything changed → /images/engagement/PoradaProposal-375.webp (lazy)",
+        "Wedding photo → /images/engagement/PoradaProposal-4.webp (lazy)",
+        "Wedding photo → /images/engagement/PoradaProposal-6.webp (lazy)",
+        "Wedding photo → /images/engagement/PoradaProposal-28.webp (lazy)",
+        "Wedding photo → /images/engagement/PoradaProposal-31.webp (lazy)",
+        "Wedding photo → /images/engagement/PoradaProposal-36.webp (lazy)",
+        "Wedding photo → /images/engagement/PoradaProposal-40.webp (lazy)",
+        "Wedding photo → /images/engagement/PoradaProposal-58.webp (lazy)",
+        "Wedding photo → /images/engagement/PoradaProposal-62.webp (lazy)",
+        "Wedding photo → /images/engagement/PoradaProposal-67.webp (lazy)",
+        "Wedding photo → /images/engagement/PoradaProposal-75.webp (lazy)"
+      ],
+      "rebuild": [
+        "First look on the lawn → /images/engagement/PoradaProposal-29.webp (lazy)",
+        "A closer look at the ring → /images/engagement/PoradaProposal-310.webp (lazy)",
+        "The exhale after everything changed → /images/engagement/PoradaProposal-375.webp (lazy)",
+        "Wedding photo → /images/engagement/PoradaProposal-4.webp (lazy)",
+        "Wedding photo → /images/engagement/PoradaProposal-6.webp (lazy)",
+        "Wedding photo → /images/engagement/PoradaProposal-28.webp (lazy)",
+        "Wedding photo → /images/engagement/PoradaProposal-31.webp (lazy)",
+        "Wedding photo → /images/engagement/PoradaProposal-36.webp (lazy)",
+        "Wedding photo → /images/engagement/PoradaProposal-40.webp (lazy)",
+        "Wedding photo → /images/engagement/PoradaProposal-58.webp (lazy)",
+        "Wedding photo → /images/engagement/PoradaProposal-62.webp (lazy)",
+        "Wedding photo → /images/engagement/PoradaProposal-67.webp (lazy)"
+      ]
+    }
+  ],
+  "bodyText": null
+}

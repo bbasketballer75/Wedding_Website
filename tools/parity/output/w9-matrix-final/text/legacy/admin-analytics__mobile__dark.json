@@ -1,0 +1,158 @@
+{
+  "capturedAt": "2026-11-10T01:25:57.637Z",
+  "baseUrl": "http://127.0.0.1:4174",
+  "url": "/admin/analytics",
+  "title": "Austin & Jordyn | Wedding Archive",
+  "lang": "en",
+  "canonical": "https://www.theporadas.com/",
+  "meta": {
+    "viewport": "width=device-width, initial-scale=1.0",
+    "title": "Austin & Jordyn | Wedding Archive",
+    "description": "A permanent digital archive of our wedding day. Relive our story, browse the films, and view the galleries.",
+    "keywords": "wedding, archive, austin, jordyn, marriage, collection",
+    "author": "Austin & Jordyn",
+    "og:type": "website",
+    "og:url": "https://www.theporadas.com/",
+    "og:title": "Austin & Jordyn | Wedding Archive",
+    "og:description": "A permanent digital archive of our wedding day. Relive our story, browse the films, and view the galleries.",
+    "og:image": "https://www.theporadas.com/images/og-image.webp",
+    "twitter:card": "summary_large_image",
+    "twitter:url": "https://www.theporadas.com/",
+    "twitter:title": "Austin & Jordyn | Wedding Archive",
+    "twitter:description": "A permanent digital archive of our wedding day. Relive our story, browse the films, and view the galleries.",
+    "twitter:image": "https://www.theporadas.com/images/og-image.webp",
+    "robots": "index, follow",
+    "language": "English",
+    "theme-color": "#d4af37",
+    "mobile-web-app-capable": "yes",
+    "apple-mobile-web-app-status-bar-style": "black-translucent",
+    "apple-mobile-web-app-title": "A&J Wedding",
+    "application-name": "A&J Wedding",
+    "msapplication-TileColor": "#d4af37",
+    "msapplication-config": "/browserconfig.xml"
+  },
+  "headings": [
+    {
+      "level": 1,
+      "text": "Read the database-backed pulse of the site."
+    },
+    {
+      "level": 2,
+      "text": "Analytics Dashboard"
+    }
+  ],
+  "links": [
+    {
+      "href": "/#main-content",
+      "text": "Skip to main content",
+      "ariaLabel": ""
+    },
+    {
+      "href": "/",
+      "text": "A&JAdmin",
+      "ariaLabel": ""
+    },
+    {
+      "href": "/admin",
+      "text": "Dashboard",
+      "ariaLabel": ""
+    },
+    {
+      "href": "/admin/photos",
+      "text": "Photos",
+      "ariaLabel": ""
+    },
+    {
+      "href": "/admin/albums",
+      "text": "Albums",
+      "ariaLabel": ""
+    },
+    {
+      "href": "/admin/review",
+      "text": "People Review",
+      "ariaLabel": ""
+    },
+    {
+      "href": "/admin/claims",
+      "text": "Photo Claims",
+      "ariaLabel": ""
+    },
+    {
+      "href": "/admin/guestbook",
+      "text": "Guestbook",
+      "ariaLabel": ""
+    },
+    {
+      "href": "/admin/featured",
+      "text": "Featured",
+      "ariaLabel": ""
+    },
+    {
+      "href": "/admin/audit",
+      "text": "Audit Trail",
+      "ariaLabel": ""
+    },
+    {
+      "href": "/admin/analytics",
+      "text": "Analytics",
+      "ariaLabel": ""
+    },
+    {
+      "href": "/admin/settings",
+      "text": "Settings",
+      "ariaLabel": ""
+    },
+    {
+      "href": "/admin",
+      "text": "DashboardSee what needs attention next.",
+      "ariaLabel": ""
+    },
+    {
+      "href": "/admin/photos",
+      "text": "PhotosModerate uploads, publish photos, and run guest tagging.",
+      "ariaLabel": ""
+    },
+    {
+      "href": "/admin/albums",
+      "text": "AlbumsArrange the live order inside each public album.",
+      "ariaLabel": ""
+    },
+    {
+      "href": "/admin/review",
+      "text": "People ReviewWork through face review and named people.",
+      "ariaLabel": ""
+    },
+    {
+      "href": "/admin/claims",
+      "text": "Photo ClaimsReview and approve photo ownership and face tag claims.",
+      "ariaLabel": ""
+    },
+    {
+      "href": "/admin/guestbook",
+      "text": "GuestbookModerate text messages.",
+      "ariaLabel": ""
+    },
+    {
+      "href": "/admin/featured",
+      "text": "FeaturedSet what appears in the homepage and film page spotlight sections.",
+      "ariaLabel": ""
+    },
+    {
+      "href": "/admin/audit",
+      "text": "Audit TrailSee who changed moderation state and when.",
+      "ariaLabel": ""
+    },
+    {
+      "href": "/admin/analytics",
+      "text": "AnalyticsTrack verified database activity inside the app.",
+      "ariaLabel": ""
+    },
+    {
+      "href": "/admin/settings",
+      "text": "SettingsReference the live setup and operating notes.",
+      "ariaLabel": ""
+    }
+  ],
+  "images": [],
+  "bodyText": "Skip to main content\nA&JAdmin\n\nA calmer workspace for moderation, people review, and site upkeep.\n\nSigned in as admin@test.wedding\nSIGN OUT\n\nVERIFIED ACTIVITY\n\nRead the database-backed pulse of the site.\n\nThis screen is intentionally narrow: it reflects confirmed app activity, while Google Analytics and Sentry remain the source of truth for audience traffic and errors.\n\nDASHBOARD\nPHOTOS\nALBUMS\nPEOPLE REVIEW\nPHOTO CLAIMS\nGUESTBOOK\nFEATURED\nAUDIT TRAIL\nANALYTICS\nSETTINGS\nAnalytics Dashboard\nLast 7 Days\nLast 30 Days\nLast 90 Days\n\nApproved Uploads\n\n0\n\nPending Uploads\n\n0\n\nGuestbook Entries\n\n0\n\nPhotos Published\n\n0\n\nGuest Photos Published\n\n0\n\nApproved guest submissions that made it into the live gallery\n\nProfessional Photos Added\n\n0\n\nCurated additions published during the selected window\n\nDatabase Activity Only\n\nThis admin screen now shows only verified database counts for the selected period. For traffic, page views, and audience behavior, use the live Google Analytics and Sentry dashboards outside the app."
+}

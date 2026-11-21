@@ -1,0 +1,84 @@
+{
+  "capturedAt": "2026-11-10T01:21:58.957Z",
+  "baseUrl": "http://127.0.0.1:4174",
+  "url": "/admin/review",
+  "title": "Austin & Jordyn | Wedding Archive",
+  "lang": "en",
+  "canonical": "https://www.theporadas.com/",
+  "meta": {
+    "viewport": "width=device-width, initial-scale=1.0",
+    "title": "Austin & Jordyn | Wedding Archive",
+    "description": "A permanent digital archive of our wedding day. Relive our story, browse the films, and view the galleries.",
+    "keywords": "wedding, archive, austin, jordyn, marriage, collection",
+    "author": "Austin & Jordyn",
+    "og:type": "website",
+    "og:url": "https://www.theporadas.com/",
+    "og:title": "Austin & Jordyn | Wedding Archive",
+    "og:description": "A permanent digital archive of our wedding day. Relive our story, browse the films, and view the galleries.",
+    "og:image": "https://www.theporadas.com/images/og-image.webp",
+    "twitter:card": "summary_large_image",
+    "twitter:url": "https://www.theporadas.com/",
+    "twitter:title": "Austin & Jordyn | Wedding Archive",
+    "twitter:description": "A permanent digital archive of our wedding day. Relive our story, browse the films, and view the galleries.",
+    "twitter:image": "https://www.theporadas.com/images/og-image.webp",
+    "robots": "index, follow",
+    "language": "English",
+    "theme-color": "#d4af37",
+    "mobile-web-app-capable": "yes",
+    "apple-mobile-web-app-status-bar-style": "black-translucent",
+    "apple-mobile-web-app-title": "A&J Wedding",
+    "application-name": "A&J Wedding",
+    "msapplication-TileColor": "#d4af37",
+    "msapplication-config": "/browserconfig.xml"
+  },
+  "headings": [
+    {
+      "level": 1,
+      "text": "Turn face detections into a browsable people archive."
+    },
+    {
+      "level": 2,
+      "text": "Guest Upload Moderation"
+    }
+  ],
+  "links": [
+    {
+      "href": "/#main-content",
+      "text": "Skip to main content",
+      "ariaLabel": ""
+    },
+    {
+      "href": "/",
+      "text": "A&JAdmin",
+      "ariaLabel": ""
+    },
+    {
+      "href": "/admin",
+      "text": "Back to Dashboard",
+      "ariaLabel": ""
+    }
+  ],
+  "images": [
+    {
+      "src": "/images/engagement/PoradaProposal-29.webp",
+      "alt": "Upload 1",
+      "loading": ""
+    },
+    {
+      "src": "/images/engagement/PoradaProposal-11.webp",
+      "alt": "Upload 2",
+      "loading": ""
+    },
+    {
+      "src": "/images/engagement/PoradaProposal-150.webp",
+      "alt": "Upload 1",
+      "loading": ""
+    },
+    {
+      "src": "/images/engagement/PoradaProposal-181.webp",
+      "alt": "Upload 1",
+      "loading": ""
+    }
+  ],
+  "bodyText": "Skip to main content\nA&JAdmin\n\nA calmer workspace for moderation, people review, and site upkeep.\n\nSigned in as admin@test.wedding\nSIGN OUT\n\nPEOPLE WORKFLOW\n\nTurn face detections into a browsable people archive.\nBACK TO DASHBOARD\n\nGuest-upload review queue is empty\n\nExport and tag approved guest uploads, then push a guest review batch to stage the next people-review pass.\n\nGuest Upload Moderation\nPending(3)\nApproved(0)\nRejected(0)\n\nRiley Thompson\n\nriley@example.com\n\nCaptured a few special moments from our table!\n\nUploaded 5/11/2025\n\nAPPROVE\nREJECT\n\nSam Garcia\n\nsam@example.com\n\nLove these photos from the reception!\n\nUploaded 5/11/2025\n\nAPPROVE\nREJECT\n\nAlex Chen\n\nalex@example.com\n\nUploaded 5/11/2025\n\nAPPROVE\nREJECT\nSelect all 3 pending uploads"
+}

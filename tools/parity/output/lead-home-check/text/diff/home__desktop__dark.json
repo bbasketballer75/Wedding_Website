@@ -1,0 +1,25 @@
+{
+  "key": "home__desktop__dark",
+  "route": "home",
+  "viewport": "desktop",
+  "theme": "dark",
+  "generatedAt": "2026-11-10T01:35:58.379Z",
+  "differences": [
+    {
+      "field": "meta.twitter:title",
+      "legacy": "Austin & Jordyn | Wedding Archive",
+      "rebuild": "Home | Austin & Jordyn's Wedding"
+    },
+    {
+      "field": "meta.twitter:description",
+      "legacy": "A permanent digital archive of our wedding day. Relive our story, browse the films, and view the galleries.",
+      "rebuild": "Join us in celebrating the wedding of Austin and Jordyn. View our story, photos, and share your memories."
+    },
+    {
+      "field": "meta.twitter:image",
+      "legacy": "https://www.theporadas.com/images/og-image.webp",
+      "rebuild": "https://www.theporadas.com/images/home/intro-video-poster.png"
+    }
+  ],
+  "bodyText": null
+}

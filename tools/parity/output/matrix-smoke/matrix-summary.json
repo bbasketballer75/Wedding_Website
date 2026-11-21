@@ -1,0 +1,390 @@
+{
+  "schemaVersion": 1,
+  "kind": "parity-matrix",
+  "generatedAt": "2026-11-10T00:10:51.204Z",
+  "durationMs": 26487,
+  "oracle": {
+    "legacyUrl": "http://127.0.0.1:4174",
+    "rebuildUrl": "http://127.0.0.1:4175",
+    "sameInstance": false,
+    "legacyProbe": {
+      "status": 200,
+      "url": "http://127.0.0.1:4174/"
+    },
+    "rebuildProbe": {
+      "status": 200,
+      "url": "http://127.0.0.1:4175/"
+    }
+  },
+  "outDir": "tools/parity/output/matrix-smoke",
+  "counts": {
+    "rows": 2,
+    "pass": 0,
+    "allowed": 0,
+    "fail": 2,
+    "error": 0,
+    "exempt": 0,
+    "textDiffRows": 2,
+    "changedPixels": 1316710,
+    "totalPixels": 20736000
+  },
+  "admin": {
+    "included": true,
+    "captureMode": "legacy: seeded Supabase session in localStorage (contracts/fixtures/adminSession.json); rebuild: the app’s own sign-in flow with documented synthetic fixture credentials",
+    "login": {
+      "email": "admin@test.wedding",
+      "enabled": true,
+      "credentialSource": "rebuild/src/features/admin/fixtures.ts (synthetic test fixtures, never real credentials)"
+    },
+    "sections": [
+      "photos",
+      "uploads",
+      "albums",
+      "review",
+      "claims",
+      "guestbook",
+      "featured",
+      "audit",
+      "analytics",
+      "settings"
+    ],
+    "captured": ["admin-photos__desktop__dark"],
+    "exempt": []
+  },
+  "prerender": {
+    "checkedAt": "2026-11-10T00:10:51.202Z",
+    "status": "pending",
+    "expectedRoutes": 9,
+    "rebuildPrerendered": 0,
+    "note": "No per-route served metadata found yet — W8-1 prerendering has not landed. Captures still assert the hydrated DOM.",
+    "routes": [
+      {
+        "id": "home",
+        "path": "/",
+        "expectedTitle": "Home | Austin & Jordyn's Wedding",
+        "expectedCanonicalPath": "/",
+        "legacy": {
+          "status": 200,
+          "bytes": 4788,
+          "title": "Austin & Jordyn | Wedding Archive",
+          "canonical": "https://www.theporadas.com/",
+          "prerendered": false
+        },
+        "rebuild": {
+          "status": 200,
+          "bytes": 3443,
+          "title": "Austin & Jordyn | Wedding Archive",
+          "canonical": "https://www.theporadas.com/",
+          "prerendered": false
+        }
+      },
+      {
+        "id": "film",
+        "path": "/film",
+        "expectedTitle": "Wedding Film | Austin & Jordyn's Wedding",
+        "expectedCanonicalPath": "/film",
+        "legacy": {
+          "status": 200,
+          "bytes": 4788,
+          "title": "Austin & Jordyn | Wedding Archive",
+          "canonical": "https://www.theporadas.com/",
+          "prerendered": false
+        },
+        "rebuild": {
+          "status": 200,
+          "bytes": 3443,
+          "title": "Austin & Jordyn | Wedding Archive",
+          "canonical": "https://www.theporadas.com/",
+          "prerendered": false
+        }
+      },
+      {
+        "id": "gallery",
+        "path": "/gallery",
+        "expectedTitle": "Photo Gallery | Austin & Jordyn's Wedding",
+        "expectedCanonicalPath": "/gallery",
+        "legacy": {
+          "status": 200,
+          "bytes": 4788,
+          "title": "Austin & Jordyn | Wedding Archive",
+          "canonical": "https://www.theporadas.com/",
+          "prerendered": false
+        },
+        "rebuild": {
+          "status": 200,
+          "bytes": 3443,
+          "title": "Austin & Jordyn | Wedding Archive",
+          "canonical": "https://www.theporadas.com/",
+          "prerendered": false
+        }
+      },
+      {
+        "id": "upload",
+        "path": "/upload",
+        "expectedTitle": "Share Memories | Austin & Jordyn's Wedding",
+        "expectedCanonicalPath": "/upload",
+        "legacy": {
+          "status": 200,
+          "bytes": 4788,
+          "title": "Austin & Jordyn | Wedding Archive",
+          "canonical": "https://www.theporadas.com/",
+          "prerendered": false
+        },
+        "rebuild": {
+          "status": 200,
+          "bytes": 3443,
+          "title": "Austin & Jordyn | Wedding Archive",
+          "canonical": "https://www.theporadas.com/",
+          "prerendered": false
+        }
+      },
+      {
+        "id": "guestbook",
+        "path": "/guestbook",
+        "expectedTitle": "Guestbook | Austin & Jordyn's Wedding",
+        "expectedCanonicalPath": "/guestbook",
+        "legacy": {
+          "status": 200,
+          "bytes": 4788,
+          "title": "Austin & Jordyn | Wedding Archive",
+          "canonical": "https://www.theporadas.com/",
+          "prerendered": false
+        },
+        "rebuild": {
+          "status": 200,
+          "bytes": 3443,
+          "title": "Austin & Jordyn | Wedding Archive",
+          "canonical": "https://www.theporadas.com/",
+          "prerendered": false
+        }
+      },
+      {
+        "id": "guest-photos",
+        "path": "/guest-photos",
+        "expectedTitle": "Guest Photos | Austin & Jordyn's Wedding",
+        "expectedCanonicalPath": "/guest-photos",
+        "legacy": {
+          "status": 200,
+          "bytes": 4788,
+          "title": "Austin & Jordyn | Wedding Archive",
+          "canonical": "https://www.theporadas.com/",
+          "prerendered": false
+        },
+        "rebuild": {
+          "status": 200,
+          "bytes": 3443,
+          "title": "Austin & Jordyn | Wedding Archive",
+          "canonical": "https://www.theporadas.com/",
+          "prerendered": false
+        }
+      },
+      {
+        "id": "admin-login",
+        "path": "/admin/login",
+        "expectedTitle": "Admin Login | Austin & Jordyn's Wedding",
+        "expectedCanonicalPath": "/admin/login",
+        "legacy": {
+          "status": 200,
+          "bytes": 4788,
+          "title": "Austin & Jordyn | Wedding Archive",
+          "canonical": "https://www.theporadas.com/",
+          "prerendered": false
+        },
+        "rebuild": {
+          "status": 200,
+          "bytes": 3443,
+          "title": "Austin & Jordyn | Wedding Archive",
+          "canonical": "https://www.theporadas.com/",
+          "prerendered": false
+        }
+      },
+      {
+        "id": "print",
+        "path": "/print",
+        "expectedTitle": "Memory Book | Austin & Jordyn's Wedding",
+        "expectedCanonicalPath": "/print",
+        "legacy": {
+          "status": 200,
+          "bytes": 4788,
+          "title": "Austin & Jordyn | Wedding Archive",
+          "canonical": "https://www.theporadas.com/",
+          "prerendered": false
+        },
+        "rebuild": {
+          "status": 200,
+          "bytes": 3443,
+          "title": "Austin & Jordyn | Wedding Archive",
+          "canonical": "https://www.theporadas.com/",
+          "prerendered": false
+        }
+      },
+      {
+        "id": "not-found",
+        "path": "/people",
+        "expectedTitle": "Page Not Found | Austin & Jordyn's Wedding",
+        "expectedCanonicalPath": "/404",
+        "legacy": {
+          "status": 200,
+          "bytes": 4788,
+          "title": "Austin & Jordyn | Wedding Archive",
+          "canonical": "https://www.theporadas.com/",
+          "prerendered": false
+        },
+        "rebuild": {
+          "status": 200,
+          "bytes": 3443,
+          "title": "Austin & Jordyn | Wedding Archive",
+          "canonical": "https://www.theporadas.com/",
+          "prerendered": false
+        }
+      }
+    ]
+  },
+  "rows": [
+    {
+      "key": "not-found__desktop__dark",
+      "route": "not-found",
+      "path": "/people",
+      "viewport": "desktop",
+      "theme": "dark",
+      "admin": false,
+      "captureClass": "captured",
+      "exemptReason": null,
+      "status": "fail",
+      "ratio": 0,
+      "changedPixels": 0,
+      "totalPixels": 10368000,
+      "textDiffs": 5,
+      "legacyHeight": 1475,
+      "rebuildHeight": 1475,
+      "failureReasons": ["text"],
+      "firstFailure": {
+        "kind": "text",
+        "field": "meta.twitter:title",
+        "path": "text/diff/not-found__desktop__dark.json",
+        "differences": 5
+      },
+      "legacyFinalUrl": "http://127.0.0.1:4174/people",
+      "rebuildFinalUrl": "http://127.0.0.1:4175/people",
+      "legacyAdminAuth": null,
+      "rebuildAdminAuth": null,
+      "files": {
+        "textDiff": "text/diff/not-found__desktop__dark.json",
+        "diffSlices": [
+          "shots/diff/not-found__desktop__dark--s000.png",
+          "shots/diff/not-found__desktop__dark--s001.png",
+          "shots/diff/not-found__desktop__dark--s002.png",
+          "shots/diff/not-found__desktop__dark--s003.png",
+          "shots/diff/not-found__desktop__dark--s004.png",
+          "shots/diff/not-found__desktop__dark--s005.png",
+          "shots/diff/not-found__desktop__dark--s006.png",
+          "shots/diff/not-found__desktop__dark--s007.png"
+        ],
+        "legacyShot": "shots/legacy/not-found__desktop__dark--s000.png",
+        "rebuildShot": "shots/rebuild/not-found__desktop__dark--s000.png"
+      }
+    },
+    {
+      "key": "admin-photos__desktop__dark",
+      "route": "admin-photos",
+      "path": "/admin/photos",
+      "viewport": "desktop",
+      "theme": "dark",
+      "admin": true,
+      "captureClass": "captured",
+      "exemptReason": null,
+      "status": "fail",
+      "ratio": 0.12699749228395063,
+      "changedPixels": 1316710,
+      "totalPixels": 10368000,
+      "textDiffs": 10,
+      "legacyHeight": 1594,
+      "rebuildHeight": 1594,
+      "failureReasons": ["text"],
+      "firstFailure": {
+        "kind": "text",
+        "field": "title",
+        "path": "text/diff/admin-photos__desktop__dark.json",
+        "differences": 10
+      },
+      "legacyFinalUrl": "http://127.0.0.1:4174/admin/photos",
+      "rebuildFinalUrl": "http://127.0.0.1:4175/admin/photos",
+      "legacyAdminAuth": {
+        "attempted": false,
+        "succeeded": false,
+        "requestedPath": "/admin/photos",
+        "email": "admin@test.wedding",
+        "finalPath": null
+      },
+      "rebuildAdminAuth": {
+        "attempted": true,
+        "succeeded": true,
+        "requestedPath": "/admin/photos",
+        "email": "admin@test.wedding",
+        "finalPath": "/admin/photos"
+      },
+      "files": {
+        "textDiff": "text/diff/admin-photos__desktop__dark.json",
+        "diffSlices": [
+          "shots/diff/admin-photos__desktop__dark--s000.png",
+          "shots/diff/admin-photos__desktop__dark--s001.png",
+          "shots/diff/admin-photos__desktop__dark--s002.png",
+          "shots/diff/admin-photos__desktop__dark--s003.png",
+          "shots/diff/admin-photos__desktop__dark--s004.png",
+          "shots/diff/admin-photos__desktop__dark--s005.png",
+          "shots/diff/admin-photos__desktop__dark--s006.png",
+          "shots/diff/admin-photos__desktop__dark--s007.png"
+        ],
+        "legacyShot": "shots/legacy/admin-photos__desktop__dark--s000.png",
+        "rebuildShot": "shots/rebuild/admin-photos__desktop__dark--s000.png"
+      }
+    }
+  ],
+  "compare": {
+    "summaryPath": "tools\\parity\\output\\matrix-smoke\\summary.json",
+    "reportPath": "tools\\parity\\output\\matrix-smoke\\report.html"
+  },
+  "tolerance": {
+    "maxDiffRatio": 0.001,
+    "pixelThreshold": 0.12,
+    "edgeTolerance": 0,
+    "edgeToleranceSemantics": "exact per-pixel comparison (default)",
+    "sizeMismatchAlwaysFails": true,
+    "textParityRequired": true
+  },
+  "determinism": {
+    "clock": {
+      "source": "contracts/ui.json fixedNow",
+      "fixedNow": "2026-11-08T17:00:00.000Z",
+      "strategy": "install fake-timer clock at fixedNow, pause before the capture navigation, advance only fixed runFor() budgets"
+    },
+    "timezoneId": "America/New_York",
+    "locale": "en-US",
+    "reducedMotion": "reduce",
+    "colorScheme": "per-theme",
+    "serviceWorkers": "block",
+    "deviceScaleFactor": 1,
+    "scrollStepPx": 600,
+    "maxPageHeightPx": 60000,
+    "fixtures": {
+      "source": "contracts/fixtures",
+      "sources": {
+        "photos": "contracts/fixtures/photos.json",
+        "guestbook": "contracts/fixtures/guestbook.json",
+        "guestUploads": "contracts/fixtures/guestUploads.json",
+        "activity": "contracts/fixtures/activity.json",
+        "editorial": "contracts/fixtures/editorial.json",
+        "claims": "contracts/fixtures/claims.json",
+        "guestTokens": "contracts/fixtures/guestTokens.json",
+        "adminSession": "contracts/fixtures/adminSession.json"
+      }
+    },
+    "mediaStub": {
+      "path": "C:\\Users\\bbask\\Coding_Projects\\Wedding_Website_Clean\\public\\images\\engagement\\PoradaProposal-29.webp",
+      "sha256": "27db7b40c5ebe517bea2ddba5c1074e74b691308d745ff7311d4dd13d13b970a",
+      "hosts": ["media.wedding.theporadas.com"]
+    },
+    "masks": {}
+  },
+  "command": "node tools/parity/matrix.mjs --legacy-url http://127.0.0.1:4174 --rebuild-url http://127.0.0.1:4175 --wave 9"
+}

@@ -1,0 +1,216 @@
+{
+  "key": "admin-review__mobile__dark",
+  "route": "admin-review",
+  "viewport": "mobile",
+  "theme": "dark",
+  "generatedAt": "2026-11-10T01:22:26.910Z",
+  "differences": [
+    {
+      "field": "title",
+      "legacy": "Austin & Jordyn | Wedding Archive",
+      "rebuild": "Admin Login | Austin & Jordyn's Wedding"
+    },
+    {
+      "field": "canonical",
+      "legacy": "https://www.theporadas.com/",
+      "rebuild": "https://www.theporadas.com/admin/login"
+    },
+    {
+      "field": "meta.description",
+      "legacy": "A permanent digital archive of our wedding day. Relive our story, browse the films, and view the galleries.",
+      "rebuild": "Secure admin access for the Austin and Jordyn wedding site."
+    },
+    {
+      "field": "meta.og:url",
+      "legacy": "https://www.theporadas.com/",
+      "rebuild": "https://www.theporadas.com/admin/login"
+    },
+    {
+      "field": "meta.og:title",
+      "legacy": "Austin & Jordyn | Wedding Archive",
+      "rebuild": "Admin Login | Austin & Jordyn's Wedding"
+    },
+    {
+      "field": "meta.og:description",
+      "legacy": "A permanent digital archive of our wedding day. Relive our story, browse the films, and view the galleries.",
+      "rebuild": "Secure admin access for the Austin and Jordyn wedding site."
+    },
+    {
+      "field": "meta.og:image",
+      "legacy": "https://www.theporadas.com/images/og-image.webp",
+      "rebuild": "https://www.theporadas.com/images/home/intro-video-poster.png"
+    },
+    {
+      "field": "meta.robots",
+      "legacy": "index, follow",
+      "rebuild": "noindex, nofollow"
+    },
+    {
+      "field": "meta.og:image:width",
+      "legacy": null,
+      "rebuild": "1200"
+    },
+    {
+      "field": "meta.og:image:height",
+      "legacy": null,
+      "rebuild": "630"
+    },
+    {
+      "field": "meta.og:site_name",
+      "legacy": null,
+      "rebuild": "Austin & Jordyn's Wedding"
+    },
+    {
+      "field": "meta.og:locale",
+      "legacy": null,
+      "rebuild": "en_US"
+    },
+    {
+      "field": "headings",
+      "legacy": [
+        "h1: Turn face detections into a browsable people archive.",
+        "h2: Guest Upload Moderation"
+      ],
+      "rebuild": [
+        "h1: Turn face detections into a browsable people archive.",
+        "h2: Turn face detections into a browsable people archive."
+      ]
+    },
+    {
+      "field": "links",
+      "legacy": [
+        "Skip to main content → /#main-content",
+        "A&JAdmin → /",
+        "Back to Dashboard → /admin"
+      ],
+      "rebuild": [
+        "Skip to main content → /#main-content",
+        "A&JAdmin → /admin",
+        "Back to Dashboard → /admin"
+      ]
+    },
+    {
+      "field": "images",
+      "legacy": [
+        "Upload 1 → /images/engagement/PoradaProposal-29.webp ()",
+        "Upload 2 → /images/engagement/PoradaProposal-11.webp ()",
+        "Upload 1 → /images/engagement/PoradaProposal-150.webp ()",
+        "Upload 1 → /images/engagement/PoradaProposal-181.webp ()"
+      ],
+      "rebuild": []
+    },
+    {
+      "field": "bodyText",
+      "legacy": [
+        "Skip to main content",
+        "A&JAdmin",
+        "",
+        "A calmer workspace for moderation, people review, and site upkeep.",
+        "",
+        "Signed in as admin@test.wedding",
+        "SIGN OUT",
+        "",
+        "PEOPLE WORKFLOW",
+        "",
+        "Turn face detections into a browsable people archive.",
+        "BACK TO DASHBOARD",
+        "",
+        "Guest-upload review queue is empty",
+        "",
+        "Export and tag approved guest uploads, then push a guest review batch to stage the next people-review pass.",
+        "",
+        "Guest Upload Moderation",
+        "Pending(3)",
+        "Approved(0)",
+        "Rejected(0)",
+        "",
+        "Riley Thompson",
+        "",
+        "riley@example.com",
+        "",
+        "Captured a few special moments from our table!",
+        "",
+        "Uploaded 5/11/2025",
+        "",
+        "APPROVE",
+        "REJECT",
+        "",
+        "Sam Garcia",
+        "",
+        "sam@example.com",
+        "",
+        "Love these photos from the reception!",
+        "",
+        "Uploaded 5/11/2025",
+        "",
+        "APPROVE",
+        "REJECT",
+        "",
+        "Alex Chen",
+        "",
+        "alex@example.com",
+        "",
+        "Uploaded 5/11/2025",
+        "",
+        "APPROVE",
+        "REJECT",
+        "Select all 3 pending uploads"
+      ],
+      "rebuild": [
+        "Skip to main content",
+        "A&JAdmin",
+        "",
+        "A calmer workspace for moderation, people review, and site upkeep.",
+        "",
+        "Signed in as admin@test.wedding",
+        "SIGN OUT",
+        "",
+        "PEOPLE WORKFLOW",
+        "",
+        "Turn face detections into a browsable people archive.",
+        "BACK TO DASHBOARD",
+        "",
+        "PEOPLE WORKFLOW",
+        "",
+        "Turn face detections into a browsable people archive.",
+        "",
+        "Use photo-first review for accuracy, then clean up recurring people in bulk so the public gallery stays useful instead of noisy.",
+        "",
+        "REFRESH",
+        "",
+        "Guest-upload review queue is empty",
+        "",
+        "Export and tag approved guest uploads, then push a guest review batch to stage the next people-review pass."
+      ]
+    }
+  ],
+  "bodyText": {
+    "legacyLines": 53,
+    "rebuildLines": 24,
+    "firstDifferenceLine": 13,
+    "context": {
+      "legacy": [
+        "Turn face detections into a browsable people archive.",
+        "BACK TO DASHBOARD",
+        "",
+        "Guest-upload review queue is empty",
+        "",
+        "Export and tag approved guest uploads, then push a guest review batch to stage the next people-review pass.",
+        "",
+        "Guest Upload Moderation",
+        "Pending(3)"
+      ],
+      "rebuild": [
+        "Turn face detections into a browsable people archive.",
+        "BACK TO DASHBOARD",
+        "",
+        "PEOPLE WORKFLOW",
+        "",
+        "Turn face detections into a browsable people archive.",
+        "",
+        "Use photo-first review for accuracy, then clean up recurring people in bulk so the public gallery stays useful instead of noisy.",
+        ""
+      ]
+    }
+  }
+}
