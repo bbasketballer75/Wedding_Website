@@ -43,7 +43,11 @@ export function GuestShareTabs({
 
   const handleKeyDown = (event: KeyboardEvent<HTMLButtonElement>) => {
     const currentIndex = TAB_ORDER.indexOf(activeTab)
-    let nextIndex = currentIndex
+    // Every switch branch below either assigns nextIndex or returns, so the
+    // declaration carries no initializer of its own (ESLint 10's
+    // no-useless-assignment rule rejects an initial value that is overwritten
+    // on every path).
+    let nextIndex: number
 
     switch (event.key) {
       case 'ArrowRight':
