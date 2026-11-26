@@ -38,4 +38,38 @@ describe('readEnv', () => {
       readEnv({ VITE_SUPABASE_URL: 'not-a-url', VITE_SUPABASE_ANON_KEY: 'key' })
     ).toThrow(/VITE_SUPABASE_URL/)
   })
+
+  it('treats blank values as absent', () => {
+    const env = readEnv({
+      ...valid,
+      VITE_MEDIA_BASE_URL: '',
+      VITE_SENTRY_DSN: '   ',
+      VITE_GA_ID: '',
+    })
+
+    expect(env.VITE_MEDIA_BASE_URL).toBeUndefined()
+    expect(env.VITE_SENTRY_DSN).toBeUndefined()
+    expect(env.VITE_GA_ID).toBeUndefined()
+    expect(env.VITE_SITE_URL).toBe('https://www.theporadas.com')
+  })
+
+  it('rejects a malformed optional URL', () => {
+    expect(() => readEnv({ ...valid, VITE_MEDIA_BASE_URL: 'not-a-url' })).toThrow(
+      /VITE_MEDIA_BASE_URL/
+    )
+  })
+
+  it('rejects a malformed VITE_SITE_URL', () => {
+    expect(() => readEnv({ ...valid, VITE_SITE_URL: 'not-a-url' })).toThrow(/VITE_SITE_URL/)
+  })
+
+  it('trims surrounding whitespace', () => {
+    const env = readEnv({
+      VITE_SUPABASE_URL: '  https://placeholder.supabase.co  ',
+      VITE_SUPABASE_ANON_KEY: '  placeholder-anon-key  ',
+    })
+
+    expect(env.VITE_SUPABASE_URL).toBe('https://placeholder.supabase.co')
+    expect(env.VITE_SUPABASE_ANON_KEY).toBe('placeholder-anon-key')
+  })
 })
