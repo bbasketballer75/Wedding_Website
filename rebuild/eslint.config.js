@@ -9,8 +9,10 @@ import tseslint from 'typescript-eslint'
 /**
  * Greenfield lint contract (see docs/rebuild/QUALITY_BAR.md).
  *
- * ESLint is pinned to 9 because eslint-plugin-jsx-a11y@6.10.2 caps at ^9
- * (measured in Wave 0 / A2). Revisit when the plugin ships ESLint 10 support.
+ * ESLint core is v10 (see the `eslint` devDependency) and @eslint/js is
+ * kept on the matching v10 line. eslint-plugin-jsx-a11y@6.10.2 still caps at
+ * ^9, so the repo installs with `legacy-peer-deps` (see .npmrc); the plugin
+ * loads and lints correctly under ESLint 10.
  * typescript-eslint resolves the project's `typescript` package, which is the
  * TS 6 compatibility build; typechecking itself uses TS 7 (`@typescript/native`).
  */
