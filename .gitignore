@@ -9,6 +9,10 @@ dist-ssr
 *.local
 dev-dist
 
+# Agent-local settings (machine specific, may embed tokens)
+.claude/settings.local.json
+.codex/
+
 # Environment files
 .env
 .env.local

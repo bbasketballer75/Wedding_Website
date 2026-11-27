@@ -19,7 +19,7 @@
       "Bash(grep -r \"from ''@/hooks''\" src/ --include=\"*.ts\" --include=\"*.tsx\" -l)",
       "mcp__plugin_supabase_supabase__execute_sql",
       "Bash(grep -l \"r2\\\\|R2\\\\|cloudflare\\\\|CLOUDFLARE\" netlify/functions/*)",
-      "Bash(curl -s -o /tmp/r2_screen.png \"https://minimax-algeng-chat-tts-us.oss-us-east-1.aliyuncs.com/ccv2%2F2026-04-14%2FMiniMax-M2.7%2F2026421186073735844%2F93d2ccd7af5b2d208bb8af78f12f94b42264be95aac51dc320c1c333f33a860e..png?Expires=1776190314&OSSAccessKeyId=LTAI5tCpJNKCf5EkQHSuL9xg&Signature=Vd23TmQCPSPmpdAJoy2%2BWSHPUmI%3D\")",
+      "Bash(curl -s -o /tmp/r2_screen.png \"<REDACTED: expired signed CDN URL contained an OSS access-key id — see docs/archival/SECURITY.md>\")",
       "Read(//tmp/**)",
       "Bash(curl -s -I \"https://media.wedding.theporadas.com/\")",
       "Bash(node --loader ts-node/esm scripts/upload-photos-to-r2.js)",
