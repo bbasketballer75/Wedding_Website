@@ -101,6 +101,6 @@ describe('Avatar', () => {
     expect(ref.current).toHaveClass('custom-wrapper')
     const image = screen.getByRole('img')
     expect(image).toHaveClass('custom-image')
-    expect(image).toHaveStyle({ objectPosition: 'center 20%' })
+    expect(image.style.objectPosition).toBe('center 20%')
   })
 })
